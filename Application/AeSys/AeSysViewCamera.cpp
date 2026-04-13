@@ -375,9 +375,69 @@ void AeSysView::OnSheetSetupFormFactor() {
   InvalidateScene();
 }
 
-void AeSysView::OnWindowZoomIn() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9); }
+void AeSysView::OnWindowZoomIn() {
+  if (IsViewportActive()) {
+    if (m_activeViewportPrimitive->IsDisplayLocked()) { return; }
 
-void AeSysView::OnWindowZoomOut() { DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9); }
+    // Cursor-anchored zoom: project WCS cursor to DCS 2D before interpolating
+    // with the DCS ViewCenter, so the point under the cursor stays stationary.
+    constexpr double factor = 0.9;
+    const auto cursorWCS = GetCursorPosition();
+    const auto& oldCenter = m_activeViewportPrimitive->ViewCenter();
+
+    EoGeVector3d dcsX;
+    EoGeVector3d dcsY;
+    EoGePoint3d wcsCameraTarget;
+    m_activeViewportPrimitive->ComputeViewPlaneAxes(dcsX, dcsY, wcsCameraTarget);
+
+    // Project WCS cursor onto the DCS plane
+    const EoGeVector3d offset(m_activeViewportPrimitive->ViewTargetPoint(), cursorWCS);
+    const double dcsCursorX = DotProduct(offset, dcsX);
+    const double dcsCursorY = DotProduct(offset, dcsY);
+
+    EoGePoint3d newCenter(
+        dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
+        dcsCursorY + (oldCenter.y - dcsCursorY) * factor,
+        oldCenter.z);
+    m_activeViewportPrimitive->SetViewCenter(newCenter);
+    m_activeViewportPrimitive->SetViewHeight(m_activeViewportPrimitive->ViewHeight() * factor);
+    InvalidateScene();
+    return;
+  }
+  DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() / 0.9);
+}
+
+void AeSysView::OnWindowZoomOut() {
+  if (IsViewportActive()) {
+    if (m_activeViewportPrimitive->IsDisplayLocked()) { return; }
+
+    // Cursor-anchored zoom: project WCS cursor to DCS 2D before interpolating
+    // with the DCS ViewCenter, so the point under the cursor stays stationary.
+    constexpr double factor = 1.0 / 0.9;
+    const auto cursorWCS = GetCursorPosition();
+    const auto& oldCenter = m_activeViewportPrimitive->ViewCenter();
+
+    EoGeVector3d dcsX;
+    EoGeVector3d dcsY;
+    EoGePoint3d wcsCameraTarget;
+    m_activeViewportPrimitive->ComputeViewPlaneAxes(dcsX, dcsY, wcsCameraTarget);
+
+    // Project WCS cursor onto the DCS plane
+    const EoGeVector3d offset(m_activeViewportPrimitive->ViewTargetPoint(), cursorWCS);
+    const double dcsCursorX = DotProduct(offset, dcsX);
+    const double dcsCursorY = DotProduct(offset, dcsY);
+
+    EoGePoint3d newCenter(
+        dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
+        dcsCursorY + (oldCenter.y - dcsCursorY) * factor,
+        oldCenter.z);
+    m_activeViewportPrimitive->SetViewCenter(newCenter);
+    m_activeViewportPrimitive->SetViewHeight(m_activeViewportPrimitive->ViewHeight() * factor);
+    InvalidateScene();
+    return;
+  }
+  DoWindowPan(m_Viewport.WidthInInches() / m_ViewTransform.UExtent() * 0.9);
+}
 
 void AeSysView::OnWindowPan() {
   CopyActiveModelViewToPreviousModelView();

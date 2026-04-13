@@ -158,7 +158,11 @@ void EoGsViewTransform::BuildTransformMatrix() {
 }
 
 void EoGsViewTransform::Initialize(const EoGsViewport& viewport) {
-  SetCenteredWindow(viewport, 44.0, 34.0);
+  // ARCH E sheet dimensions (48" × 36") — the legacy AeSys "overview" default.
+  // SetCenteredWindow adjusts for the viewport aspect ratio, then the target
+  // is placed at the center of the resulting extent so the sheet's lower-left
+  // corner sits at the world origin.
+  SetCenteredWindow(viewport, 48.0, 36.0);
 
   auto target = EoGePoint3d(UExtent() / 2.0, VExtent() / 2.0, 0.0);
   auto position = target + (EoGeVector3d::positiveUnitZ * m_LensLength);

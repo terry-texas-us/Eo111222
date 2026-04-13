@@ -20,6 +20,7 @@ void AeSysView::SetCameraTarget(const EoGePoint3d& target) {
   m_ViewTransform.SetTarget(target);
   m_ViewTransform.BuildTransformMatrix();
 }
+void AeSysView::SetCameraViewUp(const EoGeVector3d& viewUp) { m_ViewTransform.SetViewUp(viewUp); }
 /** @brief Sets the view window to be centered in the viewport with specified extents.
  *
  * This method adjusts the view transformation to center the view window

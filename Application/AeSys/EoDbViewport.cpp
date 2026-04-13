@@ -77,7 +77,7 @@ void EoDbViewport::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(L"<Viewport>");
   EoDbPrimitive::AddReportToMessageList(point);
   CString message;
-  message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.4f x %.4f", m_viewportId, m_centerPoint.x,
+  message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.3f x %.3f", m_viewportId, m_centerPoint.x,
       m_centerPoint.y, m_centerPoint.z, m_width, m_height);
   app.AddStringToMessageList(message);
 }
@@ -89,54 +89,60 @@ EoDbPrimitive*& EoDbViewport::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbViewport::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  // Minimal display: draw the viewport boundary rectangle in paper space.
-  // Full paper-space clipping pipeline is deferred.
-  const double halfWidth = m_width / 2.0;
-  const double halfHeight = m_height / 2.0;
+void EoDbViewport::ComputeViewPlaneAxes(
+    EoGeVector3d& dcsX, EoGeVector3d& dcsY, EoGePoint3d& wcsCameraTarget) const noexcept {
+  // DCS Z axis = viewDirection (toward viewer), following the convention in EoGsAbstractView.h:
+  //   "The z-direction equals the direction from target to camera (points toward viewer)"
+  EoGeVector3d dcsZ(m_viewDirection.x, m_viewDirection.y, m_viewDirection.z);
+  if (dcsZ.Length() < Eo::geometricTolerance) {
+    // Degenerate viewDirection — fall back to top-down defaults
+    dcsX = EoGeVector3d::positiveUnitX;
+    dcsY = EoGeVector3d::positiveUnitY;
+    wcsCameraTarget =
+        EoGePoint3d(m_viewTargetPoint.x + m_viewCenter.x, m_viewTargetPoint.y + m_viewCenter.y, m_viewTargetPoint.z);
+    return;
+  }
+  dcsZ.Unitize();
 
-  EoGePoint3d corners[4] = {
-      {m_centerPoint.x - halfWidth, m_centerPoint.y - halfHeight, m_centerPoint.z},
-      {m_centerPoint.x + halfWidth, m_centerPoint.y - halfHeight, m_centerPoint.z},
-      {m_centerPoint.x + halfWidth, m_centerPoint.y + halfHeight, m_centerPoint.z},
-      {m_centerPoint.x - halfWidth, m_centerPoint.y + halfHeight, m_centerPoint.z},
-  };
-
-  // Hardcoded teal — always visible on white paper-space background
-  renderDevice->SelectPen(PS_DASH, 1, RGB(0, 128, 128));
-
-  EoGePoint4d ndcCorners[4];
-  CPoint clientCorners[4];
-  bool anyInView = false;
-
-  for (int i = 0; i < 4; ++i) {
-    ndcCorners[i] = EoGePoint4d(corners[i]);
-    view->ModelViewTransformPoint(ndcCorners[i]);
-    clientCorners[i] = view->ProjectToClient(ndcCorners[i]);
-    if (ndcCorners[i].IsInView()) { anyInView = true; }
+  // DCS X and Y axes, following the same pattern as ApplyActiveViewport in AeSysViewRender.cpp:
+  //   - Near WCS Z (|z| > 0.99): use ViewUp = (0,1,0) as reference → dcsX = cross(Y, viewDir)
+  //   - General 3D: use WCS Z as reference → dcsX = cross(Z, viewDir)
+  // DCS Y = cross(viewDir, dcsX) in both cases.
+  if (std::abs(dcsZ.z) > 0.99) {
+    // View direction near WCS Z (top or bottom view)
+    dcsX = CrossProduct(EoGeVector3d::positiveUnitY, dcsZ);
+    dcsX.Unitize();
+    dcsY = CrossProduct(dcsZ, dcsX);
+    dcsY.Unitize();
+  } else {
+    // General 3D view (front, side, isometric, etc.)
+    dcsX = CrossProduct(EoGeVector3d::positiveUnitZ, dcsZ);
+    dcsX.Unitize();
+    dcsY = CrossProduct(dcsZ, dcsX);
+    dcsY.Unitize();
   }
 
-  if (anyInView) {
-    renderDevice->MoveTo(clientCorners[0].x, clientCorners[0].y);
-    for (int i = 1; i < 4; ++i) { renderDevice->LineTo(clientCorners[i].x, clientCorners[i].y); }
-    renderDevice->LineTo(clientCorners[0].x, clientCorners[0].y);
-  }
+  // Map 2D DCS viewCenter to 3D WCS camera target:
+  //   wcsCameraTarget = viewTargetPoint + viewCenter.x * dcsX + viewCenter.y * dcsY
+  wcsCameraTarget = EoGePoint3d(m_viewTargetPoint.x + m_viewCenter.x * dcsX.x + m_viewCenter.y * dcsY.x,
+      m_viewTargetPoint.y + m_viewCenter.x * dcsX.y + m_viewCenter.y * dcsY.y,
+      m_viewTargetPoint.z + m_viewCenter.x * dcsX.z + m_viewCenter.y * dcsY.z);
+}
 
-  renderDevice->RestorePen();
+void EoDbViewport::Display([[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGsRenderDevice* renderDevice) {
+  // Viewport boundary rendering is handled by DisplayPaperSpaceSheet() which draws
+  // styled outlines (gray for inactive, accent blue for active viewport). This method
+  // is intentionally a no-op to avoid redundant dashed teal rectangles.
 }
 
 void EoDbViewport::FormatExtra(CString& extra) {
   EoDbPrimitive::FormatExtra(extra);
-  extra.AppendFormat(L"\tViewportId;%d\tStatus;%d", m_viewportId, m_viewportStatus);
+  extra.AppendFormat(
+      L"\tViewportId;%d\tStatus;%d\tWidth;%.3f\tHeight;%.3f", m_viewportId, m_viewportStatus, m_width, m_height);
   extra += L'\t';
 }
 
-void EoDbViewport::FormatGeometry(CString& str) {
-  str += L"Center;" + m_centerPoint.ToString();
-  CString sizeStr;
-  sizeStr.Format(L"\tWidth;%.4f\tHeight;%.4f", m_width, m_height);
-  str += sizeStr;
-}
+void EoDbViewport::FormatGeometry(CString& str) { str += L"Center;" + m_centerPoint.ToString(); }
 
 void EoDbViewport::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);

@@ -27,6 +27,7 @@
 #include "EoGeUniquePoint.h"
 #include "EoGeVector3d.h"
 
+class EoDbViewport;
 class EoGeTransformMatrix;
 
 /// @brief Tagged union of all handle-bearing object types for unified handle graph lookup.
@@ -61,7 +62,8 @@ class AeSysDoc : public CDocument {
   CObList m_MaskedPrimitives{};
   CObList m_UniquePoints{};
   CLayers m_modelSpaceLayers{};
-  CLayers m_paperSpaceLayers{};
+  std::unordered_map<std::uint64_t, CLayers> m_paperSpaceLayoutLayers{};
+  std::uint64_t m_activeLayoutHandle{EoDxf::Handles::PaperSpaceBlockRecord};
   EoDxf::Space m_activeSpace{EoDxf::Space::ModelSpace};
   EoGePoint3d m_trapPivotPoint{};
   EoDbLineType* m_continuousLineType{};
@@ -237,6 +239,58 @@ class AeSysDoc : public CDocument {
   /// @brief Displays drawing and determines which groups are detectable.
   void DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice);
 
+  /** @brief Draws the paper-space sheet background and viewport boundary outlines.
+   *
+   *  When in paper space, this method renders a light gray filled rectangle
+   *  representing the layout sheet area, and thin outlined rectangles for each
+   *  viewport boundary.  This provides a visual reference for the relative
+   *  positioning of viewports on the sheet — useful for debugging and for
+   *  understanding multi-viewport layouts.
+   *
+   *  The sheet rectangle is derived from the active EoDxfLayout extents when
+   *  available (DXF-sourced files), or from the bounding box of all viewports
+   *  with a small margin (PEG files).
+   *
+   *  Called from DisplayAllLayers() before rendering paper-space layer content.
+   *
+   *  @param view  The active AeSysView providing transform and projection services.
+   *  @param renderDevice  The render device to draw into.
+   */
+  void DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderDevice);
+
+  /** @brief Dims paper-space content when a viewport is active.
+   *
+   *  Draws a semi-transparent overlay across the entire visible area using
+   *  GdiAlphaBlend, reducing the visual prominence of paper-space entities
+   *  so that model-space content rendered through the active viewport stands out.
+   *  No-op when no viewport is active or when the render device has no GDI DC.
+   *
+   *  @param view  The active AeSysView (checked for IsViewportActive()).
+   *  @param renderDevice  The render device to draw the overlay into.
+   */
+  void DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDevice);
+
+  /** @brief Finds the paper-space viewport primitive containing the given world-space point.
+   *
+   *  Walks the active paper-space layout's layers, searching for EoDbViewport
+   *  primitives (ID >= 2 with valid dimensions) whose rectangular boundary
+   *  contains the specified point.
+   *
+   *  @param worldPoint  A point in paper-space world coordinates.
+   *  @return Pointer to the viewport primitive containing the point, or nullptr if none.
+   */
+  [[nodiscard]] EoDbViewport* HitTestViewport(const EoGePoint3d& worldPoint);
+
+  /** @brief Finds the first valid paper-space viewport in the active layout.
+   *
+   *  Walks the active paper-space layout's layers, returning the first EoDbViewport
+   *  primitive with ID >= 2 and valid dimensions. Used when the tab bar needs to
+   *  activate a viewport without a specific hit-test point.
+   *
+   *  @return Pointer to the first viewport primitive, or nullptr if none found.
+   */
+  [[nodiscard]] EoDbViewport* FindFirstViewport();
+
   /** @brief Renders model-space entities through each paper-space viewport.
    *
    *  For each EoDbViewport primitive found in paper-space layers (excluding the
@@ -278,12 +332,12 @@ class AeSysDoc : public CDocument {
 
   // Layer Table interface
 
-  /// @brief Returns the layer table for the active space (model or paper).
-  [[nodiscard]] CLayers& ActiveSpaceLayers() noexcept;
-  [[nodiscard]] const CLayers& ActiveSpaceLayers() const noexcept;
+  /// @brief Returns the layer table for the active space (model or active paper-space layout).
+  [[nodiscard]] CLayers& ActiveSpaceLayers();
+  [[nodiscard]] const CLayers& ActiveSpaceLayers() const;
 
-  /// @brief Returns the layer table for the specified space.
-  [[nodiscard]] CLayers& SpaceLayers(EoDxf::Space space) noexcept;
+  /// @brief Returns the layer table for the specified space (paper-space routes through active layout).
+  [[nodiscard]] CLayers& SpaceLayers(EoDxf::Space space);
 
   /// @brief Returns the active drawing space.
   [[nodiscard]] EoDxf::Space ActiveSpace() const noexcept { return m_activeSpace; }
@@ -316,18 +370,38 @@ class AeSysDoc : public CDocument {
   void AddLayerTableLayer(EoDbLayer* layer);
   void RemoveEmptyLayers();
 
-  /// @brief Adds a layer to a specific space's layer table (used during DXF import).
+  /// @brief Adds a layer to a specific space's layer table (paper-space routes through active layout).
   void AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space);
+
+  /// @brief Adds a layer to a specific paper-space layout by block record handle.
+  void AddLayerToLayout(EoDbLayer* layer, std::uint64_t blockRecordHandle);
 
   /** @brief Finds a layer by name in a specific space's layer table.
    * @param name The layer name to search for.
-   * @param space The target space (ModelSpace or PaperSpace).
+   * @param space The target space (ModelSpace or PaperSpace — paper routes through active layout).
    * @return Pointer to the layer if found; nullptr otherwise.
    */
   [[nodiscard]] EoDbLayer* FindLayerInSpace(const CString& name, EoDxf::Space space);
 
-  CLayers& PaperSpaceLayers() { return m_paperSpaceLayers; }
-  const CLayers& PaperSpaceLayers() const { return m_paperSpaceLayers; }
+  /// @brief Finds a layer by name in a specific paper-space layout.
+  [[nodiscard]] EoDbLayer* FindLayerInLayout(const CString& name, std::uint64_t blockRecordHandle);
+
+  /// @brief Returns the active paper-space layout's layer collection.
+  CLayers& PaperSpaceLayers() { return m_paperSpaceLayoutLayers[m_activeLayoutHandle]; }
+  const CLayers& PaperSpaceLayers() const;
+
+  /// @brief Returns the active paper-space layout's block record handle.
+  [[nodiscard]] std::uint64_t ActiveLayoutHandle() const noexcept { return m_activeLayoutHandle; }
+
+  /// @brief Sets the active paper-space layout by block record handle.
+  void SetActiveLayoutHandle(std::uint64_t blockRecordHandle) noexcept { m_activeLayoutHandle = blockRecordHandle; }
+
+  /// @brief Returns the full map of paper-space layout layer collections.
+  [[nodiscard]] auto& PaperSpaceLayoutLayers() noexcept { return m_paperSpaceLayoutLayers; }
+  [[nodiscard]] const auto& PaperSpaceLayoutLayers() const noexcept { return m_paperSpaceLayoutLayers; }
+
+  /// @brief Returns the layer collection for a specific paper-space layout by block record handle.
+  CLayers& LayoutLayers(std::uint64_t blockRecordHandle) { return m_paperSpaceLayoutLayers[blockRecordHandle]; }
 
   EoDbLayer* LayersSelUsingPoint(const EoGePoint3d&);
 

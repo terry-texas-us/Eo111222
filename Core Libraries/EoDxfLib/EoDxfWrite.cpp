@@ -203,7 +203,7 @@ bool EoDxfWrite::WriteEntity(const EoDxfGraphic& entity) {
     if (m_writingBlock) {
       WriteCodeString(330, ToHexString(m_currentHandle));
     } else if (m_currentExportSpace == EoDxf::Space::PaperSpace) {
-      WriteCodeString(330, ToHexString(EoDxf::Handles::PaperSpaceBlockRecord));
+      WriteCodeString(330, ToHexString(m_currentPaperSpaceOwnerHandle));
     } else {
       WriteCodeString(330, ToHexString(EoDxf::Handles::ModelSpaceBlockRecord));
     }

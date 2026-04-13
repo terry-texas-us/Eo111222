@@ -237,6 +237,7 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 ├── 0x09  APPID table → app entries (owner=9)
 ├── 0x0A  DIMSTYLE table → dimstyle entries (owner=A)
 └── 0x0C  root dictionary
+
 ### Handle → Object Reverse Lookup Map
 `AeSysDoc` maintains `std::unordered_map<std::uint64_t, HandleObject> m_handleMap` for O(1) lookup. `HandleObject` is `std::variant<EoDbPrimitive*, EoDbLayer*, EoDbLineType*, EoDbBlock*>` — covers all heap-allocated, pointer-stable handle-bearing types. Value-type entries (`EoDbTextStyle`, `EoDbDimStyle`, `EoDbAppIdEntry`) deferred until migrated to pointer-stable containers.
 
@@ -253,6 +254,73 @@ Every `EoDbPrimitive` carries a unique, non-zero `m_handle` (`std::uint64_t`) as
 ### Deferred
 - Extension dictionaries (XDICT, ACAD_REACTORS): not needed for current linkage.
 - PEG V2 handle serialization per primitive type.
+
+## Multiple Paper-Space Layouts
+
+### Architecture Overview
+AeSys supports multiple paper-space layouts, matching the DXF LAYOUT object model. Each layout has its own `CLayers` collection, keyed by the layout's `BLOCK_RECORD` handle. The default layout uses `PaperSpaceBlockRecord` (0x1E).
+
+### Data Model
+`AeSysDoc` stores paper-space layers in a per-layout map:std::unordered_map<std::uint64_t, CLayers> m_paperSpaceLayoutLayers{}
+std::uint64_t m_activeLayoutHandle{EoDxf::Handles::PaperSpaceBlockRecord}
+The map key is the `BLOCK_RECORD` handle associated with the layout (`EoDxfLayout::m_blockRecordHandle`). `operator[]` auto-creates an empty `CLayers` on first access, so import/creation code does not need explicit initialization.
+
+### DXF Layout Discrimination
+DXF entities carry two space indicators:
+- **Group code 67** (`EoDxfGraphic::m_space`): Binary `ModelSpace`/`PaperSpace` — insufficient for multi-layout.
+- **Group code 330** (`EoDxfGraphic::m_ownerHandle`): Owner handle pointing to the `BLOCK_RECORD` for the entity's layout — this is the discriminator.
+
+The chain is: Entity `ownerHandle` → `BLOCK_RECORD` handle → `EoDxfLayout::m_blockRecordHandle`.
+
+### Accessor Hierarchy
+| Method | Returns | Notes |
+|--------|---------|-------|
+| `PaperSpaceLayers()` | `CLayers&` for active layout | Uses `m_paperSpaceLayoutLayers[m_activeLayoutHandle]` |
+| `ActiveSpaceLayers()` | Model or active layout's `CLayers&` | Delegates through `m_activeSpace` |
+| `SpaceLayers(space)` | Model or active layout's `CLayers&` | PaperSpace routes through active layout |
+| `LayoutLayers(handle)` | `CLayers&` for specific layout | Direct map access by block record handle |
+| `PaperSpaceLayoutLayers()` | Full map reference | For iteration (cleanup, export, PEG persistence) |
+| `AddLayerToLayout(layer, handle)` | void | Adds layer to specific layout |
+| `FindLayerInLayout(name, handle)` | `EoDbLayer*` | Searches specific layout |
+| `ActiveLayoutHandle()` | `std::uint64_t` | Current active layout's block record handle |
+| `SetActiveLayoutHandle(handle)` | void | Switches active layout |
+
+### Cleanup
+`RemoveAllLayerTableLayers()` iterates all map entries, clearing and deleting each layout's layers, then clears the map and resets `m_activeLayoutHandle` to `PaperSpaceBlockRecord`. `AnyLayerRemove()` searches model space then all paper-space layouts.
+
+### Implementation Status (5-Phase Plan)
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Data model — per-layout `CLayers` map + active layout handle | ✅ Complete |
+| 2 | Import routing — use entity `ownerHandle` to route to correct layout | ✅ Complete |
+| 3 | PEG V2 persistence — serialize per-layout paper-space sections | ✅ Complete |
+| 4 | Export and rendering — iterate layouts for DXF export, render active layout | ✅ Complete |
+| 5 | UI — layout tab selector for switching active layout | ✅ Complete |
+
+### PEG V2 Layout Table Persistence
+`kLayoutTable` (0x0205) sentinel in the tables section. `ReadLayoutTable`/`WriteLayoutTable` in `EoDbPegFile.cpp` serialize all ~60 `EoDxfLayout` fields in binary. Backward-compatible via peek-ahead — V1 files without the sentinel skip cleanly.
+
+### PEG V2 Per-Layout Paper-Space Persistence
+`kMultiLayoutPaperSpaceSection` (0x0106) replaces the legacy `kPaperSpaceSection` (0x0105) for writing. The binary format is:kMultiLayoutPaperSpaceSection (0x0106)
+  uint16  layoutCount
+  For each layout:
+    uint64  blockRecordHandle
+    kLayerTable → layers → kEndOfTable
+    kGroupsSection → entity groups → kEndOfSection
+  kEndOfSection
+`ReadPaperSpaceSection` handles both sentinels: `kMultiLayoutPaperSpaceSection` reads per-layout with explicit block record handles; legacy `kPaperSpaceSection` routes all data to the default layout (0x1E). Shared logic is in `ReadPaperSpaceLayoutLayers` and `ReadPaperSpaceLayoutEntities` helpers.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysDoc.h` | `m_paperSpaceLayoutLayers` map, `m_activeLayoutHandle`, all accessor declarations |
+| `AeSys\AeSysDocLayers.cpp` | Accessor implementations, cleanup, layout-specific `AddLayerToLayout`/`FindLayerInLayout` |
+| `AeSys\AeSysDocDisplay.cpp` | `DisplayModelSpaceThroughViewports`, `CreateDefaultPaperSpaceViewport` — use `PaperSpaceLayers()` |
+| `AeSys\EoDbPegFile.cpp` | `ReadLayoutTable`/`WriteLayoutTable`, paper-space section read/write |
+| `EoDxfLib\EoDxfBase.h` | `PaperSpaceBlockRecord = 0x1E` — default layout handle |
+| `EoDxfLib\EoDxfObjects.h` | `EoDxfLayout` — `m_blockRecordHandle` links layout to block record |
+| `AeSys\EoMfLayoutTabBar.h/.cpp` | Owner-draw tab bar for layout switching — `PopulateFromDocument`, themed via `Eo::chromeColors` |
+| `AeSys\AeSysView.cpp` | `OnCreate` creates tab bar; `UpdateLayoutTabs`, `OnLayoutTabSelChange` handle population and selection |
 
 ## Plot Pipeline — Unified Layout Rendering (DXF == PEG)
 
@@ -319,7 +387,7 @@ The space switch happens in `OnBeginPrinting`, so `OnPreparePrinting`'s initial 
 - **Multi-viewport layouts**: Current PEG default creates a single full-sheet viewport. Future work could support multiple viewports with different scales/views.
 - **Paper-space annotations**: Title blocks, borders, dimension text in paper-space layers are rendered but not yet created programmatically for PEG files.
 - **Named layouts**: DXF supports multiple named layouts; currently only the default `*Paper_Space` is used.
-- **Viewport clipping in D2D**: `DisplayModelSpaceThroughViewports` uses GDI `IntersectClipRect`; the D2D path needs equivalent `PushAxisAlignedClip` for proper viewport boundary enforcement.
+- **Viewport clipping in D2D**: ✅ Resolved — `DisplayModelSpaceThroughViewports` uses `PushClipRect`/`PopClipRect` which maps to `PushAxisAlignedClip`/`PopAxisAlignedClip` in the D2D backend.
 
 ## Color Scheme (Dark / Light)
 
@@ -366,7 +434,7 @@ Both schemes use a layered depth model. Dark: deeper surfaces are darker; chrome
 
 **Light scheme** — pure white model-space, warm three-tier chrome (R ≥ G > B), chrome darkened -~6 for softer cross-scheme viewing:
 | Tier | Surface | Light RGB | Role |
-|------|---------|-----------|------|
+|------|---------|-----------|---------|
 | Document | Model-space background | (255, 255, 255) | Pure white for ACI clarity |
 | Content | Pane background, active tab | (247, 246, 243) | `paneBackground`, `tabActiveBackground` |
 | Panel | Description, group rows | (241, 240, 237) / (237, 236, 233) | `paneDescriptionBackground`, `paneGroupBackground` |
@@ -667,12 +735,342 @@ CDockingManager docking position (which bar, which side, float vs docked) **is s
 
 This is the least-bad mitigation available without abandoning `CMFCToolBarComboBoxButton` as the base class. The user considers MFC's black-box toolbar state persistence a fundamental limitation.
 
-## Properties Pane
+## Paper-Space Sheet Background
 
-### Layout
-`EoMfPropertiesDockablePane` contains a toolbar (`EoMfPropertiesMFCToolBar`) and a property grid (`CMFCPropertyGridCtrl`). The former "Application"/"Persistant" combo box dropdown has been removed — all items are now directly in the property grid.
+### Architecture Overview
+`DisplayPaperSpaceSheet()` renders a visual paper sheet and viewport boundary outlines behind paper-space entity content. It is called from `DisplayAllLayers()` before paper-space layer rendering. The paper-space view uses a gray "table" background (`Eo::PaperSpaceBackgroundColor()`) with a white sheet rectangle on top, matching the industry-standard AutoCAD convention.
 
-`AdjustLayout()` stacks toolbar then property grid vertically to fill the pane client area.
+### Color Scheme
+| Element | Color | Notes |
+|---------|-------|-------|
+| Table background (dark view) | `RGB(96, 95, 90)` | Warm dark gray — `Eo::PaperSpaceBackgroundColor()` |
+| Table background (light view) | `RGB(192, 191, 187)` | Warm light gray — `Eo::PaperSpaceBackgroundColor()` |
+| Sheet fill | `RGB(255, 255, 255)` | Always white — `Eo::PaperSpaceSheetColor()` |
+| Sheet border | `RGB(100, 99, 94)` | Dark warm gray — visible against both table and sheet |
+| Drop shadow | `RGB(64, 63, 58)` | Offset +4px right/down behind the sheet |
+| Viewport borders (inactive) | `RGB(140, 140, 134)` | Medium warm gray on the white sheet |
+| Viewport border (active) | `Eo::chromeColors.captionActiveBackground` | 2px accent blue (VS blue) |
 
-### Dark Theme Toolbar Images
-The Properties toolbar buttons (Expand All, Sort, Properties1) always load from `properties_hc.bmp` (high-color variant). In dark mode, `AdaptColors(RGB(0,0,0), RGB(200,200,200))` shifts the dark glyphs to light gray for visibility. Light mode uses the unmodified bitmap.
+### Sheet Bounds Discovery
+Sheet bounds are determined in priority order:
+1. **Layout extents** (`EoDxfLayout::m_limminX/Y`, `m_limmaxX/Y`) from the active paper-space layout — used when the DXF file provides layout limits.
+2. **Viewport bounding box** — union of all viewport rectangles (center ± halfWidth/halfHeight) with a 2% margin — fallback for PEG files and layouts without explicit limits.
+
+If no valid bounds can be determined (degenerate area < `Eo::geometricTolerance`), the function returns early without drawing.
+
+### Rendering
+- **Drop shadow**: Dark gray filled polygon offset +4px right and down from the sheet corners (device coordinates).
+- **Sheet rectangle**: White fill with dark warm gray border — sits on the gray table.
+- **Viewport boundaries**: Gray outlines for each viewport with ID ≥ 2 and valid dimensions. Active viewport uses accent blue border at 2px width.
+
+### ACI 7 in Paper Space
+The ACI 7 → black swap remains correct: entities render on the **white sheet**, so ACI 7 must be black for visibility. The gray table background does not affect entity rendering.
+
+### ViewportInfo
+A local `ViewportInfo` struct gathers viewport data during the layer scan:
+```cpp
+struct ViewportInfo { EoGePoint3d center; double halfWidth; double halfHeight; EoDbViewport* primitive; };
+```
+The `primitive` pointer enables the rendering loop to identify the active viewport for accent highlighting.
+
+## Viewport Activation (Phase 7)
+
+### Architecture Overview
+In paper space, double-clicking inside a viewport activates it (accent blue border). Double-clicking anywhere while a viewport is active deactivates it. This is the first step toward in-viewport model-space editing.
+
+### State
+`AeSysView::m_activeViewportPrimitive` (`EoDbViewport*`, default `nullptr`) tracks the activated viewport. Lifetime is session-only — not persisted.
+
+### Accessors
+| Method | Returns | Purpose |
+|--------|---------|---------|
+| `ActiveViewportPrimitive()` | `const EoDbViewport*` | Read access for rendering |
+| `SetActiveViewportPrimitive(EoDbViewport*)` | void | Sets pointer + `InvalidateScene()` |
+| `IsViewportActive()` | `bool` | Convenience `!= nullptr` check |
+| `DeactivateViewport()` | void | Clears pointer + `InvalidateScene()` |
+
+### Double-Click Handler
+`AeSysView::OnLButtonDblClk()` (message map `ON_WM_LBUTTONDBLCLK`):
+1. Only meaningful in paper space — model space falls through to `CView::OnLButtonDown`.
+2. Converts device click point to paper-space world coordinates via `DoProjectionInverse()` + `ModelViewGetMatrixInverse()`.
+3. If a viewport is already active: deactivates it (any click location).
+4. Otherwise: calls `AeSysDoc::HitTestViewport(worldPoint)` to find the viewport under the cursor.
+
+### Hit-Testing
+`AeSysDoc::HitTestViewport(worldPoint)` walks `PaperSpaceLayers()`, checking each `EoDbViewport` (ID ≥ 2, valid dimensions) for point-in-rectangle containment. Returns the first match or `nullptr`.
+
+### Visual Indicator
+In `DisplayPaperSpaceSheet()`, the viewport border loop checks `vp.primitive == view->ActiveViewportPrimitive()`:
+- **Active**: 2px accent blue pen (`Eo::chromeColors.captionActiveBackground`).
+- **Inactive**: 1px gray pen (`viewportBorderColor`).
+
+### Layout Tab Deactivation
+`OnLayoutTabChange()` calls `DeactivateViewport()` before switching spaces — the active viewport is layout-specific and must not carry over.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysView.h` | `m_activeViewportPrimitive`, accessors, `OnLButtonDblClk` declaration |
+| `AeSys\AeSysViewInput.cpp` | `OnLButtonDblClk`, `SetActiveViewportPrimitive`, `DeactivateViewport` |
+| `AeSys\AeSysDocDisplay.cpp` | `DisplayPaperSpaceSheet` accent border, `HitTestViewport` implementation |
+| `AeSys\AeSysDoc.h` | `HitTestViewport` declaration |
+| `AeSys\AeSysView.cpp` | `ON_WM_LBUTTONDBLCLK` message map, `OnLayoutTabChange` deactivation |
+
+## Viewport Coordinate Transform Routing (Phase 8)
+
+### Architecture Overview
+When a viewport is active in paper space, mouse input coordinates are routed through the viewport's model-space transform instead of the paper-space transform. This enables cursor positioning, rubber-banding, and odometer display in model-space coordinates while the user interacts with the paper-space view.
+
+### Transform Pipeline
+The key insight: `ConfigureViewportTransform` replicates the **exact same** off-center projection math used by `DisplayModelSpaceThroughViewports` for rendering. After configuration, the existing inverse transform infrastructure (`DoProjectionInverse` + `ModelViewGetMatrixInverse`) automatically maps device pixels to model-space coordinates.
+
+**Forward** (world → device): `ModelViewTransformPoint` → `ProjectToClient`
+**Inverse** (device → world): `DoProjectionInverse` (device→NDC) → `ModelViewGetMatrixInverse` (NDC→world)
+
+### ConfigureViewportTransform
+`AeSysView::ConfigureViewportTransform(const EoDbViewport* viewport)` → `bool`:
+1. Validates viewport (non-null, `viewHeight ≥ geometricTolerance`).
+2. Projects viewport paper-space corners through current paper-space transform → device clip rect.
+3. Validates clip rect (non-degenerate width and height).
+4. Pushes current view transform (save paper-space state).
+5. Configures camera: `SetCameraTarget(viewCenter)`, `SetCameraPosition(viewDirection)`.
+6. Computes off-center projection window from viewport's model-space view params and the device clip rect:
+   - `viewWidth = viewHeight × aspectRatio` (from viewport dimensions)
+   - `halfExtentU = viewWidth × deviceWidth / (2 × clipWidth)`
+   - `halfExtentV = viewHeight × deviceHeight / (2 × clipHeight)`
+   - `windowCenterU = halfExtentU × (1 − 2 × clipCenterX / deviceWidth)`
+   - `windowCenterV = halfExtentV × (−1 + 2 × clipCenterY / deviceHeight)`
+7. Calls `SetViewWindow(...)` which triggers `BuildTransformMatrix` → computes `m_InverseMatrix`.
+8. Returns `true` on success. Returns `false` without pushing on any validation failure.
+
+### RestoreViewportTransform
+`AeSysView::RestoreViewportTransform()`: calls `PopViewTransform()` to restore the saved paper-space view transform.
+
+### Modified Coordinate Methods
+Three methods have viewport-active branches (pattern: configure → transform → restore):
+
+| Method | Viewport-Active Behavior |
+|--------|------------------------|
+| `GetCursorPosition()` | Configure → `DoProjectionInverse` → `ModelViewGetMatrixInverse` → Restore. Returns model-space world point. |
+| `SetCursorPosition()` | Configure → `ModelViewTransformPoint` → `ProjectToClient` → Restore. Positions cursor at model-space point. |
+| `RubberBandingStartAtEnable()` | Configure → `ModelViewTransformPoint` → Restore. Computes rubber-band anchor in device coords from model-space point. |
+
+All three fall through to existing paper-space logic when no viewport is active.
+
+### Key Design Decisions
+- Push/pop pattern ensures paper-space view transform is always restored, even if only one method is called.
+- Failure guard: `ConfigureViewportTransform` returns `false` without pushing if validation fails — callers fall through to normal paper-space path.
+- `DisplayOdometer()` calls `GetCursorPosition()` — automatically shows model-space coordinates when viewport is active.
+- Entity routing is NOT changed at this phase — primitives still go to `ActiveSpaceLayers()` (paper-space). Model-space entity routing is implemented in Phase 10 via work layer switching.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysView.h` | `ConfigureViewportTransform`, `RestoreViewportTransform` declarations |
+| `AeSys\AeSysViewInput.cpp` | Both method implementations; modified `GetCursorPosition`, `SetCursorPosition`, `RubberBandingStartAtEnable` |
+| `AeSys\AeSysDocDisplay.cpp` | `DisplayModelSpaceThroughViewports` — the forward transform that Phase 8 mirrors |
+
+### Deferred
+- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
+
+## Paper-Space Dimming When Viewport Active (Phase 9)
+
+### Architecture Overview
+When a viewport is activated (Phase 7), paper-space entities and non-active viewport model-space content are visually dimmed so the active viewport's model-space content stands out at full brightness. Both GDI and D2D render paths are supported.
+
+### Implementation
+`AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDevice)`:
+1. Early-returns if no viewport is active (`!view->IsViewportActive()`).
+2. Projects the active viewport's paper-space boundary to a device-coordinate bounding rectangle.
+3. **D2D path** (`dynamic_cast<EoGsRenderDeviceDirect2D*>`): Creates a combined geometry (full clip area minus viewport rectangle via `D2D1_COMBINE_MODE_EXCLUDE`), fills with a semi-transparent brush (`PaperSpaceBackgroundColor` at ~40% opacity).
+4. **GDI path** (`GetCDC()`): `SaveDC` → `ExcludeClipRect` (active viewport) → `GdiAlphaBlend` with 1×1 bitmap at `SourceConstantAlpha = 100` → `RestoreDC`.
+5. The overlay dims paper-space content (sheet, viewport borders, annotations) and non-active viewport model-space content. The active viewport's content remains at full brightness.
+
+### Rendering Order in `DisplayAllLayers()` (Paper Space)
+1. `DisplayPaperSpaceSheet()` — sheet rectangle + viewport borders (accent blue for active)
+2. Paper-space layer entities (annotations, title blocks)
+3. `DisplayModelSpaceThroughViewports()` — model-space through viewport clips
+4. **`DimPaperSpaceOverlay()`** — semi-transparent overlay dims steps 1–3 except the active viewport area
+
+### Key Design Decisions
+- 40% opacity provides noticeable dimming without making paper-space content unreadable.
+- Paper-space background color as overlay tint ensures the dimming blends naturally with the sheet.
+- No-op when no viewport is active — zero overhead for normal paper-space browsing.
+- D2D path uses `ID2D1PathGeometry` with `CombineWithGeometry(EXCLUDE)` — the D2D equivalent of GDI's `ExcludeClipRect`.
+- `EoGsRenderDeviceDirect2D` exposes `RenderTarget()` and `D2DFactory()` accessors for D2D-specific operations like geometry combining.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysDoc.h` | `DimPaperSpaceOverlay` declaration |
+| `AeSys\AeSysDocDisplay.cpp` | `DimPaperSpaceOverlay` implementation (GDI + D2D paths); integration point in `DisplayAllLayers` |
+| `AeSys\EoGsRenderDeviceDirect2D.h` | `RenderTarget()`, `D2DFactory()` accessors for D2D geometry operations |
+
+### Deferred
+- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
+
+## In-Viewport Entity Routing (Phase 10)
+
+### Architecture Overview
+When a viewport is activated in paper space (Phase 7), entity creation is routed to model space by switching the document's work layer. This is the simplest correct approach — `AeSysDoc::AddWorkLayerGroup()` adds new groups to `m_workLayer`, which is the SOLE entity routing control point. By switching `m_workLayer` to a model-space layer on viewport activation and restoring it on deactivation, all interactive draw commands automatically create entities in model space without any command-level changes.
+
+### State
+`AeSysView::m_savedWorkLayerForViewport` (`EoDbLayer*`, default `nullptr`) saves the paper-space work layer before switching. Lifetime is session-only — not persisted.
+
+### Activation Flow (`SetActiveViewportPrimitive`)
+1. Sets `m_activeViewportPrimitive` to the viewport.
+2. Saves the current work layer: `m_savedWorkLayerForViewport = document->GetWorkLayer()`.
+3. Finds model-space layer "0": `document->FindLayerInSpace(L"0", EoDxf::Space::ModelSpace)`.
+4. Switches: `document->SetWorkLayer(modelLayer0)` — demotes the paper-space work layer to active state, promotes model-space layer "0" to work state.
+5. Calls `InvalidateScene()` for visual refresh.
+
+### Deactivation Flow (`DeactivateViewport`)
+1. Restores the saved paper-space work layer: `document->SetWorkLayer(m_savedWorkLayerForViewport)`.
+2. Clears the saved pointer: `m_savedWorkLayerForViewport = nullptr`.
+3. Clears `m_activeViewportPrimitive = nullptr`.
+4. Calls `InvalidateScene()` for visual refresh.
+
+### Interaction with Layout Tab Switching
+`OnLayoutTabChange()` calls `DeactivateViewport()` before switching spaces — the saved work layer is always restored before any space transition.
+
+### Key Design Decisions
+- Work layer switching is the minimal-impact approach — no command-level changes needed.
+- Layer "0" is the default target because it always exists in model space.
+- The save/restore pattern on `AeSysView` (not `AeSysDoc`) keeps viewport state view-local.
+- Selection coordinate routing is deferred — `SelectGroupAndPrimitive` uses `m_VisibleGroupList` which already contains model-space entities rendered through viewports.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysView.h` | `m_savedWorkLayerForViewport` member; `EoDbLayer` forward declaration |
+| `AeSys\AeSysViewInput.cpp` | `SetActiveViewportPrimitive` (save + switch), `DeactivateViewport` (restore) |
+| `AeSys\AeSysDocLayers.cpp` | `AddWorkLayerGroup` (routing point), `SetWorkLayer`, `FindLayerInSpace` |
+| `AeSys\AeSysDoc.h` | `GetWorkLayer()`, `m_workLayer` |
+
+### Deferred
+- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
+
+## Viewport-Specific View Manipulation (Phase 11)
+
+### Architecture Overview
+When a viewport is activated in paper space (Phase 7), pan and zoom commands operate on the viewport's model-space view parameters instead of the paper-space view transform. Rendering and input transforms read viewport params directly each frame — no explicit notification or invalidation beyond `InvalidateScene()` is needed.
+
+### Pan (Middle-Button Drag)
+`AeSysView::OnMouseMove()` has a viewport-active branch that intercepts middle-button drag:
+1. Projects the viewport's paper-space boundary corners (center ± halfWidth/halfHeight) through the current paper-space transform to device coordinates.
+2. Computes `clipWidth`/`clipHeight` from the projected device rectangle.
+3. Derives `viewWidth = viewHeight × (paperWidth / paperHeight)` from the viewport's model-space view params.
+4. Converts the pixel drag delta to model-space units: `deltaX_model = -deltaX_pixel × viewWidth / clipWidth`, `deltaY_model = deltaY_pixel × viewHeight / clipHeight`.
+5. Applies the delta to `viewport->SetViewCenter()`.
+6. Calls `InvalidateScene()` — both rendering (`DisplayModelSpaceThroughViewports`) and input transforms (`ConfigureViewportTransform`) re-read `viewCenter` on the next frame.
+
+The standard paper-space pan path (`m_ViewTransform.Target()`) is used when no viewport is active.
+
+### Zoom (Mouse Wheel / Keyboard)
+`AeSysView::OnWindowZoomIn()` and `OnWindowZoomOut()` have viewport-active branches:
+1. Save cursor position via `GetCursorPosition()` (which uses `ConfigureViewportTransform` for model-space coords).
+2. Scale `viewport->SetViewHeight(viewHeight * 0.9)` (zoom in) or `viewport->SetViewHeight(viewHeight / 0.9)` (zoom out).
+3. Restore cursor position via `SetCursorPosition(savedPosition)` — keeps the model-space point under the cursor stationary.
+4. Call `InvalidateScene()`.
+
+The standard zoom path (`DoWindowPan(ratio)`) is used when no viewport is active.
+
+### Propagation
+No explicit notification is needed. Both `DisplayModelSpaceThroughViewports` (rendering) and `ConfigureViewportTransform` (input) read `viewCenter` and `viewHeight` directly from the `EoDbViewport` primitive on each frame/event.
+
+### Key Design Decisions
+- Pan converts pixel deltas to model-space deltas using the projected viewport device dimensions — the same off-center projection math used by rendering and input transforms.
+- Zoom uses `GetCursorPosition`/`SetCursorPosition` for cursor-anchored zooming — the cursor stays over the same model-space point.
+- The 0.9 zoom factor matches the standard `DoWindowPan` zoom step.
+- `OnMouseWheel` delegates to `OnWindowZoomIn`/`OnWindowZoomOut` — no separate wheel handler needed.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysViewInput.cpp` | Middle-button pan viewport-active branch in `OnMouseMove` |
+| `AeSys\AeSysViewCamera.cpp` | `OnWindowZoomIn`/`OnWindowZoomOut` viewport-active branches |
+| `AeSys\EoDbViewport.h` | `SetViewCenter()`, `SetViewHeight()`, `ViewCenter()`, `ViewHeight()` |
+| `AeSys\AeSysDocDisplay.cpp` | `DisplayModelSpaceThroughViewports` — reads viewport view params for rendering |
+
+### Deferred
+- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
+
+## Layout Tab Bar State Controls (Phase 12)
+
+### Architecture Overview
+`EoMfLayoutTabBar` (CMFCTabCtrl-derived) hosts three state controls positioned to the right of the tab strip. These controls provide contextual viewport state management without cluttering the status bar.
+
+### State Controls
+| Control | Type | ID | Visibility | Purpose |
+|---------|------|----|-----------|---------|
+| Space Label | `CButton` (flat) | `IDC_LAYOUT_SPACE_LABEL` (1490) | Always | Shows "MODEL" or "PAPER". Clicking toggles `AeSysDoc::OnViewModelSpace()`. |
+| Scale Combo | `CComboBox` (dropdown) | `IDC_VIEWPORT_SCALE_COMBO` (1491) | Viewport active + paper space | Fixed scale presets (1:1 through 1:100, plus 2:1, 5:1, 10:1). Shows "Custom (1:X.XX)" for non-preset scales. |
+| Lock Button | `CButton` (flat) | `IDC_VIEWPORT_LOCK_BUTTON` (1492) | Viewport active + paper space | Toggles `EoDbViewport::m_displayLocked`. Shows lock/unlock Unicode glyphs. |
+
+### Scale Presets
+| Label | Scale Value (paper/model) |
+|-------|--------------------------|
+| 1:1 | 1.0 |
+| 1:2 | 0.5 |
+| 1:5 | 0.2 |
+| 1:10 | 0.1 |
+| 1:20 | 0.05 |
+| 1:50 | 0.02 |
+| 1:100 | 0.01 |
+| 2:1 | 2.0 |
+| 5:1 | 5.0 |
+| 10:1 | 10.0 |
+
+Scale = `viewport->Height() / viewport->ViewHeight()` (paper height / model-space view height). Preset matching uses 0.1% tolerance. Non-matching scales show a "Custom (1:X.XX)" entry.
+
+### Viewport Display Lock
+`EoDbViewport::m_displayLocked` (`bool`, default `false`) — session-only, not persisted. When locked:
+- Middle-button pan in `OnMouseMove` returns early (viewport-active branch).
+- `OnWindowZoomIn` and `OnWindowZoomOut` return early (viewport-active branches).
+- Entity creation is NOT blocked — only view manipulation is locked.
+
+### Control Layout
+Controls are right-aligned within the tab bar, positioned by `RepositionControls()`:
+- Lock button (rightmost, square height x height)
+- Scale combo (80px wide)
+- Space label (text width + 16px padding)
+- 4px gaps between controls, 2px top margin, 4px right margin
+
+### Wiring — UpdateViewportState Call Sites
+| Call Site | Viewport Arg | isPaperSpace Arg |
+|-----------|-------------|------------------|
+| `SetActiveViewportPrimitive()` | activated viewport | from `document->ActiveSpace()` |
+| `DeactivateViewport()` | `nullptr` | from `document->ActiveSpace()` |
+| `OnLayoutTabChange()` | `nullptr` | from `!IsModelTab(selectedTab)` |
+
+### Space Toggle Flow
+`OnSpaceLabelClicked()`:
+1. Calls `document->OnViewModelSpace()` (toggles `m_activeSpace` + `UpdateAllViews`).
+2. Deactivates any active viewport.
+3. Syncs tab selection to match the new space (with `m_populating` guard to suppress re-entrant `AFX_WM_CHANGE_ACTIVE_TAB`).
+4. Updates the space label text and control visibility.
+
+### Scale Change Flow
+`OnScaleComboChanged()`:
+1. Reads the selected scale value from combo item data.
+2. Computes `newViewHeight = viewport->Height() / targetScale`.
+3. Calls `viewport->SetViewHeight(newViewHeight)`.
+4. Calls `parentView->InvalidateScene()`.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoMfLayoutTabBar.h` | Header — control members, `UpdateViewportState()`, `RepositionControls()`, `ApplyColorScheme()` |
+| `AeSys\EoMfLayoutTabBar.cpp` | Implementation — control creation, message handlers, scale presets, layout logic |
+| `AeSys\EoDbViewport.h` | `m_displayLocked`, `IsDisplayLocked()`, `SetDisplayLocked()` |
+| `AeSys\Resource.h` | `IDC_LAYOUT_SPACE_LABEL` (1490), `IDC_VIEWPORT_SCALE_COMBO` (1491), `IDC_VIEWPORT_LOCK_BUTTON` (1492) |
+| `AeSys\AeSysViewInput.cpp` | `SetActiveViewportPrimitive`/`DeactivateViewport` — `UpdateViewportState` calls; pan lock guard |
+| `AeSys\AeSysViewCamera.cpp` | `OnWindowZoomIn`/`OnWindowZoomOut` — zoom lock guards |
+| `AeSys\AeSysView.cpp` | `OnLayoutTabChange` — `UpdateViewportState` call after `DeactivateViewport` |
+| `AeSys\AeSysViewRender.cpp` | `OnSize` — `RepositionControls()` call after `MoveWindow` |
+
+### Deferred
+- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
+- **Lock glyph fallback**: Unicode lock glyphs may not render in all system fonts — ASCII fallback `[L]`/`[U]` if needed.
+- **DPI-aware control widths**: The 80px scale combo width could be DPI-scaled.
+- **Scale combo edit-in-place**: Allow typing a custom scale ratio directly into the combo.

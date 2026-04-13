@@ -27,6 +27,7 @@ ON_WM_CONTEXTMENU()
 ON_WM_CREATE()
 ON_WM_ERASEBKGND()
 ON_WM_KILLFOCUS()
+ON_WM_LBUTTONDBLCLK()
 ON_WM_LBUTTONDOWN()
 ON_WM_LBUTTONUP()
 ON_WM_MBUTTONDOWN()
@@ -324,6 +325,7 @@ ON_COMMAND(ID_NODAL_MODE_EMPTY, &AeSysView::OnNodalModeEmpty)
 ON_COMMAND(ID_NODAL_MODE_ENGAGE, &AeSysView::OnNodalModeEngage)
 ON_COMMAND(ID_NODAL_MODE_RETURN, &AeSysView::OnNodalModeReturn)
 ON_COMMAND(ID_NODAL_MODE_ESCAPE, &AeSysView::OnNodalModeEscape)
+ON_REGISTERED_MESSAGE(AFX_WM_CHANGE_ACTIVE_TAB, &AeSysView::OnLayoutTabChange)
 END_MESSAGE_MAP()
 
 /// AeSysView construction/destruction ////////////////////////////////////////
@@ -404,6 +406,77 @@ int AeSysView::OnCreate(LPCREATESTRUCT createStructure) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnCreate(%08.8lx)\n", this, createStructure);
 
   if (CView::OnCreate(createStructure) == -1) { return -1; }
+
+  // Create the layout tab bar at the bottom of the view (positioned in OnSize)
+  if (!m_layoutTabBar.CreateTabBar(this, IDC_LAYOUT_TAB_BAR)) {
+    ATLTRACE2(traceGeneral, 1, L"AeSysView<%p>::OnCreate - layout tab bar creation failed\n", this);
+    return -1;
+  }
+
+  return 0;
+}
+
+void AeSysView::UpdateLayoutTabs() {
+  auto* document = GetDocument();
+  if (document == nullptr) { return; }
+  if (m_layoutTabBar.GetSafeHwnd() == nullptr) { return; }
+
+  m_layoutTabBar.PopulateFromDocument(document);
+}
+
+LRESULT AeSysView::OnLayoutTabChange(WPARAM wParam, LPARAM lParam) {
+  // Verify this notification is from our layout tab bar (not another CMFCTabCtrl)
+  auto* tabCtrl = reinterpret_cast<CMFCBaseTabCtrl*>(lParam);
+  if (tabCtrl != &m_layoutTabBar) { return 0; }
+
+  // Ignore notifications fired internally by AddTab/SetActiveTab during PopulateFromDocument
+  if (m_layoutTabBar.IsPopulating()) { return 0; }
+
+  auto* document = GetDocument();
+  if (document == nullptr) { return 0; }
+
+  int selectedTab = static_cast<int>(wParam);
+  if (selectedTab < 0) { return 0; }
+
+  // Deactivate any active viewport when switching layouts
+  DeactivateViewport();
+
+  // Clear last-active viewport tracking — it belongs to the previous layout
+  m_layoutTabBar.ClearLastActiveViewport();
+
+  // Update the layout tab bar's viewport state controls after deactivation
+  const bool isPaperSpace = !m_layoutTabBar.IsModelTab(selectedTab);
+  m_layoutTabBar.UpdateViewportState(nullptr, isPaperSpace);
+
+  if (m_layoutTabBar.IsModelTab(selectedTab)) {
+    // Switch to model space
+    document->SetActiveSpace(EoDxf::Space::ModelSpace);
+  } else {
+    // Switch to the selected paper-space layout
+    auto blockRecordHandle = m_layoutTabBar.BlockRecordHandleAt(selectedTab);
+    document->SetActiveSpace(EoDxf::Space::PaperSpace);
+    if (blockRecordHandle != 0) { document->SetActiveLayoutHandle(blockRecordHandle); }
+
+    // Ensure a default paper-space viewport exists
+    document->CreateDefaultPaperSpaceViewport(this);
+  }
+
+  // Switch work layer to "0" in the newly active space (mirrors OnViewModelSpace behavior).
+  // Fall back to the first available layer if "0" doesn't exist in the target space.
+  auto* layer0 = document->GetLayerTableLayer(L"0");
+  if (layer0 == nullptr && document->GetLayerTableSize() > 0) {
+    layer0 = document->GetLayerTableLayerAt(0);
+  }
+  if (layer0 != nullptr) { document->SetWorkLayer(layer0); }
+
+  document->UpdateAllViews(nullptr, 0L, nullptr);
+
+  // Refresh mode cursor for the new space — paper space is always white background
+  SetModeCursor(app.CurrentMode());
+
+  // Return keyboard focus to the view so accelerator keys work after tab selection
+  SetFocus();
+
   return 0;
 }
 

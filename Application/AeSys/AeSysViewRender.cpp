@@ -109,6 +109,14 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       m_d2dRenderTarget->SetAntialiasMode(
           m_d2dAliased ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
+      // Clip rendering to the drawing area (excludes the tab bar at the bottom).
+      // The D2D render target is sized to the full HWND client area to prevent
+      // scaling; the clip rect keeps Clear() and entity rendering out of the
+      // tab-bar region.
+      const auto drawingClipRect = D2D1::RectF(
+          0.0f, 0.0f, static_cast<float>(m_Viewport.Width()), static_cast<float>(m_Viewport.Height()));
+      m_d2dRenderTarget->PushAxisAlignedClip(drawingClipRect, D2D1_ANTIALIAS_MODE_ALIASED);
+
       auto* document = GetDocument();
       assert(document != nullptr);
       const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
@@ -118,8 +126,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       m_d2dRenderTarget->Clear(bkColor);
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
 
-      // Paper space is always white — force ACI 7→black so entities using the
-      // default color are visible, matching the print-path behavior.
+      // Paper-space sheet is white — force ACI 7→black so entities using the
+      // default color are visible on the white sheet, matching print-path behavior.
       COLORREF savedAci0{}, savedAci7{}, savedGray0{}, savedGray7{};
       if (isPaperSpace) {
         savedAci0 = Eo::ColorPalette[0];
@@ -171,6 +179,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         }
       }
 
+      m_d2dRenderTarget->PopAxisAlignedClip();
+
       HRESULT hr = m_d2dRenderTarget->EndDraw();
       if (hr == D2DERR_RECREATE_TARGET) {
         DiscardD2DResources();
@@ -208,8 +218,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       CRect bufferRect(0, 0, m_backBufferSize.cx, m_backBufferSize.cy);
       m_backBufferDC.FillSolidRect(bufferRect, Eo::ViewBackgroundColorForSpace(isPaperSpace));
 
-      // Paper space is always white — force ACI 7→black so entities using the
-      // default color are visible, matching the print-path behavior.
+      // Paper-space sheet is white — force ACI 7→black so entities using the
+      // default color are visible on the white sheet, matching print-path behavior.
       COLORREF savedAci0{}, savedAci7{}, savedGray0{}, savedGray7{};
       if (isPaperSpace) {
         savedAci0 = Eo::ColorPalette[0];
@@ -304,6 +314,16 @@ void AeSysView::OnInitialUpdate() {
   SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor));
 
   CView::OnInitialUpdate();
+
+  // CView::OnInitialUpdate → OnUpdate(0) → UpdateLayoutTabs populates the layout
+  // tab bar. Tab population changes GetTabsHeight() (0 before tabs, full strip height
+  // after), which changes PreferredHeight(). Force a resize so the viewport dimensions
+  // and back buffer match the actual tab bar height before building the view transform.
+  {
+    CRect rc;
+    GetClientRect(&rc);
+    if (rc.Width() > 0 && rc.Height() > 0) { OnSize(SIZE_RESTORED, rc.Width(), rc.Height()); }
+  }
 
   ApplyActiveViewport();
 
@@ -455,6 +475,8 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   // Hint 0 means full scene refresh (e.g., model/paper space toggle, layer visibility change).
   // Mark scene dirty and let OnDraw re-render from scratch.
   if (hint == 0) {
+    // Sync layout tab selection with the document's current active space/layout
+    UpdateLayoutTabs();
     InvalidateScene();
     return;
   }
@@ -709,16 +731,28 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
 
   if (cx && cy) {
+    // Position the layout tab bar at the bottom of the client area
+    int tabBarHeight = 0;
+    if (m_layoutTabBar.GetSafeHwnd() != nullptr) {
+      tabBarHeight = m_layoutTabBar.PreferredHeight();
+      m_layoutTabBar.MoveWindow(0, cy - tabBarHeight, cx, tabBarHeight);
+      m_layoutTabBar.RepositionControls();
+    }
+
+    // Drawing area excludes the tab bar
+    int drawingHeight = cy - tabBarHeight;
+    if (drawingHeight < 1) { drawingHeight = 1; }
+
     double oldWidth = m_Viewport.Width();
     double oldHeight = m_Viewport.Height();
 
-    SetViewportSize(cx, cy);
+    SetViewportSize(cx, drawingHeight);
 
     if (oldWidth > 0.0 && oldHeight > 0.0) {
       // Preserve current view center and zoom level — scale the window extents
       // proportionally to the viewport dimension change (world units per pixel stays constant)
       double scaleX = static_cast<double>(cx) / oldWidth;
-      double scaleY = static_cast<double>(cy) / oldHeight;
+      double scaleY = static_cast<double>(drawingHeight) / oldHeight;
 
       double centerU = (m_ViewTransform.UMin() + m_ViewTransform.UMax()) / 2.0;
       double centerV = (m_ViewTransform.VMin() + m_ViewTransform.VMax()) / 2.0;
@@ -736,6 +770,9 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
     if (m_useD2D) {
       if (!m_d2dRenderTarget) { CreateD2DRenderTarget(); }
       if (m_d2dRenderTarget) {
+        // Size the D2D render target to the full HWND client area (cx × cy) so that
+        // D2D does not scale the output.  A clip rect in OnDraw constrains rendering
+        // to the drawing area, leaving the tab-bar region untouched.
         D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(cx), static_cast<UINT32>(cy));
         HRESULT hr = m_d2dRenderTarget->Resize(size);
         if (FAILED(hr)) { DiscardD2DResources(); }
@@ -743,10 +780,10 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
       } else {
         // D2D creation failed — fall back to GDI
         m_useD2D = false;
-        RecreateBackBuffer(cx, cy);
+        RecreateBackBuffer(cx, drawingHeight);
       }
     } else {
-      RecreateBackBuffer(cx, cy);
+      RecreateBackBuffer(cx, drawingHeight);
     }
   }
 }

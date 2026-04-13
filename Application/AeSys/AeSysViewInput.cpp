@@ -6,6 +6,7 @@
 #include "Eo.h"
 #include "EoDbLine.h"
 #include "EoDbPolygon.h"
+#include "EoDbViewport.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -65,6 +66,162 @@ void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
   }
 }
 
+void AeSysView::OnLButtonDblClk([[maybe_unused]] UINT flags, CPoint point) {
+  auto* document = GetDocument();
+  if (document == nullptr) { return; }
+
+  // Viewport activation is only meaningful in paper space
+  if (document->ActiveSpace() != EoDxf::Space::PaperSpace) {
+    OnLButtonDown(flags, point);
+    return;
+  }
+
+  // Convert the device click point to paper-space world coordinates
+  EoGePoint3d worldPoint(static_cast<double>(point.x), static_cast<double>(point.y), 0.0);
+  DoProjectionInverse(worldPoint);
+  worldPoint = ModelViewGetMatrixInverse() * worldPoint;
+
+  // Hit-test paper-space viewports at the click location
+  auto* hitViewport = document->HitTestViewport(worldPoint);
+
+  if (IsViewportActive()) {
+    if (hitViewport == m_activeViewportPrimitive) {
+      // Double-click inside the active viewport: no change
+      return;
+    }
+    // Double-click outside or inside a different viewport: deactivate first
+    DeactivateViewport();
+    // If the click was inside a different viewport, activate it
+    if (hitViewport != nullptr) {
+      SetActiveViewportPrimitive(hitViewport);
+    }
+    return;
+  }
+
+  // No viewport active — activate the one under the cursor
+  if (hitViewport != nullptr) {
+    SetActiveViewportPrimitive(hitViewport);
+  }
+}
+
+void AeSysView::SetActiveViewportPrimitive(EoDbViewport* viewport) {
+  if (m_activeViewportPrimitive != viewport) {
+    m_activeViewportPrimitive = viewport;
+
+    // Route entity creation to model-space when a viewport is activated
+    if (viewport != nullptr) {
+      auto* document = GetDocument();
+      if (document != nullptr) {
+        // Save the current paper-space work layer so it can be restored on deactivation
+        m_savedWorkLayerForViewport = document->GetWorkLayer();
+
+        // Find model-space layer "0" and switch the work layer to it
+        auto* modelLayer0 = document->FindLayerInSpace(L"0", EoDxf::Space::ModelSpace);
+        if (modelLayer0 != nullptr) { document->SetWorkLayer(modelLayer0); }
+      }
+
+      // Track this viewport as the last-active for reactivation via the space label
+      m_layoutTabBar.SetLastActiveViewport(viewport);
+    }
+
+    InvalidateScene();
+
+    // Update the layout tab bar's viewport state controls
+    auto* document2 = GetDocument();
+    const bool isPaperSpace = (document2 != nullptr && document2->ActiveSpace() == EoDxf::Space::PaperSpace);
+    m_layoutTabBar.UpdateViewportState(viewport, isPaperSpace);
+  }
+}
+
+void AeSysView::DeactivateViewport() {
+  if (m_activeViewportPrimitive != nullptr) {
+    // Restore the paper-space work layer that was saved during viewport activation
+    if (m_savedWorkLayerForViewport != nullptr) {
+      auto* document = GetDocument();
+      if (document != nullptr) { document->SetWorkLayer(m_savedWorkLayerForViewport); }
+      m_savedWorkLayerForViewport = nullptr;
+    }
+
+    m_activeViewportPrimitive = nullptr;
+    InvalidateScene();
+
+    // Update the layout tab bar's viewport state controls
+    auto* document2 = GetDocument();
+    const bool isPaperSpace = (document2 != nullptr && document2->ActiveSpace() == EoDxf::Space::PaperSpace);
+    m_layoutTabBar.UpdateViewportState(nullptr, isPaperSpace);
+  }
+}
+
+bool AeSysView::ConfigureViewportTransform(const EoDbViewport* viewport) {
+  if (viewport == nullptr || viewport->ViewHeight() < Eo::geometricTolerance) { return false; }
+
+  const auto& centerPoint = viewport->CenterPoint();
+  const double halfWidth = viewport->Width() / 2.0;
+  const double halfHeight = viewport->Height() / 2.0;
+
+  // Project the viewport's four paper-space corners through the current (paper-space) view transform
+  // to obtain the device clip rectangle — same math as DisplayModelSpaceThroughViewports.
+  EoGePoint3d corners[4] = {
+      {centerPoint.x - halfWidth, centerPoint.y - halfHeight, centerPoint.z},
+      {centerPoint.x + halfWidth, centerPoint.y - halfHeight, centerPoint.z},
+      {centerPoint.x + halfWidth, centerPoint.y + halfHeight, centerPoint.z},
+      {centerPoint.x - halfWidth, centerPoint.y + halfHeight, centerPoint.z},
+  };
+
+  CPoint deviceCorners[4];
+  for (int i = 0; i < 4; ++i) {
+    EoGePoint4d ndcPoint(corners[i]);
+    ModelViewTransformPoint(ndcPoint);
+    deviceCorners[i] = ProjectToClient(ndcPoint);
+  }
+
+  const int clipLeft = (std::min)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+  const int clipTop = (std::min)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+  const int clipRight = (std::max)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+  const int clipBottom = (std::max)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+
+  if (clipRight <= clipLeft || clipBottom <= clipTop) { return false; }
+
+  // Push the current paper-space view transform and configure for viewport model-space
+  PushViewTransform();
+
+  const auto& viewDirection = viewport->ViewDirection();
+  const double viewHeight = viewport->ViewHeight();
+  const double aspectRatio = viewport->Width() / viewport->Height();
+  const double viewWidth = viewHeight * aspectRatio;
+
+  EoGeVector3d dcsX, dcsY;
+  EoGePoint3d wcsCameraTarget;
+  viewport->ComputeViewPlaneAxes(dcsX, dcsY, wcsCameraTarget);
+
+  SetCameraTarget(wcsCameraTarget);
+  SetCameraViewUp(dcsY);
+  SetCameraPosition(EoGeVector3d(viewDirection.x, viewDirection.y, viewDirection.z));
+
+  // Compute the off-center projection window so that DoProjectionInverse + ModelViewGetMatrixInverse
+  // correctly map any device pixel to model-space coordinates through this viewport.
+  EoGsViewport deviceViewport;
+  ModelViewGetViewport(deviceViewport);
+  const double deviceWidth = deviceViewport.Width();
+  const double deviceHeight = deviceViewport.Height();
+  const double clipWidth = static_cast<double>(clipRight - clipLeft);
+  const double clipHeight = static_cast<double>(clipBottom - clipTop);
+  const double clipCenterX = (clipLeft + clipRight) / 2.0;
+  const double clipCenterY = (clipTop + clipBottom) / 2.0;
+
+  const double halfExtentU = viewWidth * deviceWidth / (2.0 * clipWidth);
+  const double halfExtentV = viewHeight * deviceHeight / (2.0 * clipHeight);
+  const double windowCenterU = halfExtentU * (1.0 - 2.0 * clipCenterX / deviceWidth);
+  const double windowCenterV = halfExtentV * (2.0 * clipCenterY / deviceHeight - 1.0);
+
+  SetViewWindow(windowCenterU - halfExtentU, windowCenterV - halfExtentV,
+      windowCenterU + halfExtentU, windowCenterV + halfExtentV);
+
+  return true;
+}
+
+void AeSysView::RestoreViewportTransform() { PopViewTransform(); }
+
 void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
   if (app.CustomRButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnRButtonDown(flags, point);
@@ -104,17 +261,48 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
     auto delta = point - m_middleButtonPanStartPoint;
     m_middleButtonPanStartPoint = point;
 
-    auto target = m_ViewTransform.Target();
+    if (IsViewportActive()) {
+      if (!m_activeViewportPrimitive->IsDisplayLocked()) {
+        // Pan the viewport's model-space view center instead of the paper-space view transform.
+        // Convert pixel delta to model-space units using the viewport's projected device dimensions.
+        auto* viewport = m_activeViewportPrimitive;
+        const auto& centerPoint = viewport->CenterPoint();
+        const double halfWidth = viewport->Width() / 2.0;
+        const double halfHeight = viewport->Height() / 2.0;
 
-    // Convert delta to world coordinates (scale as needed)
-    target.x += static_cast<double>(-delta.cx) * m_ViewTransform.UExtent() / m_Viewport.Width();
-    target.y += static_cast<double>(delta.cy) * m_ViewTransform.VExtent() / m_Viewport.Height();
+        // Project two diagonal corners of the viewport boundary to device coordinates
+        EoGePoint4d cornerMin(EoGePoint3d{centerPoint.x - halfWidth, centerPoint.y - halfHeight, centerPoint.z});
+        EoGePoint4d cornerMax(EoGePoint3d{centerPoint.x + halfWidth, centerPoint.y + halfHeight, centerPoint.z});
+        ModelViewTransformPoint(cornerMin);
+        ModelViewTransformPoint(cornerMax);
+        const auto deviceMin = ProjectToClient(cornerMin);
+        const auto deviceMax = ProjectToClient(cornerMax);
 
-    m_ViewTransform.SetTarget(target);
-    m_ViewTransform.SetPosition(m_ViewTransform.Direction());
-    m_ViewTransform.BuildTransformMatrix();
+        const double clipWidth = std::abs(static_cast<double>(deviceMax.x - deviceMin.x));
+        const double clipHeight = std::abs(static_cast<double>(deviceMax.y - deviceMin.y));
 
-    InvalidateScene();  // Redraw view
+        if (clipWidth > 0.0 && clipHeight > 0.0) {
+          const double viewHeight = viewport->ViewHeight();
+          const double viewWidth = viewHeight * (viewport->Width() / viewport->Height());
+
+          EoGePoint3d viewCenter = viewport->ViewCenter();  // intentional copy
+          viewCenter.x += static_cast<double>(-delta.cx) * viewWidth / clipWidth;
+          viewCenter.y += static_cast<double>(delta.cy) * viewHeight / clipHeight;
+          viewport->SetViewCenter(viewCenter);
+        }
+        InvalidateScene();
+      }
+    } else {
+      // Standard paper-space / model-space pan
+      auto target = m_ViewTransform.Target();
+      target.x += static_cast<double>(-delta.cx) * m_ViewTransform.UExtent() / m_Viewport.Width();
+      target.y += static_cast<double>(delta.cy) * m_ViewTransform.VExtent() / m_Viewport.Height();
+
+      m_ViewTransform.SetTarget(target);
+      m_ViewTransform.SetPosition(m_ViewTransform.Direction());
+      m_ViewTransform.BuildTransformMatrix();
+      InvalidateScene();
+    }
   }
   DisplayOdometer();
 
@@ -243,7 +431,14 @@ void AeSysView::RubberBandingDisable() {
 void AeSysView::RubberBandingStartAtEnable(EoGePoint3d point, ERubs type) {
   EoGePoint4d ndcPoint(point);
 
-  ModelViewTransformPoint(ndcPoint);
+  // When a viewport is active, the point is in model-space coordinates.
+  // Project through the viewport transform to get correct device coordinates.
+  if (IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive)) {
+    ModelViewTransformPoint(ndcPoint);
+    RestoreViewportTransform();
+  } else {
+    ModelViewTransformPoint(ndcPoint);
+  }
 
   if (ndcPoint.IsInView()) {
     m_rubberbandBegin = point;
@@ -259,20 +454,44 @@ EoGePoint3d AeSysView::GetCursorPosition() {
   ::GetCursorPos(&cursorPosition);
   ScreenToClient(&cursorPosition);
 
-  EoGePoint3d pt(double(cursorPosition.x), double(cursorPosition.y), m_ptCursorPosDev.z);
-  if (pt != m_ptCursorPosDev) {
+  EoGePoint3d pt(double(cursorPosition.x), double(cursorPosition.y), 0.0);
+  if (pt.x != m_ptCursorPosDev.x || pt.y != m_ptCursorPosDev.y) {
     m_ptCursorPosDev = pt;
     m_ptCursorPosWorld = m_ptCursorPosDev;
 
-    DoProjectionInverse(m_ptCursorPosWorld);
-
-    m_ptCursorPosWorld = ModelViewGetMatrixInverse() * m_ptCursorPosWorld;
+    // When a viewport is active, route device coordinates through the viewport's
+    // model-space transform instead of the paper-space transform.
+    if (IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive)) {
+      DoProjectionInverse(m_ptCursorPosWorld);
+      m_ptCursorPosWorld = ModelViewGetMatrixInverse() * m_ptCursorPosWorld;
+      RestoreViewportTransform();
+    } else {
+      DoProjectionInverse(m_ptCursorPosWorld);
+      m_ptCursorPosWorld = ModelViewGetMatrixInverse() * m_ptCursorPosWorld;
+    }
     m_ptCursorPosWorld = SnapPointToGrid(m_ptCursorPosWorld);
   }
   return m_ptCursorPosWorld;
 }
 
 void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
+  // When a viewport is active, the position is in model-space coordinates.
+  // Project through the viewport transform to get device coordinates.
+  if (IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive)) {
+    EoGePoint4d ndcPoint(position);
+    ModelViewTransformPoint(ndcPoint);
+    CPoint clientPoint = ProjectToClient(ndcPoint);
+    RestoreViewportTransform();
+
+    m_ptCursorPosDev = EoGePoint3d(
+        static_cast<double>(clientPoint.x), static_cast<double>(clientPoint.y), ndcPoint.z / ndcPoint.w);
+    m_ptCursorPosWorld = position;
+
+    ClientToScreen(&clientPoint);
+    ::SetCursorPos(clientPoint.x, clientPoint.y);
+    return;
+  }
+
   EoGePoint4d ndcPoint(position);
   ModelViewTransformPoint(ndcPoint);
 

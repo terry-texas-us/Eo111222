@@ -62,13 +62,19 @@ constexpr COLORREF colorViewBackground = RGB(40, 40, 36);
   return (activeViewBackground == ViewBackground::Dark) ? colorViewBackground : colorWhite;
 }
 
-/// @brief Paper space is always white regardless of the view background setting.
-[[nodiscard]] inline constexpr COLORREF PaperSpaceBackgroundColor() noexcept { return colorWhite; }
+/// @brief Returns the paper-space "table" background color (the area behind the white sheet).
+/// Dark view: warm dark gray; Light view: warm light gray. The sheet itself is always white.
+[[nodiscard]] inline COLORREF PaperSpaceBackgroundColor() noexcept {
+  return (activeViewBackground == ViewBackground::Dark) ? RGB(96, 95, 90) : RGB(192, 191, 187);
+}
+
+/// @brief The paper-space sheet fill color — always white, matching physical paper.
+[[nodiscard]] inline constexpr COLORREF PaperSpaceSheetColor() noexcept { return colorWhite; }
 
 /// @brief Returns the appropriate view background color for the given drawing space.
 /// @param isPaperSpace true for paper-space layout views, false for model-space.
 [[nodiscard]] inline COLORREF ViewBackgroundColorForSpace(bool isPaperSpace) noexcept {
-  return isPaperSpace ? colorWhite : ModelSpaceBackgroundColor();
+  return isPaperSpace ? PaperSpaceBackgroundColor() : ModelSpaceBackgroundColor();
 }
 
 /// @brief Returns the rubberband color appropriate for the active view background.

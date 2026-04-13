@@ -223,10 +223,14 @@ void AeSysView::OnViewDirect2D() {
     }
   } else {
     DiscardD2DResources();
-    // Re-create GDI back buffer for the current client area
+    // Re-create GDI back buffer for the drawing area (excluding tab bar)
     CRect clientRect;
     GetClientRect(&clientRect);
-    RecreateBackBuffer(clientRect.Width(), clientRect.Height());
+    int tabBarHeight = 0;
+    if (m_layoutTabBar.GetSafeHwnd() != nullptr) { tabBarHeight = m_layoutTabBar.PreferredHeight(); }
+    int drawingHeight = clientRect.Height() - tabBarHeight;
+    if (drawingHeight < 1) { drawingHeight = 1; }
+    RecreateBackBuffer(clientRect.Width(), drawingHeight);
   }
   InvalidateScene();
 }
@@ -675,6 +679,11 @@ void AeSysView::OnReturn() {
 }
 
 void AeSysView::OnEscape() {
+  if (IsViewportActive()) {
+    DeactivateViewport();
+    return;
+  }
+
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveEscape();

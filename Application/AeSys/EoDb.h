@@ -79,6 +79,7 @@ enum Sentinels {
   kBlocksSection = 0x0103,
   kGroupsSection = 0x0104,
   kPaperSpaceSection = 0x0105,
+  kMultiLayoutPaperSpaceSection = 0x0106,
   kEndOfSection = 0x01ff,
 
   kViewPortTable = 0x0201,

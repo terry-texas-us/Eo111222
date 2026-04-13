@@ -173,6 +173,7 @@
     <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
     <ClCompile Include="EoDlgSheetSetupFormFactor.cpp" />
     <ClCompile Include="EoDlgTextStyleManager.cpp" />
+    <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -441,6 +442,7 @@
     <ClInclude Include="EoGsVertexBuffer.h" />
     <ClInclude Include="EoGsViewport.h" />
     <ClInclude Include="EoGsViewTransform.h" />
+    <ClInclude Include="EoMfLayoutTabBar.h" />
     <ClInclude Include="EoMfOutputDockablePane.h" />
     <ClInclude Include="EoMfPropertiesDockablePane.h" />
     <ClInclude Include="EoMfStatusBar.h" />
@@ -468,19 +470,35 @@
     <None Include="Markdowns\Peg &amp; Tra File Formats.md" />
     <!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
     <None Include="res\Cursors\AnnotateMode.cur" />
+    <None Include="res\Cursors\AnnotateModeWhite.cur" />
+    <None Include="res\cursors\cursor1.cur" />
+    <None Include="res\cursors\cursor2.cur" />
     <None Include="res\Cursors\CutMode.cur" />
+    <None Include="res\Cursors\CutModeWhite.cur" />
     <None Include="res\Cursors\DimensionMode.cur" />
+    <None Include="res\Cursors\DimensionModeWhite.cur" />
     <None Include="res\Cursors\Draw2Mode.cur" />
+    <None Include="res\Cursors\Draw2ModeWhite.cur" />
     <None Include="res\Cursors\DrawMode.cur" />
+    <None Include="res\Cursors\DrawModeWhite.cur" />
     <None Include="res\Cursors\EditMode.cur" />
+    <None Include="res\Cursors\EditModeWhite.cur" />
     <None Include="res\Cursors\FixupMode.cur" />
+    <None Include="res\Cursors\FixupModeWhite.cur" />
     <None Include="res\Cursors\LowPressureDuct.cur" />
+    <None Include="res\Cursors\LowPressureDuctWhite.cur" />
     <None Include="res\Cursors\NodalMode.cur" />
+    <None Include="res\Cursors\NodalModeWhite.cur" />
     <None Include="res\Cursors\NodalRMode.cur" />
+    <None Include="res\Cursors\NodalRModeWhite.cur" />
     <None Include="res\Cursors\PipeMode.cur" />
+    <None Include="res\Cursors\PipeModeWhite.cur" />
     <None Include="res\Cursors\PowerMode.cur" />
+    <None Include="res\Cursors\PowerModeWhite.cur" />
     <None Include="res\Cursors\TrapMode.cur" />
+    <None Include="res\Cursors\TrapModeWhite.cur" />
     <None Include="res\Cursors\TrapRMode.cur" />
+    <None Include="res\Cursors\TrapRModeWhite.cur" />
     <None Include="res\Icons\AeSys_Gold.ico" />
     <None Include="res\Hatches\acad.pat" />
     <None Include="res\Simplex.psf" />

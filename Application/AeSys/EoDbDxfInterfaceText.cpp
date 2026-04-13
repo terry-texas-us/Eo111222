@@ -42,7 +42,7 @@ void EoDbDxfInterface::AddAttrib(const EoDxfAttrib& attrib) {
     m_currentInsertGroup->AddTail(attribPrimitive);
   } else {
     // Orphan ATTRIB or block-definition context — fall back to AddToDocument
-    AddToDocument(attribPrimitive, m_document, attrib.m_space);
+    AddToDocument(attribPrimitive, m_document, attrib.m_space, attrib.m_ownerHandle);
   }
 }
 
@@ -258,7 +258,7 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
   mtextProperties.referenceRectangleWidth = mtext.m_referenceRectangleWidth;
   textPrimitive->SetMTextProperties(mtextProperties);
 
-  AddToDocument(textPrimitive, document, mtext.m_space);
+  AddToDocument(textPrimitive, document, mtext.m_space, mtext.m_ownerHandle);
 }
 
 void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) {
@@ -422,7 +422,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   textPrimitive->SetTextGenerationFlags(textGenerationFlags);
   textPrimitive->SetExtrusion(extrusionDirection);
 
-  AddToDocument(textPrimitive, document, text.m_space);
+  AddToDocument(textPrimitive, document, text.m_space, text.m_ownerHandle);
 }
 
 void EoDbDxfInterface::ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document) {

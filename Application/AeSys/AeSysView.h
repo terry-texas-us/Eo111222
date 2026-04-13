@@ -15,6 +15,7 @@
 #include "EoGeLine.h"
 #include "EoGeMatrix.h"
 
+#include "EoDlgPlot.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
@@ -22,7 +23,7 @@
 #include "EoGsModelTransform.h"
 #include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
-#include "EoDlgPlot.h"
+#include "EoMfLayoutTabBar.h"
 #include "Section.h"
 
 #if defined(USING_STATE_PATTERN)
@@ -31,9 +32,11 @@
 class AeSysDoc;
 class EoDbBlock;
 class EoDbConic;
+class EoDbLayer;
 class EoDbLine;
 class EoDbPoint;
 class EoDbText;
+class EoDbViewport;
 class EoMfOutputDockablePane;
 
 class AeSysView : public CView {
@@ -136,6 +139,18 @@ class AeSysView : public CView {
   EoGeVector3d m_vRelPos{};
 
   EoGePoint3dArray pts;
+
+  EoMfLayoutTabBar m_layoutTabBar;  ///< Layout selector tab bar at bottom of view
+
+  /// @brief The currently activated viewport in paper space (double-click to enter/exit).
+  /// When non-null, the view is in viewport-activated mode: the accent border is drawn
+  /// around this viewport and entity creation is routed to model-space.
+  EoDbViewport* m_activeViewportPrimitive{};
+
+  /// @brief Saved paper-space work layer during viewport activation.
+  /// When a viewport is activated, the current paper-space work layer is saved here
+  /// and restored when the viewport is deactivated.
+  EoDbLayer* m_savedWorkLayerForViewport{};
 
  private:  // grid and axis constraints
   EoGePoint3d m_GridOrigin{};
@@ -278,6 +293,7 @@ class AeSysView : public CView {
  protected:
   afx_msg void OnContextMenu(CWnd*, CPoint point);
   afx_msg void OnTimer(UINT_PTR nIDEvent);
+  afx_msg LRESULT OnLayoutTabChange(WPARAM wParam, LPARAM lParam);
 
   afx_msg void OnModeAnnotate();
   afx_msg void OnModeCut();
@@ -308,12 +324,41 @@ class AeSysView : public CView {
   afx_msg void OnUpdateModeTrap(CCmdUI* pCmdUI);
 
  public:
+  /// @brief Rebuilds the layout tab bar from the document's layout list.
+  /// Called from OnInitialUpdate and OnUpdate when document content changes.
+  void UpdateLayoutTabs();
+
+  /// @brief Returns the currently activated paper-space viewport, or nullptr if none.
+  [[nodiscard]] EoDbViewport* ActiveViewportPrimitive() const noexcept { return m_activeViewportPrimitive; }
+
+  /// @brief Activates a paper-space viewport for model-space editing.
+  /// Pass nullptr to deactivate. Invalidates the scene to update the accent border.
+  void SetActiveViewportPrimitive(EoDbViewport* viewport);
+
+  /// @brief Returns true if a viewport is currently activated in paper space.
+  [[nodiscard]] bool IsViewportActive() const noexcept { return m_activeViewportPrimitive != nullptr; }
+
+  /// @brief Deactivates the current viewport (if any) and invalidates the scene.
+  void DeactivateViewport();
+
+  /// @brief Configures the view transform for model-space coordinate mapping through the given viewport.
+  /// Pushes the current (paper-space) view transform, then sets camera and off-center projection
+  /// so that DoProjectionInverse + ModelViewGetMatrixInverse map device coordinates to model-space.
+  /// Caller must call RestoreViewportTransform() when done.
+  /// @return true if the viewport transform was successfully configured; false if the viewport is
+  ///         invalid or the device clip rect is degenerate (view transform is NOT pushed on failure).
+  bool ConfigureViewportTransform(const EoDbViewport* viewport);
+
+  /// @brief Restores the view transform saved by ConfigureViewportTransform().
+  void RestoreViewportTransform();
+
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg BOOL OnEraseBkgnd(CDC* deviceContext);
   afx_msg void OnKillFocus(CWnd* newWindow);
 #if defined(USING_STATE_PATTERN)
   afx_msg BOOL PreTranslateMessage(MSG* pMsg);
 #endif
+  afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   afx_msg void OnLButtonDown(UINT nFlags, CPoint pnt);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint pnt);
   afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
@@ -523,6 +568,7 @@ class AeSysView : public CView {
   void SetCenteredWindow(double uExtent, double vExtent);
   void SetCameraPosition(const EoGeVector3d& direction);
   void SetCameraTarget(const EoGePoint3d& target);
+  void SetCameraViewUp(const EoGeVector3d& viewUp);
   void SetViewWindow(double uMin, double vMin, double uMax, double vMax);
 
   /// @brief Determines the number of pages for 1 to 1 print

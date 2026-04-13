@@ -353,6 +353,10 @@
 #define IDC_PLOT_PREVIEW_AREA           1486
 #define IDC_PLOT_PRINTABLE_AREA         1487
 #define IDC_PLOT_SCALE_LINEWEIGHTS      1488
+#define IDC_LAYOUT_TAB_BAR              1489
+#define IDC_LAYOUT_SPACE_LABEL          1490
+#define IDC_VIEWPORT_SCALE_COMBO        1491
+#define IDC_VIEWPORT_LOCK_BUTTON        1492
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -573,7 +577,6 @@
 #define ID_EDIT_TRAPQUIT                4569
 #define ID_FILE_PLOT_FULL               4570
 #define ID_FILE_PLOT_HALF               4571
-#define ID_FILE_PLOT                    4906
 #define ID_EDIT_TRAPWORK                4572
 #define ID_EDIT_TRAPWORKANDACTIVE       4574
 #define ID_TRAPCOMMANDS_ADDGROUPS       4575
@@ -666,6 +669,7 @@
 #define ID_VIEW_WINDOW_KEYPLAN          4901
 #define ID_WINDOW_ZOOMSPECIAL           4902
 #define ID_SETUP_POINTSTYLE             4903
+#define ID_FILE_PLOT                    4906
 #define ID_DRAW_MODE_OPTIONS            5100
 #define ID_DRAW_MODE_POINT              5101
 #define ID_DRAW_MODE_LINE               5102
@@ -840,9 +844,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        348
+#define _APS_NEXT_RESOURCE_VALUE        351
 #define _APS_NEXT_COMMAND_VALUE         4907
-#define _APS_NEXT_CONTROL_VALUE         1489
+#define _APS_NEXT_CONTROL_VALUE         1493
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

@@ -65,9 +65,9 @@ void EoDbDxfInterface::Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc*
   }
   facePrimitive->SetBaseProperties(&_3dFace, document);
 
-  AddToDocument(facePrimitive, document, _3dFace.m_space);
+  AddToDocument(facePrimitive, document, _3dFace.m_space, _3dFace.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 3, L"  3DFACE → EoDbFace with %d vertices, edge flags=0x%02X\n",
+  ATLTRACE2(traceGeneral, 3, L"  3DFACE \u2192 EoDbFace (%d vertices, edgeFlags=0x%02X)\n",
       isTriangle ? 3 : 4, edgeFlags);
 }
 
@@ -105,9 +105,9 @@ void EoDbDxfInterface::ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* doc
   }
   facePrimitive->SetBaseProperties(&solid, document);
 
-  AddToDocument(facePrimitive, document, solid.m_space);
+  AddToDocument(facePrimitive, document, solid.m_space, solid.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 3, L"  SOLID → EoDbFace with %d vertices\n", isTriangle ? 3 : 4);
+  ATLTRACE2(traceGeneral, 3, L"  SOLID \u2192 EoDbFace (%s)\n", isTriangle ? L"triangle" : L"quad");
 }
 
 /** @brief Converts a DXF TRACE entity to an AeSys EoDbFace primitive.
@@ -134,9 +134,9 @@ void EoDbDxfInterface::ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* doc
   auto* facePrimitive = EoDbFace::CreateFromTrace(v0, v1, v2, v3, extrusion);
   facePrimitive->SetBaseProperties(&trace, document);
 
-  AddToDocument(facePrimitive, document, trace.m_space);
+  AddToDocument(facePrimitive, document, trace.m_space, trace.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 3, L"  TRACE → EoDbFace with 4 vertices\n");
+  ATLTRACE2(traceGeneral, 3, L"  TRACE \u2192 EoDbFace\n");
 }
 
 /** @brief Parses an AcGi proxy graphics metafile stream and creates AeSys primitives.
@@ -281,7 +281,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           if (normal.IsNearNull()) { normal = EoGeVector3d::positiveUnitZ; }
           auto* conicPrimitive = EoDbConic::CreateCircle(center, normal, radius);
           conicPrimitive->SetBaseProperties(&proxyEntity, document);
-          AddToDocument(conicPrimitive, document, proxyEntity.m_space);
+          AddToDocument(conicPrimitive, document, proxyEntity.m_space, proxyEntity.m_ownerHandle);
           ++primitiveCount;
 
           ATLTRACE2(traceGeneral, 3, L"  Proxy type 2 → Circle center(%.2f,%.2f,%.2f) r=%.2f\n", center.x, center.y,
@@ -344,7 +344,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           auto* conicPrimitive = EoDbConic::CreateRadialArc(center, normal, radius, startAngle, endAngle);
           if (conicPrimitive != nullptr) {
             conicPrimitive->SetBaseProperties(&proxyEntity, document);
-            AddToDocument(conicPrimitive, document, proxyEntity.m_space);
+            AddToDocument(conicPrimitive, document, proxyEntity.m_space, proxyEntity.m_ownerHandle);
             ++primitiveCount;
 
             ATLTRACE2(traceGeneral, 3, L"  Proxy type 4 → Arc center(%.2f,%.2f,%.2f) r=%.2f start=%.4f end=%.4f\n",
@@ -392,7 +392,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           auto* linePrimitive = new EoDbLine();
           linePrimitive->SetBaseProperties(&proxyEntity, document);
           linePrimitive->SetLine(EoGeLine(startPoint, endPoint));
-          AddToDocument(linePrimitive, document, proxyEntity.m_space);
+          AddToDocument(linePrimitive, document, proxyEntity.m_space, proxyEntity.m_ownerHandle);
           ++primitiveCount;
 
           ATLTRACE2(traceGeneral, 3, L"  Proxy type %d → Line (%.2f,%.2f,%.2f)→(%.2f,%.2f,%.2f)\n", typeCode,
@@ -410,7 +410,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           auto* polylinePrimitive = new EoDbPolyline(points);
           polylinePrimitive->SetBaseProperties(&proxyEntity, document);
           if (typeCode == 7) { polylinePrimitive->SetFlag(EoDbPolyline::sm_Closed); }
-          AddToDocument(polylinePrimitive, document, proxyEntity.m_space);
+          AddToDocument(polylinePrimitive, document, proxyEntity.m_space, proxyEntity.m_ownerHandle);
           ++primitiveCount;
 
           ATLTRACE2(traceGeneral, 3, L"  Proxy type %d → Polyline with %d vertices\n", typeCode, numVertices);

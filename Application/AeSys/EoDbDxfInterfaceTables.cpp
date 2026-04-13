@@ -422,17 +422,70 @@ void EoDbDxfInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
 
 /** @brief Adds the given primitive to the appropriate layer in the document.
  *
+ * For paper-space entities, the ownerHandle determines which layout's layer collection
+ * receives the entity. If the target layer does not exist in the layout, it is created
+ * on-demand by cloning properties from the default paper-space layout or model space.
+ * As a last resort, a minimal layer with default properties is created so that no entity
+ * is silently discarded.
+ *
  * @param primitive Pointer to the EoDbPrimitive to be added.
  * @param document Pointer to the AeSysDoc where the primitive will be added.
  * @param space The DXF space (model or paper) in which the entity resides.
+ * @param ownerHandle The entity's owner BLOCK_RECORD handle (code 330). For paper-space
+ *   entities this identifies the layout. NoHandle falls back to the default layout (0x1E).
  */
-EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space) {
+EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle) {
   auto layerName = primitive->LayerName().c_str();
-  auto* layer = document->FindLayerInSpace(layerName, space);
-  if (layer == nullptr) {
-    ATLTRACE2(traceGeneral, 3, L"Warning: Layer '%s' not found.\n", layerName);
-    delete primitive;
-    return nullptr;
+
+  EoDbLayer* layer{};
+  if (space == EoDxf::Space::PaperSpace) {
+    // Determine the layout handle from the entity's owner handle
+    auto layoutHandle = (ownerHandle != EoDxf::NoHandle) ? ownerHandle : EoDxf::Handles::PaperSpaceBlockRecord;
+
+    layer = document->FindLayerInLayout(layerName, layoutHandle);
+    if (layer == nullptr) {
+      // On-demand layer creation: clone properties from default layout or model space
+      EoDbLayer* sourceLayer = document->FindLayerInLayout(layerName, EoDxf::Handles::PaperSpaceBlockRecord);
+      if (sourceLayer == nullptr) {
+        sourceLayer = document->FindLayerInSpace(layerName, EoDxf::Space::ModelSpace);
+      }
+      auto* newLayer = [&]() -> EoDbLayer* {
+        if (sourceLayer != nullptr) {
+          auto* cloned = new EoDbLayer(CString(layerName), sourceLayer->GetState());
+          cloned->SetTracingState(sourceLayer->GetTracingState());
+          cloned->SetColorIndex(sourceLayer->ColorIndex());
+          cloned->SetLineType(sourceLayer->LineType());
+          cloned->SetLineWeight(sourceLayer->LineWeight());
+          cloned->SetLineTypeScale(sourceLayer->LineTypeScale());
+          cloned->SetFrozen(sourceLayer->IsFrozen());
+          cloned->SetLocked(sourceLayer->IsLocked());
+          cloned->SetPlottingFlag(sourceLayer->PlottingFlag());
+          cloned->SetColor24(sourceLayer->Color24());
+          return cloned;
+        }
+        // No source layer found anywhere — create a minimal layer with default properties
+        ATLTRACE2(traceGeneral, 3, L"AddToDocument: creating minimal paper-space layer '%s' for layout 0x%I64X\n",
+            layerName, layoutHandle);
+        constexpr auto defaultState =
+            EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
+        return new EoDbLayer(CString(layerName), defaultState);
+      }();
+      newLayer->SetHandle(document->HandleManager().AssignHandle());
+      document->AddLayerToLayout(newLayer, layoutHandle);
+      layer = newLayer;
+    }
+  } else {
+    layer = document->FindLayerInSpace(layerName, space);
+    if (layer == nullptr) {
+      // Create a minimal model-space layer on demand so the entity is not discarded
+      ATLTRACE2(traceGeneral, 3, L"AddToDocument: creating minimal model-space layer '%s'\n", layerName);
+      constexpr auto defaultState =
+          EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
+      auto* newLayer = new EoDbLayer(CString(layerName), defaultState);
+      newLayer->SetHandle(document->HandleManager().AssignHandle());
+      document->AddLayerToSpace(newLayer, space);
+      layer = newLayer;
+    }
   }
 
   ATLTRACE2(traceGeneral, 3, L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,

@@ -104,6 +104,23 @@ class EoDbViewport : public EoDbPrimitive {
   void SetSnapAngle(double snapAngle) noexcept { m_snapAngle = snapAngle; }
   void SetTwistAngle(double twistAngle) noexcept { m_twistAngle = twistAngle; }
 
+  /// @brief Returns true if viewport pan/zoom is locked (session-only, not persisted).
+  [[nodiscard]] bool IsDisplayLocked() const noexcept { return m_displayLocked; }
+  void SetDisplayLocked(bool locked) noexcept { m_displayLocked = locked; }
+
+  /** @brief Computes the Display Coordinate System (DCS) axes from this viewport's viewDirection,
+   *  and maps the 2D viewCenter to a 3D WCS camera target point.
+   *
+   *  DCS is defined by the viewDirection (Z axis toward viewer). The X axis is the cross product of
+   *  WCS Z × viewDirection; when viewDirection is near WCS Z, X falls back to (1, 0, 0).
+   *  Y = viewDirection × X. See EoGsAbstractView.h header comment for the convention.
+   *
+   *  @param[out] dcsX The computed DCS X axis (right direction on screen).
+   *  @param[out] dcsY The computed DCS Y axis (up direction on screen) — suitable as ViewUp.
+   *  @param[out] wcsCameraTarget The 3D WCS point: viewTargetPoint + viewCenter.x * dcsX + viewCenter.y * dcsY.
+   */
+  void ComputeViewPlaneAxes(EoGeVector3d& dcsX, EoGeVector3d& dcsY, EoGePoint3d& wcsCameraTarget) const noexcept;
+
  private:
   // Paper-space geometry (DCS)
   EoGePoint3d m_centerPoint{};  // DXF group codes 10, 20, 30
@@ -127,4 +144,7 @@ class EoDbViewport : public EoDbPrimitive {
   double m_viewHeight{};  // DXF group code 45
   double m_snapAngle{};  // DXF group code 50
   double m_twistAngle{};  // DXF group code 51
+
+  // Session-only viewport state (not persisted)
+  bool m_displayLocked{};  ///< When true, pan/zoom through the viewport is locked
 };

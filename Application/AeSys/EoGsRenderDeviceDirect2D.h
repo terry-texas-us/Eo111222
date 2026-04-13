@@ -77,6 +77,12 @@ class EoGsRenderDeviceDirect2D : public EoGsRenderDevice {
 
   ~EoGsRenderDeviceDirect2D() override;
 
+  /// @brief Returns the underlying D2D render target (non-owning).
+  [[nodiscard]] ID2D1RenderTarget* RenderTarget() const noexcept { return m_renderTarget; }
+
+  /// @brief Returns the underlying D2D factory (non-owning).
+  [[nodiscard]] ID2D1Factory* D2DFactory() const noexcept { return m_d2dFactory; }
+
   /// @brief Sets the pen-width scale factor for printer DPI compensation.
   /// @param scale  Typically printerDPI / 96.0f (1.0 for screen rendering).
   void SetPenWidthScale(float scale) noexcept { m_penWidthScale = scale; }

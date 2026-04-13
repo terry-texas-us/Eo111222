@@ -48,7 +48,7 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
     return;
   }
   radialArc->SetBaseProperties(&arc, document);
-  AddToDocument(radialArc, document, arc.m_space);
+  AddToDocument(radialArc, document, arc.m_space, arc.m_ownerHandle);
 }
 
 void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
@@ -71,10 +71,10 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
     return;
   }
   conic->SetBaseProperties(&circle, document);
-  AddToDocument(conic, document, circle.m_space);
+  AddToDocument(conic, document, circle.m_space, circle.m_ownerHandle);
 }
 
-/** @brief Converts a DXF ELLIPSE entity to an EoDbConic primitive in the AeSys document.
+/** @brief Converts a DXF ELLIPSE entity
  *
  *  DXF ELLIPSE entities represent both full ellipses and elliptical arcs. The entity is defined
  *  by a center point, a major axis endpoint (relative to center), a minor-to-major axis ratio,
@@ -134,7 +134,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
     return;
   }
   conic->SetBaseProperties(&ellipse, document);
-  AddToDocument(conic, document, ellipse.m_space);
+  AddToDocument(conic, document, ellipse.m_space, ellipse.m_ownerHandle);
 
   const bool isFullEllipse = Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) ||
       Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam);
@@ -158,7 +158,7 @@ EoDbBlockReference* EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blo
   insertPrimitive->SetRows(blockReference.m_rowCount);
   insertPrimitive->SetRowSpacing(blockReference.m_rowSpacing);
 
-  m_currentInsertGroup = AddToDocument(insertPrimitive, document, blockReference.m_space);
+  m_currentInsertGroup = AddToDocument(insertPrimitive, document, blockReference.m_space, blockReference.m_ownerHandle);
   return insertPrimitive;
 }
 
@@ -169,7 +169,7 @@ void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* docume
   linePrimitive->SetBaseProperties(&line, document);
 
   linePrimitive->SetLine(EoGeLine(EoGePoint3d{line.m_startPoint}, EoGePoint3d{line.m_endPoint}));
-  AddToDocument(linePrimitive, document, line.m_space);
+  AddToDocument(linePrimitive, document, line.m_space, line.m_ownerHandle);
 }
 
 void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, AeSysDoc* document) {
@@ -222,7 +222,7 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
     polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
   }
 
-  AddToDocument(polylinePrimitive, document, polyline.m_space);
+  AddToDocument(polylinePrimitive, document, polyline.m_space, polyline.m_ownerHandle);
 }
 
 void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
@@ -247,7 +247,7 @@ void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, Ae
   if (polyline.m_polylineFlag & 0x80) { polylinePrimitive->SetPlinegen(true); }
   polylinePrimitive->Set3D(true);
 
-  AddToDocument(polylinePrimitive, document, polyline.m_space);
+  AddToDocument(polylinePrimitive, document, polyline.m_space, polyline.m_ownerHandle);
 }
 
 void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
@@ -321,7 +321,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
     polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
   }
 
-  AddToDocument(polylinePrimitive, document, polyline.m_space);
+  AddToDocument(polylinePrimitive, document, polyline.m_space, polyline.m_ownerHandle);
 }
 
 void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
@@ -330,7 +330,7 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
   auto pointPrimitive = new EoDbPoint();
   pointPrimitive->SetBaseProperties(&point, document);
   pointPrimitive->SetPoint(point.m_pointLocation.x, point.m_pointLocation.y, point.m_pointLocation.z);
-  AddToDocument(pointPrimitive, document, point.m_space);
+  AddToDocument(pointPrimitive, document, point.m_space, point.m_ownerHandle);
 }
 
 /** @brief Converts a DXF SPLINE entity to an EoDbSpline primitive in the AeSys document.
@@ -419,9 +419,9 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
     splinePrimitive->SetWeights(std::vector<double>(spline.m_weightValues.begin(), spline.m_weightValues.end()));
   }
 
-  AddToDocument(splinePrimitive, document, spline.m_space);
+  AddToDocument(splinePrimitive, document, spline.m_space, spline.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 2, L"  Spline → EoDbSpline with %d control points (degree=%d, flags=0x%04X, knots=%zu)\n",
+  ATLTRACE2(traceGeneral, 2, L"  Spline \u2192 EoDbSpline (%d pts, degree=%d, flags=0x%04X, knots=%zu)\n",
       pointCount, splinePrimitive->Degree(), splinePrimitive->Flags(), splinePrimitive->Knots().size());
 }
 
@@ -458,8 +458,8 @@ void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSy
   viewportPrimitive->SetSnapAngle(viewport.m_snapAngle);
   viewportPrimitive->SetTwistAngle(viewport.m_twistAngle);
 
-  AddToDocument(viewportPrimitive, document, viewport.m_space);
+  AddToDocument(viewportPrimitive, document, viewport.m_space, viewport.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d → EoDbViewport (%.1f x %.1f at (%.4f, %.4f))\n", viewport.m_viewportId,
-      viewport.m_width, viewport.m_height, viewport.m_centerPoint.x, viewport.m_centerPoint.y);
+  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d size=(%.2f x %.2f) center=(%.2f, %.2f)\n",
+      viewport.m_viewportId, viewport.m_width, viewport.m_height, viewport.m_centerPoint.x, viewport.m_centerPoint.y);
 }

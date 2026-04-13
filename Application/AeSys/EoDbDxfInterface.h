@@ -79,6 +79,12 @@ class EoDbDxfInterface : public EoDxfInterface {
     m_blockName = block.m_blockName;
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::AddBlock <%s>\n", m_blockName.c_str());
     m_currentOpenBlockDefinition = ConvertBlock(block, m_document);
+
+    // *Model_Space and *Paper_Space* are layout pseudo-blocks — their entities must route
+    // through AddToDocument's normal space-based layer routing, not into a block definition.
+    if (m_blockName == L"*Model_Space" || m_blockName.starts_with(L"*Paper_Space")) {
+      m_currentOpenBlockDefinition = nullptr;
+    }
   }
   void SetBlock(const int handle) override {
     ATLTRACE2(traceGeneral, 3, L"EoDxfInterface::SetBlock\n");
@@ -586,27 +592,30 @@ class EoDbDxfInterface : public EoDxfInterface {
       }
     }
 
-    // Export paper-space entities
+    // Export paper-space entities — iterate all layouts
     m_dxfWriter->SetCurrentExportSpace(EoDxf::Space::PaperSpace);
-    auto& paperLayers = m_document->SpaceLayers(EoDxf::Space::PaperSpace);
-    for (INT_PTR i = 0; i < paperLayers.GetSize(); i++) {
-      auto* layer = paperLayers.GetAt(i);
-      if (layer == nullptr) { continue; }
-      auto position = layer->GetHeadPosition();
-      while (position != nullptr) {
-        auto* group = layer->GetNext(position);
-        if (group == nullptr) { continue; }
-        auto primitivePosition = group->GetHeadPosition();
-        while (primitivePosition != nullptr) {
-          auto* primitive = group->GetNext(primitivePosition);
-          if (primitive != nullptr) {
-            if (primitive->LayerName().empty()) { primitive->SetLayerName(std::wstring(layer->Name())); }
-            primitive->ExportToDxf(this);
+    for (const auto& [layoutHandle, layoutLayers] : m_document->PaperSpaceLayoutLayers()) {
+      m_dxfWriter->SetCurrentPaperSpaceOwnerHandle(layoutHandle);
+      for (INT_PTR i = 0; i < layoutLayers.GetSize(); i++) {
+        auto* layer = layoutLayers.GetAt(i);
+        if (layer == nullptr) { continue; }
+        auto position = layer->GetHeadPosition();
+        while (position != nullptr) {
+          auto* group = layer->GetNext(position);
+          if (group == nullptr) { continue; }
+          auto primitivePosition = group->GetHeadPosition();
+          while (primitivePosition != nullptr) {
+            auto* primitive = group->GetNext(primitivePosition);
+            if (primitive != nullptr) {
+              if (primitive->LayerName().empty()) { primitive->SetLayerName(std::wstring(layer->Name())); }
+              primitive->ExportToDxf(this);
+            }
           }
         }
       }
     }
 
+    m_dxfWriter->SetCurrentPaperSpaceOwnerHandle(EoDxf::Handles::PaperSpaceBlockRecord);
     m_dxfWriter->SetCurrentExportSpace(EoDxf::Space::ModelSpace);
   };
   [[nodiscard]] std::uint64_t GetHandleSeed() const override {
@@ -836,7 +845,7 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertBlockSet(const int handle, AeSysDoc* document);
   void ConvertBlockEnd(AeSysDoc* document);
 
-  EoDbGroup* AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space);
+  EoDbGroup* AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle = EoDxf::NoHandle);
 
   void Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document);
   void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document);

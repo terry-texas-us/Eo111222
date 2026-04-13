@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cstdint>
 #include <vector>
 
 class AeSysDoc;
@@ -21,6 +22,8 @@ class EoDbPegFile : public CFile {
   void ReadLinetypeDefinition(
       std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength);
   void ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
+  void ReadPaperSpaceLayoutLayers(AeSysDoc* document, EoDb::PegFileVersion fileVersion, std::uint64_t layoutHandle);
+  void ReadPaperSpaceLayoutEntities(AeSysDoc* document, EoDb::PegFileVersion fileVersion, std::uint64_t layoutHandle);
   void ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void ReadTextStyleTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void ReadViewportTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion);

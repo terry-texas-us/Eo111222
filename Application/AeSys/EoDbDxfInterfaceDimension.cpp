@@ -201,7 +201,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
     auto* extLine1 = EoDbLine::CreateLine(start1, end1);
     extLine1->SetBaseProperties(&dimension, document);
     if (dimclre != 0) { extLine1->SetColor(dimclre); }
-    AddToDocument(extLine1, document, dimension.m_space);
+    AddToDocument(extLine1, document, dimension.m_space, dimension.m_ownerHandle);
   }
 
   // --- Create extension line 2 ---
@@ -210,7 +210,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
     auto* extLine2 = EoDbLine::CreateLine(start2, end2);
     extLine2->SetBaseProperties(&dimension, document);
     if (dimclre != 0) { extLine2->SetColor(dimclre); }
-    AddToDocument(extLine2, document, dimension.m_space);
+    AddToDocument(extLine2, document, dimension.m_space, dimension.m_ownerHandle);
   }
 
   // --- Create dimension line ---
@@ -227,9 +227,9 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
   auto* dimLine = EoDbLine::CreateLine(dimLineStart, dimLineEnd);
   dimLine->SetBaseProperties(&dimension, document);
   if (dimclrd != 0) { dimLine->SetColor(dimclrd); }
-  AddToDocument(dimLine, document, dimension.m_space);
+  AddToDocument(dimLine, document, dimension.m_space, dimension.m_ownerHandle);
 
-  // --- Create tick marks or arrowhead stubs ---
+  // --- Create tick marks
   // Tick marks are short diagonal lines at 45° across the dimension line endpoints.
   // When dimtsz > 0, use dimtsz as the tick size (explicit architectural tick).
   // When dimtsz == 0 and dimasz > 0, check dimblk for oblique/tick block names and
@@ -250,12 +250,12 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
     auto* tick1 = EoDbLine::CreateLine(dimLinePt1 - tickOffset, dimLinePt1 + tickOffset);
     tick1->SetBaseProperties(&dimension, document);
     if (dimclrd != 0) { tick1->SetColor(dimclrd); }
-    AddToDocument(tick1, document, dimension.m_space);
+    AddToDocument(tick1, document, dimension.m_space, dimension.m_ownerHandle);
 
     auto* tick2 = EoDbLine::CreateLine(dimLinePt2 - tickOffset, dimLinePt2 + tickOffset);
     tick2->SetBaseProperties(&dimension, document);
     if (dimclrd != 0) { tick2->SetColor(dimclrd); }
-    AddToDocument(tick2, document, dimension.m_space);
+    AddToDocument(tick2, document, dimension.m_space, dimension.m_ownerHandle);
   }
 
   // --- Create dimension text ---
@@ -463,6 +463,6 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
     auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, dimensionText);
     textPrimitive->SetBaseProperties(&dimension, document);
     if (dimclrt != 0) { textPrimitive->SetColor(dimclrt); }
-    AddToDocument(textPrimitive, document, dimension.m_space);
+    AddToDocument(textPrimitive, document, dimension.m_space, dimension.m_ownerHandle);
   }
 }

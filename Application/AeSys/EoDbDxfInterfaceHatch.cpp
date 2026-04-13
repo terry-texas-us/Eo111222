@@ -354,7 +354,7 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     // Set layer and line type from the DXF entity for correct document placement
     polygon->SetBaseProperties(&hatch, document);
 
-    AddToDocument(polygon, document, hatch.m_space);
+    AddToDocument(polygon, document, hatch.m_space, hatch.m_ownerHandle);
 
     ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n", loopIndex,
         loopPolygonStyle == EoDb::PolygonStyle::Solid       ? L"Solid"

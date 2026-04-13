@@ -48,6 +48,11 @@ class EoDxfWrite {
   /// WriteEntity derives the owner handle from this instead of reading entity->m_space.
   void SetCurrentExportSpace(EoDxf::Space space) noexcept { m_currentExportSpace = space; }
 
+  /// @brief Sets the owner handle for paper-space entities in the current export context.
+  /// Used by multi-layout export to write the correct block record handle (code 330) per layout.
+  /// Default is PaperSpaceBlockRecord (0x1E).
+  void SetCurrentPaperSpaceOwnerHandle(std::uint64_t handle) noexcept { m_currentPaperSpaceOwnerHandle = handle; }
+
   void WriteCodePoint3d(int code, const EoDxfGeometryBase3d& point);
   void WriteCodeVector3d(int code, const EoDxfGeometryBase3d& vector);
 
@@ -228,6 +233,7 @@ class EoDxfWrite {
   EoDxfInterface* m_interface{};
   std::uint64_t m_entityCount{};
   EoDxf::Space m_currentExportSpace{EoDxf::Space::ModelSpace};
+  std::uint64_t m_currentPaperSpaceOwnerHandle{EoDxf::Handles::PaperSpaceBlockRecord};
   std::uint64_t m_lastWrittenEntityHandle{};
   EoDxf::Version m_version{};
   std::uint64_t m_currentHandle{};

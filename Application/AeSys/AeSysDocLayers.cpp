@@ -82,7 +82,11 @@ void AeSysDoc::RemoveAllLayerTableLayers() {
     layers.RemoveAll();
   };
   clearLayers(m_modelSpaceLayers);
-  clearLayers(m_paperSpaceLayers);
+  for (auto& [handle, layers] : m_paperSpaceLayoutLayers) {
+    clearLayers(layers);
+  }
+  m_paperSpaceLayoutLayers.clear();
+  m_activeLayoutHandle = EoDxf::Handles::PaperSpaceBlockRecord;
 }
 
 void AeSysDoc::RemoveLayerTableLayerAt(int i) {
@@ -113,16 +117,16 @@ void AeSysDoc::RemoveEmptyLayers() {
   }
 }
 
-CLayers& AeSysDoc::ActiveSpaceLayers() noexcept {
-  return (m_activeSpace == EoDxf::Space::PaperSpace) ? m_paperSpaceLayers : m_modelSpaceLayers;
+CLayers& AeSysDoc::ActiveSpaceLayers() {
+  return (m_activeSpace == EoDxf::Space::PaperSpace) ? PaperSpaceLayers() : m_modelSpaceLayers;
 }
 
-const CLayers& AeSysDoc::ActiveSpaceLayers() const noexcept {
-  return (m_activeSpace == EoDxf::Space::PaperSpace) ? m_paperSpaceLayers : m_modelSpaceLayers;
+const CLayers& AeSysDoc::ActiveSpaceLayers() const {
+  return (m_activeSpace == EoDxf::Space::PaperSpace) ? PaperSpaceLayers() : m_modelSpaceLayers;
 }
 
-CLayers& AeSysDoc::SpaceLayers(EoDxf::Space space) noexcept {
-  return (space == EoDxf::Space::PaperSpace) ? m_paperSpaceLayers : m_modelSpaceLayers;
+CLayers& AeSysDoc::SpaceLayers(EoDxf::Space space) {
+  return (space == EoDxf::Space::PaperSpace) ? PaperSpaceLayers() : m_modelSpaceLayers;
 }
 
 int AeSysDoc::GetLayerTableSize() const { return static_cast<int>(ActiveSpaceLayers().GetSize()); }
@@ -137,6 +141,11 @@ void AeSysDoc::AddLayerToSpace(EoDbLayer* layer, EoDxf::Space space) {
   RegisterHandle(layer);
 }
 
+void AeSysDoc::AddLayerToLayout(EoDbLayer* layer, std::uint64_t blockRecordHandle) {
+  m_paperSpaceLayoutLayers[blockRecordHandle].Add(layer);
+  RegisterHandle(layer);
+}
+
 EoDbLayer* AeSysDoc::FindLayerInSpace(const CString& name, EoDxf::Space space) {
   auto& layers = SpaceLayers(space);
   for (INT_PTR i = 0; i < layers.GetSize(); i++) {
@@ -144,6 +153,26 @@ EoDbLayer* AeSysDoc::FindLayerInSpace(const CString& name, EoDxf::Space space) {
     if (name.CompareNoCase(layer->Name()) == 0) { return layer; }
   }
   return nullptr;
+}
+
+EoDbLayer* AeSysDoc::FindLayerInLayout(const CString& name, std::uint64_t blockRecordHandle) {
+  auto it = m_paperSpaceLayoutLayers.find(blockRecordHandle);
+  if (it == m_paperSpaceLayoutLayers.end()) { return nullptr; }
+  auto& layers = it->second;
+  for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+    auto* layer = layers.GetAt(i);
+    if (name.CompareNoCase(layer->Name()) == 0) { return layer; }
+  }
+  return nullptr;
+}
+
+const CLayers& AeSysDoc::PaperSpaceLayers() const {
+  auto it = m_paperSpaceLayoutLayers.find(m_activeLayoutHandle);
+  if (it != m_paperSpaceLayoutLayers.end()) { return it->second; }
+  ATLTRACE2(traceGeneral, 1, L"Warning: PaperSpaceLayers() — active layout handle %I64X not found in layout map.\n",
+      m_activeLayoutHandle);
+  static const CLayers emptyLayers;
+  return emptyLayers;
 }
 
 void AeSysDoc::LayerBlank(const CString& name) {
@@ -294,6 +323,13 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroup: m_workLayer is nullptr\n");
     return;
   }
+  // Stamp primitives with the work layer's name for DXF export and diagnostics
+  std::wstring layerName(m_workLayer->Name().GetString());
+  auto position = group->GetHeadPosition();
+  while (position != nullptr) {
+    auto* primitive = group->GetNext(position);
+    if (primitive != nullptr && primitive->LayerName().empty()) { primitive->SetLayerName(layerName); }
+  }
   RegisterGroupHandles(group);
   m_workLayer->AddTail(group);
   AddGroupToAllViews(group);
@@ -305,9 +341,16 @@ void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroups: m_workLayer is nullptr\n");
     return;
   }
+  // Stamp primitives with the work layer's name for DXF export and diagnostics
+  std::wstring layerName(m_workLayer->Name().GetString());
   auto position = groups->GetHeadPosition();
   while (position != nullptr) {
     auto* group = groups->GetNext(position);
+    auto primPos = group->GetHeadPosition();
+    while (primPos != nullptr) {
+      auto* primitive = group->GetNext(primPos);
+      if (primitive != nullptr && primitive->LayerName().empty()) { primitive->SetLayerName(layerName); }
+    }
     RegisterGroupHandles(group);
   }
   m_workLayer->AddTail(groups);
@@ -359,21 +402,24 @@ EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
 }
 
 // Locates the layer containing a group and removes it.
-// The group itself is not deleted. Searches both model and paper space tables.
+// The group itself is not deleted. Searches both model and all paper-space layout tables.
 EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
-  CLayers* spaceTables[] = {&m_modelSpaceLayers, &m_paperSpaceLayers};
-  for (auto* layers : spaceTables) {
-    for (INT_PTR i = 0; i < layers->GetSize(); i++) {
-      auto* layer = layers->GetAt(i);
+  auto searchLayers = [&](CLayers& layers) -> EoDbLayer* {
+    for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+      auto* layer = layers.GetAt(i);
       if (layer->IsWork() || layer->IsActive()) {
         if (layer->Remove(group) != 0) {
           AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
           SetModifiedFlag(TRUE);
-
           return layer;
         }
       }
     }
+    return nullptr;
+  };
+  if (auto* found = searchLayers(m_modelSpaceLayers)) { return found; }
+  for (auto& [handle, layers] : m_paperSpaceLayoutLayers) {
+    if (auto* found = searchLayers(layers)) { return found; }
   }
   return nullptr;
 }

@@ -320,7 +320,7 @@ BEGIN
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM "&Aliased Rendering",          ID_VIEW_ALIASED
-        MENUITEM "Dark &Background",              ID_VIEW_BACKGROUND_TOGGLE
+        MENUITEM "Dark &Background",            ID_VIEW_BACKGROUND_TOGGLE
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN
@@ -590,7 +590,7 @@ BEGIN
         MENUITEM "&Model Space",                ID_VIEW_MODELSPACE
         MENUITEM "Use &Direct2D",               ID_VIEW_DIRECT2D
         MENUITEM "&Aliased Rendering",          ID_VIEW_ALIASED
-        MENUITEM "Dark &Background",              ID_VIEW_BACKGROUND_TOGGLE
+        MENUITEM "Dark &Background",            ID_VIEW_BACKGROUND_TOGGLE
         MENUITEM SEPARATOR
         POPUP "&Window\t="
         BEGIN
@@ -1821,21 +1821,17 @@ BEGIN
     COMBOBOX        IDC_PLOT_PRINTER_COMBO,40,19,248,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "P&roperties...",IDC_PLOT_PRINTER_PROPERTIES,296,18,60,14
     CONTROL         "Plot to fi&le",IDC_PLOT_PRINT_TO_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,40,56,10
-
     GROUPBOX        "Paper Size",IDC_STATIC,7,60,200,48
     COMBOBOX        IDC_PLOT_PAPER_SIZE_COMBO,14,73,186,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "",IDC_PLOT_PRINTABLE_AREA,14,91,186,8
-
     GROUPBOX        "Drawing Orientation",IDC_STATIC,214,60,149,48
     CONTROL         "&Landscape",IDC_PLOT_ORIENTATION_LANDSCAPE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,222,75,52,10
     CONTROL         "P&ortrait",IDC_PLOT_ORIENTATION_PORTRAIT,"Button",BS_AUTORADIOBUTTON,222,89,42,10
-
     GROUPBOX        "Plot Area",IDC_STATIC,7,112,200,60
     CONTROL         "&Layout",IDC_PLOT_AREA_LAYOUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,126,38,10
     CONTROL         "&Extents",IDC_PLOT_AREA_EXTENTS,"Button",BS_AUTORADIOBUTTON,14,140,42,10
     CONTROL         "&Display",IDC_PLOT_AREA_DISPLAY,"Button",BS_AUTORADIOBUTTON,14,154,42,10
     CONTROL         "&Window",IDC_PLOT_AREA_WINDOW,"Button",BS_AUTORADIOBUTTON,100,126,42,10
-
     GROUPBOX        "Plot Offset",IDC_STATIC,214,112,149,60
     CONTROL         "&Center the plot",IDC_PLOT_CENTER_PLOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,222,126,64,10
     LTEXT           "X:",IDC_STATIC,222,142,8,8
@@ -1843,7 +1839,6 @@ BEGIN
     LTEXT           "Y:",IDC_STATIC,290,142,8,8
     EDITTEXT        IDC_PLOT_OFFSET_Y,300,140,48,12,ES_AUTOHSCROLL
     LTEXT           "inches",IDC_STATIC,222,156,22,8
-
     GROUPBOX        "Plot Scale",IDC_STATIC,7,176,200,64
     CONTROL         "&Fit to paper",IDC_PLOT_FIT_TO_PAPER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,190,56,10
     LTEXT           "Scale:",IDC_STATIC,14,206,20,8
@@ -1854,14 +1849,11 @@ BEGIN
     EDITTEXT        IDC_PLOT_CUSTOM_UNITS_EDIT,126,222,36,12,ES_AUTOHSCROLL
     LTEXT           "units",IDC_STATIC,166,224,18,8
     CONTROL         "Scale &lineweights",IDC_PLOT_SCALE_LINEWEIGHTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,112,190,74,10
-
     GROUPBOX        "Copies",IDC_STATIC,214,176,149,32
     LTEXT           "&Number of copies:",IDC_STATIC,222,192,60,8
     EDITTEXT        IDC_PLOT_COPIES,290,190,32,12,ES_NUMBER
-
     GROUPBOX        "Preview",IDC_STATIC,214,212,149,88
     CONTROL         "",IDC_PLOT_PREVIEW_AREA,"Static",SS_BLACKFRAME,222,225,133,68
-
     DEFPUSHBUTTON   "OK",IDOK,200,312,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,256,312,50,14
     PUSHBUTTON      "Pre&view",IDC_APPLY,312,312,50,14
@@ -2980,46 +2972,61 @@ END
 //
 
 IDR_ANNOTATE_MODE       CURSOR                  "res\\Cursors\\AnnotateMode.cur"
+
 IDR_ANNOTATE_MODE_WHITE CURSOR                  "res\\Cursors\\AnnotateModeWhite.cur"
 
 IDR_CUT_MODE            CURSOR                  "res\\Cursors\\CutMode.cur"
+
 IDR_CUT_MODE_WHITE      CURSOR                  "res\\Cursors\\CutModeWhite.cur"
 
 IDR_DIMENSION_MODE      CURSOR                  "res\\Cursors\\DimensionMode.cur"
+
 IDR_DIMENSION_MODE_WHITE CURSOR                  "res\\Cursors\\DimensionModeWhite.cur"
 
 IDR_DRAW_MODE           CURSOR                  "res\\Cursors\\DrawMode.cur"
+
 IDR_DRAW_MODE_WHITE     CURSOR                  "res\\Cursors\\DrawModeWhite.cur"
 
 IDR_DRAW2_MODE          CURSOR                  "res\\Cursors\\Draw2Mode.cur"
+
 IDR_DRAW2_MODE_WHITE    CURSOR                  "res\\Cursors\\Draw2ModeWhite.cur"
 
 IDR_EDIT_MODE           CURSOR                  "res\\Cursors\\EditMode.cur"
-IDR_EDIT_MODE_WHITE     CURSOR                  "res\\Cursors\\EditModeWhite.cur" 
+
+IDR_EDIT_MODE_WHITE     CURSOR                  "res\\Cursors\\EditModeWhite.cur"
 
 IDR_FIXUP_MODE          CURSOR                  "res\\Cursors\\FixupMode.cur"
+
 IDR_FIXUP_MODE_WHITE    CURSOR                  "res\\Cursors\\FixupModeWhite.cur"
 
 IDR_LPD_MODE            CURSOR                  "res\\Cursors\\LowPressureDuct.cur"
+
 IDR_LPD_MODE_WHITE      CURSOR                  "res\\Cursors\\LowPressureDuctWhite.cur"
 
 IDR_NODAL_MODE          CURSOR                  "res\\Cursors\\NodalMode.cur"
+
 IDR_NODAL_MODE_WHITE    CURSOR                  "res\\Cursors\\NodalModeWhite.cur"
 
 IDR_NODALR_MODE         CURSOR                  "res\\Cursors\\NodalRMode.cur"
+
 IDR_NODALR_MODE_WHITE   CURSOR                  "res\\Cursors\\NodalRModeWhite.cur"
 
 IDR_PIPE_MODE           CURSOR                  "res\\Cursors\\PipeMode.cur"
+
 IDR_PIPE_MODE_WHITE     CURSOR                  "res\\Cursors\\PipeModeWhite.cur"
 
 IDR_POWER_MODE          CURSOR                  "res\\Cursors\\PowerMode.cur"
+
 IDR_POWER_MODE_WHITE    CURSOR                  "res\\Cursors\\PowerModeWhite.cur"
 
 IDR_TRAP_MODE           CURSOR                  "res\\Cursors\\TrapMode.cur"
+
 IDR_TRAP_MODE_WHITE     CURSOR                  "res\\Cursors\\TrapModeWhite.cur"
 
 IDR_TRAPR_MODE          CURSOR                  "res\\Cursors\\TrapRMode.cur"
+
 IDR_TRAPR_MODE_WHITE    CURSOR                  "res\\Cursors\\TrapRModeWhite.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3371,6 +3378,10 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_PLOT            "Configure and plot the active drawing\\nPlot"
+END
+
+STRINGTABLE
+BEGIN
     ID_FILE_PLOT_FULL       "Plot active drawing"
     ID_FILE_PLOT_HALF       "Plot active drawing"
 END

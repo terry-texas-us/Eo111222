@@ -154,7 +154,18 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
   // Determine whether a SaveAs dialog is needed:
   // - pathName is null/empty (first save or explicit SaveAs invocation)
   // - m_saveAsType is Unknown (document has no established save format)
-  const bool needsDialog = selectedPath.IsEmpty() || m_saveAsType == EoDb::FileTypes::Unknown;
+  // - path extension doesn't match the target save type (e.g., DXF loaded with PEG save type)
+  bool needsDialog = selectedPath.IsEmpty() || m_saveAsType == EoDb::FileTypes::Unknown;
+
+  if (!needsDialog && !selectedPath.IsEmpty() && m_saveAsType != EoDb::FileTypes::Unknown) {
+    const auto* expectedExtension = DefaultExtensionForFileType(m_saveAsType);
+    std::filesystem::path currentPath(static_cast<LPCWSTR>(selectedPath));
+    auto currentExtension = currentPath.extension().wstring();
+    if (!currentExtension.empty() && currentExtension[0] == L'.') {
+      currentExtension = currentExtension.substr(1);
+    }
+    needsDialog = (_wcsicmp(currentExtension.c_str(), expectedExtension) != 0);
+  }
 
   if (needsDialog) {
     // Build a default file name from the document title when no path exists
@@ -164,6 +175,14 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
       // Strip characters that are problematic in file names
       const int firstBadCharacterIndex = defaultFileName.FindOneOf(L" #%;/\\");
       if (firstBadCharacterIndex != -1) { defaultFileName.ReleaseBuffer(firstBadCharacterIndex); }
+    }
+
+    // Replace the extension to match the target save type so the dialog pre-fills correctly.
+    // This ensures switching from DXF to PEG (or vice versa) shows the right filename.
+    if (!defaultFileName.IsEmpty() && m_saveAsType != EoDb::FileTypes::Unknown) {
+      std::filesystem::path defaultPath(static_cast<LPCWSTR>(defaultFileName));
+      defaultPath.replace_extension(DefaultExtensionForFileType(m_saveAsType));
+      defaultFileName = defaultPath.wstring().c_str();
     }
 
     // Extract the directory for the initial dialog location
@@ -276,6 +295,15 @@ BOOL AeSysDoc::OnNewDocument() {
 
   SetCommonTableEntries();
 
+  // New documents always get a default "Layout1" paper-space layout
+  if (m_layouts.empty()) {
+    EoDxfLayout defaultLayout;
+    defaultLayout.m_layoutName = L"Layout1";
+    defaultLayout.m_tabOrder = 1;
+    defaultLayout.m_blockRecordHandle = EoDxf::Handles::PaperSpaceBlockRecord;
+    m_layouts.push_back(std::move(defaultLayout));
+  }
+
   m_saveAsType = EoDb::FileTypes::Peg;
   SetWorkLayer(GetLayerTableLayerAt(0));
   InitializeGroupAndPrimitiveEdit();
@@ -349,6 +377,16 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         if (file.Open(pathName, CFile::modeRead | CFile::shareDenyNone)) {
           SetCommonTableEntries();
           file.Load(this);
+
+          // PEG V1 files have no layout data — create a default "Layout1" if none was loaded
+          if (m_layouts.empty()) {
+            EoDxfLayout defaultLayout;
+            defaultLayout.m_layoutName = L"Layout1";
+            defaultLayout.m_tabOrder = 1;
+            defaultLayout.m_blockRecordHandle = EoDxf::Handles::PaperSpaceBlockRecord;
+            m_layouts.push_back(std::move(defaultLayout));
+          }
+
           m_saveAsType = EoDb::FileTypes::Peg;
         }
       } catch (const wchar_t* e) {

@@ -30,7 +30,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 		.clang-tidy = .clang-tidy
 		.editorconfig = .editorconfig
 		.github\copilot-instructions.md = .github\copilot-instructions.md
-		C:\Users\tsmit\OneDrive\Documents\Engineers Office - first exit 5.reg = C:\Users\tsmit\OneDrive\Documents\Engineers Office - first exit 5.reg
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test FIles", "{DC37B473-B533-4702-B6C8-FE02708EB7DB}"
@@ -44,7 +43,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DXF Test FIles", "DXF Test 
 		DXF Test Files\Floor Plan Sample.dxf = DXF Test Files\Floor Plan Sample.dxf
 		DXF Test Files\Hatch_Boundary_Test_Mixed.dxf = DXF Test Files\Hatch_Boundary_Test_Mixed.dxf
 		DXF Test Files\Heavy_Polyline_Subtypes.dxf = DXF Test Files\Heavy_Polyline_Subtypes.dxf
-		C:\Users\tsmit\Desktop\Help Peg.pdf = C:\Users\tsmit\Desktop\Help Peg.pdf
 		DXF Test Files\LWPolyline_Bulge_Test.dxf = DXF Test Files\LWPolyline_Bulge_Test.dxf
 		DXF Test Files\Minimal_DXF_AC1021.dxf = DXF Test Files\Minimal_DXF_AC1021.dxf
 		DXF Test Files\RoomNumber_Block_Insert.dxf = DXF Test Files\RoomNumber_Block_Insert.dxf
@@ -59,6 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{923FCE64
 		Tools\ConvertStrokeFontV1ToV2.ps1 = Tools\ConvertStrokeFontV1ToV2.ps1
 		Tools\ConvertTextToPsf.ps1 = Tools\ConvertTextToPsf.ps1
 		Tools\GenerateToolbarBitmaps.ps1 = Tools\GenerateToolbarBitmaps.ps1
+		Tools\GenerateLayoutTests.py = Tools\GenerateLayoutTests.py
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{89A30A22-22FE-4682-AFD1-A948713CDE20}"
