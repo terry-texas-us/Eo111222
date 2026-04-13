@@ -379,6 +379,56 @@ void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
   if (mask != 0) { m_insertionPoint += v; }
 }
 
+EoDbBlockReference* EoDbBlockReference::ReadLegacyInsertPeg(CFile& file) {
+  auto color = EoDb::ReadInt16(file);
+  auto lineType = EoDb::ReadInt16(file);
+  CString name;
+  EoDb::Read(file, name);
+  auto insertionPoint(EoDb::ReadPoint3d(file));
+  auto xAxis(EoDb::ReadVector3d(file));
+  auto yAxis(EoDb::ReadVector3d(file));
+  auto zAxis(EoDb::ReadVector3d(file));
+  auto numberOfColumns = EoDb::ReadInt16(file);
+  auto numberOfRows = EoDb::ReadInt16(file);
+  double columnSpacing = EoDb::ReadDouble(file);
+  double rowSpacing = EoDb::ReadDouble(file);
+
+  // Convert legacy axis vectors to modern normal/scaleFactors/rotation representation.
+  // Legacy format stores a full 3-axis local reference system; modern format stores
+  // normal direction, per-axis scale factors, and a rotation angle relative to OCS X.
+  auto scaleX = xAxis.Length();
+  auto scaleY = yAxis.Length();
+  auto scaleZ = zAxis.Length();
+
+  EoGeVector3d normal;
+  if (!zAxis.IsNearNull()) {
+    normal = zAxis.Unitized();
+  } else {
+    auto cross = CrossProduct(xAxis, yAxis);
+    normal = cross.IsNearNull() ? EoGeVector3d::positiveUnitZ : cross.Unitized();
+  }
+
+  double rotation = 0.0;
+  if (scaleX > Eo::geometricTolerance) {
+    auto unitX = xAxis * (1.0 / scaleX);
+    auto ocsXAxis = ComputeArbitraryAxis(normal);
+    ocsXAxis.Unitize();
+    auto ocsYAxis = CrossProduct(normal, ocsXAxis);
+    rotation = atan2(DotProduct(unitX, ocsYAxis), DotProduct(unitX, ocsXAxis));
+  }
+
+  EoGeVector3d scaleFactors(scaleX, scaleY, scaleZ);
+
+  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color),
+      static_cast<std::uint16_t>(lineType), name, insertionPoint, normal, scaleFactors, rotation);
+  blockReference->m_columnCount = numberOfColumns;
+  blockReference->m_rowCount = numberOfRows;
+  blockReference->m_columnSpacing = columnSpacing;
+  blockReference->m_rowSpacing = rowSpacing;
+
+  return blockReference;
+}
+
 EoDbBlockReference* EoDbBlockReference::ReadFromPeg(CFile& file) {
   auto color = EoDb::ReadInt16(file);
   auto lineType = EoDb::ReadInt16(file);

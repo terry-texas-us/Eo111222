@@ -1109,6 +1109,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fi
           EoDb::WriteUInt64(*this, primitive->OwnerHandle());
           EoDb::WriteInt16(*this, EoDxfLineWeights::LineWeightToDxfIndex(primitive->LineWeight()));
           EoDb::WriteDouble(*this, primitive->LineTypeScale());
+          primitive->WriteV2Extension(*this);
         }
         numberOfPrimitives++;
       }

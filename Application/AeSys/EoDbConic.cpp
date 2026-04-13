@@ -136,19 +136,32 @@ EoDbConic* EoDbConic::CreateConicFromEllipsePrimitive(
   if (majorAxisLength < Eo::geometricTolerance) { throw std::runtime_error("Conic: Near-zero major axis length."); }
   double ratio{minorAxis.Length() / majorAxisLength};
 
-  if (Eo::IsGeometricallyNonZero(DotProduct(majorAxis, minorAxis))) {
-    throw std::runtime_error("Conic: Major and minor axes are not perpendicular.");
-  }
   auto extrusion{CrossProduct(majorAxis, minorAxis)};
+  if (extrusion.Length() < Eo::geometricTolerance) {
+    throw std::runtime_error("Conic: Major and minor axes are parallel or degenerate.");
+  }
   extrusion.Unitize();
+
+  // Rectify non-perpendicular minor axis via Gram-Schmidt: recompute the minor axis direction
+  // as perpendicular to the major axis within the same plane, preserving the original minor
+  // axis length (ratio). Legacy ellipse primitives may store axes that are not exactly orthogonal.
+  if (Eo::IsGeometricallyNonZero(DotProduct(majorAxis, minorAxis))) {
+    ATLTRACE2(traceGeneral, 3, L"CreateConicFromEllipsePrimitive: Rectified non-perpendicular axes (dot=%.6e)\n",
+        DotProduct(majorAxis, minorAxis));
+  }
 
   double startParameter{};
   double endParameter{sweepAngle};
 
   if (extrusion.z < 0.0) {
     extrusion = -extrusion;
-    std::swap(startParameter, endParameter);
-    if (endParameter < startParameter) { endParameter += Eo::TwoPi; }
+    // Flipping the extrusion negates the derived minor axis direction,
+    // reversing the parametric winding. In the flipped OCS, original
+    // parametric angle θ maps to -θ. Remap arc endpoints accordingly
+    // and ensure CCW ordering for EoDbConic representation.
+    double negatedSweep = -endParameter;  // endParameter == sweepAngle at this point
+    startParameter = std::min(negatedSweep, 0.0);
+    endParameter = std::max(negatedSweep, 0.0);
   }
   startParameter = std::fmod(startParameter, Eo::TwoPi);
   if (startParameter < 0.0) { startParameter += Eo::TwoPi; }
@@ -297,7 +310,7 @@ void EoDbConic::AddReportToMessageList(const EoGePoint3d& point) {
       break;
 
     case ConicType::RadialArc:
-      message.Format(L"  Radius: %.4f Start Angle: %.2f° End Angle: %.2f°", radius, Eo::RadianToDegree(m_startAngle),
+      message.Format(L"  Radius: %.4f Start Angle: %.2f\u00B0 End Angle: %.2f\u00B0", radius, Eo::RadianToDegree(m_startAngle),
           Eo::RadianToDegree(m_endAngle));
       break;
     case ConicType::Ellipse:
@@ -305,7 +318,7 @@ void EoDbConic::AddReportToMessageList(const EoGePoint3d& point) {
       break;
 
     case ConicType::EllipticalArc:
-      message.Format(L"  Major Radius: %.4f Radius Ratio: %.4f Start Angle: %.2f° End Angle: %.2f°", radius, m_ratio,
+      message.Format(L"  Major Radius: %.4f Radius Ratio: %.4f Start Angle: %.2f\u00B0 End Angle: %.2f\u00B0", radius, m_ratio,
           Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
   }
@@ -506,14 +519,14 @@ void EoDbConic::FormatExtra(CString& extra) {
       extra.AppendFormat(L"\tRadius;%.4f", m_majorAxis.Length());
       break;
     case ConicType::RadialArc:
-      extra.AppendFormat(L"\tRadius;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°", m_majorAxis.Length(),
+      extra.AppendFormat(L"\tRadius;%.4f\tStart Angle;%.2f\u00B0\tEnd Angle;%.2f\u00B0", m_majorAxis.Length(),
           Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
     case ConicType::Ellipse:
       extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f", m_majorAxis.Length(), m_ratio);
       break;
     case ConicType::EllipticalArc:
-      extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f\tStart Angle;%.2f°\tEnd Angle;%.2f°", m_majorAxis.Length(),
+      extra.AppendFormat(L"\tMajor Length;%.4f\tRatio;%.4f\tStart Angle;%.2f\u00B0\tEnd Angle;%.2f\u00B0", m_majorAxis.Length(),
           m_ratio, Eo::RadianToDegree(m_startAngle), Eo::RadianToDegree(m_endAngle));
       break;
   }

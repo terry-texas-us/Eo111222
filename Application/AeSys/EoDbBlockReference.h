@@ -75,10 +75,11 @@ class EoDbBlockReference : public EoDbPrimitive {
   static EoDbBlockReference* ReadFromPeg(CFile& file);
 
   /// @brief Reads a legacy insert primitive from a PEG file stream (type code kInsertPrimitive) and converts it to a
-  /// block reference.
+  /// block reference. The legacy format stores three axis vectors (x/y/z) representing a local reference system,
+  /// which are converted to the modern normal + scaleFactors + rotation representation.
   /// @param file The CFile object representing the PEG file to read from.
   /// @return A pointer to the constructed EoDbBlockReference.
-  static EoDbBlockReference* ReadLegacyInsertPeg([[maybe_unused]] CFile& file) {return nullptr;}
+  static EoDbBlockReference* ReadLegacyInsertPeg(CFile& file);
 
  public:
   EoGeTransformMatrix BuildTransformMatrix(const EoGePoint3d& basePoint) const;
