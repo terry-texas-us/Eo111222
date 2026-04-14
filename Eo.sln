@@ -56,8 +56,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{923FCE64
 		Tools\ConvertPsfToText.ps1 = Tools\ConvertPsfToText.ps1
 		Tools\ConvertStrokeFontV1ToV2.ps1 = Tools\ConvertStrokeFontV1ToV2.ps1
 		Tools\ConvertTextToPsf.ps1 = Tools\ConvertTextToPsf.ps1
-		Tools\GenerateToolbarBitmaps.ps1 = Tools\GenerateToolbarBitmaps.ps1
 		Tools\GenerateLayoutTests.py = Tools\GenerateLayoutTests.py
+		Tools\GenerateToolbarBitmaps.ps1 = Tools\GenerateToolbarBitmaps.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{89A30A22-22FE-4682-AFD1-A948713CDE20}"
@@ -75,6 +75,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\Modern DimLinear Dimension (aligned and rotated).pdf = Documentation\Modern DimLinear Dimension (aligned and rotated).pdf
 		Documentation\OpenDesign_Specification_for_.dwg_files.pdf = Documentation\OpenDesign_Specification_for_.dwg_files.pdf
 		Documentation\Peg & Tra File Formats.md = Documentation\Peg & Tra File Formats.md
+		Peg & Tra File Formats - 2025.md = Peg & Tra File Formats - 2025.md
 		Documentation\Phase6_Direct2D_Backend_Plan.md = Documentation\Phase6_Direct2D_Backend_Plan.md
 		Documentation\Simplex PSF Format.md = Documentation\Simplex PSF Format.md
 		VS2026 - UI Shell Background Colors.md = VS2026 - UI Shell Background Colors.md
