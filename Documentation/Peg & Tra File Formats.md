@@ -223,6 +223,9 @@ Handles both DXF LWPOLYLINE and 2D/3D POLYLINE entities.
         {start widths}       double[]  (one per vertex)
         {end widths}         double[]  (one per vertex)
 
+      V2 extension (AE2026 only, after the generic handle/owner/lineWeight/lineTypeScale block):
+        Constant width       double    (DXF LWPOLYLINE group code 43; 0.0 when not set)
+
 #### Text primitive
       Type code <0x4000>     uint16_t  [0-1]
       Pen color              uint16_t  [2-3]
