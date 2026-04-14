@@ -61,30 +61,12 @@ void EoDbPegFile::Load(AeSysDoc* document) {
       fileVersion = EoDb::PegFileVersion::AE2026;
     }
   }
-
   ReadTablesSection(document, fileVersion);
   ReadBlocksSection(document, fileVersion);
   ReadEntitiesSection(document, fileVersion);
   ReadPaperSpaceSection(document, fileVersion);
 }
 
-/**
- * Reads the header section from the PEG file into the document's header section.
- *
- * Uses a peek-ahead to distinguish legacy files from V2 files:
- * - **Legacy**: kHeaderSection is followed immediately by kEndOfSection. Default variables
- *   are populated with $AESVER = "AE2011".
- * - **V2**: kHeaderSection is followed by one or more variable triples (name, type tag, value),
- *   terminated by kEndOfSection.
- *
- * The sentinel kEndOfSection (0x01ff) cannot collide with the first two bytes of a
- * tab-terminated variable name (which starts with '$' = 0x24 in CP_ACP), so the peek
- * is unambiguous.
- *
- * @param document Pointer to the AeSysDoc object where the header section will be populated.
- * @throws std::runtime_error if the expected kHeaderSection sentinel is not found.
- * @throws std::runtime_error if an unknown type discriminator tag is encountered.
- */
 void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   if (EoDb::ReadUInt16(*this) != EoDb::kHeaderSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kHeaderSection.");
@@ -154,13 +136,6 @@ void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
   }
 }
 
-/**
- * Reads the tables section from the PEG file into the document's tables.
- * @param document Pointer to the AeSysDoc object where the tables will be populated.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection." if the expected end of section sentinel is
- * not found.
- */
 void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kTablesSection) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kTablesSection.");
@@ -188,6 +163,7 @@ void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fil
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection.");
   }
 }
+
 void EoDbPegFile::ReadViewportTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kViewPortTable) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kViewPortTable.");
@@ -211,13 +187,6 @@ void EoDbPegFile::ReadViewportTable(AeSysDoc* document, EoDb::PegFileVersion fil
   }
 }
 
-/**
- * Reads the linetype table from the PEG file into the document's linetype table.
- * @param document Pointer to the AeSysDoc object where the linetype table will be populated.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kLinetypeTable." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not
- * found.
- */
 void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   auto* lineTypeTable = document->LineTypeTable();
 
@@ -252,14 +221,6 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document, EoDb::PegFileVersion fi
   }
 }
 
-/**
- * Reads a linetype definition from the PEG file.
- * @param dashLength A reference to a vector that will be populated with the dash lengths of the linetype.
- * @param name A reference to a CString that will be populated with the name of the linetype.
- * @param description A reference to a CString that will be populated with the description of the linetype.
- * @param definitionLength A reference to an std::uint16_t that will be set to the number of dash elements in the
- * linetype.
- */
 void EoDbPegFile::ReadLinetypeDefinition(
     std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength) {
   EoDb::Read(*this, name);
@@ -274,13 +235,6 @@ void EoDbPegFile::ReadLinetypeDefinition(
   for (std::uint16_t n = 0; n < definitionLength; n++) { EoDb::Read(*this, dashLength[n]); }
 }
 
-/**
- * Reads the layer table from the PEG file into the document's layer table.
- * @param document Pointer to the AeSysDoc object where the layer table will be populated.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable." if the expected sentinel is not found.
- * @throws L"Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfTable." if the expected end of table sentinel is not
- * found.
- */
 void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable.");
@@ -1268,7 +1222,8 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
 }
 
 bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive, EoDb::PegFileVersion fileVersion) {
-  switch (EoDb::ReadUInt16(file)) {
+  auto primitiveType = EoDb::ReadUInt16(file);
+  switch (primitiveType) {
     case EoDb::kPointPrimitive:
       primitive = EoDbPoint::ReadFromPeg(file);
       break;
@@ -1319,7 +1274,8 @@ bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive, EoDb::PegFileVersion fil
       break;
 
     default:
-      app.WarningMessageBox(IDS_MSG_BAD_PRIM_TYPE);
+      // app.WarningMessageBox(IDS_MSG_BAD_PRIM_TYPE);
+      ATLTRACE2(atlTraceGeneral, 1, L"Invalid primitve type: %i", primitiveType);
       return false;
   }
   if (fileVersion == EoDb::PegFileVersion::AE2026) {

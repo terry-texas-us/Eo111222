@@ -24,7 +24,6 @@
 ///  Pen color            uint16_t
 ///  Line type            uint16_t
 ///  Flags                uint16_t   (sm_Closed | sm_HasBulge | sm_HasWidth | sm_Plinegen | sm_Is3D)
-///  Constant width       double     (DXF group code 43; 0.0 when not set)
 ///  Number of vertices   uint16_t
 ///  {vertices}           point3d[]
 ///  if (flags & sm_HasBulge):
@@ -32,6 +31,11 @@
 ///  if (flags & sm_HasWidth):
 ///    {start widths}     double[]   (one per vertex)
 ///    {end widths}       double[]   (one per vertex)
+/// @endcode
+///
+/// V2 extension (AE2026 only, written after generic V2 block):
+/// @code
+///  Constant width       double     (DXF group code 43; 0.0 when not set)
 /// @endcode
 class EoDbPolyline : public EoDbPrimitive {
   static std::uint16_t sm_EdgeToEvaluate;
@@ -94,6 +98,9 @@ class EoDbPolyline : public EoDbPrimitive {
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;
   bool Write(CFile& file) override;
   void Write(CFile& file, std::uint8_t* buffer) override { (void)file, (void)buffer; };
+
+  void WriteV2Extension(CFile& file) const override;
+  void ReadV2Extension(CFile& file) override;
 
   /// @brief Reads a polyline primitive from a PEG file stream (type code kPolylinePrimitive).
   /// @param file The CFile object representing the PEG file to read from.

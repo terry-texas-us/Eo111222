@@ -600,6 +600,12 @@ class AeSysDoc : public CDocument {
   [[nodiscard]] auto TrapGroupCount() { return m_trappedGroups.GetCount(); }
   [[nodiscard]] auto* GroupsInTrap() { return &m_trappedGroups; }
 
+  /// @brief Moves all trapped groups to the specified target space.
+  /// Each group is removed from its current layer (model or paper) and added to the
+  /// corresponding layer (by name) in the target space. If the target layer does not
+  /// exist, a minimal layer is created. The trap is cleared after the transfer.
+  void MoveTrappedGroupsToSpace(EoDxf::Space targetSpace);
+
   // Nodal list interface (includes list of groups, primitives and unique points)
   void DeleteNodalResources();
   /// @brief Maintains a list of the primatives with at least one identified node.

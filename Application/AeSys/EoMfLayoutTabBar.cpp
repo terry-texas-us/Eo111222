@@ -17,6 +17,7 @@ IMPLEMENT_DYNAMIC(EoMfLayoutTabBar, CMFCTabCtrl)
 BEGIN_MESSAGE_MAP(EoMfLayoutTabBar, CMFCTabCtrl)
 ON_BN_CLICKED(IDC_LAYOUT_SPACE_LABEL, &EoMfLayoutTabBar::OnSpaceLabelClicked)
 ON_BN_CLICKED(IDC_VIEWPORT_LOCK_BUTTON, &EoMfLayoutTabBar::OnLockButtonClicked)
+ON_BN_CLICKED(IDC_SPACE_TRANSFER_BUTTON, &EoMfLayoutTabBar::OnSpaceTransferClicked)
 ON_CBN_SELCHANGE(IDC_VIEWPORT_SCALE_COMBO, &EoMfLayoutTabBar::OnScaleComboChanged)
 END_MESSAGE_MAP()
 
@@ -84,6 +85,12 @@ BOOL EoMfLayoutTabBar::CreateTabBar(CWnd* parentWindow, UINT controlId) {
   m_lockButton.Create(
       L"\U0001F513", WS_CHILD | BS_PUSHBUTTON | BS_FLAT, CRect(0, 0, 0, 0), this, IDC_VIEWPORT_LOCK_BUTTON);
   m_lockButton.SetFont(&m_controlFont);
+
+  // Space transfer button — moves trapped groups between model and paper space.
+  // Hidden until a viewport is activated and the trap contains groups.
+  m_spaceTransferButton.Create(
+      L"\u2B05 PS", WS_CHILD | BS_PUSHBUTTON | BS_FLAT, CRect(0, 0, 0, 0), this, IDC_SPACE_TRANSFER_BUTTON);
+  m_spaceTransferButton.SetFont(&m_controlFont);
 
   ApplyColorScheme();
 
@@ -179,10 +186,14 @@ void EoMfLayoutTabBar::UpdateViewportState(const EoDbViewport* viewport, bool is
     double viewportScale = ComputeViewportScale(viewport);
     PopulateScaleCombo(viewportScale);
     m_scaleCombo.ShowWindow(SW_SHOW);
+
+    // Show space transfer button when trap is not empty
+    UpdateSpaceTransferButton();
   } else {
     // Hide viewport-specific controls when in model space or no viewport is active
     m_lockButton.ShowWindow(SW_HIDE);
     m_scaleCombo.ShowWindow(SW_HIDE);
+    m_spaceTransferButton.ShowWindow(SW_HIDE);
   }
 
   RepositionControls();
@@ -211,7 +222,7 @@ void EoMfLayoutTabBar::RepositionControls() {
 
   const int spaceLabelWidth = spaceLabelSize.cx + 16;  // padding
 
-  // Layout from the right edge: Space Label → Lock → Scale
+  // Layout from the right edge: Space Label → Lock → Transfer → Scale
   int xPosition = clientRect.right - rightMargin;
 
   // Scale combo (rightmost, if visible) — wide enough for ~18 characters
@@ -220,6 +231,20 @@ void EoMfLayoutTabBar::RepositionControls() {
     const int scaleComboWidth = MulDiv(140, dpi, 96);
     xPosition -= scaleComboWidth;
     m_scaleCombo.MoveWindow(xPosition, topMargin, scaleComboWidth, controlHeight + 200);  // drop height
+    xPosition -= controlGap;
+  }
+
+  // Space transfer button (if visible)
+  if (m_spaceTransferButton.IsWindowVisible()) {
+    CClientDC transferDc(&m_spaceTransferButton);
+    CFont* oldTransferFont = transferDc.SelectObject(&m_controlFont);
+    CString transferText;
+    m_spaceTransferButton.GetWindowTextW(transferText);
+    CSize transferSize = transferDc.GetTextExtent(transferText);
+    transferDc.SelectObject(oldTransferFont);
+    const int transferButtonWidth = transferSize.cx + 16;
+    xPosition -= transferButtonWidth;
+    m_spaceTransferButton.MoveWindow(xPosition, topMargin, transferButtonWidth, controlHeight);
     xPosition -= controlGap;
   }
 
@@ -367,4 +392,47 @@ void EoMfLayoutTabBar::OnLockButtonClicked() {
   // Return focus to the view
   auto* parentView = static_cast<AeSysView*>(GetParent());
   if (parentView != nullptr) { parentView->SetFocus(); }
+}
+
+void EoMfLayoutTabBar::UpdateSpaceTransferButton() {
+  if (m_currentViewport == nullptr) {
+    m_spaceTransferButton.ShowWindow(SW_HIDE);
+    RepositionControls();
+    return;
+  }
+
+  auto* parentView = static_cast<AeSysView*>(GetParent());
+  if (parentView == nullptr) { return; }
+  auto* document = parentView->GetDocument();
+  if (document == nullptr) { return; }
+
+  bool showButton = !document->IsTrapEmpty();
+  bool isCurrentlyVisible = m_spaceTransferButton.IsWindowVisible() != 0;
+
+  if (showButton) {
+    // Determine the transfer direction label:
+    // When a viewport is active, the work layer is in model space.
+    // Trapped groups could be from model space (transfer to paper) or paper space (transfer to model).
+    // Use a bidirectional arrow label since groups may come from either space.
+    m_spaceTransferButton.SetWindowTextW(L"\u21C4 PS");
+    m_spaceTransferButton.ShowWindow(SW_SHOW);
+  } else {
+    m_spaceTransferButton.ShowWindow(SW_HIDE);
+  }
+
+  if (showButton != isCurrentlyVisible) { RepositionControls(); }
+}
+
+void EoMfLayoutTabBar::OnSpaceTransferClicked() {
+  auto* parentView = static_cast<AeSysView*>(GetParent());
+  if (parentView == nullptr || !parentView->IsViewportActive()) { return; }
+
+  auto* document = parentView->GetDocument();
+  if (document == nullptr || document->IsTrapEmpty()) { return; }
+
+  document->MoveTrappedGroupsToSpace(EoDxf::Space::PaperSpace);
+
+  UpdateSpaceTransferButton();
+  parentView->InvalidateScene();
+  parentView->SetFocus();
 }

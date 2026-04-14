@@ -67,6 +67,10 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// Called from AeSysView when viewport state changes (activate, deactivate, tab switch).
   void UpdateViewportState(const EoDbViewport* viewport, bool isPaperSpace);
 
+  /// @brief Refreshes the space transfer button visibility based on trap state.
+  /// Called when the trap contents change (groups added or removed).
+  void UpdateSpaceTransferButton();
+
   /// @brief Repositions the state controls to the right of the tab strip.
   /// Called from AeSysView::OnSize when the tab bar is resized.
   void RepositionControls();
@@ -109,6 +113,10 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// Visible only when a viewport is activated in paper space. Position 2 (after label).
   CButton m_lockButton;
 
+  /// @brief Space transfer button. Moves trapped groups between model and paper space.
+  /// Visible only when a viewport is activated in paper space and the trap is not empty.
+  CButton m_spaceTransferButton;
+
   /// @brief Viewport scale dropdown. Populated with plot-matching scale presets.
   /// Visible only when a viewport is activated in paper space. Position 3 (after lock).
   CComboBox m_scaleCombo;
@@ -134,4 +142,5 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   afx_msg void OnSpaceLabelClicked();
   afx_msg void OnScaleComboChanged();
   afx_msg void OnLockButtonClicked();
+  afx_msg void OnSpaceTransferClicked();
 };

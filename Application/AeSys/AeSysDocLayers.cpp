@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -422,6 +423,73 @@ EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
     if (auto* found = searchLayers(layers)) { return found; }
   }
   return nullptr;
+}
+
+void AeSysDoc::MoveTrappedGroupsToSpace(EoDxf::Space targetSpace) {
+  if (m_trappedGroups.IsEmpty()) { return; }
+
+  // Collect groups into a local list so we can iterate safely while modifying the trap.
+  std::vector<EoDbGroup*> groupsToMove;
+  auto position = m_trappedGroups.GetHeadPosition();
+  while (position != nullptr) { groupsToMove.push_back(m_trappedGroups.GetNext(position)); }
+
+  for (auto* group : groupsToMove) {
+    // Determine which layer name to use from the first primitive in the group
+    CString targetLayerName(L"0");
+    auto primPosition = group->GetHeadPosition();
+    if (primPosition != nullptr) {
+      auto* primitive = group->GetNext(primPosition);
+      if (primitive != nullptr && !primitive->LayerName().empty()) {
+        targetLayerName = primitive->LayerName().c_str();
+      }
+    }
+
+    // Remove the group from its current layer (searches both model and paper spaces).
+    // AnyLayerRemove only searches work/active layers — use a broader search.
+    bool removed = false;
+    auto removeFromLayers = [&](CLayers& layers) -> bool {
+      for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+        auto* layer = layers.GetAt(i);
+        if (layer->Remove(group) != 0) { return true; }
+      }
+      return false;
+    };
+    removed = removeFromLayers(m_modelSpaceLayers);
+    if (!removed) {
+      for (auto& [handle, layers] : m_paperSpaceLayoutLayers) {
+        if (removeFromLayers(layers)) {
+          removed = true;
+          break;
+        }
+      }
+    }
+    if (!removed) { continue; }  // Group not found in any layer — skip
+
+    // Find or create the target layer in the target space
+    EoDbLayer* targetLayer = nullptr;
+    if (targetSpace == EoDxf::Space::PaperSpace) {
+      targetLayer = FindLayerInLayout(targetLayerName, m_activeLayoutHandle);
+      if (targetLayer == nullptr) {
+        targetLayer = new EoDbLayer(targetLayerName, EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
+        AddLayerToLayout(targetLayer, m_activeLayoutHandle);
+      }
+    } else {
+      targetLayer = FindLayerInSpace(targetLayerName, EoDxf::Space::ModelSpace);
+      if (targetLayer == nullptr) {
+        targetLayer = new EoDbLayer(targetLayerName, EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
+        AddLayerToSpace(targetLayer, EoDxf::Space::ModelSpace);
+      }
+    }
+
+    targetLayer->AddTail(group);
+    m_trappedGroups.Remove(group);
+  }
+
+  RemoveAllGroupsFromAllViews();
+  ResetAllViews();
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::WorkCount); }
+  SetModifiedFlag(TRUE);
 }
 
 void AeSysDoc::TracingFuse(CString& nameAndLocation) {

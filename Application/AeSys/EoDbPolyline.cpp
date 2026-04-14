@@ -779,7 +779,6 @@ EoDbPolyline* EoDbPolyline::ReadFromPeg(CFile& file) {
   auto color = EoDb::ReadInt16(file);
   auto lineType = EoDb::ReadInt16(file);
   auto flags = static_cast<std::int16_t>(EoDb::ReadUInt16(file));
-  auto constantWidth = EoDb::ReadDouble(file);
   auto numberOfVertices = EoDb::ReadUInt16(file);
 
   EoGePoint3dArray points;
@@ -789,7 +788,6 @@ EoDbPolyline* EoDbPolyline::ReadFromPeg(CFile& file) {
 
   auto* polyline = new EoDbPolyline(color, lineType, points);
   polyline->m_flags = flags;
-  polyline->m_constantWidth = constantWidth;
 
   if (flags & sm_HasBulge) {
     std::vector<double> bulges(numberOfVertices);
@@ -829,7 +827,6 @@ bool EoDbPolyline::Write(CFile& file) {
   EoDb::WriteInt16(file, m_color);
   EoDb::WriteInt16(file, EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType));
   EoDb::WriteUInt16(file, static_cast<std::uint16_t>(m_flags));
-  EoDb::WriteDouble(file, m_constantWidth);
   const auto numberOfVertices = static_cast<std::uint16_t>(m_pts.GetSize());
   EoDb::WriteUInt16(file, numberOfVertices);
 
@@ -852,6 +849,14 @@ bool EoDbPolyline::Write(CFile& file) {
   }
 
   return true;
+}
+
+void EoDbPolyline::WriteV2Extension(CFile& file) const {
+  EoDb::WriteDouble(file, m_constantWidth);
+}
+
+void EoDbPolyline::ReadV2Extension(CFile& file) {
+  m_constantWidth = EoDb::ReadDouble(file);
 }
 
 void EoDbPolyline::BuildTessellatedPoints(EoGePoint3dArray& tessellatedPoints) const {

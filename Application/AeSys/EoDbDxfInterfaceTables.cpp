@@ -435,6 +435,15 @@ void EoDbDxfInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
  *   entities this identifies the layout. NoHandle falls back to the default layout (0x1E).
  */
 EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle) {
+  // Override space for entities inside *Paper_Space layout pseudo-blocks.
+  // Many DXF writers (including ODA Converter) don't set group code 67 for entities
+  // inside *Paper_Space blocks — the block context already implies paper space.
+  // Without this override, m_space defaults to ModelSpace and the entity is routed
+  // to model-space layers, causing paper-space graphics to appear in both views.
+  if (m_currentOpenBlockDefinition == nullptr && m_blockName.starts_with(L"*Paper_Space")) {
+    space = EoDxf::Space::PaperSpace;
+  }
+
   auto layerName = primitive->LayerName().c_str();
 
   EoDbLayer* layer{};
@@ -496,7 +505,8 @@ EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* d
   if (m_currentOpenBlockDefinition == nullptr) {
     auto* group = new EoDbGroup();
 
-    ATLTRACE2(traceGeneral, 3, L"  -> Creating MODEL SPACE group %p for primitive %p\n", group, primitive);
+    ATLTRACE2(traceGeneral, 3, L"  -> Creating %s group %p for primitive %p\n",
+        (space == EoDxf::Space::PaperSpace) ? L"PAPER SPACE" : L"MODEL SPACE", group, primitive);
 
     group->AddTail(primitive);
     layer->AddTail(group);
