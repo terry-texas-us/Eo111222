@@ -95,7 +95,7 @@ IDR_MAINFRAME_24        BITMAP                  "res\\Toolbar Bitmaps\\Toolbar-l
 
 IDB_PROPERTIES          BITMAP                  "res\\Toolbar Bitmaps\\properties_hc.bmp"
 
-IDB_LAYER_STATES        BITMAP                  "res\\Toolbar Bitmaps\\LayerStates_hc.bmp"
+IDB_LAYER_STATES        BITMAP                  "res\\Toolbar Bitmaps\\LayerStates24.bmp"
 
 IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderProperties.bmp"
 
@@ -1266,7 +1266,7 @@ FONT 10, "Segoe UI Light", 300, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,71,5,12,9
     LTEXT           "AeSys, Version 11.0",IDC_STATIC,49,18,57,8,SS_NOPREFIX
-    CTEXT           "© Fanning, Fanning & Assoc.",IDC_STATIC,35,30,84,8
+    CTEXT           "ï¿½ Fanning, Fanning & Assoc.",IDC_STATIC,35,30,84,8
     CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,53,44,50,14
 END
 
@@ -2079,7 +2079,7 @@ BEGIN
             VALUE "CompanyName", "Fanning, Fanning & Associates"
             VALUE "FileVersion", "10.03.0.0"
             VALUE "InternalName", "AeSys.exe"
-            VALUE "LegalCopyright", "Copyright © 2002"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2002"
             VALUE "OriginalFilename", "AeSys.exe"
             VALUE "ProductName", "AeSys"
             VALUE "ProductVersion", "10.03.0.0"

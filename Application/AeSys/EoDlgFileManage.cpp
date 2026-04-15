@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -130,8 +130,8 @@ BOOL EoDlgFileManage::OnInitDialog() {
     }
   }
   CBitmap Bitmap;
-  Bitmap.LoadBitmap(IDB_LAYER_STATES);
-  m_StateImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1);
+  Bitmap.LoadBitmapW(IDB_LAYER_STATES);
+  m_StateImages.Create(24, 24, ILC_COLOR32 | ILC_MASK, 0, 1);
   m_StateImages.Add(&Bitmap, Eo::colorNavy);
 
   WndProcPreviewClear(m_PreviewWindowHandle);
