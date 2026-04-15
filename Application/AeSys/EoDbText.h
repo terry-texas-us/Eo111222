@@ -126,6 +126,13 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
 void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, const CString& text);
+/// @brief Renders MTEXT text with automatic word-wrapping based on the reference rectangle width.
+/// Lines are broken at word boundaries (spaces) when the accumulated line width exceeds the
+/// wrap threshold derived from EoDbMTextProperties::referenceRectangleWidth. Hard paragraph
+/// breaks (\P) are honored. Formatting codes (\A, \S) are skipped during width measurement
+/// and passed through to DisplayTextWithFormattingCharacters for each wrapped line segment.
+void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem, const CString& text, const EoDbMTextProperties& mtextProperties);
 /// @brief Determines the count of characters in string excluding formatting characters.
 int LengthSansFormattingCharacters(const CString& text);
 /// @brief Determines the offset to the bottom left alignment position of a text string

@@ -537,6 +537,7 @@
     <Image Include="res\Icons\properties_wnd.ico" />
     <Image Include="res\Icons\properties_wnd_hc.ico" />
     <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />
+    <Image Include="res\Toolbar Bitmaps\LayerStates24.bmp" />
     <Image Include="res\Toolbar Bitmaps\LayerStates_hc.bmp" />
     <Image Include="res\Toolbar Bitmaps\layer_filters.bmp" />
     <Image Include="res\Toolbar Bitmaps\menuimages.bmp" />

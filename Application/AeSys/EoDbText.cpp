@@ -137,7 +137,13 @@ void EoDbText::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   std::int16_t lineTypeIndex = Gs::renderState.LineTypeIndex();
   Gs::renderState.SetLineType(renderDevice, 1);
 
-  DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText);
+  if (m_mtextProperties.has_value()
+      && m_mtextProperties->referenceRectangleWidth > Eo::geometricTolerance) {
+    DisplayMTextWithWordWrap(
+        view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText, *m_mtextProperties);
+  } else {
+    DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText);
+  }
   Gs::renderState.SetLineType(renderDevice, lineTypeIndex);
 }
 
@@ -1002,4 +1008,135 @@ EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition, EoGeRef
     path.RotateAboutArbitraryAxis(unitNormal, Eo::HalfPi);
   }
   return (position + (path * 1.5));
+}
+
+void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem, const CString& text, const EoDbMTextProperties& mtextProperties) {
+  if (text.IsEmpty()) { return; }
+
+  // Resolve stroke font advance width table for per-character width measurement
+  auto* fontData = reinterpret_cast<long*>(app.SimplexStrokeFont());
+  long* advanceWidthTable = nullptr;
+  int maxCharacterCode = Eo::strokeFontV1MaxCharacterCode;
+  if (fontData != nullptr && app.StrokeFontVersion() == 2) {
+    advanceWidthTable = fontData + Eo::strokeFontV2AdvanceWidthTableStart;
+    maxCharacterCode = Eo::strokeFontV2MaxCharacterCode;
+  }
+
+  // Compute the inter-character gap in normalized units (same formula as DisplayTextSegmentUsingStrokeFont)
+  double interCharacterGap = (0.32 + fd.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+
+  // Convert the MTEXT reference rectangle width from world units to normalized stroke-font units.
+  // xDirection.Length() = height * defaultCharacterCellAspectRatio * widthScale, which is the
+  // world-unit width of one normalized unit along the text path.
+  double xDirectionLength = referenceSystem.XDirection().Length();
+  if (xDirectionLength < Eo::geometricTolerance) {
+    DisplayText(view, renderDevice, fd, referenceSystem, text);
+    return;
+  }
+  double wrapThreshold = mtextProperties.referenceRectangleWidth / xDirectionLength;
+
+  // Split text into word-wrapped lines. Each line is a CString that will be rendered
+  // via DisplayText (which handles alignment and inline formatting codes like \S).
+  std::vector<CString> wrappedLines;
+
+  int lineStart = 0;
+  int lastSpaceInLine = -1;       // Index of the last space character in the current line
+  double accumulatedWidth = 0.0;  // Accumulated normalized width of the current line
+  int displayableCount = 0;       // Number of displayable characters on the current line
+
+  int pos = 0;
+  while (pos < text.GetLength()) {
+    wchar_t c = text[pos];
+
+    // Check for hard paragraph break (\P)
+    if (c == '\\' && pos + 1 < text.GetLength() && text[pos + 1] == 'P') {
+      wrappedLines.push_back(text.Mid(lineStart, pos - lineStart));
+      pos += 2;  // skip \P
+      lineStart = pos;
+      lastSpaceInLine = -1;
+      accumulatedWidth = 0.0;
+      displayableCount = 0;
+      continue;
+    }
+
+    // Skip formatting sequences for width measurement (but keep them in the output string)
+    if (c == '\\' && pos + 1 < text.GetLength()) {
+      wchar_t next = text[pos + 1];
+      if (next == 'A') {
+        // \A<digit>; — alignment change, skip the whole sequence for width
+        int endSemicolon = text.Find(';', pos + 1);
+        if (endSemicolon != -1 && endSemicolon == pos + 3) {
+          pos = endSemicolon + 1;
+          continue;
+        }
+      } else if (next == 'S') {
+        // \S<super>/<sub>; — stacked fraction, measure the contained characters
+        int endSemicolon = text.Find(';', pos + 1);
+        if (endSemicolon != -1) {
+          int delimiter = text.Find('/', pos + 2);
+          if (delimiter == -1) { delimiter = text.Find('^', pos + 2); }
+          if (delimiter != -1 && delimiter < endSemicolon) {
+            for (int i = pos + 2; i < endSemicolon; i++) {
+              if (i != delimiter) {
+                if (displayableCount > 0) { accumulatedWidth += interCharacterGap; }
+                accumulatedWidth += CharacterCellWidth(text[i], advanceWidthTable, maxCharacterCode);
+                displayableCount++;
+              }
+            }
+            pos = endSemicolon + 1;
+            continue;
+          }
+        }
+      }
+    }
+
+    // Track space positions for word-boundary breaking
+    if (c == ' ') { lastSpaceInLine = pos; }
+
+    // Measure this character
+    double charWidth = CharacterCellWidth(c, advanceWidthTable, maxCharacterCode);
+    if (displayableCount > 0) { charWidth += interCharacterGap; }
+
+    // Check if adding this character would exceed the wrap threshold
+    if (accumulatedWidth + charWidth > wrapThreshold && displayableCount > 0) {
+      // Break at the last space if one exists on this line
+      int breakPos;
+      int nextLineStart;
+      if (lastSpaceInLine >= lineStart) {
+        breakPos = lastSpaceInLine;
+        nextLineStart = lastSpaceInLine + 1;  // skip the space
+      } else {
+        // No space found — break at the current position (mid-word)
+        breakPos = pos;
+        nextLineStart = pos;
+      }
+      wrappedLines.push_back(text.Mid(lineStart, breakPos - lineStart));
+      lineStart = nextLineStart;
+      pos = nextLineStart;
+      lastSpaceInLine = -1;
+      accumulatedWidth = 0.0;
+      displayableCount = 0;
+      continue;
+    }
+
+    accumulatedWidth += charWidth;
+    displayableCount++;
+    pos++;
+  }
+
+  // Emit the final line
+  if (lineStart <= text.GetLength()) { wrappedLines.push_back(text.Mid(lineStart)); }
+
+  // Render each wrapped line, advancing the origin downward by lineSpacingFactor per line
+  EoGeReferenceSystem lineReferenceSystem = referenceSystem;
+  for (size_t i = 0; i < wrappedLines.size(); i++) {
+    if (!wrappedLines[i].IsEmpty()) {
+      DisplayText(view, renderDevice, fd, lineReferenceSystem, wrappedLines[i]);
+    }
+    if (i + 1 < wrappedLines.size()) {
+      lineReferenceSystem.SetOrigin(
+          text_GetNewLinePos(fd, lineReferenceSystem, mtextProperties.lineSpacingFactor, 0));
+    }
+  }
 }

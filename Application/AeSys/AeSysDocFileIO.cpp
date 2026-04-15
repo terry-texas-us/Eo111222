@@ -10,6 +10,8 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"
+#include "EoDbBlock.h"
+#include "EoDbBlockReference.h"
 #include "EoDbDxfInterface.h"
 #include "EoDbJobFile.h"
 #include "EoDbLayer.h"
@@ -18,6 +20,7 @@
 #include "EoDbTracingFile.h"
 #include "EoDbVPortTableEntry.h"
 #include "EoDxfBase.h"
+#include "EoDxfObjects.h"
 #include "EoDxfRead.h"
 #include "EoDxfWrite.h"
 #include "EoOdaConverter.h"
@@ -346,6 +349,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         }
         app.AddStringToReportsList(std::format(L"DWG opened via ODAFileConverter: {}", pathName));
         ReportDxfImportStatistics(dxfInterface);
+        ResolveDynamicBlockReferences();
       }
       EoOdaConverter::DeleteTempFolder(tempDwgFolder);
       EoOdaConverter::DeleteTempFolder(tempDxfFolder);
@@ -363,6 +367,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       if (success) {
         app.AddStringToReportsList(std::format(L"DXF file `{}` opened successfully", pathName));
         ReportDxfImportStatistics(dxfInterface);
+        ResolveDynamicBlockReferences();
       } else {
         app.AddStringToReportsList(L"Error loading DXF file.");
       }
@@ -542,4 +547,127 @@ void AeSysDoc::WriteShadowFile(EoDb::PegFileVersion fileVersion) {
     return;
   }
   app.WarningMessageBox(IDS_MSG_SHADOW_FILE_CREATE_FAILURE);
+}
+
+void AeSysDoc::ResolveDynamicBlockReferences() {
+  const auto& unsupportedObjects = m_unsupportedObjects;
+  if (unsupportedObjects.empty()) { return; }
+
+  // Phase 1: Build handle → unsupported object index.
+  // Handles in unsupported objects are stored as std::wstring hex values (group code 5 falls in the
+  // 0–9 wstring range in CreateRawRecordValue).
+  std::unordered_map<std::uint64_t, const EoDxfUnsupportedObject*> objectsByHandle;
+  objectsByHandle.reserve(unsupportedObjects.size());
+  for (const auto& obj : unsupportedObjects) {
+    for (const auto& value : obj.m_values) {
+      if (value.Code() == 5) {
+        if (const auto* hexString = value.GetIf<std::wstring>()) {
+          auto handle = std::wcstoull(hexString->c_str(), nullptr, 16);
+          if (handle != 0) { objectsByHandle[handle] = &obj; }
+        }
+        break;
+      }
+    }
+  }
+  if (objectsByHandle.empty()) { return; }
+
+  // Phase 2: Build block BLOCK_RECORD handle → block name map from the block table.
+  std::unordered_map<std::uint64_t, CString> blockNameByHandle;
+  {
+    POSITION pos = m_BlocksTable.GetStartPosition();
+    CString blockName;
+    EoDbBlock* block = nullptr;
+    while (pos != nullptr) {
+      m_BlocksTable.GetNextAssoc(pos, blockName, block);
+      if (block != nullptr && block->Handle() != 0) { blockNameByHandle[block->Handle()] = blockName; }
+    }
+  }
+
+  // Phase 3: Lambda to resolve a single INSERT's extension dictionary chain.
+  // Chain: INSERT.extensionDictionaryHandle → DICTIONARY → scan entries for
+  // ACDB_BLOCKREPRESENTATION_DATA → group code 340 → anonymous block BLOCK_RECORD handle → block name.
+  auto resolveInsert = [&](EoDbBlockReference* insert) -> bool {
+    auto extDictHandle = insert->ExtensionDictionaryHandle();
+    if (extDictHandle == 0) { return false; }
+
+    // Step A: Find the DICTIONARY object at extDictHandle.
+    auto dictIt = objectsByHandle.find(extDictHandle);
+    if (dictIt == objectsByHandle.end()) { return false; }
+    const auto* dictObject = dictIt->second;
+    if (dictObject->m_objectType != L"DICTIONARY") { return false; }
+
+    // Step B: Scan DICTIONARY entries (code 3 = key, code 350/360 = value handle).
+    // Find entries pointing to ACDB_BLOCKREPRESENTATION_DATA objects.
+    for (const auto& value : dictObject->m_values) {
+      if (value.Code() != 350 && value.Code() != 360) { continue; }
+      const auto* entryHexString = value.GetIf<std::wstring>();
+      if (entryHexString == nullptr) { continue; }
+
+      auto entryHandle = std::wcstoull(entryHexString->c_str(), nullptr, 16);
+      if (entryHandle == 0) { continue; }
+
+      // Step C: Follow to the referenced object.
+      auto entryIt = objectsByHandle.find(entryHandle);
+      if (entryIt == objectsByHandle.end()) { continue; }
+      const auto* entryObject = entryIt->second;
+
+      // Accept ACDB_BLOCKREPRESENTATION_DATA (the standard dynamic block data object).
+      if (entryObject->m_objectType != L"ACDB_BLOCKREPRESENTATION_DATA") { continue; }
+
+      // Step D: Find group code 340 (block table record handle) in this object.
+      for (const auto& entryValue : entryObject->m_values) {
+        if (entryValue.Code() != 340) { continue; }
+        const auto* blockHandleHex = entryValue.GetIf<std::wstring>();
+        if (blockHandleHex == nullptr) { continue; }
+
+        auto blockRecordHandle = std::wcstoull(blockHandleHex->c_str(), nullptr, 16);
+        if (blockRecordHandle == 0) { continue; }
+
+        // Step E: Lookup block name from the handle → name map.
+        auto blockIt = blockNameByHandle.find(blockRecordHandle);
+        if (blockIt == blockNameByHandle.end()) { continue; }
+
+        const CString& resolvedName = blockIt->second;
+        if (resolvedName != insert->BlockName()) {
+          insert->SetName(resolvedName);
+          return true;
+        }
+        return false;
+      }
+    }
+    return false;
+  };
+
+  // Phase 4: Lambda to process all INSERTs in a CLayers collection.
+  int resolvedCount = 0;
+  auto processLayers = [&](CLayers& layers) {
+    for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+      auto* layer = layers[i];
+      if (layer == nullptr) { continue; }
+      auto groupPosition = layer->GetHeadPosition();
+      while (groupPosition != nullptr) {
+        auto* group = layer->GetNext(groupPosition);
+        if (group == nullptr) { continue; }
+        auto primPosition = group->GetHeadPosition();
+        while (primPosition != nullptr) {
+          auto* primitive = group->GetNext(primPosition);
+          if (primitive == nullptr) { continue; }
+          if (!primitive->Is(EoDb::kGroupReferencePrimitive)) { continue; }
+          auto* insert = static_cast<EoDbBlockReference*>(primitive);
+          if (insert->ExtensionDictionaryHandle() == 0) { continue; }
+          if (resolveInsert(insert)) { resolvedCount++; }
+        }
+      }
+    }
+  };
+
+  // Phase 5: Process model space and all paper-space layouts.
+  processLayers(m_modelSpaceLayers);
+  for (auto& [layoutHandle, layers] : m_paperSpaceLayoutLayers) { processLayers(layers); }
+
+  if (resolvedCount > 0) {
+    CString message;
+    message.Format(L"Resolved %d dynamic block reference(s) to anonymous block definitions.", resolvedCount);
+    app.AddStringToMessageList(message);
+  }
 }

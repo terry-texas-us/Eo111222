@@ -482,6 +482,18 @@ class AeSysDoc : public CDocument {
   void AddUnsupportedObject(EoDxfUnsupportedObject&& object) { m_unsupportedObjects.push_back(std::move(object)); }
   void ClearUnsupportedObjects() noexcept { m_unsupportedObjects.clear(); }
 
+  /** @brief Resolves dynamic block INSERT entities to their correct anonymous block definitions.
+   *
+   *  Dynamic blocks in DXF use an extension dictionary chain:
+   *  INSERT → extension dictionary (DICTIONARY) → ACDB_BLOCKREPRESENTATION_DATA → group code 340 →
+   *  anonymous block BLOCK_RECORD handle → block name.
+   *
+   *  This method walks that chain for every INSERT primitive with a non-zero extension dictionary handle,
+   *  updating the INSERT's block name to the resolved anonymous block. Must be called after DXF import
+   *  completes and before the document is rendered.
+   */
+  void ResolveDynamicBlockReferences();
+
   // Layout storage (structured DXF LAYOUT objects)
   [[nodiscard]] auto& Layouts() noexcept { return m_layouts; }
   [[nodiscard]] const auto& Layouts() const noexcept { return m_layouts; }

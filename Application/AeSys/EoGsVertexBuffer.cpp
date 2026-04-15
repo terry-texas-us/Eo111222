@@ -139,7 +139,12 @@ void EoGsVertexBuffer::End(
     EoDbLineType* lineType{};
     if (lineTypeTable->Lookup(CString(lineTypeName.c_str()), lineType) && lineType->GetNumberOfDashes() > 0) {
       Gs::renderState.SetLineType(renderDevice, 1);
+      if (m_isLoop && m_points.GetSize() > 1) {
+        EoGePoint4d closePoint = m_points[0];
+        m_points.Add(closePoint);
+      }
       DisplayDashPattern(view, renderDevice, m_points, lineType);
+      if (m_isLoop && m_points.GetSize() > 1) { m_points.SetSize(m_points.GetSize() - 1); }
       Gs::renderState.SetLineType(renderDevice, lineTypeIndex);
       return;
     }
@@ -171,7 +176,12 @@ void EoGsVertexBuffer::End(
     EoDbLineType* lineType{};
     if (!lineTypeTable->LookupUsingLegacyIndex(static_cast<std::uint16_t>(lineTypeIndex), lineType)) { return; }
     Gs::renderState.SetLineType(renderDevice, 1);
+    if (m_isLoop && m_points.GetSize() > 1) {
+      EoGePoint4d closePoint = m_points[0];
+      m_points.Add(closePoint);
+    }
     DisplayDashPattern(view, renderDevice, m_points, lineType);
+    if (m_isLoop && m_points.GetSize() > 1) { m_points.SetSize(m_points.GetSize() - 1); }
     Gs::renderState.SetLineType(renderDevice, lineTypeIndex);
   }
 }

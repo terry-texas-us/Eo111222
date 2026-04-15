@@ -55,6 +55,7 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) : EoDbPr
   m_columnSpacing = other.m_columnSpacing;
   m_rowSpacing = other.m_rowSpacing;
   m_attributeHandles = other.m_attributeHandles;
+  m_extensionDictionaryHandle = other.m_extensionDictionaryHandle;
 }
 EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name,
     const EoGePoint3d& point, const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
@@ -81,6 +82,7 @@ const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference
     m_columnSpacing = other.m_columnSpacing;
     m_rowSpacing = other.m_rowSpacing;
     m_attributeHandles = other.m_attributeHandles;
+    m_extensionDictionaryHandle = other.m_extensionDictionaryHandle;
   }
   return *this;
 }

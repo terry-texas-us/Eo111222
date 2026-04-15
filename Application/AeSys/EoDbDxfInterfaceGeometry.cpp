@@ -158,6 +158,11 @@ EoDbBlockReference* EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blo
   insertPrimitive->SetRows(blockReference.m_rowCount);
   insertPrimitive->SetRowSpacing(blockReference.m_rowSpacing);
 
+  // Preserve the extension dictionary handle for dynamic block resolution.
+  // ResolveDynamicBlockReferences() uses this after full DXF import to follow
+  // the INSERT → DICTIONARY → BLOCKREPRESENTATION → anonymous block chain.
+  insertPrimitive->SetExtensionDictionaryHandle(blockReference.m_extensionDictionaryHandle);
+
   m_currentInsertGroup = AddToDocument(insertPrimitive, document, blockReference.m_space, blockReference.m_ownerHandle);
   return insertPrimitive;
 }

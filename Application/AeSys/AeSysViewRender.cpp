@@ -147,8 +147,18 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       document->DisplayAllLayers(this, &renderDevice);
       document->DisplayUniquePoints();
 
-      // Preview group overlay — rendered on top of the committed scene
-      if (!m_PreviewGroup.IsEmpty()) { m_PreviewGroup.Display(this, &renderDevice); }
+      // Preview group overlay — rendered on top of the committed scene.
+      // When a viewport is active, the preview points are in model-space coordinates
+      // (because GetCursorPosition routes through the viewport transform). Push the
+      // viewport's model-space transform so the preview renders in the correct position.
+      if (!m_PreviewGroup.IsEmpty()) {
+        if (IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive)) {
+          m_PreviewGroup.Display(this, &renderDevice);
+          RestoreViewportTransform();
+        } else {
+          m_PreviewGroup.Display(this, &renderDevice);
+        }
+      }
       Gs::renderState.Restore(&renderDevice, savedUserState);
 
       if (isPaperSpace) {
@@ -294,9 +304,16 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
     // Preview group overlay — rendered on the screen DC, not into the back buffer,
     // so it does not require a full scene re-render on each mouse move.
+    // When a viewport is active, push the viewport's model-space transform so
+    // model-space preview points render in the correct position.
     if (!m_PreviewGroup.IsEmpty()) {
       EoGsRenderDeviceGdi overlayDevice(deviceContext);
-      m_PreviewGroup.Display(this, &overlayDevice);
+      if (IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive)) {
+        m_PreviewGroup.Display(this, &overlayDevice);
+        RestoreViewportTransform();
+      } else {
+        m_PreviewGroup.Display(this, &overlayDevice);
+      }
     }
 
     Gs::renderState.Restore(deviceContext, savedUserState);

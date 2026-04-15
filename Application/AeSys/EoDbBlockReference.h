@@ -29,6 +29,11 @@ class EoDbBlockReference : public EoDbPrimitive {
   /// Populated during DXF import when ProcessInsertAttribs delivers ATTRIBs.
   std::vector<std::uint64_t> m_attributeHandles;
 
+  /// Extension dictionary handle from DXF import (group code 360 within {ACAD_XDICTIONARY}).
+  /// Used by ResolveDynamicBlockReferences() to follow the INSERT → DICTIONARY →
+  /// BLOCKREPRESENTATION → anonymous block chain for dynamic block visibility states.
+  std::uint64_t m_extensionDictionaryHandle{EoDxf::NoHandle};
+
  public:
   EoDbBlockReference();
   EoDbBlockReference(const CString& strName, const EoGePoint3d& pt);
@@ -112,4 +117,9 @@ class EoDbBlockReference : public EoDbPrimitive {
   [[nodiscard]] const std::vector<std::uint64_t>& AttributeHandles() const noexcept { return m_attributeHandles; }
   /// @brief Clears all owned ATTRIB primitive handles.
   void ClearAttributeHandles() noexcept { m_attributeHandles.clear(); }
+
+  /// @brief Sets the extension dictionary handle from DXF import.
+  void SetExtensionDictionaryHandle(std::uint64_t handle) noexcept { m_extensionDictionaryHandle = handle; }
+  /// @brief Returns the extension dictionary handle (NoHandle if none).
+  [[nodiscard]] std::uint64_t ExtensionDictionaryHandle() const noexcept { return m_extensionDictionaryHandle; }
 };
