@@ -78,7 +78,7 @@ $schemes = @(
         Name      = 'light'
         GlyphRgb  = [System.Drawing.Color]::FromArgb(34,  33,  30)    # lightSchemeColors.paneText
         BgRgb     = [System.Drawing.Color]::FromArgb(229, 228, 224)   # lightSchemeColors.toolbarBackground (= transparent key)
-        OutFile   = 'Toolbar-light-24.bmp'
+        OutFile   = 'StandardToolbar.bmp'
     }
 )
 

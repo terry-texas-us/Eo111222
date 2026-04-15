@@ -87,11 +87,11 @@ IDI_PROPERTIES_WND_HC   ICON                    "res\\Icons\\properties_wnd_hc.i
 // Bitmap
 //
 
-IDR_MAINFRAME_24        BITMAP                  "res\\Toolbar Bitmaps\\Toolbar-light-24.bmp"
+IDR_MAINFRAME_24        BITMAP                  "res\\Toolbar Bitmaps\\StandardToolbar.bmp"
 
-IDB_PROPERTIES          BITMAP                  "res\\Toolbar Bitmaps\\properties_hc.bmp"
+IDB_PROPERTIES          BITMAP                  "res\\Toolbar Bitmaps\\PropertiesPane.bmp"
 
-IDB_LAYER_STATES        BITMAP                  "res\\Toolbar Bitmaps\\LayerStates24.bmp"
+IDB_LAYER_STATES        BITMAP                  "res\\Toolbar Bitmaps\\LayerStates.bmp"
 
 IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderProperties.bmp"
 
@@ -132,7 +132,7 @@ BEGIN
     BUTTON      ID_TEXTSTYLE_COMBO
 END
 
-IDR_PROPERTIES TOOLBAR 16, 16
+IDR_PROPERTIES TOOLBAR 24, 24
 BEGIN
     BUTTON      ID_EXPAND_ALL
     BUTTON      ID_SORTPROPERTIES
