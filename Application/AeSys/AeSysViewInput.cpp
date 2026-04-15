@@ -530,15 +530,15 @@ void AeSysView::SetModeCursor(int mode) {
 
   switch (mode) {
     case ID_MODE_ANNOTATE:
-      resourceIdentifier = IDR_ANNOTATE_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_ANNOTATE_MODE_WHITE : IDR_ANNOTATE_MODE;
       break;
 
     case ID_MODE_CUT:
-      resourceIdentifier = IDR_CUT_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_CUT_MODE_WHITE : IDR_CUT_MODE;
       break;
 
     case ID_MODE_DIMENSION:
-      resourceIdentifier = IDR_DIMENSION_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_DIMENSION_MODE_WHITE : IDR_DIMENSION_MODE;
       break;
 
     case ID_MODE_DRAW:
@@ -546,43 +546,43 @@ void AeSysView::SetModeCursor(int mode) {
       break;
 
     case ID_MODE_LPD:
-      resourceIdentifier = IDR_LPD_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_LPD_MODE_WHITE : IDR_LPD_MODE;
       break;
 
     case ID_MODE_PIPE:
-      resourceIdentifier = IDR_PIPE_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_PIPE_MODE_WHITE : IDR_PIPE_MODE;
       break;
 
     case ID_MODE_POWER:
-      resourceIdentifier = IDR_POWER_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_POWER_MODE_WHITE : IDR_POWER_MODE;
       break;
 
     case ID_MODE_DRAW2:
-      resourceIdentifier = IDR_DRAW2_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_DRAW2_MODE_WHITE : IDR_DRAW2_MODE;
       break;
 
     case ID_MODE_EDIT:
-      resourceIdentifier = IDR_EDIT_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_EDIT_MODE_WHITE : IDR_EDIT_MODE;
       break;
 
     case ID_MODE_FIXUP:
-      resourceIdentifier = IDR_FIXUP_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_FIXUP_MODE_WHITE : IDR_FIXUP_MODE;
       break;
 
     case ID_MODE_NODAL:
-      resourceIdentifier = IDR_NODAL_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_NODAL_MODE_WHITE : IDR_NODAL_MODE;
       break;
 
     case ID_MODE_NODALR:
-      resourceIdentifier = IDR_NODALR_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_NODALR_MODE_WHITE : IDR_NODALR_MODE;
       break;
 
     case ID_MODE_TRAP:
-      resourceIdentifier = IDR_TRAP_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_TRAP_MODE_WHITE : IDR_TRAP_MODE;
       break;
 
     case ID_MODE_TRAPR:
-      resourceIdentifier = IDR_TRAPR_MODE;
+      resourceIdentifier = isWhiteBackground ? IDR_TRAPR_MODE_WHITE : IDR_TRAPR_MODE;
       break;
 
     default:

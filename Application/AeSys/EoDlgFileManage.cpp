@@ -132,7 +132,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
   CBitmap Bitmap;
   Bitmap.LoadBitmapW(IDB_LAYER_STATES);
   m_StateImages.Create(24, 24, ILC_COLOR32 | ILC_MASK, 0, 1);
-  m_StateImages.Add(&Bitmap, Eo::colorNavy);
+  m_StateImages.Add(&Bitmap, Eo::bitmapMaskColor);
 
   WndProcPreviewClear(m_PreviewWindowHandle);
 

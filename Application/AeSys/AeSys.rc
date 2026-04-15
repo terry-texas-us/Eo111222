@@ -77,11 +77,7 @@ IDR_PEGTYPE             ICON                    "res\\Icons\\AeSys.ico"
 
 IDR_TRATYPE             ICON                    "res\\Icons\\AeSys_Gold.ico"
 
-IDI_OUTPUT_WND          ICON                    "res\\Icons\\output_wnd.ico"
-
 IDI_OUTPUT_WND_HC       ICON                    "res\\Icons\\output_wnd_hc.ico"
-
-IDI_PROPERTIES_WND      ICON                    "res\\Icons\\properties_wnd.ico"
 
 IDI_PROPERTIES_WND_HC   ICON                    "res\\Icons\\properties_wnd_hc.ico"
 

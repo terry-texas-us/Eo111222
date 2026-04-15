@@ -71,9 +71,7 @@
 #define IDR_MENU_DIRS                   198
 #define ID_FILE_SAVE_ALL                199
 #define IDI_OUTPUT_WND_HC               243
-#define IDI_OUTPUT_WND                  244
 #define IDI_PROPERTIES_WND_HC           245
-#define IDI_PROPERTIES_WND              246
 #define ID_VIEW_OUTPUTWND               247
 #define IDR_TRAPR_MODE                  267
 #define IDR_TRAP_MODE                   268
