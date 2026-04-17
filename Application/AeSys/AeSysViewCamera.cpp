@@ -23,7 +23,7 @@
 namespace {
 
 constexpr double maximumWindowRatio{999.0};
-constexpr double minimumWindowRatio{0.001};
+constexpr double minimumWindowRatio{1e-6};
 
 }  // namespace
 

@@ -95,10 +95,10 @@ BOOL EoDlgFileManage::OnInitDialog() {
   m_layersListControl.DeleteAllItems();
   m_layersListControl.InsertColumn(Status, L"Status", LVCFMT_LEFT, 56);
   m_layersListControl.InsertColumn(Name, L"Layer", LVCFMT_LEFT, 104);
-  m_layersListControl.InsertColumn(On, L"On", LVCFMT_LEFT, 34);
-  m_layersListControl.InsertColumn(Freeze, L"Freeze", LVCFMT_LEFT, 60);
-  m_layersListControl.InsertColumn(Lock, L"Lock", LVCFMT_LEFT, 48);
-  m_layersListControl.InsertColumn(Plot, L"Plot", LVCFMT_LEFT, 40);
+  m_layersListControl.InsertColumn(On, L"On", LVCFMT_CENTER, 34);
+  m_layersListControl.InsertColumn(Freeze, L"Freeze", LVCFMT_CENTER, 60);
+  m_layersListControl.InsertColumn(Lock, L"Lock", LVCFMT_CENTER, 48);
+  m_layersListControl.InsertColumn(Plot, L"Plot", LVCFMT_CENTER, 40);
   m_layersListControl.InsertColumn(Color, L"Color", LVCFMT_LEFT, 72);
   m_layersListControl.InsertColumn(LineType, L"LineType", LVCFMT_LEFT, 120);
   m_numberOfColumns = m_layersListControl.InsertColumn(LineWeight, L"LineWeight", LVCFMT_LEFT, 96);
@@ -119,16 +119,16 @@ BOOL EoDlgFileManage::OnInitDialog() {
   }
   m_blocksList.SetHorizontalExtent(512);
 
-  CString BlockName;
-  EoDbBlock* Block{};
+  CString blockName;
+  EoDbBlock* block{};
 
   auto position = m_Document->GetFirstBlockPosition();
   while (position != nullptr) {
-    m_Document->GetNextBlock(position, BlockName, Block);
-    if (!Block->IsAnonymous()) {
-      int ItemIndex = m_blocksList.AddString(BlockName);
-      m_blocksList.SetItemData(ItemIndex, DWORD_PTR(Block));
-    }
+    m_Document->GetNextBlock(position, blockName, block);
+    if (block->IsAnonymous()) { continue; }
+    if (block->IsModelSpace(blockName.GetString()) || block->IsPaperSpace(blockName.GetString())) { continue; }
+    auto itemIndex = m_blocksList.AddString(blockName);
+    m_blocksList.SetItemData(itemIndex, DWORD_PTR(block));
   }
   CBitmap Bitmap;
   Bitmap.LoadBitmapW(IDB_LAYER_STATES);
@@ -415,18 +415,26 @@ void EoDlgFileManage::DrawItem(CDC& deviceContext, int itemID, int labelIndex, c
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 1, ETO_CLIPPED, &itemRectangle, layerName,
           static_cast<UINT>(layerName.GetLength()), nullptr);
     } break;
-    case On:
-      m_stateImages.Draw(&deviceContext, layer->IsOff() ? 3 : 2, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
-      break;
-    case Freeze:
-      m_stateImages.Draw(&deviceContext, layer->IsFrozen() ? 4 : 5, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
-      break;
-    case Lock:
-      m_stateImages.Draw(&deviceContext, layer->IsStatic() ? 0 : 1, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
-      break;
-    case Plot:
-      m_stateImages.Draw(&deviceContext, layer->PlottingFlag() ? 6 : 7, ((CRect&)itemRectangle).TopLeft(), ILD_TRANSPARENT);
-      break;
+    case On: {
+      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      m_stateImages.Draw(&deviceContext, layer->IsOff() ? 3 : 2, CPoint(iconX, iconY), ILD_TRANSPARENT);
+    } break;
+    case Freeze: {
+      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      m_stateImages.Draw(&deviceContext, layer->IsFrozen() ? 4 : 5, CPoint(iconX, iconY), ILD_TRANSPARENT);
+    } break;
+    case Lock: {
+      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      m_stateImages.Draw(&deviceContext, layer->IsStatic() ? 0 : 1, CPoint(iconX, iconY), ILD_TRANSPARENT);
+    } break;
+    case Plot: {
+      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      m_stateImages.Draw(&deviceContext, layer->PlottingFlag() ? 6 : 7, CPoint(iconX, iconY), ILD_TRANSPARENT);
+    } break;
     case Color: {
       CRect colorRectangle(itemRectangle);
       colorRectangle.DeflateRect(4, 4);

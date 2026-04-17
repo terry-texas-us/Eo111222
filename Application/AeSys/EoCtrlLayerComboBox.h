@@ -6,7 +6,8 @@
 
 class EoDbLayer;
 
-/// @brief Toolbar combo box for layer selection with owner-draw state icons.
+/// @brief Toolbar combo box for layer selection with integrated leading icon and owner-draw state icons.
+/// The icon area on the left opens the layer manager dialog on click.
 /// Each dropdown item shows On/Off, Freeze, Lock icons, a color swatch,
 /// and the layer name. Clicking on icons in the dropdown toggles layer states.
 /// The closed combo shows the current work layer with its state icons.
@@ -14,6 +15,9 @@ class EoCtrlLayerComboBox : public CMFCToolBarComboBoxButton {
   DECLARE_SERIAL(EoCtrlLayerComboBox)
 
  public:
+  /// @brief Width of the leading icon area (pixels). The CComboBox HWND is offset rightward by this amount.
+  static constexpr int kIconAreaWidth = 28;
+
   EoCtrlLayerComboBox();
   EoCtrlLayerComboBox(const EoCtrlLayerComboBox&) = delete;
   EoCtrlLayerComboBox& operator=(const EoCtrlLayerComboBox&) = delete;
@@ -24,6 +28,9 @@ class EoCtrlLayerComboBox : public CMFCToolBarComboBoxButton {
   /// @brief Synchronizes the combo selection to match the given layer name.
   void SetCurrentLayer(const CString& layerName);
 
+  /// @brief Draws a layer icon glyph at the given position.
+  static void DrawLayerIcon(CDC* deviceContext, const CRect& iconRect, COLORREF textColor);
+
  protected:
   CComboBox* CreateCombo(CWnd* parentWindow, const CRect& rect) override;
   BOOL NotifyCommand(int notifyCode) override;
@@ -31,6 +38,8 @@ class EoCtrlLayerComboBox : public CMFCToolBarComboBoxButton {
   void OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz = TRUE,
       BOOL isCustomizeMode = FALSE, BOOL isHighlighted = FALSE, BOOL drawBorder = TRUE,
       BOOL grayDisabledButtons = TRUE) override;
+  void OnMove() override;
+  BOOL OnClick(CWnd* parentWindow, BOOL delay = TRUE) override;
 
  private:
   /// @brief Rebuilds the item list from the document's layer table.
@@ -38,6 +47,9 @@ class EoCtrlLayerComboBox : public CMFCToolBarComboBoxButton {
 
   /// @brief Handles the CBN_SELCHANGE notification — switches the work layer.
   void OnSelectionChanged();
+
+  /// @brief Opens the layer manager dialog.
+  void OpenLayerManager();
 };
 
 /// @brief Owner-draw combo box that renders layer state icons and color swatches.

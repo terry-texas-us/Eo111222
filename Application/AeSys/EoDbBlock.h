@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cwctype>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -47,6 +49,42 @@ class EoDbBlock : public EoDbGroup {
   void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
   void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
 
+  /** @brief Checks if the given block name corresponds to a model space block.
+   *
+   * This method performs a case-insensitive comparison of the first 12 characters of the provided block name
+   * against the string "*Model_Space". If the block name starts with "*Model_Space" (ignoring case), it is
+   * considered a model space block.
+   *
+   * @param blockName The name of the block to check.
+   * @return true if the block name indicates a model space block, false otherwise.
+   */
+  [[nodiscard]] bool IsModelSpace(const std::wstring& blockName) const noexcept {
+    constexpr std::wstring_view prefix = L"*Model_Space";
+
+    if (blockName.size() < prefix.size()) { return false; }
+
+    return std::equal(prefix.cbegin(), prefix.cend(), blockName.cbegin(),
+        [](wchar_t a, wchar_t b) noexcept { return std::towlower(a) == std::towlower(b); });
+  }
+
+  /** @brief Checks if the given block name corresponds to a paper space block.
+   *
+   * This method performs a case-insensitive comparison of the first 12 characters of the provided block name
+   * against the string "*Paper_Space". If the block name starts with "*Paper_Space" (ignoring case), it is
+   * considered a paper space block.
+   *
+   * @param blockName The name of the block to check.
+   * @return true if the block name indicates a paper space block, false otherwise.
+   */
+  [[nodiscard]] bool IsPaperSpace(const std::wstring& blockName) const noexcept {
+    constexpr std::wstring_view prefix = L"*Paper_Space";
+
+    if (blockName.size() < prefix.size()) { return false; }
+
+    return std::equal(prefix.cbegin(), prefix.cend(), blockName.cbegin(),
+        [](wchar_t a, wchar_t b) noexcept { return std::towlower(a) == std::towlower(b); });
+  }
+
   /// @brief Appends an attribute definition to this block's ATTDEF catalog.
   /// Called during DXF import when an ATTDEF is encountered inside a BLOCK definition.
   void AddAttributeDefinition(EoDxfAttDef attributeDefinition) {
@@ -54,9 +92,7 @@ class EoDbBlock : public EoDbGroup {
   }
 
   /// @brief Returns the list of attribute definitions stored in this block.
-  [[nodiscard]] const std::vector<EoDxfAttDef>& AttributeDefinitions() const noexcept {
-    return m_attributeDefinitions;
-  }
+  [[nodiscard]] const std::vector<EoDxfAttDef>& AttributeDefinitions() const noexcept { return m_attributeDefinitions; }
 
   /// @brief Finds an attribute definition by its tag name.
   /// @param tagName The attribute tag to search for (case-sensitive, no spaces).

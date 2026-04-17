@@ -19,10 +19,6 @@
 
 namespace {
 
-/// @brief Background key color of the IDR_STYLES toolbar bitmap (white).
-/// AdaptColors replaces these pixels with the chrome toolbarBackground before drawing.
-constexpr COLORREF kStylesToolbarBitmapKey = RGB(255, 255, 255);
-
 constexpr int statusInfo = 0;
 constexpr int statusLength = 1;
 constexpr int statusAngle = 2;
@@ -63,7 +59,6 @@ ON_COMMAND(ID_MDI_TABBED, OnMdiTabbed)
 ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
 ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullScreen)
 ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
-ON_COMMAND(ID_TEXTSTYLE_BUTTON, &CMainFrame::OnTextStyleManager)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_REGISTERED_MESSAGE(AFX_WM_TOOLBARMENU, OnToolbarContextMenu)
@@ -78,9 +73,7 @@ ON_UPDATE_COMMAND_UI(ID_PENCOLOR_COMBO, OnUpdatePenColorCombo)
 ON_UPDATE_COMMAND_UI(ID_LINETYPE_COMBO, OnUpdateLineTypeCombo)
 ON_UPDATE_COMMAND_UI(ID_LINEWEIGHT_COMBO, OnUpdateLineWeightCombo)
 ON_UPDATE_COMMAND_UI(ID_TEXTSTYLE_COMBO, OnUpdateTextStyleCombo)
-ON_UPDATE_COMMAND_UI(ID_TEXTSTYLE_BUTTON, OnUpdateTextStyleButton)
 ON_UPDATE_COMMAND_UI(ID_LAYER_COMBO, OnUpdateLayerCombo)
-ON_COMMAND(ID_LAYER_BUTTON, OnLayerButton)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -161,14 +154,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   }
   m_layerPropertiesToolBar.SetSizes(buttonSize, imageSize);
   m_layerPropertiesToolBar.SetWindowTextW(L"Layers");
-
-  // Reload locked images with bAdd=FALSE
-  // DDB conversion that LoadToolBar's bAdd=TRUE path causes via AddImage/CreateCompatibleBitmap.
-  // Then replace the bitmap background-key pixels with the chrome toolbarBackground.
-  if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
-    lockedImages->Load(IDR_STYLES);
-    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::chromeColors.toolbarBackground);
-  }
 
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
 
@@ -550,14 +535,6 @@ void CMainFrame::ApplyColorScheme() {
   m_propertiesPane.ApplyColorScheme();
   m_outputPane.ApplyColorScheme();
 
-  // Reload and adapt styles toolbar bitmap for the chrome color.
-  // Use Load(bAdd=FALSE) directly on locked images to avoid the DDB conversion
-  // that LoadBitmap's bAdd=TRUE path causes through AddImage/CreateCompatibleBitmap.
-  if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
-    lockedImages->Load(IDR_STYLES);
-    lockedImages->AdaptColors(kStylesToolbarBitmapKey, Eo::chromeColors.toolbarBackground);
-  }
-
   // LoadBitmap can reset button sizes. Re-apply combo-derived sizes.
   AdjustToolbarSizesToMatchCombos();
 
@@ -610,7 +587,6 @@ void CMainFrame::SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight) {
 }
 
 void CMainFrame::OnUpdateTextStyleCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
-void CMainFrame::OnUpdateTextStyleButton(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
 
 void CMainFrame::SyncTextStyleCombo(const std::wstring& textStyleName) {
   CObList buttonsList;
@@ -627,11 +603,6 @@ void CMainFrame::SyncTextStyleCombo(const std::wstring& textStyleName) {
 
 void CMainFrame::OnUpdateLayerCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
 
-void CMainFrame::OnLayerButton() {
-  auto* document = AeSysDoc::GetDoc();
-  if (document != nullptr) { document->OnFileManage(); }
-}
-
 void CMainFrame::SyncLayerCombo(const CString& layerName) {
   CObList buttonsList;
   if (CMFCToolBar::GetCommandButtons(ID_LAYER_COMBO, buttonsList) > 0) {
@@ -645,19 +616,3 @@ void CMainFrame::SyncLayerCombo(const CString& layerName) {
   }
 }
 
-void CMainFrame::OnTextStyleManager() {
-  EoDlgTextStyleManager dialog(this);
-  dialog.DoModal();
-
-  // After the dialog closes, refresh the text style combo in case styles changed
-  CObList buttonsList;
-  if (CMFCToolBar::GetCommandButtons(ID_TEXTSTYLE_COMBO, buttonsList) > 0) {
-    for (auto pos = buttonsList.GetHeadPosition(); pos != nullptr;) {
-      auto* button = DYNAMIC_DOWNCAST(EoCtrlTextStyleComboBox, buttonsList.GetNext(pos));
-      if (button != nullptr) {
-        button->PopulateItems();
-        break;
-      }
-    }
-  }
-}

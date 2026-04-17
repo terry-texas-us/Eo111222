@@ -213,7 +213,7 @@ void EoMfStatusBar::BeginZoomEdit() {
     if (uExtent > 0.0) { zoomRatio = activeView->WidthInInches() / uExtent; }
   }
   CString zoomText;
-  zoomText.Format(L"%.3f", zoomRatio);
+  zoomText.Format(L"%.6f", zoomRatio);
   m_edit.SetWindowTextW(zoomText);
 
   m_edit.ShowWindow(SW_SHOW);

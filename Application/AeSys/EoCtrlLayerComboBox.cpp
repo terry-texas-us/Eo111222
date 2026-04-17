@@ -47,7 +47,7 @@ IMPLEMENT_SERIAL(EoCtrlLayerComboBox, CMFCToolBarComboBoxButton, VERSIONABLE_SCH
 
 EoCtrlLayerComboBox::EoCtrlLayerComboBox()
     : CMFCToolBarComboBoxButton(
-          ID_LAYER_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS, 300) {
+          ID_LAYER_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS, 328) {
   PopulateItems();
 }
 
@@ -192,6 +192,56 @@ void EoCtrlLayerComboBox::OnSelectionChanged() {
   document->UpdateAllViews(nullptr, EoDb::kLayerSafe, layer);
 }
 
+void EoCtrlLayerComboBox::OnMove() {
+  CMFCToolBarComboBoxButton::OnMove();
+
+  // Offset the CComboBox HWND rightward to leave room for the icon area.
+  if (m_pWndCombo != nullptr && m_pWndCombo->GetSafeHwnd() != nullptr) {
+    CRect comboRect;
+    m_pWndCombo->GetWindowRect(&comboRect);
+    m_pWndCombo->GetParent()->ScreenToClient(&comboRect);
+    comboRect.left += kIconAreaWidth;
+    m_pWndCombo->MoveWindow(comboRect);
+  }
+}
+
+BOOL EoCtrlLayerComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
+  DWORD messagePos = ::GetMessagePos();
+  CPoint screenPoint(GET_X_LPARAM(messagePos), GET_Y_LPARAM(messagePos));
+  CPoint clientPoint = screenPoint;
+  if (parentWindow != nullptr) { parentWindow->ScreenToClient(&clientPoint); }
+
+  int iconRight = m_rectCombo.left + kIconAreaWidth;
+  if (clientPoint.x >= m_rectCombo.left && clientPoint.x < iconRight) {
+    OpenLayerManager();
+    return TRUE;
+  }
+  return CMFCToolBarComboBoxButton::OnClick(parentWindow, delay);
+}
+
+void EoCtrlLayerComboBox::DrawLayerIcon(
+    CDC* deviceContext, const CRect& iconRect, COLORREF textColor) {
+  // Draw stacked horizontal lines representing layers.
+  int centerX = (iconRect.left + iconRect.right) / 2;
+  int centerY = (iconRect.top + iconRect.bottom) / 2;
+  int lineHalfWidth = 7;
+  int lineSpacing = 4;
+
+  CPen iconPen(PS_SOLID, 2, textColor);
+  CPen* oldPen = deviceContext->SelectObject(&iconPen);
+  for (int i = -1; i <= 1; i++) {
+    int y = centerY + i * lineSpacing;
+    deviceContext->MoveTo(centerX - lineHalfWidth, y);
+    deviceContext->LineTo(centerX + lineHalfWidth, y);
+  }
+  deviceContext->SelectObject(oldPen);
+}
+
+void EoCtrlLayerComboBox::OpenLayerManager() {
+  auto* document = AeSysDoc::GetDoc();
+  if (document != nullptr) { document->OnFileManage(); }
+}
+
 void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images,
     BOOL isHorz, BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder,
     BOOL grayDisabledButtons) {
@@ -217,6 +267,18 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     rectCombo.DeflateRect(2, 2);
     deviceContext->FillSolidRect(rectCombo, schemeColors.paneBackground);
 
+    // Draw icon area with separator line
+    CRect iconRect(rectCombo.left, rectCombo.top, rectCombo.left + kIconAreaWidth - 2, rectCombo.bottom);
+    DrawLayerIcon(deviceContext, iconRect, schemeColors.menuText);
+
+    // Subtle vertical separator between icon and combo content
+    int separatorX = rectCombo.left + kIconAreaWidth - 2;
+    CPen separatorPen(PS_SOLID, 1, schemeColors.borderColor);
+    CPen* oldPen = deviceContext->SelectObject(&separatorPen);
+    deviceContext->MoveTo(separatorX, rectCombo.top + 2);
+    deviceContext->LineTo(separatorX, rectCombo.bottom - 2);
+    deviceContext->SelectObject(oldPen);
+
     // Drop-down button.
     CRect rectButton = m_rectButton;
     if (CMFCVisualManager::GetInstance() != nullptr) {
@@ -230,6 +292,7 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
       auto* layer = reinterpret_cast<EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
 
       CRect rectContent = rectCombo;
+      rectContent.left += kIconAreaWidth;
       rectContent.right = m_rectButton.left;
 
       if (layer != nullptr) {

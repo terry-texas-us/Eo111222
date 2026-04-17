@@ -79,9 +79,6 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnUpdateLineWeightCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateTextStyleCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateLayerCombo(CCmdUI* pCmdUI);
-  afx_msg void OnLayerButton();
-  afx_msg void OnTextStyleManager();
-  afx_msg void OnUpdateTextStyleButton(CCmdUI* pCmdUI);
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);

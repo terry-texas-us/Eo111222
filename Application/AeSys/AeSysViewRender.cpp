@@ -924,7 +924,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     const double uExtent = UExtent();
     CString zoomText{L"---"};
     if (widthInInches > Eo::geometricTolerance && uExtent > Eo::geometricTolerance) {
-      zoomText.Format(L"%.3f", widthInInches / uExtent);
+      zoomText.Format(L"%.6f", widthInInches / uExtent);
     }
     mainFrame->SetPaneText(14, zoomText);
   }

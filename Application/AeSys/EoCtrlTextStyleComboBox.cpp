@@ -7,12 +7,13 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoCtrlTextStyleComboBox.h"
+#include "EoDlgTextStyleManager.h"
 #include "EoGsRenderState.h"
 
 IMPLEMENT_SERIAL(EoCtrlTextStyleComboBox, CMFCToolBarComboBoxButton, VERSIONABLE_SCHEMA | 1)
 
 EoCtrlTextStyleComboBox::EoCtrlTextStyleComboBox()
-    : CMFCToolBarComboBoxButton(ID_TEXTSTYLE_COMBO, -1, CBS_DROPDOWNLIST | CBS_HASSTRINGS, 140) {
+    : CMFCToolBarComboBoxButton(ID_TEXTSTYLE_COMBO, -1, CBS_DROPDOWNLIST | CBS_HASSTRINGS, 168) {
   PopulateItems();
 }
 
@@ -154,7 +155,7 @@ void EoCtrlTextStyleComboBox::OnSelectionChanged() {
   Gs::renderState.SetTextStyleName(selectedName);
 
   // Apply the text style's font to the render state font definition
-  auto fontDefinition = Gs::renderState.FontDefinition();
+  EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
   fontDefinition.SetFontName(style->m_font);
   // Note: SetFontDefinition requires a device context, but we don't have one here.
   // The font definition update will take effect on the next render cycle.
@@ -175,6 +176,54 @@ void EoCtrlTextStyleComboBox::OnSelectionChanged() {
   }
 }
 
+void EoCtrlTextStyleComboBox::OnMove() {
+  CMFCToolBarComboBoxButton::OnMove();
+
+  // Offset the CComboBox HWND rightward to leave room for the icon area.
+  if (m_pWndCombo != nullptr && m_pWndCombo->GetSafeHwnd() != nullptr) {
+    CRect comboRect;
+    m_pWndCombo->GetWindowRect(&comboRect);
+    m_pWndCombo->GetParent()->ScreenToClient(&comboRect);
+    comboRect.left += kIconAreaWidth;
+    m_pWndCombo->MoveWindow(comboRect);
+  }
+}
+
+BOOL EoCtrlTextStyleComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
+  // Check if the click is in the icon area (left of the CComboBox HWND).
+  DWORD messagePos = ::GetMessagePos();
+  CPoint screenPoint(GET_X_LPARAM(messagePos), GET_Y_LPARAM(messagePos));
+  CPoint clientPoint = screenPoint;
+  if (parentWindow != nullptr) { parentWindow->ScreenToClient(&clientPoint); }
+
+  int iconRight = m_rectCombo.left + kIconAreaWidth;
+  if (clientPoint.x >= m_rectCombo.left && clientPoint.x < iconRight) {
+    OpenTextStyleManager();
+    return TRUE;
+  }
+  return CMFCToolBarComboBoxButton::OnClick(parentWindow, delay);
+}
+
+void EoCtrlTextStyleComboBox::DrawTextStyleIcon(
+    CDC* deviceContext, const CRect& iconRect, COLORREF textColor) {
+  // Draw a bold "T" glyph centered in the icon area.
+  CFont iconFont;
+  iconFont.CreateFont(-16, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
+  CFont* oldFont = deviceContext->SelectObject(&iconFont);
+  deviceContext->SetBkMode(TRANSPARENT);
+  deviceContext->SetTextColor(textColor);
+  deviceContext->DrawText(L"T", -1, const_cast<CRect*>(&iconRect), DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+  deviceContext->SelectObject(oldFont);
+}
+
+void EoCtrlTextStyleComboBox::OpenTextStyleManager() {
+  auto* mainFrame = AfxGetMainWnd();
+  EoDlgTextStyleManager dialog(mainFrame);
+  dialog.DoModal();
+  PopulateItems();
+}
+
 void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
     BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
@@ -185,7 +234,7 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
 
   BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
-  if (m_bFlat) {
+    if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
 
     CRect rectCombo = m_rectCombo;
@@ -195,6 +244,18 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
     rectCombo.DeflateRect(2, 2);
     const auto& schemeColors = Eo::chromeColors;
     deviceContext->FillSolidRect(rectCombo, schemeColors.paneBackground);
+
+    // Draw icon area with separator line
+    CRect iconRect(rectCombo.left, rectCombo.top, rectCombo.left + kIconAreaWidth - 2, rectCombo.bottom);
+    DrawTextStyleIcon(deviceContext, iconRect, schemeColors.menuText);
+
+    // Subtle vertical separator between icon and combo content
+    int separatorX = rectCombo.left + kIconAreaWidth - 2;
+    CPen separatorPen(PS_SOLID, 1, schemeColors.borderColor);
+    CPen* oldPen = deviceContext->SelectObject(&separatorPen);
+    deviceContext->MoveTo(separatorX, rectCombo.top + 2);
+    deviceContext->LineTo(separatorX, rectCombo.bottom - 2);
+    deviceContext->SelectObject(oldPen);
 
     CRect rectButton = m_rectButton;
     if (GetGlobalData()->m_bIsBlackHighContrast) { rectButton.DeflateRect(1, 1); }
@@ -210,6 +271,7 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
       if (itemText == nullptr) { itemText = L""; }
 
       CRect rectContent = rectCombo;
+      rectContent.left += kIconAreaWidth;
       rectContent.right = m_rectButton.left;
 
       CRect textRect(rectContent.left + 3, rectContent.top, rectContent.right - 1, rectContent.bottom);
