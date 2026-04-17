@@ -46,8 +46,7 @@ constexpr int kIconStatic = 10;
 IMPLEMENT_SERIAL(EoCtrlLayerComboBox, CMFCToolBarComboBoxButton, VERSIONABLE_SCHEMA | 1)
 
 EoCtrlLayerComboBox::EoCtrlLayerComboBox()
-    : CMFCToolBarComboBoxButton(
-          ID_LAYER_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS, 328) {
+    : CMFCToolBarComboBoxButton(ID_LAYER_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS, 328) {
   PopulateItems();
 }
 
@@ -99,9 +98,7 @@ void EoCtrlLayerComboBox::BuildItemList() {
 
   for (int i = 0; i < document->GetLayerTableSize(); i++) {
     auto* layer = document->GetLayerTableLayerAt(i);
-    if (layer != nullptr && layer->IsInternal()) {
-      AddItem(layer->Name(), reinterpret_cast<DWORD_PTR>(layer));
-    }
+    if (layer != nullptr && layer->IsInternal()) { AddItem(layer->Name(), reinterpret_cast<DWORD_PTR>(layer)); }
   }
 
   if (GetCount() == 0) { AddItem(L"0", 0); }
@@ -149,8 +146,7 @@ CComboBox* EoCtrlLayerComboBox::CreateCombo(CWnd* parentWindow, const CRect& rec
   // For CBS_DROPDOWNLIST, the total Create() rect height determines the dropdown extent.
   CRect adjustedRect = rect;
   adjustedRect.bottom = adjustedRect.top + 300;
-  if (!combo->Create(
-          m_dwStyle | WS_CHILD | WS_VISIBLE | WS_VSCROLL, adjustedRect, parentWindow, m_nID)) {
+  if (!combo->Create(m_dwStyle | WS_CHILD | WS_VISIBLE | WS_VSCROLL, adjustedRect, parentWindow, m_nID)) {
     delete combo;
     return nullptr;
   }
@@ -166,9 +162,7 @@ BOOL EoCtrlLayerComboBox::NotifyCommand(int notifyCode) {
     OnSelectionChanged();
     return TRUE;
   }
-  if (notifyCode == CBN_DROPDOWN) {
-    PopulateItems();
-  }
+  if (notifyCode == CBN_DROPDOWN) { PopulateItems(); }
   return CMFCToolBarComboBoxButton::NotifyCommand(notifyCode);
 }
 
@@ -219,22 +213,23 @@ BOOL EoCtrlLayerComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
   return CMFCToolBarComboBoxButton::OnClick(parentWindow, delay);
 }
 
-void EoCtrlLayerComboBox::DrawLayerIcon(
-    CDC* deviceContext, const CRect& iconRect, COLORREF textColor) {
-  // Draw stacked horizontal lines representing layers.
-  int centerX = (iconRect.left + iconRect.right) / 2;
-  int centerY = (iconRect.top + iconRect.bottom) / 2;
-  int lineHalfWidth = 7;
-  int lineSpacing = 4;
+void EoCtrlLayerComboBox::DrawLayerIcon(CDC* deviceContext, const CRect& iconRectangle) {
+  CBitmap bitmap;
+  if (!bitmap.LoadBitmap(IDB_LAYER_MANAGE)) { return; }
 
-  CPen iconPen(PS_SOLID, 2, textColor);
-  CPen* oldPen = deviceContext->SelectObject(&iconPen);
-  for (int i = -1; i <= 1; i++) {
-    int y = centerY + i * lineSpacing;
-    deviceContext->MoveTo(centerX - lineHalfWidth, y);
-    deviceContext->LineTo(centerX + lineHalfWidth, y);
-  }
-  deviceContext->SelectObject(oldPen);
+  BITMAP bitmapInfo{};
+  bitmap.GetBitmap(&bitmapInfo);
+
+  const int destWidth = std::min(static_cast<int>(bitmapInfo.bmWidth), static_cast<int>(iconRectangle.Width()));
+  const int destHeight = std::min(static_cast<int>(bitmapInfo.bmHeight), static_cast<int>(iconRectangle.Height()));
+  const int destX = iconRectangle.left + (iconRectangle.Width() - destWidth) / 2;
+  const int destY = iconRectangle.top + (iconRectangle.Height() - destHeight) / 2;
+
+  CDC memoryDC;
+  memoryDC.CreateCompatibleDC(deviceContext);
+  CBitmap* oldBitmap = memoryDC.SelectObject(&bitmap);
+  deviceContext->BitBlt(destX, destY, destWidth, destHeight, &memoryDC, 0, 0, SRCCOPY);
+  memoryDC.SelectObject(oldBitmap);
 }
 
 void EoCtrlLayerComboBox::OpenLayerManager() {
@@ -242,17 +237,15 @@ void EoCtrlLayerComboBox::OpenLayerManager() {
   if (document != nullptr) { document->OnFileManage(); }
 }
 
-void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images,
-    BOOL isHorz, BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder,
-    BOOL grayDisabledButtons) {
+void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
+    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
     return;
   }
 
-  BOOL isDisabled =
-      (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
   if (m_bFlat) {
     const auto& schemeColors = Eo::chromeColors;
@@ -269,7 +262,7 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
 
     // Draw icon area with separator line
     CRect iconRect(rectCombo.left, rectCombo.top, rectCombo.left + kIconAreaWidth - 2, rectCombo.bottom);
-    DrawLayerIcon(deviceContext, iconRect, schemeColors.menuText);
+    DrawLayerIcon(deviceContext, iconRect);
 
     // Subtle vertical separator between icon and combo content
     int separatorX = rectCombo.left + kIconAreaWidth - 2;
@@ -307,11 +300,13 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
         x += iconStep;
 
         // Freeze icon
-        stateImages.Draw(deviceContext, layer->IsFrozen() ? kIconFrozen : kIconThawed, CPoint(x, iconY), ILD_TRANSPARENT);
+        stateImages.Draw(
+            deviceContext, layer->IsFrozen() ? kIconFrozen : kIconThawed, CPoint(x, iconY), ILD_TRANSPARENT);
         x += iconStep;
 
         // Lock icon
-        stateImages.Draw(deviceContext, layer->IsLocked() ? kIconLocked : kIconUnlocked, CPoint(x, iconY), ILD_TRANSPARENT);
+        stateImages.Draw(
+            deviceContext, layer->IsLocked() ? kIconLocked : kIconUnlocked, CPoint(x, iconY), ILD_TRANSPARENT);
         x += iconStep;
 
         // Color swatch
@@ -413,8 +408,7 @@ HBRUSH EoCtrlLayerOwnerDrawCombo::OnCtlColor(CDC* deviceContext, CWnd* control, 
   if (ctlColor == CTLCOLOR_LISTBOX) {
     // Subclass the dropdown listbox on first encounter for icon click handling
     if (!m_listboxSubclassed && control->GetSafeHwnd() != nullptr) {
-      ::SetWindowSubclass(
-          control->GetSafeHwnd(), ListboxSubclassProc, 1, reinterpret_cast<DWORD_PTR>(this));
+      ::SetWindowSubclass(control->GetSafeHwnd(), ListboxSubclassProc, 1, reinterpret_cast<DWORD_PTR>(this));
       m_listboxSubclassed = true;
     }
     m_dropdownBackgroundBrush.DeleteObject();
@@ -425,9 +419,7 @@ HBRUSH EoCtrlLayerOwnerDrawCombo::OnCtlColor(CDC* deviceContext, CWnd* control, 
   return CComboBox::OnCtlColor(deviceContext, control, ctlColor);
 }
 
-void EoCtrlLayerOwnerDrawCombo::OnNcCalcSize(
-    BOOL /*calcValidRects*/, NCCALCSIZE_PARAMS* /*params*/) {
-}
+void EoCtrlLayerOwnerDrawCombo::OnNcCalcSize(BOOL /*calcValidRects*/, NCCALCSIZE_PARAMS* /*params*/) {}
 
 void EoCtrlLayerOwnerDrawCombo::OnPaint() {
   CPaintDC dc(this);
@@ -462,8 +454,7 @@ void EoCtrlLayerOwnerDrawCombo::OnNcPaint() {
 
 BOOL EoCtrlLayerOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
 
-void EoCtrlLayerOwnerDrawCombo::DrawDropdownArrow(
-    CDC* deviceContext, const CRect& rect, COLORREF arrowColor) {
+void EoCtrlLayerOwnerDrawCombo::DrawDropdownArrow(CDC* deviceContext, const CRect& rect, COLORREF arrowColor) {
   UINT dpi = ::GetDpiForWindow(m_hWnd);
   if (dpi == 0) { dpi = 96; }
   int arrowWidth = ::MulDiv(7, dpi, 96) | 1;

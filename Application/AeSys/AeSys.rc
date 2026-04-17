@@ -98,6 +98,8 @@ IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderPro
 IDR_STYLES              BITMAP                  "res\\Toolbar Bitmaps\\Styles toolbar.bmp"
 
 IDR_LAYER_PROPERTIES    BITMAP                  "res\\Toolbar Bitmaps\\LayerProperties.bmp"
+IDB_TEXTSTYLE_EDIT      BITMAP                  "res\\Toolbar Bitmaps\\TextEditStyle.bmp"
+IDB_LAYER_MANAGE        BITMAP                  "res\\Toolbar Bitmaps\\LayerManageButton.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////

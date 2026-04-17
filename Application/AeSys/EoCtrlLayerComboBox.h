@@ -28,8 +28,12 @@ class EoCtrlLayerComboBox : public CMFCToolBarComboBoxButton {
   /// @brief Synchronizes the combo selection to match the given layer name.
   void SetCurrentLayer(const CString& layerName);
 
-  /// @brief Draws a layer icon glyph at the given position.
-  static void DrawLayerIcon(CDC* deviceContext, const CRect& iconRect, COLORREF textColor);
+  /** @brief Draws the layer manage icon bitmap centered in the combo's leading icon area.
+   *
+   * @param deviceContext The device context to draw on.
+   * @param iconRectangle The rectangle defining the icon area to draw within.
+   */
+  static void DrawLayerIcon(CDC* deviceContext, const CRect& iconRectangle);
 
  protected:
   CComboBox* CreateCombo(CWnd* parentWindow, const CRect& rect) override;

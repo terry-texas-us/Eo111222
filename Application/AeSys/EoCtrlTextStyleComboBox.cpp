@@ -205,16 +205,24 @@ BOOL EoCtrlTextStyleComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
 }
 
 void EoCtrlTextStyleComboBox::DrawTextStyleIcon(
-    CDC* deviceContext, const CRect& iconRect, COLORREF textColor) {
-  // Draw a bold "T" glyph centered in the icon area.
-  CFont iconFont;
-  iconFont.CreateFont(-16, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
-  CFont* oldFont = deviceContext->SelectObject(&iconFont);
-  deviceContext->SetBkMode(TRANSPARENT);
-  deviceContext->SetTextColor(textColor);
-  deviceContext->DrawText(L"T", -1, const_cast<CRect*>(&iconRect), DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-  deviceContext->SelectObject(oldFont);
+    CDC* deviceContext, const CRect& iconRect, COLORREF /*textColor*/) {
+  // Draw the text style icon bitmap centered in the icon area.
+  CBitmap bitmap;
+  if (!bitmap.LoadBitmap(IDB_TEXTSTYLE_EDIT)) { return; }
+
+  BITMAP bmpInfo{};
+  bitmap.GetBitmap(&bmpInfo);
+
+  const int destWidth = std::min(static_cast<int>(bmpInfo.bmWidth), static_cast<int>(iconRect.Width()));
+  const int destHeight = std::min(static_cast<int>(bmpInfo.bmHeight), static_cast<int>(iconRect.Height()));
+  const int destX = iconRect.left + (iconRect.Width() - destWidth) / 2;
+  const int destY = iconRect.top + (iconRect.Height() - destHeight) / 2;
+
+  CDC memoryDC;
+  memoryDC.CreateCompatibleDC(deviceContext);
+  CBitmap* oldBitmap = memoryDC.SelectObject(&bitmap);
+  deviceContext->BitBlt(destX, destY, destWidth, destHeight, &memoryDC, 0, 0, SRCCOPY);
+  memoryDC.SelectObject(oldBitmap);
 }
 
 void EoCtrlTextStyleComboBox::OpenTextStyleManager() {

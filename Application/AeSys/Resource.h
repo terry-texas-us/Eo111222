@@ -103,6 +103,8 @@
 #define IDR_LPD_MODE_WHITE              296
 #define IDD_LAYER_PROPERTIES_MANAGER    336
 #define IDB_LAYER_STATES                337
+#define IDB_TEXTSTYLE_EDIT              339
+#define IDB_LAYER_MANAGE                340
 #define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDD_LINE_TYPES_DIALOG           342
 #define IDD_ATTRIBUTE_PROMPT            343

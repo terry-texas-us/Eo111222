@@ -23,7 +23,7 @@ class EoCtrlTextStyleComboBox : public CMFCToolBarComboBoxButton {
   /// @brief Synchronizes the combo selection to match the given text style name (case-insensitive).
   void SetCurrentTextStyle(const std::wstring& textStyleName);
 
-  /// @brief Draws the "T" icon glyph at the given position.
+  /// @brief Draws the text style icon bitmap at the given position.
   static void DrawTextStyleIcon(CDC* deviceContext, const CRect& iconRect, COLORREF textColor);
 
  protected:
