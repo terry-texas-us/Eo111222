@@ -169,6 +169,7 @@
   <ItemGroup>
     <!-- Creates the PCH -->
     <ClCompile Include="EoCtrlColorComboBox.cpp" />
+    <ClCompile Include="EoCtrlLayerComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
     <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
     <ClCompile Include="EoDlgSheetSetupFormFactor.cpp" />
@@ -344,6 +345,7 @@
     <ClInclude Include="EoApOptions.h" />
     <ClInclude Include="EoCtrlColorComboBox.h" />
     <ClInclude Include="EoCtrlColorsButton.h" />
+    <ClInclude Include="EoCtrlLayerComboBox.h" />
     <ClInclude Include="EoCtrlLineTypeComboBox.h" />
     <ClInclude Include="EoCtrlLineWeightComboBox.h" />
     <ClInclude Include="EoCtrlTextStyleComboBox.h" />
@@ -471,6 +473,8 @@
     <!-- All resources (icons, cursors, bitmaps, psf, rc2, etc.) -->
     <None Include="res\Cursors\AnnotateMode.cur" />
     <None Include="res\Cursors\AnnotateModeWhite.cur" />
+    <None Include="res\cursors\cursor1.cur" />
+    <None Include="res\cursors\cursor2.cur" />
     <None Include="res\Cursors\CutMode.cur" />
     <None Include="res\Cursors\CutModeWhite.cur" />
     <None Include="res\Cursors\DimensionMode.cur" />
@@ -528,17 +532,23 @@
       <Project>{b8f5e3a1-7c2d-4e9f-a6d8-3f1b5c8e2d4a}</Project>
     </ProjectReference>
   </ItemGroup>
-<ItemGroup>
+  <ItemGroup>
     <Image Include="res\Icons\AeSys.ico" />
+    <Image Include="res\Icons\output_wnd.ico" />
     <Image Include="res\Icons\output_wnd_hc.ico" />
+    <Image Include="res\Icons\properties_wnd.ico" />
     <Image Include="res\Icons\properties_wnd_hc.ico" />
     <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />
-    <Image Include="res\Toolbar Bitmaps\LayerStates.png" />
-    <Image Include="res\Toolbar Bitmaps\LayerStates.svg" />
+    <Image Include="res\Toolbar Bitmaps\layer_filters.bmp" />
+    <Image Include="res\Toolbar Bitmaps\menuimages.bmp" />
+    <Image Include="res\Toolbar Bitmaps\menuimages_hc.bmp" />
+    <Image Include="res\Toolbar Bitmaps\properties.bmp" />
     <Image Include="res\Toolbar Bitmaps\PropertiesPane.bmp" />
     <Image Include="res\Toolbar Bitmaps\RenderProperties.bmp" />
     <Image Include="res\Toolbar Bitmaps\StandardToolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\Styles toolbar.bmp" />
+    <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
+    <Image Include="res\Toolbar Bitmaps\twodoctest.png" />
     <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>

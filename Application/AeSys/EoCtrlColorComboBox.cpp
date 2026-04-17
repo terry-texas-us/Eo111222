@@ -14,8 +14,7 @@
 IMPLEMENT_SERIAL(EoCtrlColorComboBox, CMFCToolBarComboBoxButton, VERSIONABLE_SCHEMA | 2)
 
 EoCtrlColorComboBox::EoCtrlColorComboBox()
-    : CMFCToolBarComboBoxButton(
-          ID_PENCOLOR_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS) {
+    : CMFCToolBarComboBoxButton(ID_PENCOLOR_COMBO, -1, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS) {
   PopulateItems();
 }
 
@@ -58,15 +57,24 @@ COLORREF EoCtrlColorComboBox::AciToColorRef(std::int16_t aciIndex) {
 
 CString EoCtrlColorComboBox::AciToName(std::int16_t aciIndex) {
   switch (aciIndex) {
-    case EoDbPrimitive::COLOR_BYLAYER: return L"By Layer";
-    case EoDbPrimitive::COLOR_BYBLOCK: return L"By Block";
-    case 1: return L"red";
-    case 2: return L"yellow";
-    case 3: return L"green";
-    case 4: return L"cyan";
-    case 5: return L"blue";
-    case 6: return L"magenta";
-    case 7: return L"white";
+    case EoDbPrimitive::COLOR_BYLAYER:
+      return L"By Layer";
+    case EoDbPrimitive::COLOR_BYBLOCK:
+      return L"By Block";
+    case 1:
+      return L"red";
+    case 2:
+      return L"yellow";
+    case 3:
+      return L"green";
+    case 4:
+      return L"cyan";
+    case 5:
+      return L"blue";
+    case 6:
+      return L"magenta";
+    case 7:
+      return L"white";
     default: {
       CString str;
       str.Format(L"%d", aciIndex);
@@ -90,9 +98,7 @@ void EoCtrlColorComboBox::Serialize(CArchive& ar) {
     auto selectedColor = static_cast<std::int32_t>(Gs::renderState.Color());
     if (curSel >= 0) {
       auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
-      if (itemData != kMoreColors) {
-        selectedColor = static_cast<std::int32_t>(itemData);
-      }
+      if (itemData != kMoreColors) { selectedColor = static_cast<std::int32_t>(itemData); }
     }
     ar << selectedColor;
   } else {
@@ -137,8 +143,7 @@ void EoCtrlColorComboBox::Serialize(CArchive& ar) {
 
 CComboBox* EoCtrlColorComboBox::CreateCombo(CWnd* parentWindow, const CRect& rect) {
   auto* combo = new EoCtrlColorOwnerDrawCombo;
-  if (!combo->Create(
-          m_dwStyle | WS_CHILD | WS_VISIBLE | WS_VSCROLL, rect, parentWindow, m_nID)) {
+  if (!combo->Create(m_dwStyle | WS_CHILD | WS_VISIBLE | WS_VSCROLL, rect, parentWindow, m_nID)) {
     delete combo;
     return nullptr;
   }
@@ -185,17 +190,15 @@ void EoCtrlColorComboBox::OnSelectionChanged() {
   if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Pen); }
 }
 
-void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images,
-    BOOL isHorz, BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder,
-    BOOL grayDisabledButtons) {
+void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
+    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
     return;
   }
 
-  BOOL isDisabled =
-      (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
   if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
@@ -208,7 +211,7 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
         deviceContext, rectCombo, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
 
     // Fill interior with scheme-aware paneBackground instead of clrWindow (white).
-    rectCombo.DeflateRect(2, 2);
+    rectCombo.DeflateRect(4, 4);
     deviceContext->FillSolidRect(rectCombo, Eo::chromeColors.paneBackground);
 
     // Drop-down button.
@@ -238,13 +241,11 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
       int swatchSize = rectContent.Height() - 2 * swatchMargin;
 
       if (!isMoreColors && swatchSize > 0) {
-        CRect swatchRect(
-            rectContent.left + swatchMargin + 1, rectContent.top + swatchMargin,
+        CRect swatchRect(rectContent.left + swatchMargin + 1, rectContent.top + swatchMargin,
             rectContent.left + swatchMargin + 1 + swatchSize, rectContent.top + swatchMargin + swatchSize);
 
         auto aciIndex = static_cast<std::int16_t>(itemData);
-        COLORREF swatchColor =
-            (aciIndex == EoDbPrimitive::COLOR_BYLAYER || aciIndex == EoDbPrimitive::COLOR_BYBLOCK)
+        COLORREF swatchColor = (aciIndex == EoDbPrimitive::COLOR_BYLAYER || aciIndex == EoDbPrimitive::COLOR_BYBLOCK)
             ? RGB(255, 255, 255)
             : AciToColorRef(aciIndex);
         deviceContext->FillSolidRect(swatchRect, swatchColor);
@@ -252,9 +253,8 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
         deviceContext->FrameRect(swatchRect, &borderBrush);
       }
 
-      int textLeft = isMoreColors
-          ? rectContent.left + swatchMargin + 1
-          : rectContent.left + swatchMargin + 1 + swatchSize + 4;
+      int textLeft =
+          isMoreColors ? rectContent.left + swatchMargin + 1 : rectContent.left + swatchMargin + 1 + swatchSize + 4;
       CRect textRect(textLeft, rectContent.top, rectContent.right - 1, rectContent.bottom);
 
       CFont* oldFont = nullptr;
@@ -292,8 +292,7 @@ HBRUSH EoCtrlColorOwnerDrawCombo::OnCtlColor(CDC* deviceContext, CWnd* control, 
   return CComboBox::OnCtlColor(deviceContext, control, ctlColor);
 }
 
-void EoCtrlColorOwnerDrawCombo::OnNcCalcSize(
-    BOOL /*calcValidRects*/, NCCALCSIZE_PARAMS* /*params*/) {
+void EoCtrlColorOwnerDrawCombo::OnNcCalcSize(BOOL /*calcValidRects*/, NCCALCSIZE_PARAMS* /*params*/) {
   // Do not call base — forces the entire window to be client area.
   // This prevents the system from reserving a non-client region for the dropdown button,
   // allowing OnPaint to paint the button area with the theme-correct background.
@@ -338,8 +337,7 @@ void EoCtrlColorOwnerDrawCombo::OnNcPaint() {
 
 BOOL EoCtrlColorOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
 
-void EoCtrlColorOwnerDrawCombo::DrawDropdownArrow(
-    CDC* deviceContext, const CRect& rect, COLORREF arrowColor) {
+void EoCtrlColorOwnerDrawCombo::DrawDropdownArrow(CDC* deviceContext, const CRect& rect, COLORREF arrowColor) {
   UINT dpi = ::GetDpiForWindow(m_hWnd);
   if (dpi == 0) { dpi = 96; }
   int arrowWidth = ::MulDiv(7, dpi, 96) | 1;  // Ensure odd for centered tip

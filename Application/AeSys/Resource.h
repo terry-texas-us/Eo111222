@@ -110,6 +110,7 @@
 #define IDR_STYLES                      345
 #define IDD_SHEET_SETUP_FORM_FACTOR     346
 #define IDD_PLOT                        347
+#define IDR_LAYER_PROPERTIES            348
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -661,6 +662,8 @@
 #define ID_LINEWEIGHT_COMBO             4767
 #define ID_TEXTSTYLE_COMBO              4768
 #define ID_TEXTSTYLE_BUTTON             4769
+#define ID_LAYER_BUTTON                 4770
+#define ID_LAYER_COMBO                  4771
 #define ID_VIEW_MODELSPACE              4811
 #define ID_VIEW_DIRECT2D                4812
 #define ID_VIEW_ALIASED                 4813

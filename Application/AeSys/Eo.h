@@ -57,7 +57,7 @@ constexpr COLORREF colorNavy = RGB(0, 0, 128);
 /// @brief Standard mask/transparency-key color for all bitmaps.
 /// For CImageList: pass as the mask color in CImageList::Add().
 /// For CMFCToolBar: set as the bottom-left pixel of the BMP (auto-detected as transparency key).
-constexpr COLORREF bitmapMaskColor = colorNavy;
+constexpr COLORREF bitmapMaskColor = chromeColors.paneBackground;
 
 constexpr COLORREF colorRubberband = RGB(120, 118, 112);
 constexpr COLORREF colorViewBackground = RGB(40, 40, 36);

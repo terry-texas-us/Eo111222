@@ -59,7 +59,8 @@ class AeSysView : public CView {
     Scale = 0x0040,
     DimLen = 0x0080,
     DimAng = 0x0100,
-    All = BothCounts | Pen | Line | TextHeight | WndRatio | Scale | DimLen | DimAng
+    Layer = 0x0200,
+    All = BothCounts | Pen | Line | TextHeight | WndRatio | Scale | DimLen | DimAng | Layer
   };
   enum ERubs { None, Lines, Rectangles };
 

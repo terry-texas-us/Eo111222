@@ -23,36 +23,28 @@ class EoDlgFileManage : public CDialog {
     On,
     Freeze,
     Lock,
+    Plot,
     Color,
     LineType,
-    LineWeight,
-    PlotStyle,
-    Plot,
-    VpFreeze,
-    VpColor,
-    VpLineType,
-    VpLineWeight,
-    VpPlotStyle,
-    Descr
+    LineWeight
   };
 
   AeSysDoc* m_Document{};
-  CImageList m_StateImages;
+  CImageList m_stateImages;
 
-  CListBox m_BlocksList;
-  CListCtrl m_LayersListControl;
-  CListBox m_TracingList;
-  CButton m_TracingCloakRadioButton;
-  CButton m_TracingOpenRadioButton;
-  CButton m_TracingMapRadioButton;
-  CButton m_TracingViewRadioButton;
-  CEdit m_Groups;
-  CStatic m_References;
+  CListBox m_blocksList;
+  CListCtrl m_layersListControl;
+  CListBox m_tracingList;
+  CButton m_tracingCloakRadioButton;
+  CButton m_tracingOpenRadioButton;
+  CButton m_tracingMapRadioButton;
+  CButton m_tracingViewRadioButton;
+  CEdit m_groups;
+  CStatic m_references;
 
-  int NumberOfColumns{};
-  bool m_ClickToColumnName{};
-
-  HWND m_PreviewWindowHandle{};
+  int m_numberOfColumns{};
+  bool m_clickToColumnName{};
+  HWND m_previewWindowHandle{};
 
   void DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& rcItem);
 
@@ -70,7 +62,28 @@ class EoDlgFileManage : public CDialog {
   afx_msg void OnBnClickedTracingInclude();
   afx_msg void OnLbnSelchangeBlocksList();
   afx_msg void OnLbnSelchangeTracingList();
+
+  /** @brief Handles clicks on the layers list control.
+   * If the "On" column is clicked, the layer's visibility is toggled.
+   * If the "Freeze" column is clicked, the layer's frozen state is toggled.
+   * If the "Lock" column is clicked, the layer's static state is toggled.
+   * If the "Color" column is clicked, a color selection dialog is opened to change the layer's color.
+   * If the "LineType" column is clicked, a line type selection dialog is opened to change the layer's line type.
+   * @param pNMHDR Pointer to the NMHDR structure that contains the notification code and other information about the
+   * event.
+   * @param pResult Pointer to an LRESULT variable that receives the result of the message processing. The value should
+   * be set to 0 if the message is handled.
+   */
   afx_msg void OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult);
+
+  /** @brief Handles double-clicks on the layers list control.
+   * If the layer name column is double-clicked, the rename dialog is opened.
+   * If the status column is double-clicked, the layer is set as the work layer.
+   * @param pNMHDR Pointer to the NMHDR structure that contains the notification code and other information about the
+   * event.
+   * @param result Pointer to an LRESULT variable that receives the result of the message processing. The value should
+   * be set to 0 if the message is handled.
+   */
   afx_msg void OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnBnClickedMfcbuttonWork();
 

@@ -933,6 +933,12 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     app.FormatAngle(angle, Eo::DegreeToRadian(app.DimensionAngle()), 8, 3);
     mainFrame->SetPaneText(2, angle);
   }
+  if ((item & Layer) == Layer) {
+    auto* document = AeSysDoc::GetDoc();
+    if (document != nullptr && document->GetWorkLayer() != nullptr) {
+      mainFrame->SyncLayerCombo(document->GetWorkLayer()->Name());
+    }
+  }
   if ((item & DimLen) == DimLen) {
     CString lengthText;
     app.FormatLength(lengthText, app.GetUnits(), app.DimensionLength());

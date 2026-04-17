@@ -59,6 +59,7 @@ class CMainFrame : public CMDIFrameWndEx {
   CMFCMenuBar m_menuBar;
   CMFCToolBar m_standardToolBar;  // Standard toolbar (no custom controls — plain CMFCToolBar)
   EoMfStatelessToolBar m_renderPropertiesToolBar;  // Properties toolbar (Color, LineType, LineWeight)
+  EoMfStatelessToolBar m_layerPropertiesToolBar;  // Layer toolbar (Layer Manager button, Layer combo)
   EoMfStatelessToolBar m_stylesToolBar;  // Styles toolbar (Text Style)
   EoMfStatusBar m_statusBar;
   EoMfOutputDockablePane m_outputPane;
@@ -77,6 +78,8 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg void OnUpdateLineTypeCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateLineWeightCombo(CCmdUI* pCmdUI);
   afx_msg void OnUpdateTextStyleCombo(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateLayerCombo(CCmdUI* pCmdUI);
+  afx_msg void OnLayerButton();
   afx_msg void OnTextStyleManager();
   afx_msg void OnUpdateTextStyleButton(CCmdUI* pCmdUI);
   afx_msg LRESULT OnToolbarContextMenu(WPARAM, LPARAM);
@@ -132,4 +135,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
   /// @brief Synchronizes the toolbar text-style combo box with the given text style name.
   void SyncTextStyleCombo(const std::wstring& textStyleName);
+
+  /// @brief Synchronizes the toolbar layer combo box with the current work layer.
+  void SyncLayerCombo(const CString& layerName);
 };

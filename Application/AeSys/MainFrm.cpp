@@ -4,8 +4,10 @@
 #include <cassert>
 
 #include "AeSys.h"
+#include "AeSysDoc.h"
 #include "EoApOptions.h"
 #include "EoCtrlColorComboBox.h"
+#include "EoCtrlLayerComboBox.h"
 #include "EoCtrlLineTypeComboBox.h"
 #include "EoCtrlLineWeightComboBox.h"
 #include "EoCtrlTextStyleComboBox.h"
@@ -77,6 +79,8 @@ ON_UPDATE_COMMAND_UI(ID_LINETYPE_COMBO, OnUpdateLineTypeCombo)
 ON_UPDATE_COMMAND_UI(ID_LINEWEIGHT_COMBO, OnUpdateLineWeightCombo)
 ON_UPDATE_COMMAND_UI(ID_TEXTSTYLE_COMBO, OnUpdateTextStyleCombo)
 ON_UPDATE_COMMAND_UI(ID_TEXTSTYLE_BUTTON, OnUpdateTextStyleButton)
+ON_UPDATE_COMMAND_UI(ID_LAYER_COMBO, OnUpdateLayerCombo)
+ON_COMMAND(ID_LAYER_BUTTON, OnLayerButton)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -150,7 +154,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_stylesToolBar.SetSizes(buttonSize, imageSize);
   m_stylesToolBar.SetWindowTextW(L"Styles");
 
-  // Reload locked images with bAdd=FALSE to store the DIB directly, bypassing the
+  if (!m_layerPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
+      !m_layerPropertiesToolBar.LoadToolBar(IDR_LAYER_PROPERTIES, 0, 0, TRUE)) {
+    ATLTRACE2(traceGeneral, 3, L"Failed to create layer properties toolbar\n");
+    return -1;
+  }
+  m_layerPropertiesToolBar.SetSizes(buttonSize, imageSize);
+  m_layerPropertiesToolBar.SetWindowTextW(L"Layers");
+
+  // Reload locked images with bAdd=FALSE
   // DDB conversion that LoadToolBar's bAdd=TRUE path causes via AddImage/CreateCompatibleBitmap.
   // Then replace the bitmap background-key pixels with the chrome toolbarBackground.
   if (auto* lockedImages = m_stylesToolBar.GetLockedImages()) {
@@ -189,18 +201,20 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_menuBar.EnableDocking(CBRS_ALIGN_ANY);
   m_standardToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_renderPropertiesToolBar.EnableDocking(CBRS_ALIGN_ANY);
+  m_layerPropertiesToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_stylesToolBar.EnableDocking(CBRS_ALIGN_ANY);
   m_propertiesPane.EnableDocking(CBRS_ALIGN_ANY);
   m_outputPane.EnableDocking(CBRS_ALIGN_ANY);
 
   EnableDocking(CBRS_ALIGN_ANY);
 
-  // Single shared row: [MenuBar][Standard][RenderProps][Styles]
+  // Single shared row: [MenuBar][Standard][RenderProps][Layers][Styles]
   // DockPane inserts at row 0, so dock the rightmost toolbar first,
   // then build leftward with DockPaneLeftOf, ending with the menu bar.
   m_menuBar.SetExclusiveRowMode(FALSE);
   DockPane(&m_stylesToolBar);
-  DockPaneLeftOf(&m_renderPropertiesToolBar, &m_stylesToolBar);
+  DockPaneLeftOf(&m_layerPropertiesToolBar, &m_stylesToolBar);
+  DockPaneLeftOf(&m_renderPropertiesToolBar, &m_layerPropertiesToolBar);
   DockPaneLeftOf(&m_standardToolBar, &m_renderPropertiesToolBar);
   DockPaneLeftOf(&m_menuBar, &m_standardToolBar);
   DockPane(&m_propertiesPane, AFX_IDW_DOCKBAR_LEFT);
@@ -310,6 +324,10 @@ LRESULT CMainFrame::OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam) {
     }
     case IDR_STYLES: {
       m_stylesToolBar.ReplaceButton(ID_TEXTSTYLE_COMBO, EoCtrlTextStyleComboBox(), FALSE);
+      break;
+    }
+    case IDR_LAYER_PROPERTIES: {
+      m_layerPropertiesToolBar.ReplaceButton(ID_LAYER_COMBO, EoCtrlLayerComboBox(), FALSE);
       break;
     }
     case IDR_PROPERTIES:
@@ -482,7 +500,7 @@ void CMainFrame::EnsureToolbarsVisible() {
   // Safety net: after LoadMDIState() restores docking state from the registry,
   // verify that all application toolbars are visible. A stale or corrupted blob
   // (e.g. from a DPI change or structural toolbar change) can leave toolbars hidden.
-  CMFCToolBar* toolbars[] = {&m_standardToolBar, &m_renderPropertiesToolBar, &m_stylesToolBar};
+  CMFCToolBar* toolbars[] = {&m_standardToolBar, &m_renderPropertiesToolBar, &m_layerPropertiesToolBar, &m_stylesToolBar};
   for (auto* toolbar : toolbars) {
     if (!toolbar->IsVisible()) {
       toolbar->ShowPane(TRUE, FALSE, TRUE);
@@ -514,6 +532,7 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
         m_standardToolBar.SetSizes(adjustedSize, kImageSize);
         m_standardToolBar.SetLockedSizes(adjustedSize, kImageSize, TRUE);
         m_renderPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);
+        m_layerPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);
         m_stylesToolBar.SetSizesAll(adjustedSize, kImageSize);
         RecalcLayout();
       }
@@ -600,6 +619,26 @@ void CMainFrame::SyncTextStyleCombo(const std::wstring& textStyleName) {
       auto* button = DYNAMIC_DOWNCAST(EoCtrlTextStyleComboBox, buttonsList.GetNext(pos));
       if (button != nullptr) {
         button->SetCurrentTextStyle(textStyleName);
+        break;
+      }
+    }
+  }
+}
+
+void CMainFrame::OnUpdateLayerCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+
+void CMainFrame::OnLayerButton() {
+  auto* document = AeSysDoc::GetDoc();
+  if (document != nullptr) { document->OnFileManage(); }
+}
+
+void CMainFrame::SyncLayerCombo(const CString& layerName) {
+  CObList buttonsList;
+  if (CMFCToolBar::GetCommandButtons(ID_LAYER_COMBO, buttonsList) > 0) {
+    for (auto pos = buttonsList.GetHeadPosition(); pos != nullptr;) {
+      auto* button = DYNAMIC_DOWNCAST(EoCtrlLayerComboBox, buttonsList.GetNext(pos));
+      if (button != nullptr) {
+        button->SetCurrentLayer(layerName);
         break;
       }
     }
