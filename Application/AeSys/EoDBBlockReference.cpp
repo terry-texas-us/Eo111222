@@ -354,7 +354,6 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   auto position = block->GetHeadPosition();
   while (position != nullptr) {
     if ((block->GetNext(position))->SelectUsingPoint(view, point, ptProj)) {
-      view->ModelTransformPoint(ptProj);
       bResult = true;
       break;
     }

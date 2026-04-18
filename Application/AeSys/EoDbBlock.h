@@ -49,6 +49,22 @@ class EoDbBlock : public EoDbGroup {
   void SetHandle(std::uint64_t handle) noexcept { m_handle = handle; }
   void SetOwnerHandle(std::uint64_t ownerHandle) noexcept { m_ownerHandle = ownerHandle; }
 
+  /** @brief Checks if the given block name corresponds to a system block.
+   *
+   * This method checks if the provided block name is not empty and starts with an underscore character ('_').
+   * System blocks in AutoCAD typically have names that begin with an underscore, indicating that they are reserved
+   * for internal use by the software. If the block name meets these criteria, it is considered a system block.
+   *
+   * @param blockName The name of the block to check.
+   * @return true if the block name indicates a system block, false otherwise.
+   */
+  [[nodiscard]] bool IsSystemBlock(const CString& blockName) const noexcept {
+    if (blockName.IsEmpty()) { return false; }
+
+    wchar_t first = blockName[0];
+    return first == L'_';
+  }
+
   /** @brief Checks if the given block name corresponds to a model space block.
    *
    * This method performs a case-insensitive comparison of the first 12 characters of the provided block name

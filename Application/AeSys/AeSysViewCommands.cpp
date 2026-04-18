@@ -8,6 +8,7 @@
 #include "Eo.h"
 #include "EoDbBitmapFile.h"
 #include "EoDlgActiveViewKeyplan.h"
+#include "EoDlgBlockInsert.h"
 #include "EoDlgSetAngle.h"
 #include "EoDlgSetLength.h"
 #include "EoDlgSetScale.h"
@@ -486,6 +487,14 @@ void AeSysView::OnRelativeMovesDownRotate() {
 }
 
 void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); }
+
+void AeSysView::OnInsertBlock() {
+  auto* document = GetDocument();
+  if (document != nullptr && document->BlockTableSize() > 0) {
+    EoDlgBlockInsert dialog(document);
+    dialog.DoModal();
+  }
+}
 
 /** @brief Retrieves the active view in the MDI application.
  * @note This function assumes that the main window is a CMDIFrameWndEx and that the active child window is a

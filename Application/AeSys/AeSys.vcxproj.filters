@@ -340,6 +340,10 @@
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />
@@ -359,6 +363,9 @@
     <Image Include="res\Toolbar Bitmaps\layer_filters.bmp" />
     <Image Include="res\Toolbar Bitmaps\menuimages_hc.bmp" />
     <Image Include="res\Toolbar Bitmaps\twodoctest.png" />
+    <Image Include="res\Toolbar Bitmaps\LayerProperties.bmp" />
+    <Image Include="res\Toolbar Bitmaps\TextEditStyle.bmp" />
+    <Image Include="res\Toolbar Bitmaps\LayerManageButton.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="AeSys.manifest" />

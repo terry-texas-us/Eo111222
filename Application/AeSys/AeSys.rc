@@ -98,7 +98,9 @@ IDR_RENDER_PROPERTIES   BITMAP                  "res\\Toolbar Bitmaps\\RenderPro
 IDR_STYLES              BITMAP                  "res\\Toolbar Bitmaps\\Styles toolbar.bmp"
 
 IDR_LAYER_PROPERTIES    BITMAP                  "res\\Toolbar Bitmaps\\LayerProperties.bmp"
+
 IDB_TEXTSTYLE_EDIT      BITMAP                  "res\\Toolbar Bitmaps\\TextEditStyle.bmp"
+
 IDB_LAYER_MANAGE        BITMAP                  "res\\Toolbar Bitmaps\\LayerManageButton.bmp"
 
 
@@ -346,7 +348,7 @@ BEGIN
             MENUITEM "L&ast",                       ID_WINDOW_LAST
         END
         MENUITEM SEPARATOR
-        POPUP "3D &Views"
+        POPUP "&Views and Projections"
         BEGIN
             MENUITEM "&Top",                        ID_3DVIEWS_TOP, CHECKED
             MENUITEM "&Bottom",                     ID_3DVIEWS_BOTTOM
@@ -354,6 +356,12 @@ BEGIN
             MENUITEM "&Right",                      ID_3DVIEWS_RIGHT
             MENUITEM "&Front",                      ID_3DVIEWS_FRONT
             MENUITEM "&Back",                       ID_3DVIEWS_BACK
+            MENUITEM SEPARATOR
+            MENUITEM "Top &SW Isometric",           ID_VIEWSANDPROJECTIONS_SWISOMETRIC
+            MENUITEM "Top S&E Isometric",           ID_VIEWSANDPROJECTIONS_SEISOMETRIC
+            MENUITEM "Top &NE Isometric",           ID_VIEWSANDPROJECTIONS_NWISOMETRIC
+            MENUITEM "Top N&W Isometric",           ID_VIEWSANDPROJECTIONS_NWISOMETRIC4913
+            MENUITEM SEPARATOR
             MENUITEM "&Isometric...",               ID_3DVIEWS_ISOMETRIC
         END
         POPUP "&Camera"
@@ -368,6 +376,12 @@ BEGIN
         MENUITEM "&Parameters",                 ID_VIEW_PARAMETERS
         MENUITEM "Solid",                       ID_VIEW_SOLID, GRAYED
         MENUITEM "&Lighting",                   ID_VIEW_LIGHTING, GRAYED
+    END
+    POPUP "&Insert"
+    BEGIN
+        MENUITEM "&Block",                      ID_INSERT_BLOCK
+        MENUITEM "&DWG Reference",              ID_INSERT_DWGREFERENCE
+        MENUITEM "&Underlay",                   ID_INSERT_UNDERLAY
     END
     POPUP "&Mode"
     BEGIN
@@ -1265,12 +1279,12 @@ END
 //
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 155, 60
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP
-FONT 10, "Segoe UI Light", 300, 0, 0x0
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,71,5,12,9
     LTEXT           "AeSys, Version 11.0",IDC_STATIC,49,18,57,8,SS_NOPREFIX
-    CTEXT           "� Fanning, Fanning & Assoc.",IDC_STATIC,35,30,84,8
+    CTEXT           "© Fanning, Fanning & Assoc.",IDC_STATIC,35,30,84,8
     CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,53,44,50,14
 END
 
@@ -1278,7 +1292,7 @@ IDD_TRAP_FILTER DIALOGEX 8, 8, 119, 95
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Trap Filter"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     CONTROL         "&Pen",IDC_TRAP_FILTER_PEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,2,4,29,10
     EDITTEXT        IDC_TRAP_FILTER_PEN_ID,35,4,78,13,ES_AUTOHSCROLL
@@ -1311,7 +1325,7 @@ IDD_UNITS DIALOGEX 8, 8, 155, 107
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Set Units and Precision"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,100,88,50,14
     GROUPBOX        "Units",-1,4,4,146,76
@@ -1329,7 +1343,7 @@ IDD_SETUP_NOTE DIALOGEX 8, 8, 345, 252
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Current Note Settings"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,254,233,40,14,WS_GROUP
     PUSHBUTTON      "Cancel",IDCANCEL,300,233,40,14
@@ -1367,7 +1381,7 @@ IDD_SET_SCALE DIALOGEX 8, 8, 157, 22
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Set World Scale"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     LTEXT           "Scale   1 : ",-1,4,4,35,8
     EDITTEXT        IDC_SCALE,37,4,63,12,ES_AUTOHSCROLL
@@ -1378,7 +1392,7 @@ IDD_SETUP_LINETYPE DIALOGEX 8, 12, 275, 152
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Select Line Type"
-FONT 8, "MS Shell Dlg 2", 400, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LINETYPES_LIST_CONTROL,"SysListView32",LVS_REPORT | LVS_OWNERDRAWFIXED | LVS_ALIGNLEFT | WS_TABSTOP,4,21,267,109,WS_EX_CLIENTEDGE
     LTEXT           "Loaded LineTypes",IDC_STATIC,4,8,60,8
@@ -1389,7 +1403,7 @@ IDD_HOME_POINT_EDIT DIALOGEX 8, 8, 309, 71
 STYLE DS_SETFONT | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Set Home Points"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_LIST,5,4,69,64,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_X,85,4,70,14,ES_AUTOHSCROLL
@@ -1401,10 +1415,10 @@ BEGIN
 END
 
 IDD_SET_ANGLE DIALOGEX 8, 12, 182, 22
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Set Angle"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_ANGLE,4,4,57,14,ES_AUTOHSCROLL
     LTEXT           "Degrees",-1,64,7,28,8
@@ -1427,16 +1441,16 @@ BEGIN
     CONTROL         "By&Block",IDC_BYBLOCK_BUTTON,"MfcButton",WS_TABSTOP,50,163,40,14
     GROUPBOX        "Selection",IDC_STATIC,143,111,98,45
     EDITTEXT        IDC_INDEX_COLOR,145,122,26,14,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
-    CONTROL         "New Color",IDC_SELECTION_COLOR,"MfcButton",0x0,180,122,57,14
+    CONTROL         "New Color",IDC_SELECTION_COLOR,"MfcButton",0x1,180,122,57,14
     LTEXT           "RGB:",IDC_STATIC,148,141,18,14
     EDITTEXT        IDC_RGBNUMBERS,180,141,50,14,ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
     LTEXT           "Color:",IDC_STATIC,116,165,19,8
 END
 
 IDD_VIEW_ZOOM DIALOGEX 8, 8, 209, 30
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "View"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     LTEXT           "&Zoom:",-1,9,11,21,8
     EDITTEXT        IDC_RATIO,44,9,76,12,ES_AUTOHSCROLL
@@ -1447,7 +1461,7 @@ IDD_SELECT_ISOMETRIC_VIEW DIALOGEX 8, 12, 157, 62
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Select Isometric View"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "OK",IDOK,103,44,50,14
     GROUPBOX        "",-1,4,4,42,32,NOT WS_VISIBLE | WS_GROUP
@@ -1462,10 +1476,10 @@ BEGIN
 END
 
 IDD_DLGPROC_LPD_OPTIONS DIALOGEX 8, 8, 237, 169
-STYLE DS_SETFONT | DS_CENTER | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_PALETTEWINDOW
 CAPTION "Low Pressure Duct Options"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_WIDTH,80,126,69,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_DEPTH,80,142,70,12,ES_AUTOHSCROLL
@@ -1492,7 +1506,7 @@ IDD_SETUP_HATCH DIALOGEX 8, 8, 115, 101
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Set Hatch"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     LTEXT           "&Identifier",-1,9,8,33,8
     LTEXT           "&X Scale:",-1,15,24,26,8
@@ -1507,10 +1521,10 @@ BEGIN
 END
 
 IDD_SETUP_CONSTRAINTS_GRID DIALOGEX 0, 0, 223, 178
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_PALETTEWINDOW | WS_EX_TRANSPARENT
 CAPTION "Setup Active View Point and Axis Constraints"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,169,160,50,14
     CONTROL         "&Enable",IDC_GRID_SNAP_ON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,179,16,34,10
@@ -1540,7 +1554,7 @@ IDD_FIXUP_OPTIONS DIALOGEX 8, 8, 209, 48
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Set Fixup Options"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     LTEXT           "Influence &Angle:",-1,4,7,54,8,NOT WS_GROUP
     EDITTEXT        IDC_FIX_AX_TOL,63,5,39,13,ES_AUTOHSCROLL
@@ -1553,7 +1567,7 @@ END
 IDD_EDIT_TRAPCOMMANDS_QUERY DIALOGEX 8, 8, 314, 244
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION
 CAPTION "Trapped Groups Report"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     CONTROL         "Tree1",IDC_GROUP_TREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP,4,4,128,159
     PUSHBUTTON      "&Delete",IDC_DRWG_REP_DEL,276,201,32,14,WS_DISABLED
@@ -1566,7 +1580,7 @@ IDD_ANNOTATE_OPTIONS DIALOGEX 1, 1, 187, 126
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_PALETTEWINDOW
 CAPTION "Set Annotation Options"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,133,108,50,14
     LTEXT           "&Default Text:",-1,10,7,44,8,WS_DISABLED
@@ -1588,10 +1602,10 @@ BEGIN
 END
 
 IDD_SET_TEXT DIALOGEX 8, 8, 147, 22
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Set Text"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_TEXT,4,4,84,14,ES_AUTOHSCROLL
     PUSHBUTTON      "OK",IDOK,93,4,50,14
@@ -1756,22 +1770,42 @@ BEGIN
     EDITTEXT        IDC_NAME,0,0,152,12,ES_AUTOHSCROLL
 END
 
-IDD_INSERT_BLOCK DIALOGEX 8, 8, 117, 196
+IDD_INSERT_BLOCK DIALOGEX 8, 8, 451, 176
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Insert Block"
+CAPTION "1"
 FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
-    LISTBOX         IDC_BLOCKS_LIST,12,106,94,44,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    PUSHBUTTON      "OK",IDOK,81,177,32,14
-    PUSHBUTTON      "Cancel",IDCANCEL,42,177,32,14
-    PUSHBUTTON      "&Purge",IDC_PURGE,4,177,32,14
-    LTEXT           "Primitives",-1,4,83,30,8
-    LTEXT           "0",IDC_GROUPS,40,83,36,8
-    LTEXT           "References",-1,8,155,38,8
-    LTEXT           "0",IDC_REFERENCES,53,155,36,8
-    CONTROL         "",IDC_LAYER_PREVIEW,"PreviewWindow",0x0,7,4,103,75
-    GROUPBOX        "&Blocks",-1,4,95,109,75
+    LISTBOX         IDC_BLOCKS_LIST,10,15,168,60,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    CONTROL         "&Specify On-screen",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,100,72,10
+    EDITTEXT        IDC_EDIT1,35,115,48,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,35,131,48,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,35,147,48,14,ES_AUTOHSCROLL
+    CONTROL         "Sp&ecify On-screen",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,100,72,10
+    EDITTEXT        IDC_EDIT4,123,115,48,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT5,123,131,48,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT6,123,147,48,14,ES_AUTOHSCROLL
+    CONTROL         "Spe&cify On-screen",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,198,100,72,10
+    EDITTEXT        IDC_EDIT7,221,115,48,14,ES_AUTOHSCROLL
+    GROUPBOX        "Insertion Point",IDC_STATIC,11,88,84,79
+    GROUPBOX        "Scale",IDC_STATIC,101,88,84,79
+    GROUPBOX        "Rotation",IDC_STATIC,190,88,84,47
+    LTEXT           "&X:",IDC_STATIC,21,118,8,8
+    LTEXT           "&Y:",IDC_STATIC,21,134,8,8
+    LTEXT           "&Z:",IDC_STATIC,21,148,8,8
+    LTEXT           "&X:",IDC_STATIC,109,118,8,8
+    LTEXT           "&Y:",IDC_STATIC,109,134,8,8
+    LTEXT           "&Z:",IDC_STATIC,109,148,8,8
+    LTEXT           "&Angle:",IDC_STATIC,196,118,22,8
+    GROUPBOX        "&Blocks",IDC_STATIC,4,4,181,77
+    LTEXT           "Primitives",IDC_STATIC,303,20,30,8
+    LTEXT           "0",IDC_GROUPS,339,20,22,8
+    LTEXT           "References",IDC_STATIC,370,20,38,8
+    LTEXT           "0",IDC_REFERENCES,411,20,20,8
+    PUSHBUTTON      "&Purge",IDC_PURGE,237,18,32,14
+    PUSHBUTTON      "Cancel",IDCANCEL,352,157,32,14
+    PUSHBUTTON      "OK",IDOK,395,157,32,14
+    CONTROL         "",IDC_LAYER_PREVIEW,"PreviewWindow",0x0,284,35,144,111
 END
 
 IDD_ATTRIBUTE_PROMPT DIALOGEX 0, 0, 220, 95
@@ -1888,7 +1922,7 @@ BEGIN
 END
 
 IDD_SET_LENGTH DIALOGEX 8, 12, 151, 22
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_PALETTEWINDOW
 CAPTION "Set Length"
 FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
@@ -2297,9 +2331,9 @@ BEGIN
     IDD_INSERT_BLOCK, DIALOG
     BEGIN
         LEFTMARGIN, 4
-        RIGHTMARGIN, 113
+        RIGHTMARGIN, 435
         TOPMARGIN, 4
-        BOTTOMMARGIN, 191
+        BOTTOMMARGIN, 171
     END
 
     IDD_ATTRIBUTE_PROMPT, DIALOG
@@ -2987,10 +3021,6 @@ IDR_DIMENSION_MODE      CURSOR                  "res\\Cursors\\DimensionMode.cur
 
 IDR_DIMENSION_MODE_WHITE CURSOR                  "res\\Cursors\\DimensionModeWhite.cur"
 
-IDR_DRAW_MODE           CURSOR                  "res\\Cursors\\DrawMode.cur"
-
-IDR_DRAW_MODE_WHITE     CURSOR                  "res\\Cursors\\DrawModeWhite.cur"
-
 IDR_DRAW2_MODE          CURSOR                  "res\\Cursors\\Draw2Mode.cur"
 
 IDR_DRAW2_MODE_WHITE    CURSOR                  "res\\Cursors\\Draw2ModeWhite.cur"
@@ -3023,13 +3053,23 @@ IDR_POWER_MODE          CURSOR                  "res\\Cursors\\PowerMode.cur"
 
 IDR_POWER_MODE_WHITE    CURSOR                  "res\\Cursors\\PowerModeWhite.cur"
 
-IDR_TRAP_MODE           CURSOR                  "res\\Cursors\\TrapMode.cur"
 
-IDR_TRAP_MODE_WHITE     CURSOR                  "res\\Cursors\\TrapModeWhite.cur"
+/////////////////////////////////////////////////////////////////////////////
+//
+// RCDATA
+//
 
-IDR_TRAPR_MODE          CURSOR                  "res\\Cursors\\TrapRMode.cur"
+IDR_DRAW_MODE           RCDATA                  "res\\Cursors\\DrawMode.cur"
 
-IDR_TRAPR_MODE_WHITE    CURSOR                  "res\\Cursors\\TrapRModeWhite.cur"
+IDR_DRAW_MODE_WHITE     RCDATA                  "res\\Cursors\\DrawModeWhite.cur"
+
+IDR_TRAP_MODE           RCDATA                  "res\\Cursors\\TrapMode.cur"
+
+IDR_TRAP_MODE_WHITE     RCDATA                  "res\\Cursors\\TrapModeWhite.cur"
+
+IDR_TRAPR_MODE          RCDATA                  "res\\Cursors\\TrapMode.cur"
+
+IDR_TRAPR_MODE_WHITE    RCDATA                  "res\\Cursors\\TrapModeWhite.cur"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3072,6 +3112,11 @@ BEGIN
 END
 
 IDD_FILE_MANAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_INSERT_BLOCK AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -3387,6 +3432,10 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_PLOT            "Configure and plot the active drawing\\nPlot"
+    ID_INSERT_DWGREFERENCE  "Link an entire separate .DWG file into current drawing."
+    ID_INSERT_UNDERLAY      "Use Underlays for tracing and redrawing from scanned or legacy documents."
+    ID_VIEWSANDPROJECTIONS_SWISOMETRIC "Shows front + right + top"
+    ID_VIEWSANDPROJECTIONS_SEISOMETRIC "Shows front + left + top"
 END
 
 STRINGTABLE
@@ -3462,6 +3511,12 @@ END
 STRINGTABLE
 BEGIN
     ID_WINDOW_NORMAL        "Changes the current views' window ratio to 1:1."
+END
+
+STRINGTABLE
+BEGIN
+    ID_VIEWSANDPROJECTIONS_NWISOMETRIC "Shows back + left + top"
+    ID_VIEWSANDPROJECTIONS_NWISOMETRIC4913 "Shows back + right + top"
 END
 
 #endif    // English (United States) resources

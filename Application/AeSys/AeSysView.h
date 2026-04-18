@@ -678,6 +678,7 @@ class AeSysView : public CView {
 
   /// Draw Mode Interface ///////////////////////////////////////////////////////
  public:
+  afx_msg void OnInsertBlock();
   void DoDrawModeMouseMove();
 
 #if defined(USING_STATE_PATTERN)

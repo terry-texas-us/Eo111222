@@ -28,8 +28,8 @@
 /// @param attributeValue  The user-entered attribute value string.
 /// @param insertTransform The INSERT's combined transform (block space → WCS).
 /// @return Newly allocated EoDbAttrib, or nullptr on degenerate input.
-static EoDbAttrib* CreateAttribFromAttDef(const EoDxfAttDef& attdef, const std::wstring& attributeValue,
-    const EoGeTransformMatrix& insertTransform) {
+static EoDbAttrib* CreateAttribFromAttDef(
+    const EoDxfAttDef& attdef, const std::wstring& attributeValue, const EoGeTransformMatrix& insertTransform) {
   if (attdef.m_textHeight < Eo::geometricTolerance || attributeValue.empty()) { return nullptr; }
 
   // --- Alignment mapping (same logic as ConvertAttribEntity) ---
@@ -117,7 +117,8 @@ static EoDbAttrib* CreateAttribFromAttDef(const EoDxfAttDef& attdef, const std::
 
   EoGeReferenceSystem referenceSystem(referenceOrigin, xAxisDirection, yAxisDirection);
 
-  auto* attrib = new EoDbAttrib(fontDefinition, referenceSystem, attributeValue, attdef.m_tagString, attdef.m_attributeFlags);
+  auto* attrib =
+      new EoDbAttrib(fontDefinition, referenceSystem, attributeValue, attdef.m_tagString, attdef.m_attributeFlags);
   attrib->SetTextGenerationFlags(attdef.m_textGenerationFlags);
 
   // Transform from block-definition space to WCS via the INSERT's transform matrix
@@ -133,53 +134,60 @@ END_MESSAGE_MAP()
 
 EoGePoint3d EoDlgBlockInsert::InsertionPoint;
 
-EoDlgBlockInsert::EoDlgBlockInsert(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgBlockInsert::IDD, pParent) {}
-EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
-    : CDialog(EoDlgBlockInsert::IDD, pParent), m_Document(document) {}
+EoDlgBlockInsert::EoDlgBlockInsert([[maybe_unused]] CWnd* parent) : CDialog(EoDlgBlockInsert::IDD, parent) {}
+EoDlgBlockInsert::EoDlgBlockInsert(AeSysDoc* document, [[maybe_unused]] CWnd* parent)
+    : CDialog(EoDlgBlockInsert::IDD, parent), m_document(document) {}
+
 EoDlgBlockInsert::~EoDlgBlockInsert() {}
+
 void EoDlgBlockInsert::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
-  DDX_Control(dataExchange, IDC_BLOCKS_LIST, m_BlocksListBoxControl);
+  DDX_Control(dataExchange, IDC_BLOCKS_LIST, m_blocksListBoxControl);
 }
+
 BOOL EoDlgBlockInsert::OnInitDialog() {
   CDialog::OnInitDialog();
 
   InsertionPoint = app.GetCursorPosition();
 
-  CString BlockName;
-  EoDbBlock* Block{};
+  CString blockName;
+  EoDbBlock* block{};
 
-  auto BlockPosition = m_Document->GetFirstBlockPosition();
-  while (BlockPosition != nullptr) {
-    m_Document->GetNextBlock(BlockPosition, BlockName, Block);
-    if (!Block->IsAnonymous()) { m_BlocksListBoxControl.AddString(BlockName); }
+  auto position = m_document->GetFirstBlockPosition();
+  while (position != nullptr) {
+    m_document->GetNextBlock(position, blockName, block);
+    if (block->IsAnonymous() || block->IsSystemBlock(blockName)) { continue; }
+    if (block->IsModelSpace(blockName.GetString()) || block->IsPaperSpace(blockName.GetString())) { continue; }
+    m_blocksListBoxControl.AddString(blockName);
   }
-  m_BlocksListBoxControl.SetCurSel(0);
+  m_blocksListBoxControl.SetCurSel(0);
 
-  if (m_Document->BlockTableIsEmpty()) {
+  if (m_document->BlockTableIsEmpty()) {
     WndProcPreviewClear(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd());
   } else {
-    BlockPosition = m_Document->GetFirstBlockPosition();
-    m_Document->GetNextBlock(BlockPosition, BlockName, Block);
-    SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
-    SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
-    WndProcPreviewUpdateBlock(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
+    position = m_document->GetFirstBlockPosition();
+    m_document->GetNextBlock(position, blockName, block);
+    SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(block->GetCount()), FALSE);
+    SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_document->GetBlockReferenceCount(blockName)), FALSE);
+    WndProcPreviewUpdateBlock(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), block);
   }
+  CenterWindow(AfxGetMainWnd());
   return TRUE;
 }
-void EoDlgBlockInsert::OnOK() {
-  int CurrentSelection = m_BlocksListBoxControl.GetCurSel();
 
-  if (CurrentSelection != LB_ERR) {
+void EoDlgBlockInsert::OnOK() {
+  auto currentSelection = m_blocksListBoxControl.GetCurSel();
+
+  if (currentSelection != LB_ERR) {
     CString BlockName;
-    m_BlocksListBoxControl.GetText(CurrentSelection, BlockName);
+    m_blocksListBoxControl.GetText(currentSelection, BlockName);
 
     auto* blockReference = new EoDbBlockReference(BlockName, InsertionPoint);
     auto* group = new EoDbGroup(blockReference);
 
     // Check if block has attribute definitions — prompt user for values
     EoDbBlock* block{};
-    if (m_Document->LookupBlock(BlockName, block) && !block->AttributeDefinitions().empty()) {
+    if (m_document->LookupBlock(BlockName, block) && !block->AttributeDefinitions().empty()) {
       const auto basePoint = block->BasePoint();
       const auto transformMatrix = blockReference->BuildTransformMatrix(basePoint);
 
@@ -217,28 +225,28 @@ void EoDlgBlockInsert::OnOK() {
         group->AddTail(attrib);
       }
     }
-
-    m_Document->AddWorkLayerGroup(group);
-    m_Document->UpdateAllViews(nullptr, EoDb::kGroup, group);
+    m_document->AddWorkLayerGroup(group);
+    m_document->UpdateAllViews(nullptr, EoDb::kGroup, group);
   }
   CDialog::OnOK();
 }
+
 void EoDlgBlockInsert::OnLbnSelchangeBlocksList() {
-  int CurrentSelection = m_BlocksListBoxControl.GetCurSel();
+  int CurrentSelection = m_blocksListBoxControl.GetCurSel();
 
   if (CurrentSelection != LB_ERR) {
     CString BlockName;
-    m_BlocksListBoxControl.GetText(CurrentSelection, BlockName);
+    m_blocksListBoxControl.GetText(CurrentSelection, BlockName);
 
     EoDbBlock* Block{};
-    m_Document->LookupBlock(BlockName, Block);
+    m_document->LookupBlock(BlockName, Block);
     SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
-    SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_Document->GetBlockReferenceCount(BlockName)), FALSE);
+    SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_document->GetBlockReferenceCount(BlockName)), FALSE);
     WndProcPreviewUpdateBlock(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
   }
 }
 void EoDlgBlockInsert::OnBnClickedPurge() {
-  m_Document->RemoveUnusedBlocks();
+  m_document->RemoveUnusedBlocks();
 
   CDialog::OnOK();
 }

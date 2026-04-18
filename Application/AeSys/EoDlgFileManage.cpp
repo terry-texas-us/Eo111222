@@ -125,7 +125,7 @@ BOOL EoDlgFileManage::OnInitDialog() {
   auto position = m_Document->GetFirstBlockPosition();
   while (position != nullptr) {
     m_Document->GetNextBlock(position, blockName, block);
-    if (block->IsAnonymous()) { continue; }
+    if (block->IsAnonymous() || block->IsSystemBlock(blockName)) { continue; }
     if (block->IsModelSpace(blockName.GetString()) || block->IsPaperSpace(blockName.GetString())) { continue; }
     auto itemIndex = m_blocksList.AddString(blockName);
     m_blocksList.SetItemData(itemIndex, DWORD_PTR(block));

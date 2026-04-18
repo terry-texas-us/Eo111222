@@ -103,9 +103,9 @@
 #define IDR_LPD_MODE_WHITE              296
 #define IDD_LAYER_PROPERTIES_MANAGER    336
 #define IDB_LAYER_STATES                337
+#define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDB_TEXTSTYLE_EDIT              339
 #define IDB_LAYER_MANAGE                340
-#define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDD_LINE_TYPES_DIALOG           342
 #define IDD_ATTRIBUTE_PROMPT            343
 #define IDD_TEXT_STYLE_MANAGER          344
@@ -359,6 +359,13 @@
 #define IDC_VIEWPORT_SCALE_COMBO        1491
 #define IDC_VIEWPORT_LOCK_BUTTON        1492
 #define IDC_SPACE_TRANSFER_BUTTON       1493
+#define IDC_EDIT2                       1493
+#define IDC_EDIT3                       1494
+#define IDC_EDIT4                       1495
+#define IDC_EDIT5                       1496
+#define IDC_EDIT6                       1497
+#define IDC_CHECK3                      1498
+#define IDC_EDIT7                       1499
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -674,6 +681,13 @@
 #define ID_WINDOW_ZOOMSPECIAL           4902
 #define ID_SETUP_POINTSTYLE             4903
 #define ID_FILE_PLOT                    4906
+#define ID_INSERT_BLOCK                 4907
+#define ID_INSERT_DWGREFERENCE          4908
+#define ID_INSERT_UNDERLAY              4909
+#define ID_VIEWSANDPROJECTIONS_SWISOMETRIC 4910
+#define ID_VIEWSANDPROJECTIONS_SEISOMETRIC 4911
+#define ID_VIEWSANDPROJECTIONS_NWISOMETRIC 4912
+#define ID_VIEWSANDPROJECTIONS_NWISOMETRIC4913 4913
 #define ID_DRAW_MODE_OPTIONS            5100
 #define ID_DRAW_MODE_POINT              5101
 #define ID_DRAW_MODE_LINE               5102
@@ -849,8 +863,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        351
-#define _APS_NEXT_COMMAND_VALUE         4907
-#define _APS_NEXT_CONTROL_VALUE         1493
+#define _APS_NEXT_COMMAND_VALUE         4914
+#define _APS_NEXT_CONTROL_VALUE         1500
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

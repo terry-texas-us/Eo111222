@@ -538,6 +538,8 @@
     <Image Include="res\Icons\output_wnd_hc.ico" />
     <Image Include="res\Icons\properties_wnd.ico" />
     <Image Include="res\Icons\properties_wnd_hc.ico" />
+    <Image Include="res\Toolbar Bitmaps\LayerManageButton.bmp" />
+    <Image Include="res\Toolbar Bitmaps\LayerProperties.bmp" />
     <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />
     <Image Include="res\Toolbar Bitmaps\layer_filters.bmp" />
     <Image Include="res\Toolbar Bitmaps\menuimages.bmp" />
@@ -547,6 +549,7 @@
     <Image Include="res\Toolbar Bitmaps\RenderProperties.bmp" />
     <Image Include="res\Toolbar Bitmaps\StandardToolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\Styles toolbar.bmp" />
+    <Image Include="res\Toolbar Bitmaps\TextEditStyle.bmp" />
     <Image Include="res\Toolbar Bitmaps\Toolbar.bmp" />
     <Image Include="res\Toolbar Bitmaps\twodoctest.png" />
     <Image Include="res\Toolbar Bitmaps\UserImages.bmp" />

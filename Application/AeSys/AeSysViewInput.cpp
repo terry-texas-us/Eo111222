@@ -469,6 +469,7 @@ EoGePoint3d AeSysView::GetCursorPosition() {
       DoProjectionInverse(m_ptCursorPosWorld);
       m_ptCursorPosWorld = ModelViewGetMatrixInverse() * m_ptCursorPosWorld;
     }
+    m_ptCursorPosWorld.z = 0.0;
     m_ptCursorPosWorld = SnapPointToGrid(m_ptCursorPosWorld);
   }
   return m_ptCursorPosWorld;
@@ -516,6 +517,65 @@ void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
 
   ClientToScreen(&clientPoint);
   ::SetCursorPos(clientPoint.x, clientPoint.y);
+}
+
+/// @brief Loads a cursor from an RCDATA resource containing a raw .cur file.
+/// Parses the .cur directory, selects the image closest to desiredSize, and creates the
+/// cursor via CreateIconFromResourceEx. This bypasses rc.exe's inability to parse
+/// PNG-compressed .cur images (RC2176).
+/// @param resourceIdentifier RCDATA resource ID
+/// @param desiredSize Target cursor size in pixels (e.g., DPI value for 1-inch cursor)
+/// @return HCURSOR on success, nullptr on failure
+static HCURSOR LoadCursorFromRcData(UINT resourceIdentifier, int desiredSize) {
+  auto instance = AeSys::GetInstance();
+  auto resourceInfo = FindResourceW(instance, MAKEINTRESOURCE(resourceIdentifier), RT_RCDATA);
+  if (resourceInfo == nullptr) { return nullptr; }
+
+  auto resourceHandle = LoadResource(instance, resourceInfo);
+  if (resourceHandle == nullptr) { return nullptr; }
+
+  auto* data = static_cast<const BYTE*>(LockResource(resourceHandle));
+  auto dataSize = SizeofResource(instance, resourceInfo);
+  if (data == nullptr || dataSize < 6) { return nullptr; }
+
+  // .cur header: WORD reserved (0), WORD type (2 = cursor), WORD imageCount
+  auto imageCount = *reinterpret_cast<const WORD*>(data + 4);
+  if (imageCount == 0 || dataSize < static_cast<DWORD>(6 + imageCount * 16)) { return nullptr; }
+
+  // .cur directory entry (16 bytes each):
+  //   BYTE width, BYTE height, BYTE colorCount, BYTE reserved,
+  //   WORD xHotspot, WORD yHotspot, DWORD imageSize, DWORD imageOffset
+  // Width/height of 0 means 256.
+  int bestIndex = 0;
+  int bestDelta = INT_MAX;
+  for (int i = 0; i < imageCount; i++) {
+    const auto* entry = data + 6 + i * 16;
+    int entryWidth = entry[0] == 0 ? 256 : entry[0];
+    int delta = std::abs(entryWidth - desiredSize);
+    if (delta < bestDelta) {
+      bestDelta = delta;
+      bestIndex = i;
+    }
+  }
+
+  const auto* bestEntry = data + 6 + bestIndex * 16;
+  int bestWidth = bestEntry[0] == 0 ? 256 : bestEntry[0];
+  auto hotspotX = *reinterpret_cast<const WORD*>(bestEntry + 4);
+  auto hotspotY = *reinterpret_cast<const WORD*>(bestEntry + 6);
+  auto imageSize = *reinterpret_cast<const DWORD*>(bestEntry + 8);
+  auto imageOffset = *reinterpret_cast<const DWORD*>(bestEntry + 12);
+
+  if (imageOffset + imageSize > dataSize) { return nullptr; }
+
+  // CreateIconFromResourceEx for cursors expects: [WORD xHotspot][WORD yHotspot][image data]
+  auto bufferSize = static_cast<DWORD>(4 + imageSize);
+  auto buffer = std::make_unique<BYTE[]>(bufferSize);
+  *reinterpret_cast<WORD*>(buffer.get()) = hotspotX;
+  *reinterpret_cast<WORD*>(buffer.get() + 2) = hotspotY;
+  std::memcpy(buffer.get() + 4, data + imageOffset, imageSize);
+
+  return static_cast<HCURSOR>(CreateIconFromResourceEx(
+      buffer.get(), bufferSize, FALSE, 0x00030000, bestWidth, bestWidth, 0));
 }
 
 void AeSysView::SetModeCursor(int mode) {
@@ -589,8 +649,23 @@ void AeSysView::SetModeCursor(int mode) {
       SetCursor(static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE)));
       return;
   }
-  auto cursorHandle = static_cast<HCURSOR>(
-      LoadImageW(AeSys::GetInstance(), MAKEINTRESOURCE(resourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+
+  // Compute DPI-scaled cursor size for resources that contain high-resolution images.
+  // SM_CXCURSOR is not DPI-aware and always returns 32, so LR_DEFAULTSIZE picks 32x32 even on high-DPI displays. 
+  // For Draw mode, target a 1-inch cursor: size in pixels equals the DPI value. LoadImageW picks the closest match
+  // from the .cur file (e.g., 128x128 at 144 DPI, 256x256 at 288+ DPI).
+  //
+  // Draw mode uses RCDATA (not CURSOR) because the .cur file contains PNG-compressed images that rc.exe cannot parse. 
+  // LoadCursorFromRcData handles the directory parsing and calls CreateIconFromResourceEx with the best-match image.
+  HCURSOR cursorHandle{};
+  if (mode == ID_MODE_DRAW || mode == ID_MODE_TRAP || mode == ID_MODE_TRAPR) {
+    const auto desiredSize = static_cast<int>(GetDpiForWindow(GetSafeHwnd()));
+    cursorHandle = LoadCursorFromRcData(resourceIdentifier, desiredSize);
+  }
+  if (cursorHandle == nullptr) {
+    cursorHandle = static_cast<HCURSOR>(LoadImageW(
+        AeSys::GetInstance(), MAKEINTRESOURCE(resourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  }
   VERIFY(cursorHandle);
   SetCursor(cursorHandle);
 
