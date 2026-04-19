@@ -347,12 +347,18 @@ void AeSysView::DoDrawModeMouseMove() {
       if (numberOfPoints == 2) {
         EoGePoint3d start{pts[0]};
         EoGePoint3d intermediate{pts[1]};
-        auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, cursorPosition);
-        if (radialArc == nullptr) { break; }
+        EoGePoint3d end{pts[2]};
+        auto normal = CrossProduct({start, intermediate}, {start, end});
+        if (normal.IsNearNull()) {
+          m_PreviewGroup.AddTail(new EoDbPolyline(pts));
+        } else {
+          auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, end);
+          if (radialArc == nullptr) { break; }
 
-        radialArc->SetColor(Gs::renderState.Color());
-        radialArc->SetLineTypeName(Gs::renderState.LineTypeName());
-        m_PreviewGroup.AddTail(radialArc);
+          radialArc->SetColor(Gs::renderState.Color());
+          radialArc->SetLineTypeName(Gs::renderState.LineTypeName());
+          m_PreviewGroup.AddTail(radialArc);
+        }
       }
       InvalidateOverlay();
       break;

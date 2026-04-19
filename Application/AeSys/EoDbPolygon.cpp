@@ -346,16 +346,23 @@ EoDbPolygon::EoDbPolygon(EoGePoint3dArray& points) {
     m_positiveX = EoGeVector3d(points[0], points[1]);
     m_positiveY = EoGeVector3d(points[0], points[2]);
     auto normal = CrossProduct(m_positiveX, m_positiveY);
-    normal.Unitize();
 
-    if (normal.z < 0) { normal = -normal; }
+    if (normal.IsNearNull()) {
+      // Degenerate case — first three points are collinear.
+      m_positiveX = EoGeVector3d::positiveUnitX;
+      m_positiveY = EoGeVector3d::positiveUnitY;
+    } else {
+      normal.Unitize();
 
-    m_positiveX.Unitize();
-    m_positiveX.RotateAboutArbitraryAxis(normal, hatch::dOffAng);
-    m_positiveY = m_positiveX;
-    m_positiveY.RotateAboutArbitraryAxis(normal, Eo::HalfPi);
-    m_positiveX *= hatch::dXAxRefVecScal;
-    m_positiveY *= hatch::dYAxRefVecScal;
+      if (normal.z < 0) { normal = -normal; }
+
+      m_positiveX.Unitize();
+      m_positiveX.RotateAboutArbitraryAxis(normal, hatch::dOffAng);
+      m_positiveY = m_positiveX;
+      m_positiveY.RotateAboutArbitraryAxis(normal, Eo::HalfPi);
+      m_positiveX *= hatch::dXAxRefVecScal;
+      m_positiveY *= hatch::dYAxRefVecScal;
+    }
   } else {
     m_positiveX = EoGeVector3d::positiveUnitX;
     m_positiveY = EoGeVector3d::positiveUnitY;
