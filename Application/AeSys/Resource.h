@@ -1,4 +1,4 @@
-﻿//{{NO_DEPENDENCIES}}
+//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by AeSys.rc
 //
@@ -106,6 +106,7 @@
 #define IDD_ACTIVE_VIEW_KEYPLAN         338
 #define IDB_TEXTSTYLE_EDIT              339
 #define IDB_LAYER_MANAGE                340
+#define IDB_BLOCK_EDIT_LAYOUT           341
 #define IDD_LINE_TYPES_DIALOG           342
 #define IDD_ATTRIBUTE_PROMPT            343
 #define IDD_TEXT_STYLE_MANAGER          344
@@ -113,6 +114,7 @@
 #define IDD_SHEET_SETUP_FORM_FACTOR     346
 #define IDD_PLOT                        347
 #define IDR_LAYER_PROPERTIES            348
+#define IDD_EDIT_BLOCK_DEFINITION       349
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -364,6 +366,9 @@
 #define IDC_EDIT4                       1495
 #define IDC_EDIT5                       1496
 #define IDC_EDIT6                       1497
+#define IDC_BLOCK_EDIT_SAVE_BUTTON      1500
+#define IDC_BLOCK_EDIT_CLOSE_BUTTON     1501
+#define IDC_BLOCK_EDIT_SAVEAS_BUTTON    1502
 #define IDC_CHECK3                      1498
 #define IDC_EDIT7                       1499
 #define IDS_TOOLBAR_STANDARD            3781
@@ -637,6 +642,9 @@
 #define ID_VIEW_CUSTOMIZE               4660
 #define ID_MDI_TABBED                   4661
 #define ID_WINDOW_MANAGER               4662
+#define ID_TOOLS_EDIT_BLOCK_DEFINITION  4669
+#define ID_TOOLS_SAVE_BLOCK_EDIT        4710
+#define ID_TOOLS_CANCEL_BLOCK_EDIT      4711
 #define ID_TOOLS_ENTRY                  4668
 #define ID_USER_TOOL1                   4671
 #define ID_USER_TOOL2                   4672

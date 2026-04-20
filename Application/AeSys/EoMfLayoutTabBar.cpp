@@ -19,6 +19,11 @@ ON_BN_CLICKED(IDC_LAYOUT_SPACE_LABEL, &EoMfLayoutTabBar::OnSpaceLabelClicked)
 ON_BN_CLICKED(IDC_VIEWPORT_LOCK_BUTTON, &EoMfLayoutTabBar::OnLockButtonClicked)
 ON_BN_CLICKED(IDC_SPACE_TRANSFER_BUTTON, &EoMfLayoutTabBar::OnSpaceTransferClicked)
 ON_CBN_SELCHANGE(IDC_VIEWPORT_SCALE_COMBO, &EoMfLayoutTabBar::OnScaleComboChanged)
+ON_BN_CLICKED(IDC_BLOCK_EDIT_SAVE_BUTTON, &EoMfLayoutTabBar::OnBlockEditSaveClicked)
+ON_BN_CLICKED(IDC_BLOCK_EDIT_SAVEAS_BUTTON, &EoMfLayoutTabBar::OnBlockEditSaveAsClicked)
+ON_BN_CLICKED(IDC_BLOCK_EDIT_CLOSE_BUTTON, &EoMfLayoutTabBar::OnBlockEditCloseClicked)
+ON_WM_CTLCOLOR()
+ON_WM_DRAWITEM()
 END_MESSAGE_MAP()
 
 // Viewport scale presets matching File → Plot Scales (excluding "Fit to paper").
@@ -92,9 +97,76 @@ BOOL EoMfLayoutTabBar::CreateTabBar(CWnd* parentWindow, UINT controlId) {
       L"\u2B05 PS", WS_CHILD | BS_PUSHBUTTON | BS_FLAT, CRect(0, 0, 0, 0), this, IDC_SPACE_TRANSFER_BUTTON);
   m_spaceTransferButton.SetFont(&m_controlFont);
 
+  // Create tab area background brush for child button painting
+  m_tabAreaBrush.CreateSolidBrush(Eo::chromeColors.toolbarBackground);
+
+  // Block edit Save, SaveAs, and Close buttons — hidden until block edit mode
+  // Load the 24x72 strip bitmap and slice into individual 24x24 bitmaps
+  {
+    CBitmap stripBitmap;
+    stripBitmap.LoadBitmapW(IDB_BLOCK_EDIT_LAYOUT);
+    CClientDC dc(this);
+    CDC srcDC;
+    srcDC.CreateCompatibleDC(&dc);
+    CBitmap* oldSrcBmp = srcDC.SelectObject(&stripBitmap);
+
+    CBitmap* targets[] = {&m_blockEditSaveBitmap, &m_blockEditSaveAsBitmap, &m_blockEditCloseBitmap};
+    for (int i = 0; i < 3; ++i) {
+      CDC dstDC;
+      dstDC.CreateCompatibleDC(&dc);
+      targets[i]->CreateCompatibleBitmap(&dc, 24, 24);
+      CBitmap* oldDstBmp = dstDC.SelectObject(targets[i]);
+      dstDC.BitBlt(0, 0, 24, 24, &srcDC, i * 24, 0, SRCCOPY);
+      dstDC.SelectObject(oldDstBmp);
+    }
+    srcDC.SelectObject(oldSrcBmp);
+  }
+
+  m_blockEditSaveButton.Create(
+      L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_SAVE_BUTTON);
+
+  m_blockEditSaveAsButton.Create(
+      L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_SAVEAS_BUTTON);
+
+  m_blockEditCloseButton.Create(
+      L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_CLOSE_BUTTON);
+
+  // Tooltips for block edit buttons
+  m_toolTip.Create(this, TTS_ALWAYSTIP);
+  m_toolTip.AddTool(&m_blockEditSaveButton, L"Save Block");
+  m_toolTip.AddTool(&m_blockEditSaveAsButton, L"Save Block As...");
+  m_toolTip.AddTool(&m_blockEditCloseButton, L"Close Block Editor");
+  m_toolTip.Activate(TRUE);
+
   ApplyColorScheme();
 
   return TRUE;
+}
+
+BOOL EoMfLayoutTabBar::PreTranslateMessage(MSG* msg) {
+  if (m_toolTip.GetSafeHwnd() != nullptr) { m_toolTip.RelayEvent(msg); }
+
+  // Force redraw on mouse enter/leave for owner-draw block edit buttons
+  if (msg->message == WM_MOUSEMOVE || msg->message == WM_MOUSELEAVE) {
+    HWND target = msg->hwnd;
+    if (target == m_blockEditSaveButton.GetSafeHwnd() || target == m_blockEditSaveAsButton.GetSafeHwnd()
+        || target == m_blockEditCloseButton.GetSafeHwnd()) {
+      if (msg->message == WM_MOUSEMOVE && m_hoveredButton != target) {
+        // Mouse entered a new button — invalidate it and track leave
+        if (m_hoveredButton != nullptr) { ::InvalidateRect(m_hoveredButton, nullptr, FALSE); }
+        m_hoveredButton = target;
+        ::InvalidateRect(target, nullptr, FALSE);
+        TRACKMOUSEEVENT tme{sizeof(TRACKMOUSEEVENT), TME_LEAVE, target, 0};
+        ::TrackMouseEvent(&tme);
+      } else if (msg->message == WM_MOUSELEAVE && m_hoveredButton == target) {
+        // Mouse left the button — clear hover and invalidate
+        m_hoveredButton = nullptr;
+        ::InvalidateRect(target, nullptr, FALSE);
+      }
+    }
+  }
+
+  return CMFCTabCtrl::PreTranslateMessage(msg);
 }
 
 void EoMfLayoutTabBar::PopulateFromDocument(AeSysDoc* document) {
@@ -147,8 +219,10 @@ void EoMfLayoutTabBar::PopulateFromDocument(AeSysDoc* document) {
   SetActiveTab(selectedIndex);
 
   // Update the space label to reflect the current active space
-  bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
-  m_spaceLabel.SetWindowTextW(isPaperSpace ? L"PAPER" : L"MODEL");
+  if (!m_isBlockEditing) {
+    bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
+    m_spaceLabel.SetWindowTextW(isPaperSpace ? L"PAPER" : L"MODEL");
+  }
 
   m_populating = false;
 }
@@ -164,6 +238,7 @@ int EoMfLayoutTabBar::PreferredHeight() const {
 }
 
 void EoMfLayoutTabBar::UpdateViewportState(const EoDbViewport* viewport, bool isPaperSpace) {
+  if (m_isBlockEditing) { return; }  // Block edit mode owns the label and controls
   m_currentViewport = viewport;
 
   // Three-state label:
@@ -256,16 +331,36 @@ void EoMfLayoutTabBar::RepositionControls() {
     xPosition -= controlGap;
   }
 
-  // Space label (always visible, just left of the viewport controls)
+  // Block edit buttons (if visible) — Save, SaveAs, Close with padding for hover highlight
+  const int blockButtonSize = 32;
+  if (m_blockEditCloseButton.IsWindowVisible()) {
+    xPosition -= blockButtonSize;
+    m_blockEditCloseButton.MoveWindow(xPosition, topMargin, blockButtonSize, controlHeight);
+    xPosition -= controlGap;
+  }
+
+  if (m_blockEditSaveAsButton.IsWindowVisible()) {
+    xPosition -= blockButtonSize;
+    m_blockEditSaveAsButton.MoveWindow(xPosition, topMargin, blockButtonSize, controlHeight);
+    xPosition -= controlGap;
+  }
+
+  if (m_blockEditSaveButton.IsWindowVisible()) {
+    xPosition -= blockButtonSize;
+    m_blockEditSaveButton.MoveWindow(xPosition, topMargin, blockButtonSize, controlHeight);
+    xPosition -= controlGap;
+  }
+
+  // Space label (always visible, just left of the other controls)
   xPosition -= spaceLabelWidth;
   m_spaceLabel.MoveWindow(xPosition, topMargin, spaceLabelWidth, controlHeight);
 }
 
 void EoMfLayoutTabBar::ApplyColorScheme() {
-  // The tab bar background and tab drawing are handled by EoMfVisualManager.
-  // Child controls use the default system colors which work well with the light chrome.
-  // No explicit theming needed for the flat buttons and combo — they inherit from
-  // the parent window's visual style.
+  // Recreate the tab area background brush to match the current color scheme
+  m_tabAreaBrush.DeleteObject();
+  m_tabAreaBrush.CreateSolidBrush(Eo::chromeColors.toolbarBackground);
+  if (GetSafeHwnd() != nullptr) { Invalidate(); }
 }
 
 void EoMfLayoutTabBar::PopulateScaleCombo(double viewportScale) {
@@ -297,7 +392,72 @@ double EoMfLayoutTabBar::ComputeViewportScale(const EoDbViewport* viewport) noex
 
 // --- Message handlers ---
 
+HBRUSH EoMfLayoutTabBar::OnCtlColor(CDC* deviceContext, CWnd* childWindow, UINT controlType) {
+  if (controlType == CTLCOLOR_BTN) {
+    deviceContext->SetBkColor(Eo::chromeColors.toolbarBackground);
+    return static_cast<HBRUSH>(m_tabAreaBrush.GetSafeHandle());
+  }
+  return CMFCTabCtrl::OnCtlColor(deviceContext, childWindow, controlType);
+}
+
+void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) {
+  if (drawItem == nullptr || drawItem->CtlType != ODT_BUTTON) { return; }
+
+  const auto& colors = Eo::chromeColors;
+  CDC dc;
+  dc.Attach(drawItem->hDC);
+  CRect rect(drawItem->rcItem);
+
+  // Fill background with tab area color
+  dc.FillSolidRect(rect, colors.toolbarBackground);
+
+  // Hover state tracked by PreTranslateMessage; pressed state from itemState
+  bool isHovered = m_hoveredButton == drawItem->hwndItem;
+  bool isPressed = (drawItem->itemState & ODS_SELECTED) != 0;
+
+  // Draw hover/press highlight matching toolbar style
+  if (isPressed) {
+    dc.FillSolidRect(rect, colors.menuHighlightBackground);
+    CPen borderPen(PS_SOLID, 1, colors.menuHighlightBorder);
+    CPen* oldPen = dc.SelectObject(&borderPen);
+    CBrush* oldBrush = static_cast<CBrush*>(dc.SelectStockObject(NULL_BRUSH));
+    dc.Rectangle(rect);
+    dc.SelectObject(oldBrush);
+    dc.SelectObject(oldPen);
+  } else if (isHovered) {
+    dc.FillSolidRect(rect, colors.menuHighlightBackground);
+    CPen borderPen(PS_SOLID, 1, colors.menuHighlightBorder);
+    CPen* oldPen = dc.SelectObject(&borderPen);
+    CBrush* oldBrush = static_cast<CBrush*>(dc.SelectStockObject(NULL_BRUSH));
+    dc.Rectangle(rect);
+    dc.SelectObject(oldBrush);
+    dc.SelectObject(oldPen);
+  }
+
+  // Draw the bitmap centered
+  CBitmap* bitmap = nullptr;
+  UINT ctlId = drawItem->CtlID;
+  if (ctlId == IDC_BLOCK_EDIT_SAVE_BUTTON) { bitmap = &m_blockEditSaveBitmap; }
+  else if (ctlId == IDC_BLOCK_EDIT_SAVEAS_BUTTON) { bitmap = &m_blockEditSaveAsBitmap; }
+  else if (ctlId == IDC_BLOCK_EDIT_CLOSE_BUTTON) { bitmap = &m_blockEditCloseBitmap; }
+
+  if (bitmap != nullptr && bitmap->GetSafeHandle() != nullptr) {
+    BITMAP bm{};
+    bitmap->GetBitmap(&bm);
+    int x = rect.left + (rect.Width() - bm.bmWidth) / 2;
+    int y = rect.top + (rect.Height() - bm.bmHeight) / 2;
+    CDC memDC;
+    memDC.CreateCompatibleDC(&dc);
+    CBitmap* oldBmp = memDC.SelectObject(bitmap);
+    dc.BitBlt(x, y, bm.bmWidth, bm.bmHeight, &memDC, 0, 0, SRCCOPY);
+    memDC.SelectObject(oldBmp);
+  }
+
+  dc.Detach();
+}
+
 void EoMfLayoutTabBar::OnSpaceLabelClicked() {
+  if (m_isBlockEditing) { return; }  // BLOCK label is informational only
   auto* parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
@@ -435,4 +595,45 @@ void EoMfLayoutTabBar::OnSpaceTransferClicked() {
   UpdateSpaceTransferButton();
   parentView->InvalidateScene();
   parentView->SetFocus();
+}
+
+void EoMfLayoutTabBar::UpdateBlockEditState(bool isEditing, const CString& /*blockName*/) {
+  m_isBlockEditing = isEditing;
+  if (isEditing) {
+    m_spaceLabel.SetWindowTextW(L"BLOCK");
+    m_blockEditSaveButton.ShowWindow(SW_SHOW);
+    m_blockEditSaveAsButton.ShowWindow(SW_SHOW);
+    m_blockEditCloseButton.ShowWindow(SW_SHOW);
+    m_scaleCombo.ShowWindow(SW_HIDE);
+    m_lockButton.ShowWindow(SW_HIDE);
+  } else {
+    m_blockEditSaveButton.ShowWindow(SW_HIDE);
+    m_blockEditSaveAsButton.ShowWindow(SW_HIDE);
+    m_blockEditCloseButton.ShowWindow(SW_HIDE);
+  }
+  RepositionControls();
+}
+
+void EoMfLayoutTabBar::OnBlockEditSaveClicked() {
+  auto* parentView = static_cast<AeSysView*>(GetParent());
+  if (parentView == nullptr) { return; }
+  auto* document = parentView->GetDocument();
+  if (document == nullptr) { return; }
+  document->OnToolsSaveBlockEdit();
+}
+
+void EoMfLayoutTabBar::OnBlockEditSaveAsClicked() {
+  auto* parentView = static_cast<AeSysView*>(GetParent());
+  if (parentView == nullptr) { return; }
+  auto* document = parentView->GetDocument();
+  if (document == nullptr) { return; }
+  document->OnToolsSaveAsBlockEdit();
+}
+
+void EoMfLayoutTabBar::OnBlockEditCloseClicked() {
+  auto* parentView = static_cast<AeSysView*>(GetParent());
+  if (parentView == nullptr) { return; }
+  auto* document = parentView->GetDocument();
+  if (document == nullptr) { return; }
+  document->OnToolsCancelBlockEdit();
 }

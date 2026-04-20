@@ -1074,3 +1074,63 @@ Controls are right-aligned within the tab bar, positioned by `RepositionControls
 - **Lock glyph fallback**: Unicode lock glyphs may not render in all system fonts — ASCII fallback `[L]`/`[U]` if needed.
 - **DPI-aware control widths**: The 80px scale combo width could be DPI-scaled.
 - **Scale combo edit-in-place**: Allow typing a custom scale ratio directly into the combo.
+
+## Isolating Editor Pattern (Block Editor → Layer/Tracing Editor)
+
+### Architecture Overview
+The Block Editor is the first implementation of an **isolating editor** pattern — a mode that temporarily replaces the document's visible content with an isolated subset for focused editing. The same pattern applies to future Layer (Tracing) editing and any `EoDbGroupList`-derived collection.
+
+### How the Block Editor Works
+1. **Enter** (`AeSysDoc::EnterBlockEditMode`): Saves current state, creates a temporary `*BlockEdit` layer, deep-copies the target block's `EoDbGroupList` onto it, switches `m_activeSpace` so only the edit layer is visible.
+2. **Edit**: All standard draw/modify commands work — they operate on the edit layer via the normal `AddWorkLayerGroup`/trap pipeline. The user sees only the block's content in isolation.
+3. **Save** (`OnToolsSaveBlockEdit`): Deep-copies the edit layer content back into the source `EoDbBlock`'s group list, replacing the original.
+4. **Exit** (`OnToolsCancelBlockEdit`): Deletes the edit layer and its content, restores saved state, returns to normal view.
+
+### Extension Pattern for Layer/Tracing Editor
+Any `EoDbGroupList`-derived container (layer, tracing, named group collection) can follow the same pattern:
+
+| Step | Block Editor | Layer Editor (future) |
+|------|-------------|----------------------|
+| Source | `EoDbBlock::m_groupList` | `EoDbLayer::GetGroupList()` |
+| Enter | Deep-copy block → edit layer | Deep-copy layer → edit layer (or edit in-place with isolation) |
+| Isolation | Hide all layers, show only `*BlockEdit` | Hide all layers except target, or deep-copy to temp |
+| Save | Copy edit content → block's group list | Copy back or commit in-place |
+| Exit | Delete edit layer, restore state | Restore visibility, clean up |
+
+### Key Design Constraints
+- **Edit layer setup**: New `EoDbLayer` instances default to `m_lineType = nullptr`, which resolves to linetype index 0 (`Null` → `PS_NULL` invisible pen). Always call `SetLineType(m_continuousLineType)` and `SetColorIndex(7)` on new edit layers — follow the `SetCommonTableEntries()` pattern for layer "0".
+- **State save/restore**: The enter method must save and restore: active space, work layer, view transform, layout tab state. Use `AeSysView` members for view-local state.
+- **Tab bar integration**: `EoMfLayoutTabBar::UpdateBlockEditState(true, name)` switches to editor mode UI (shows Save/SaveAs/Close buttons, hides normal tabs/controls). `UpdateBlockEditState(false)` restores.
+- **Handle management**: Deep-copied primitives get fresh handles from `EoDbHandleManager`. The edit layer's content is ephemeral — handles are not persisted.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysDoc.h/.cpp` | `EnterBlockEditMode`, `OnToolsSaveBlockEdit`, `OnToolsCancelBlockEdit`, `m_blockEditLayer`, `m_blockEditBlock` |
+| `AeSys\EoDbBlock.h/.cpp` | Block definition container with `m_groupList` (`EoDbGroupList`) |
+| `AeSys\EoDbGroupList.h/.cpp` | Group list base — `DeepCopy()`, iteration, entity management |
+| `AeSys\EoMfLayoutTabBar.cpp` | `UpdateBlockEditState` — editor UI state; owner-draw buttons |
+
+## Owner-Draw Controls in Chrome Areas
+
+### Problem
+MFC standard controls (`CButton` with `BS_FLAT`, `BS_BITMAP`, etc.) use Windows system themes (rounded corners, 3D bevels, `COLOR_BTNFACE` background) that clash with AeSys's flat, sharp-cornered chrome style painted by `EoMfVisualManager`. This is visible when controls are placed on toolbars, tab bars, or other custom-painted surfaces.
+
+### Solution Pattern
+Use `BS_OWNERDRAW` buttons with parent-handled `WM_DRAWITEM` to replicate the toolbar hover style exactly:
+
+1. **Create**: `CButton::Create(L"", WS_CHILD | BS_OWNERDRAW, ...)` — no `BS_FLAT`, no `BS_BITMAP`.
+2. **Background**: Fill with the chrome surface color (e.g., `toolbarBackground` for tab areas) so the button blends seamlessly.
+3. **Hover/Press**: `menuHighlightBackground` fill + 1px `menuHighlightBorder` sharp `Rectangle()` — matches `EoMfVisualManager::OnFillButtonInterior` + `OnDrawButtonBorder`.
+4. **Content**: `BitBlt` the bitmap centered, or `DrawText` for text buttons.
+5. **Hover tracking**: `PreTranslateMessage` intercepts `WM_MOUSEMOVE`/`WM_MOUSELEAVE` on button HWNDs, tracks `m_hoveredButton`, calls `InvalidateRect` to trigger redraws. The `TRACKMOUSEEVENT` with `TME_LEAVE` ensures the leave message is generated.
+6. **Background brush**: `OnCtlColor` returns a brush matching the surface color for non-owner-draw child controls (combo boxes, etc.) on the same surface.
+7. **Tooltips**: `CToolTipCtrl` with `TTS_ALWAYSTIP`, `AddTool` per button, `RelayEvent` in `PreTranslateMessage`.
+
+### When to Use Owner-Draw
+- Any `CButton` placed on a custom-painted surface (tab bar, toolbar area, docking pane caption).
+- When the default Windows button theme (rounded corners, 3D bevel, system `COLOR_BTNFACE`) conflicts with the flat chrome style.
+- When hover/press feedback needs to match `EoMfVisualManager`'s toolbar button style.
+
+### Reference Implementation
+`EoMfLayoutTabBar::OnDrawItem` and `PreTranslateMessage` in `EoMfLayoutTabBar.cpp` — block edit Save/SaveAs/Close buttons.

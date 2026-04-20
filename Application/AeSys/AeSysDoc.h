@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <unordered_map>
 #include <variant>
@@ -229,6 +229,24 @@ class AeSysDoc : public CDocument {
     RegisterHandle(block);
   }
 
+  // Block Edit Mode
+  /// @brief True when the user is editing a block definition in-place.
+  [[nodiscard]] bool IsEditingBlock() const noexcept { return m_isEditingBlock; }
+  [[nodiscard]] const CString& EditingBlockName() const noexcept { return m_editingBlockName; }
+  bool EnterBlockEditMode(const CString& blockName);
+  void ExitBlockEditMode(bool commit);
+
+ private:
+  bool m_isEditingBlock{};
+  CString m_editingBlockName;
+  EoDbBlock* m_editingBlock{};  ///< The block being edited (original in block table)
+  EoDbLayer* m_blockEditLayer{};  ///< Temporary layer holding editable copies of block primitives
+  EoDbLayer* m_savedBlockEditWorkLayer{};  ///< Saved work layer to restore on exit
+  EoDxf::Space m_savedBlockEditSpace{EoDxf::Space::ModelSpace};  ///< Saved active space to restore on exit
+  std::vector<std::pair<EoDbPrimitive*, EoDbGroup*>> m_blockEditSnapshot{};  ///< Snapshot for cancel
+  CString m_savedBlockEditTitle;  ///< Saved document title to restore on exit
+
+ public:
   void LayerBlank(const CString& strName);
   /// @brief A layer is converted to a tracing or a job file
   bool LayerMelt(CString& strName);
@@ -653,6 +671,13 @@ class AeSysDoc : public CDocument {
   afx_msg void OnBlocksLoad();
   afx_msg void OnBlocksRemoveUnused();
   afx_msg void OnBlocksUnload();
+  afx_msg void OnToolsEditBlockDefinition();
+  afx_msg void OnToolsSaveBlockEdit();
+  void OnToolsSaveAsBlockEdit();
+  afx_msg void OnToolsCancelBlockEdit();
+  afx_msg void OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI);
+  afx_msg void OnUpdateToolsSaveBlockEdit(CCmdUI* cmdUI);
+  afx_msg void OnUpdateToolsCancelBlockEdit(CCmdUI* cmdUI);
   afx_msg void OnClearActiveLayers();
   afx_msg void OnClearAllLayers();
   afx_msg void OnClearAllTracings();

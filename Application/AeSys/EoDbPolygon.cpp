@@ -13,7 +13,6 @@
 #include "EoDbPolygon.h"
 #include "EoDbPrimitive.h"
 #include "EoDxfHatch.h"
-#include "EoGsRenderDevice.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
@@ -21,6 +20,7 @@
 #include "EoGePolyline.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 #include "Hatch.h"
 

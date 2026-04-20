@@ -4,6 +4,8 @@
 #include <string>
 
 #include "AeSys.h"
+#include "EoDlgAttributePrompt.h"
+#include "EoDlgEditBlockDefinition.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
@@ -36,6 +38,12 @@ BEGIN_MESSAGE_MAP(AeSysDoc, CDocument)
 ON_COMMAND(ID_BLOCKS_LOAD, OnBlocksLoad)
 ON_COMMAND(ID_BLOCKS_REMOVEUNUSED, OnBlocksRemoveUnused)
 ON_COMMAND(ID_BLOCKS_UNLOAD, OnBlocksUnload)
+ON_COMMAND(ID_TOOLS_EDIT_BLOCK_DEFINITION, OnToolsEditBlockDefinition)
+ON_COMMAND(ID_TOOLS_SAVE_BLOCK_EDIT, OnToolsSaveBlockEdit)
+ON_COMMAND(ID_TOOLS_CANCEL_BLOCK_EDIT, OnToolsCancelBlockEdit)
+ON_UPDATE_COMMAND_UI(ID_TOOLS_EDIT_BLOCK_DEFINITION, OnUpdateToolsEditBlockDefinition)
+ON_UPDATE_COMMAND_UI(ID_TOOLS_SAVE_BLOCK_EDIT, OnUpdateToolsSaveBlockEdit)
+ON_UPDATE_COMMAND_UI(ID_TOOLS_CANCEL_BLOCK_EDIT, OnUpdateToolsCancelBlockEdit)
 ON_COMMAND(ID_CLEAR_ACTIVELAYERS, OnClearActiveLayers)
 ON_COMMAND(ID_CLEAR_ALLLAYERS, OnClearAllLayers)
 ON_COMMAND(ID_CLEAR_ALLTRACINGS, OnClearAllTracings)
@@ -192,6 +200,20 @@ void AeSysDoc::UnregisterGroupHandles(EoDbGroup* group) {
 }
 
 void AeSysDoc::DeleteContents() {
+  // Clean up any active block edit session without committing
+  if (m_isEditingBlock) {
+    if (m_blockEditLayer != nullptr) {
+      m_blockEditLayer->DeleteGroupsAndRemoveAll();
+      delete m_blockEditLayer;
+      m_blockEditLayer = nullptr;
+    }
+    m_isEditingBlock = false;
+    m_editingBlock = nullptr;
+    m_editingBlockName.Empty();
+    m_savedBlockEditWorkLayer = nullptr;
+    m_blockEditSnapshot.clear();
+  }
+
   m_handleManager.Reset();
   m_handleMap.clear();
   m_originalDwgPath.clear();
@@ -261,3 +283,194 @@ AeSysDoc* AeSysDoc::GetDoc() {
 
   return (child == nullptr) ? nullptr : static_cast<AeSysDoc*>(child->GetActiveDocument());
 }
+
+
+void AeSysDoc::OnToolsEditBlockDefinition() {
+  if (m_isEditingBlock) {
+    app.AddStringToMessageList(L"Already editing a block definition.");
+    return;
+  }
+  if (BlockTableIsEmpty()) {
+    app.AddStringToMessageList(L"No blocks defined in this document.");
+    return;
+  }
+  EoDlgEditBlockDefinition dialog(this);
+  if (dialog.DoModal() != IDOK || dialog.m_selectedBlockName.IsEmpty()) { return; }
+  if (!EnterBlockEditMode(dialog.m_selectedBlockName)) {
+    app.AddStringToMessageList(L"Failed to enter block edit mode.");
+  }
+}
+
+bool AeSysDoc::EnterBlockEditMode(const CString& blockName) {
+  EoDbBlock* block{};
+  if (!LookupBlock(blockName, block)) { return false; }
+
+  m_editingBlock = block;
+  m_editingBlockName = blockName;
+
+  // Save current state
+  m_savedBlockEditWorkLayer = m_workLayer;
+  m_savedBlockEditSpace = m_activeSpace;
+
+  // Create a temporary editing layer with deep-copied primitives from the block
+  m_blockEditLayer = new EoDbLayer(CString(L"*BlockEdit"), EoDbLayer::State::isWork);
+  m_blockEditLayer->SetColorIndex(7);
+  m_blockEditLayer->SetLineType(m_continuousLineType);
+
+  // Deep-copy block primitives into a new group on the temp layer
+  auto* editGroup = new EoDbGroup(*block);
+  m_blockEditLayer->AddTail(editGroup);
+
+  // Switch to model space and set the temp layer as work layer
+  m_activeSpace = EoDxf::Space::ModelSpace;
+  m_isEditingBlock = true;
+
+  if (m_savedBlockEditWorkLayer != nullptr) { m_savedBlockEditWorkLayer->SetStateActive(); }
+  m_workLayer = m_blockEditLayer;
+
+  // Update document title to indicate block edit mode
+  m_savedBlockEditTitle = GetTitle();
+  CString editTitle;
+  editTitle.Format(L"%s [Editing: %s]", m_savedBlockEditTitle.GetString(), blockName.GetString());
+  SetTitle(editTitle);
+
+  CString message;
+  message.Format(L"Editing block definition: %s", blockName.GetString());
+  app.AddStringToMessageList(message);
+
+  // Zoom to block extents so the user can see the block content
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView != nullptr) {
+    activeView->LayoutTabBar().UpdateBlockEditState(true, blockName);
+    activeView->ModelViewInitialize();
+    activeView->OnWindowBest();
+  }
+  UpdateAllViews(nullptr);
+  return true;
+}
+
+void AeSysDoc::ExitBlockEditMode(bool commit) {
+  if (!m_isEditingBlock || m_editingBlock == nullptr || m_blockEditLayer == nullptr) { return; }
+
+  if (commit) {
+    // Replace the original block's primitives with edited content
+    // First unregister old handles
+    UnregisterGroupHandles(m_editingBlock);
+    m_editingBlock->DeletePrimitivesAndRemoveAll();
+
+    // Move primitives from the edit layer's group(s) into the block
+    auto position = m_blockEditLayer->GetHeadPosition();
+    while (position != nullptr) {
+      auto* group = m_blockEditLayer->GetNext(position);
+      auto primPosition = group->GetHeadPosition();
+      while (primPosition != nullptr) {
+        auto* primitive = group->GetNext(primPosition);
+        m_editingBlock->AddTail(primitive);
+        RegisterHandle(primitive);
+      }
+      // Clear the group without deleting primitives (they're now owned by the block)
+      group->RemoveAll();
+    }
+
+    CString message;
+    message.Format(L"Block definition '%s' updated.", m_editingBlockName.GetString());
+    app.AddStringToMessageList(message);
+  } else {
+    // Cancel — discard edits
+    auto position = m_blockEditLayer->GetHeadPosition();
+    while (position != nullptr) {
+      auto* group = m_blockEditLayer->GetNext(position);
+      group->DeletePrimitivesAndRemoveAll();
+    }
+    app.AddStringToMessageList(L"Block edit cancelled.");
+  }
+
+  // Clean up the temp layer
+  m_blockEditLayer->DeleteGroupsAndRemoveAll();
+  delete m_blockEditLayer;
+  m_blockEditLayer = nullptr;
+
+  // Restore state
+  m_workLayer = m_savedBlockEditWorkLayer;
+  if (m_workLayer != nullptr) { m_workLayer->SetStateWork(); }
+  m_activeSpace = m_savedBlockEditSpace;
+
+  m_isEditingBlock = false;
+  m_editingBlock = nullptr;
+  m_editingBlockName.Empty();
+  m_savedBlockEditWorkLayer = nullptr;
+  m_blockEditSnapshot.clear();
+
+  // Restore document title
+  SetTitle(m_savedBlockEditTitle);
+  m_savedBlockEditTitle.Empty();
+
+  // Refresh cursor and zoom to restored content
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView != nullptr) {
+    activeView->LayoutTabBar().UpdateBlockEditState(false);
+    activeView->LayoutTabBar().PopulateFromDocument(this);
+    activeView->OnWindowBest();
+  }
+  UpdateAllViews(nullptr);
+}
+
+void AeSysDoc::OnToolsSaveBlockEdit() { ExitBlockEditMode(true); }
+
+void AeSysDoc::OnToolsSaveAsBlockEdit() {
+  if (!m_isEditingBlock || m_blockEditLayer == nullptr) { return; }
+
+  // Prompt for a new block name using the attribute prompt dialog
+  EoDlgAttributePrompt dlg;
+  dlg.m_blockName = m_editingBlockName;
+  dlg.m_tagName = L"Block Name";
+  dlg.m_promptString = L"Enter new block name:";
+  dlg.m_defaultValue = m_editingBlockName;
+  if (dlg.DoModal() != IDOK || dlg.m_enteredValue.IsEmpty()) { return; }
+
+  const CString newName = dlg.m_enteredValue;
+
+  // Check if name already exists (and is not the current block)
+  EoDbBlock* existing = nullptr;
+  if (LookupBlock(newName, existing) && existing != m_editingBlock) {
+    CString msg;
+    msg.Format(L"Block '%s' already exists. Overwrite?", newName.GetString());
+    if (AfxMessageBox(msg, MB_YESNO | MB_ICONQUESTION) != IDYES) { return; }
+    // Remove old block content
+    existing->DeletePrimitivesAndRemoveAll();
+  }
+
+  if (existing == nullptr || existing == m_editingBlock) {
+    // Create a new block
+    existing = new EoDbBlock;
+    m_BlocksTable.SetAt(newName, existing);
+  }
+
+  // Copy primitives from the edit layer into the new block
+  auto position = m_blockEditLayer->GetHeadPosition();
+  while (position != nullptr) {
+    auto* group = m_blockEditLayer->GetNext(position);
+    auto primPosition = group->GetHeadPosition();
+    while (primPosition != nullptr) {
+      auto* primitive = group->GetNext(primPosition);
+      EoDbPrimitive* copy = nullptr;
+      primitive->Copy(copy);
+      existing->AddTail(copy);
+      RegisterHandle(copy);
+    }
+  }
+
+  CString message;
+  message.Format(L"Block saved as '%s'.", newName.GetString());
+  app.AddStringToMessageList(message);
+}
+
+void AeSysDoc::OnToolsCancelBlockEdit() { ExitBlockEditMode(false); }
+
+void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) {
+  cmdUI->Enable(!m_isEditingBlock && !BlockTableIsEmpty());
+}
+
+void AeSysDoc::OnUpdateToolsSaveBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(m_isEditingBlock); }
+
+void AeSysDoc::OnUpdateToolsCancelBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(m_isEditingBlock); }

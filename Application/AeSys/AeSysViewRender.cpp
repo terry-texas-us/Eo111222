@@ -120,16 +120,18 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       auto* document = GetDocument();
       assert(document != nullptr);
       const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
-      const auto bgColor = Eo::ViewBackgroundColorForSpace(isPaperSpace);
+      const bool isBlockEdit = document->IsEditingBlock();
+      const bool needsWhiteBackground = isPaperSpace && !isBlockEdit;
+      const auto bgColor = isBlockEdit ? Eo::BlockEditBackgroundColor() : Eo::ViewBackgroundColorForSpace(isPaperSpace);
       auto bkColor =
           D2D1::ColorF(GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f, GetBValue(bgColor) / 255.0f);
       m_d2dRenderTarget->Clear(bkColor);
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
 
-      // Paper-space sheet is white — force ACI 7→black so entities using the
+      // White background (paper space) — force ACI 7→black so entities using the
       // default color are visible on the white sheet, matching print-path behavior.
       COLORREF savedAci0{}, savedAci7{}, savedGray0{}, savedGray7{};
-      if (isPaperSpace) {
+      if (needsWhiteBackground) {
         savedAci0 = Eo::ColorPalette[0];
         savedAci7 = Eo::ColorPalette[7];
         savedGray0 = Eo::GrayPalette[0];
@@ -161,7 +163,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       }
       Gs::renderState.Restore(&renderDevice, savedUserState);
 
-      if (isPaperSpace) {
+      if (needsWhiteBackground) {
         Eo::ColorPalette[0] = savedAci0;
         Eo::ColorPalette[7] = savedAci7;
         Eo::GrayPalette[0] = savedGray0;
@@ -225,13 +227,16 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     // If back buffer exists and scene is dirty, re-render the entire scene into the back buffer
     if (m_backBufferDC.GetSafeHdc() != nullptr && m_sceneInvalid) {
       const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
+      const bool isBlockEdit = document->IsEditingBlock();
+      const bool needsWhiteBackground = isPaperSpace && !isBlockEdit;
       CRect bufferRect(0, 0, m_backBufferSize.cx, m_backBufferSize.cy);
-      m_backBufferDC.FillSolidRect(bufferRect, Eo::ViewBackgroundColorForSpace(isPaperSpace));
+      const auto gdiBgColor = isBlockEdit ? Eo::BlockEditBackgroundColor() : Eo::ViewBackgroundColorForSpace(isPaperSpace);
+      m_backBufferDC.FillSolidRect(bufferRect, gdiBgColor);
 
-      // Paper-space sheet is white — force ACI 7→black so entities using the
+      // White background (paper space) — force ACI 7→black so entities using the
       // default color are visible on the white sheet, matching print-path behavior.
       COLORREF savedAci0{}, savedAci7{}, savedGray0{}, savedGray7{};
-      if (isPaperSpace) {
+      if (needsWhiteBackground) {
         savedAci0 = Eo::ColorPalette[0];
         savedAci7 = Eo::ColorPalette[7];
         savedGray0 = Eo::GrayPalette[0];
@@ -260,7 +265,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 #endif
       }
 
-      if (isPaperSpace) {
+      if (needsWhiteBackground) {
         Eo::ColorPalette[0] = savedAci0;
         Eo::ColorPalette[7] = savedAci7;
         Eo::GrayPalette[0] = savedGray0;
@@ -277,8 +282,10 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       // Fallback: direct rendering before first OnSize delivers a back buffer
       if (!m_ViewRendered) {
         const bool isPaper = document->ActiveSpace() == EoDxf::Space::PaperSpace;
+        const bool isBlockEd = document->IsEditingBlock();
+        const bool needsWhiteBg = isPaper && !isBlockEd;
         COLORREF sAci0{}, sAci7{}, sGray0{}, sGray7{};
-        if (isPaper) {
+        if (needsWhiteBg) {
           sAci0 = Eo::ColorPalette[0];
           sAci7 = Eo::ColorPalette[7];
           sGray0 = Eo::GrayPalette[0];
@@ -293,7 +300,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         EoGsRenderDeviceGdi renderDevice(deviceContext);
         document->DisplayAllLayers(this, &renderDevice);
         document->DisplayUniquePoints();
-        if (isPaper) {
+        if (needsWhiteBg) {
           Eo::ColorPalette[0] = sAci0;
           Eo::ColorPalette[7] = sAci7;
           Eo::GrayPalette[0] = sGray0;

@@ -172,6 +172,7 @@
     <ClCompile Include="EoCtrlLayerComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
     <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
+    <ClCompile Include="EoDlgEditBlockDefinition.cpp" />
     <ClCompile Include="EoDlgSheetSetupFormFactor.cpp" />
     <ClCompile Include="EoDlgTextStyleManager.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
@@ -391,6 +392,7 @@
     <ClInclude Include="EoDlgAttributePrompt.h" />
     <ClInclude Include="EoDlgBlockInsert.h" />
     <ClInclude Include="EoDlgDrawOptions.h" />
+    <ClInclude Include="EoDlgEditBlockDefinition.h" />
     <ClInclude Include="EoDlgEditOptions.h" />
     <ClInclude Include="EoDlgEditTrapCommandsQuery.h" />
     <ClInclude Include="EoDlgFileManage.h" />

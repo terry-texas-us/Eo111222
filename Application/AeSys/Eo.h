@@ -76,6 +76,12 @@ constexpr COLORREF colorViewBackground = RGB(40, 40, 36);
 /// @brief The paper-space sheet fill color — always white, matching physical paper.
 [[nodiscard]] inline constexpr COLORREF PaperSpaceSheetColor() noexcept { return colorWhite; }
 
+/// @brief Returns the block-edit view background color — same warm gray as the paper-space table.
+/// Visually signals "special view of a model component" and avoids ACI 7 white-on-white ambiguity.
+[[nodiscard]] inline COLORREF BlockEditBackgroundColor() noexcept {
+  return PaperSpaceBackgroundColor();
+}
+
 /// @brief Returns the appropriate view background color for the given drawing space.
 /// @param isPaperSpace true for paper-space layout views, false for model-space.
 [[nodiscard]] inline COLORREF ViewBackgroundColorForSpace(bool isPaperSpace) noexcept {

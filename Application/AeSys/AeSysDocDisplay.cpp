@@ -22,6 +22,20 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
   ATLTRACE2(traceGeneral, 3, L"AeSysDoc<%p>::DisplayAllLayers(%p, %p)\n", this, view, renderDevice);
 
   try {
+    // Block edit mode: render only the editing layer
+    if (m_isEditingBlock && m_blockEditLayer != nullptr) {
+      bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
+
+      RemoveAllGroupsFromAllViews();
+      EoDbPolygon::SetSpecialPolygonStyle(
+          view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
+      int savedRenderState = Gs::renderState.Save();
+      m_blockEditLayer->Display(view, renderDevice, identifyTrap);
+      Gs::renderState.Restore(renderDevice, savedRenderState);
+      EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
+      return;
+    }
+
     bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
 
     RemoveAllGroupsFromAllViews();

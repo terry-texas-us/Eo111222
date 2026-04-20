@@ -254,8 +254,6 @@ void AeSysView::OnWindowBest() {
 
   document->GetExtents(this, ptMin, ptMax, ModelViewGetMatrix());
 
-  // extents return range - 1 to 1
-
   if (ptMin.x < ptMax.x) {
     m_PreviousViewTransform = m_ViewTransform;
 

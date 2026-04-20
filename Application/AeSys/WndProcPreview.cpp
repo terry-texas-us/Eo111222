@@ -29,7 +29,7 @@ void WndProcPreviewClear(HWND previewWindow) {
   auto* bitmap = memoryContext.SelectObject(previewBitmap);
   if (bitmap == nullptr) { return; }
 
-  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, BLACKNESS);
+  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, WHITENESS);
 
   memoryContext.SelectObject(bitmap);
   ::InvalidateRect(previewWindow, nullptr, TRUE);
@@ -50,10 +50,25 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   memoryContext.CreateCompatibleDC(nullptr);
 
   CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
-  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, BLACKNESS);
+  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, WHITENESS);
+
+  // Swap ACI 7 and ACI 0 to black for white background visibility
+  auto savedAci7 = Eo::ColorPalette[7];
+  auto savedAci0 = Eo::ColorPalette[0];
+  auto savedGray7 = Eo::GrayPalette[7];
+  auto savedGray0 = Eo::GrayPalette[0];
+  Eo::ColorPalette[7] = Eo::colorBlack;
+  Eo::ColorPalette[0] = Eo::colorBlack;
+  Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
+  Eo::GrayPalette[0] = RGB(0x22, 0x22, 0x22);
+
+  // 2px padding around preview content
+  constexpr int pad = 2;
+  CRect paddedRect = previewWindowRect;
+  paddedRect.DeflateRect(pad, pad);
 
   activeView->ViewportPushActive();
-  activeView->SetViewportSize(previewWindowRect.right, previewWindowRect.bottom);
+  activeView->SetViewportSize(paddedRect.Width(), paddedRect.Height());
   activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
   activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
@@ -84,6 +99,10 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   activeView->ViewportPopActive();
 
   Gs::renderState.Restore(&memoryContext, savedRenderState);
+  Eo::ColorPalette[7] = savedAci7;
+  Eo::ColorPalette[0] = savedAci0;
+  Eo::GrayPalette[7] = savedGray7;
+  Eo::GrayPalette[0] = savedGray0;
   memoryContext.SelectObject(Bitmap);
   InvalidateRect(previewWindow, 0, TRUE);
 }
@@ -103,10 +122,25 @@ void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
   memoryContext.CreateCompatibleDC(nullptr);
 
   CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
-  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, BLACKNESS);
+  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, WHITENESS);
+
+  // Swap ACI 7 and ACI 0 to black for white background visibility
+  auto savedAci7 = Eo::ColorPalette[7];
+  auto savedAci0 = Eo::ColorPalette[0];
+  auto savedGray7 = Eo::GrayPalette[7];
+  auto savedGray0 = Eo::GrayPalette[0];
+  Eo::ColorPalette[7] = Eo::colorBlack;
+  Eo::ColorPalette[0] = Eo::colorBlack;
+  Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
+  Eo::GrayPalette[0] = RGB(0x22, 0x22, 0x22);
+
+  // 2px padding around preview content
+  constexpr int pad = 2;
+  CRect paddedRect = previewWindowRect;
+  paddedRect.DeflateRect(pad, pad);
 
   activeView->ViewportPushActive();
-  activeView->SetViewportSize(previewWindowRect.right, previewWindowRect.bottom);
+  activeView->SetViewportSize(paddedRect.Width(), paddedRect.Height());
   activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
   activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
@@ -130,6 +164,10 @@ void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
   EoGsRenderDeviceGdi renderDevice(&memoryContext);
   groups->Display(activeView, &renderDevice);
   Gs::renderState.Restore(&memoryContext, savedRenderState);
+  Eo::ColorPalette[7] = savedAci7;
+  Eo::ColorPalette[0] = savedAci0;
+  Eo::GrayPalette[7] = savedGray7;
+  Eo::GrayPalette[0] = savedGray0;
 
   activeView->PopViewTransform();
   activeView->ViewportPopActive();

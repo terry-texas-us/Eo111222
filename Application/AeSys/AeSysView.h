@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <cmath>
 #include <cstdint>
@@ -328,6 +328,9 @@ class AeSysView : public CView {
   /// @brief Rebuilds the layout tab bar from the document's layout list.
   /// Called from OnInitialUpdate and OnUpdate when document content changes.
   void UpdateLayoutTabs();
+
+  /// @brief Returns the layout tab bar for state control updates.
+  [[nodiscard]] EoMfLayoutTabBar& LayoutTabBar() noexcept { return m_layoutTabBar; }
 
   /// @brief Returns the currently activated paper-space viewport, or nullptr if none.
   [[nodiscard]] EoDbViewport* ActiveViewportPrimitive() const noexcept { return m_activeViewportPrimitive; }

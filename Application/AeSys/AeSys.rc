@@ -103,6 +103,8 @@ IDB_TEXTSTYLE_EDIT      BITMAP                  "res\\Toolbar Bitmaps\\TextEditS
 
 IDB_LAYER_MANAGE        BITMAP                  "res\\Toolbar Bitmaps\\LayerManageButton.bmp"
 
+IDB_BLOCK_EDIT_LAYOUT   BITMAP                  "res\\Toolbar Bitmaps\\BlockEditLayout.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -453,6 +455,10 @@ BEGIN
         MENUITEM "R&un...",                     ID_FILE_RUN
         MENUITEM "<User defined tools>",        ID_TOOLS_ENTRY
         MENUITEM SEPARATOR
+        MENUITEM "Edit &Block Definition...",  ID_TOOLS_EDIT_BLOCK_DEFINITION
+        MENUITEM "Save Block &Edit",             ID_TOOLS_SAVE_BLOCK_EDIT
+        MENUITEM "Cancel Block Ed&it",            ID_TOOLS_CANCEL_BLOCK_EDIT
+        MENUITEM SEPARATOR
         MENUITEM "&Customize...",               ID_VIEW_CUSTOMIZE
     END
     POPUP "&Setup"
@@ -722,6 +728,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "R&un...",                     ID_FILE_RUN
         MENUITEM "<User defined tools>",        ID_TOOLS_ENTRY
+        MENUITEM SEPARATOR
+        MENUITEM "Edit &Block Definition...",  ID_TOOLS_EDIT_BLOCK_DEFINITION
+        MENUITEM "Save Block &Edit",             ID_TOOLS_SAVE_BLOCK_EDIT
+        MENUITEM "Cancel Block Ed&it",            ID_TOOLS_CANCEL_BLOCK_EDIT
         MENUITEM SEPARATOR
         MENUITEM "&Customize...",               ID_VIEW_CUSTOMIZE
     END
@@ -1808,6 +1818,22 @@ BEGIN
     CONTROL         "",IDC_LAYER_PREVIEW,"PreviewWindow",0x0,284,35,144,111
 END
 
+IDD_EDIT_BLOCK_DEFINITION DIALOGEX 8, 8, 340, 176
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Edit Block Definition"
+FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "&Blocks",IDC_STATIC,4,4,181,167
+    LISTBOX         IDC_BLOCKS_LIST,10,15,168,148,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    LTEXT           "Primitives",IDC_STATIC,195,20,30,8
+    LTEXT           "0",IDC_GROUPS,231,20,22,8
+    LTEXT           "References",IDC_STATIC,262,20,38,8
+    LTEXT           "0",IDC_REFERENCES,303,20,20,8
+    CONTROL         "",IDC_LAYER_PREVIEW,"PreviewWindow",0x0,195,35,135,101
+    PUSHBUTTON      "Cancel",IDCANCEL,253,157,32,14
+    PUSHBUTTON      "OK",IDOK,296,157,32,14
+END
 IDD_ATTRIBUTE_PROMPT DIALOGEX 0, 0, 220, 95
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Enter Attribute Value"
@@ -2332,6 +2358,14 @@ BEGIN
     BEGIN
         LEFTMARGIN, 4
         RIGHTMARGIN, 435
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 171
+    END
+
+    IDD_EDIT_BLOCK_DEFINITION, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 334
         TOPMARGIN, 4
         BOTTOMMARGIN, 171
     END
@@ -3117,6 +3151,11 @@ BEGIN
 END
 
 IDD_INSERT_BLOCK AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_EDIT_BLOCK_DEFINITION AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

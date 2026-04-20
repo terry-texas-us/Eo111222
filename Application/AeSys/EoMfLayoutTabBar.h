@@ -42,6 +42,8 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// Also creates the child state controls (space label, lock button, scale combo).
   BOOL CreateTabBar(CWnd* parentWindow, UINT controlId);
 
+  BOOL PreTranslateMessage(MSG* msg) override;
+
   /// @brief Populates tabs from the document's layout list.
   /// Always adds a "Model" tab at index 0. Paper-space layouts follow in tab-order.
   /// Selects the tab matching the document's current active space and layout handle.
@@ -88,6 +90,11 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// @brief Clears the last-active viewport tracking (e.g., on layout tab switch).
   void ClearLastActiveViewport() noexcept { m_lastActiveViewport = nullptr; }
 
+  /// @brief Enters or exits block edit state in the layout tab bar.
+  /// When editing: shows "BLOCK" label with Save/Close buttons, hides normal controls and tabs.
+  /// When not editing: restores normal state.
+  void UpdateBlockEditState(bool isEditing, const CString& blockName = CString{});
+
  private:
   /// @brief Block record handles parallel to tab indices.
   /// Index 0 = Model (handle 0), index 1+ = paper-space layout block record handles.
@@ -121,8 +128,34 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// Visible only when a viewport is activated in paper space. Position 3 (after lock).
   CComboBox m_scaleCombo;
 
+  /// @brief Block edit Save button. Visible only during block edit mode.
+  CButton m_blockEditSaveButton;
+
+  /// @brief Block edit SaveAs button. Visible only during block edit mode.
+  CButton m_blockEditSaveAsButton;
+
+  /// @brief Block edit Close button. Visible only during block edit mode.
+  CButton m_blockEditCloseButton;
+
+  /// @brief Tooltip control for block edit buttons.
+  CToolTipCtrl m_toolTip;
+
+  /// @brief HWND of the block edit button currently under the mouse (for hover tracking).
+  HWND m_hoveredButton{};
+
+  /// @brief Individual bitmaps extracted from the block edit layout strip for button icons.
+  CBitmap m_blockEditSaveBitmap;
+  CBitmap m_blockEditSaveAsBitmap;
+  CBitmap m_blockEditCloseBitmap;
+
+  /// @brief True when block edit mode is active.
+  bool m_isBlockEditing{false};
+
   /// @brief Font used by the state controls (matches the tab bar font size).
   CFont m_controlFont;
+
+  /// @brief Background brush matching the tab area (toolbarBackground) for child button painting.
+  CBrush m_tabAreaBrush;
 
   /// @brief The viewport whose state is currently displayed. nullptr when no viewport is active.
   const EoDbViewport* m_currentViewport{};
@@ -139,8 +172,13 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   [[nodiscard]] static double ComputeViewportScale(const EoDbViewport* viewport) noexcept;
 
   // --- Message handlers ---
+  afx_msg HBRUSH OnCtlColor(CDC* deviceContext, CWnd* childWindow, UINT controlType);
+  afx_msg void OnDrawItem(int controlId, LPDRAWITEMSTRUCT drawItem);
   afx_msg void OnSpaceLabelClicked();
   afx_msg void OnScaleComboChanged();
   afx_msg void OnLockButtonClicked();
   afx_msg void OnSpaceTransferClicked();
+  afx_msg void OnBlockEditSaveClicked();
+  afx_msg void OnBlockEditSaveAsClicked();
+  afx_msg void OnBlockEditCloseClicked();
 };

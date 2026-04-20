@@ -26,6 +26,12 @@ void AeSysDoc::GetExtents(
   ptMin.Set(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   ptMax.Set(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
+  // In block edit mode, compute extents from the temporary editing layer only
+  if (m_isEditingBlock && m_blockEditLayer != nullptr) {
+    m_blockEditLayer->GetExtents(view, ptMin, ptMax, transformMatrix);
+    return;
+  }
+
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
     if (!layer->IsOff()) { layer->GetExtents(view, ptMin, ptMax, transformMatrix); }
@@ -324,8 +330,9 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroup: m_workLayer is nullptr\n");
     return;
   }
-  // Stamp primitives with the work layer's name for DXF export and diagnostics
-  std::wstring layerName(m_workLayer->Name().GetString());
+  // In block edit mode, stamp primitives with layer "0" (the standard block content layer)
+  // instead of the temporary "*BlockEdit" layer name.
+  std::wstring layerName = m_isEditingBlock ? L"0" : std::wstring(m_workLayer->Name().GetString());
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = group->GetNext(position);

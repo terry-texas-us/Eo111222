@@ -151,6 +151,7 @@
     <ClCompile Include="EoDlgPlot.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoCtrlLayerComboBox.cpp" />
+    <ClCompile Include="EoDlgEditBlockDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -281,6 +282,7 @@
     <ClInclude Include="EoDlgPlot.h" />
     <ClInclude Include="EoMfLayoutTabBar.h" />
     <ClInclude Include="EoCtrlLayerComboBox.h" />
+    <ClInclude Include="EoDlgEditBlockDefinition.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
