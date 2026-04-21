@@ -62,5 +62,4 @@ class EoCtrlLineWeightOwnerDrawCombo : public CComboBox {
 
  private:
   CBrush m_dropdownBackgroundBrush;
-  void DrawDropdownArrow(CDC* deviceContext, const CRect& rect, COLORREF arrowColor);
 };

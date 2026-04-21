@@ -2,8 +2,6 @@
 
 #include <cstdint>
 
-#include "Resource.h"
-
 /// @brief Owner-draw toolbar combo box for ACI pen color selection.
 /// Shows By Layer, By Block, the 7 named ACI colors with swatches, and "More Colors...".
 /// "More Colors..." opens the full EoDlgSetupColor dialog.
@@ -66,6 +64,4 @@ class EoCtrlColorOwnerDrawCombo : public CComboBox {
 
  private:
   CBrush m_dropdownBackgroundBrush;
-  /// @brief Draws a DPI-scaled downward-pointing triangle centered in the given rectangle.
-  void DrawDropdownArrow(CDC* deviceContext, const CRect& rect, COLORREF arrowColor);
 };

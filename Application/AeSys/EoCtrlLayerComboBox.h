@@ -86,7 +86,4 @@ class EoCtrlLayerOwnerDrawCombo : public CComboBox {
  private:
   CBrush m_dropdownBackgroundBrush;
   bool m_listboxSubclassed{false};
-
-  /// @brief Draws a DPI-scaled downward-pointing triangle centered in the given rectangle.
-  void DrawDropdownArrow(CDC* deviceContext, const CRect& rect, COLORREF arrowColor);
 };

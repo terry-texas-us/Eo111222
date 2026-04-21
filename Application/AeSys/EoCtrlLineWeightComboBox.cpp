@@ -305,28 +305,6 @@ void EoCtrlLineWeightOwnerDrawCombo::OnNcPaint() {
 
 BOOL EoCtrlLineWeightOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
 
-void EoCtrlLineWeightOwnerDrawCombo::DrawDropdownArrow(CDC* deviceContext, const CRect& rect, COLORREF arrowColor) {
-  UINT dpi = ::GetDpiForWindow(m_hWnd);
-  if (dpi == 0) { dpi = 96; }
-  int arrowWidth = ::MulDiv(7, dpi, 96) | 1;
-  int arrowHeight = ::MulDiv(4, dpi, 96);
-  if (arrowHeight < 3) { arrowHeight = 3; }
-
-  int centerX = (rect.left + rect.right) / 2;
-  int centerY = (rect.top + rect.bottom) / 2;
-  int left = centerX - arrowWidth / 2;
-  int top = centerY - arrowHeight / 2;
-
-  POINT points[3] = {{left, top}, {left + arrowWidth, top}, {centerX, top + arrowHeight}};
-  CBrush arrowBrush(arrowColor);
-  CPen arrowPen(PS_SOLID, 1, arrowColor);
-  auto* oldBrush = deviceContext->SelectObject(&arrowBrush);
-  auto* oldPen = deviceContext->SelectObject(&arrowPen);
-  deviceContext->Polygon(points, 3);
-  deviceContext->SelectObject(oldBrush);
-  deviceContext->SelectObject(oldPen);
-}
-
 void EoCtrlLineWeightOwnerDrawCombo::MeasureItem(LPMEASUREITEMSTRUCT measureItemStruct) {
   UINT dpi = ::GetDpiForWindow(m_hWnd);
   if (dpi == 0) { dpi = 96; }
