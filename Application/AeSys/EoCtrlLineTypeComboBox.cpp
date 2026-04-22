@@ -378,11 +378,27 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCT
         CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
 
         // Determine the line type pointer — only dereference when a document is open
-        // (item data stores raw EoDbLineType* that becomes stale when the document closes)
+        // and the pointer is verified against the current document's line type table
         const EoDbLineType* lineType = nullptr;
         if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER) &&
-            itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK) && AeSysDoc::GetDoc() != nullptr) {
-          lineType = reinterpret_cast<const EoDbLineType*>(itemData);
+            itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
+          auto* document = AeSysDoc::GetDoc();
+          if (document != nullptr && !document->IsClosing()) {
+            auto* candidate = reinterpret_cast<const EoDbLineType*>(itemData);
+            // Validate pointer against current document's line type table
+            auto* lineTypeTable = document->LineTypeTable();
+            bool valid = false;
+            if (lineTypeTable != nullptr) {
+              POSITION pos = lineTypeTable->GetStartPosition();
+              while (pos != nullptr) {
+                CString name;
+                EoDbLineType* tableEntry{};
+                lineTypeTable->GetNextAssoc(pos, name, tableEntry);
+                if (tableEntry == candidate) { valid = true; break; }
+              }
+            }
+            if (valid) { lineType = candidate; }
+          }
         }
         DrawDashPreview(deviceContext, previewRect, lineType, schemeColors.menuText);
 
@@ -518,12 +534,27 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
     if (previewRight > itemRect.right - 40) { previewRight = itemRect.right - 40; }
     CRect previewRect(itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom);
 
-    // Only dereference EoDbLineType* when a document is open — item data stores
-    // raw pointers that become stale when the document closes.
+    // Only dereference EoDbLineType* when a document is open and the pointer
+    // is verified against the current document's line type table.
     const EoDbLineType* lineType = nullptr;
     if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER) &&
-        itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK) && AeSysDoc::GetDoc() != nullptr) {
-      lineType = reinterpret_cast<const EoDbLineType*>(itemData);
+        itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
+      auto* document = AeSysDoc::GetDoc();
+      if (document != nullptr && !document->IsClosing()) {
+        auto* candidate = reinterpret_cast<const EoDbLineType*>(itemData);
+        auto* lineTypeTable = document->LineTypeTable();
+        bool valid = false;
+        if (lineTypeTable != nullptr) {
+          POSITION pos = lineTypeTable->GetStartPosition();
+          while (pos != nullptr) {
+            CString name;
+            EoDbLineType* tableEntry{};
+            lineTypeTable->GetNextAssoc(pos, name, tableEntry);
+            if (tableEntry == candidate) { valid = true; break; }
+          }
+        }
+        if (valid) { lineType = candidate; }
+      }
     }
 
     // ByLayer and ByBlock draw as continuous (null lineType)

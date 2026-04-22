@@ -496,6 +496,18 @@ void AeSysView::OnInsertBlock() {
   }
 }
 
+void AeSysView::OnInsertTracing() {
+  auto* document = GetDocument();
+  if (document == nullptr) { return; }
+
+  CFileDialog dialog(TRUE, L"tra", nullptr,
+      OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
+      L"Tracing Files (*.tra)|*.tra|All Files (*.*)|*.*||", this);
+  if (dialog.DoModal() != IDOK) { return; }
+
+  document->InsertTracingLayer(dialog.GetPathName().GetString());
+}
+
 /** @brief Retrieves the active view in the MDI application.
  * @note This function assumes that the main window is a CMDIFrameWndEx and that the active child window is a
  * CMDIChildWndEx containing an AeSysView.
@@ -508,10 +520,6 @@ AeSysView* AeSysView::GetActiveView() {
     return nullptr;
   }
   auto* childWindow = dynamic_cast<CMDIChildWndEx*>(frameWindow->MDIGetActive());
-#ifdef _DEBUG
-  assert(childWindow != nullptr &&
-         "No active MDI child window - should always have an active document after initialization");
-#endif
   if (childWindow == nullptr) { return nullptr; }
 
   auto* view = childWindow->GetActiveView();

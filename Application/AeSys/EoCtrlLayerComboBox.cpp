@@ -1,18 +1,14 @@
 #include "Stdafx.h"
 
-#include <commctrl.h>
 #include <uxtheme.h>
 #include <windowsx.h>
 
-#include "AeSys.h"
 #include "AeSysDoc.h"
-#include "AeSysView.h"
 #include "Eo.h"
 #include "EoCtrlLayerComboBox.h"
 #include "EoDb.h"
 #include "EoDbLayer.h"
 #include "EoDlgSetupColor.h"
-#include "EoGsRenderState.h"
 
 namespace {
 
@@ -41,6 +37,10 @@ constexpr int kIconWork = 8;
 constexpr int kIconActive = 9;
 constexpr int kIconStatic = 10;
 
+/// @brief Posted (not sent) by OnDraw when a stale layer pointer is detected.
+/// Processing it outside the paint handler prevents re-entrant item-list modification.
+constexpr UINT kRebuildLayerComboMsg = WM_APP + 1;
+
 }  // namespace
 
 IMPLEMENT_SERIAL(EoCtrlLayerComboBox, CMFCToolBarComboBoxButton, VERSIONABLE_SCHEMA | 1)
@@ -51,10 +51,11 @@ EoCtrlLayerComboBox::EoCtrlLayerComboBox()
 }
 
 void EoCtrlLayerComboBox::PopulateItems() {
+  m_rebuildPending = false;
   BuildItemList();
 
   auto* document = AeSysDoc::GetDoc();
-  if (document == nullptr) { return; }
+  if (document == nullptr || document->IsClosing()) { return; }
 
   // Select the work layer
   for (int i = 0; i < GetCount(); i++) {
@@ -68,14 +69,7 @@ void EoCtrlLayerComboBox::PopulateItems() {
 }
 
 void EoCtrlLayerComboBox::SetCurrentLayer(const CString& layerName) {
-  for (int i = 0; i < GetCount(); i++) {
-    auto* layer = reinterpret_cast<EoDbLayer*>(GetItemData(i));
-    if (layer != nullptr && layer->Name().CompareNoCase(layerName) == 0) {
-      SelectItem(i);
-      return;
-    }
-  }
-  // Rebuild and retry
+  // Rebuild first to ensure items reference valid layer pointers from the current document
   BuildItemList();
   for (int i = 0; i < GetCount(); i++) {
     auto* layer = reinterpret_cast<EoDbLayer*>(GetItemData(i));
@@ -91,7 +85,7 @@ void EoCtrlLayerComboBox::BuildItemList() {
   RemoveAllItems();
 
   auto* document = AeSysDoc::GetDoc();
-  if (document == nullptr) {
+  if (document == nullptr || document->IsClosing()) {
     AddItem(L"0", 0);
     return;
   }
@@ -154,6 +148,7 @@ CComboBox* EoCtrlLayerComboBox::CreateCombo(CWnd* parentWindow, const CRect& rec
   combo->ModifyStyle(WS_BORDER, 0);
   combo->SetWindowPos(nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
   ::SetWindowTheme(combo->m_hWnd, L"", L"");
+  combo->m_ownerButton = this;
   return combo;
 }
 
@@ -234,7 +229,7 @@ void EoCtrlLayerComboBox::DrawLayerIcon(CDC* deviceContext, const CRect& iconRec
 
 void EoCtrlLayerComboBox::OpenLayerManager() {
   auto* document = AeSysDoc::GetDoc();
-  if (document != nullptr) { document->OnFileManage(); }
+  if (document != nullptr) { document->OnFileManageLayers(); }
 }
 
 void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
@@ -280,8 +275,33 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     }
 
     // Draw selected item content directly on the toolbar DC
+    // Rebuild items to ensure layer pointers are valid (previous document may have been closed)
+    auto* document = AeSysDoc::GetDoc();
+    if (document == nullptr || document->IsClosing()) { return; }
+
     int curSel = CMFCToolBarComboBoxButton::GetCurSel();
-    if (curSel >= 0) {
+    // When a rebuild is pending (deferred to avoid modifying the item list from inside a paint
+    // handler), skip both validation and content rendering for this cycle.
+    if (!m_rebuildPending && curSel >= 0) {
+      auto* existingLayer = reinterpret_cast<EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
+      bool needsRebuild = (existingLayer == nullptr);
+      if (!needsRebuild) {
+        bool found = false;
+        for (int i = 0; i < document->GetLayerTableSize(); i++) {
+          if (document->GetLayerTableLayerAt(i) == existingLayer) { found = true; break; }
+        }
+        if (!found) { needsRebuild = true; }
+      }
+      if (needsRebuild) {
+        // Defer the list rebuild outside this paint handler. Calling RemoveAllItems/ResetContent
+        // from within WM_PAINT can trigger re-entrant WM_DRAWITEM while the combo item list
+        // is in a partially-rebuilt state.
+        m_rebuildPending = true;
+        m_pWndCombo->PostMessage(kRebuildLayerComboMsg);
+        return;  // leave content area blank for this one frame
+      }
+
+      // Layer pointer is valid — draw the closed combo content.
       auto* layer = reinterpret_cast<EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
 
       CRect rectContent = rectCombo;
@@ -342,12 +362,20 @@ ON_WM_NCCALCSIZE()
 ON_WM_PAINT()
 ON_WM_NCPAINT()
 ON_WM_ERASEBKGND()
+ON_MESSAGE(kRebuildLayerComboMsg, &EoCtrlLayerOwnerDrawCombo::OnRebuildLayers)
 END_MESSAGE_MAP()
+
+LRESULT EoCtrlLayerOwnerDrawCombo::OnRebuildLayers(WPARAM, LPARAM) {
+  // Called via PostMessage from OnDraw when a stale layer pointer is detected.
+  // Running outside the paint handler makes it safe to rebuild the item list.
+  if (m_ownerButton != nullptr) { m_ownerButton->PopulateItems(); }
+  return 0;
+}
 
 /// @brief Subclass proc for the dropdown listbox — intercepts clicks on icon areas.
 static LRESULT CALLBACK ListboxSubclassProc(
     HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR /*subclassId*/, DWORD_PTR refData) {
-  if (message == WM_LBUTTONDOWN) {
+  if (message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN) {
     auto* combo = reinterpret_cast<EoCtrlLayerOwnerDrawCombo*>(refData);
     CPoint point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
@@ -356,6 +384,28 @@ static LRESULT CALLBACK ListboxSubclassProc(
     int itemIndex = LOWORD(hitResult);
     if (HIWORD(hitResult) == 0 && itemIndex >= 0 && itemIndex < combo->GetCount()) {
       auto* layer = reinterpret_cast<EoDbLayer*>(combo->GetItemData(itemIndex));
+
+      if (message == WM_RBUTTONDOWN && layer != nullptr && layer->IsTracingLayer()) {
+        // Right-click on a tracing layer — show "Edit Tracing" context menu
+        CPoint screenPoint(point);
+        ::ClientToScreen(hwnd, &screenPoint);
+        CMenu menu;
+        menu.CreatePopupMenu();
+        menu.AppendMenuW(MF_STRING, 1, L"Edit Tracing");
+        const int choice = menu.TrackPopupMenu(
+            TPM_RETURNCMD | TPM_RIGHTBUTTON, screenPoint.x, screenPoint.y, CWnd::FromHandle(hwnd), nullptr);
+        if (choice == 1) {
+          auto* document = AeSysDoc::GetDoc();
+          if (document != nullptr) {
+            // Close the dropdown before entering editor
+            ::SendMessage(::GetParent(hwnd), CB_SHOWDROPDOWN, FALSE, 0);
+            document->EnterEmbeddedTracingEditMode(layer);
+          }
+        }
+        return 0;
+      }
+
+      // WM_LBUTTONDOWN icon-area handling
       if (layer != nullptr) {
         int clickX = point.x;
         bool handled = false;
@@ -467,7 +517,25 @@ void EoCtrlLayerOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   CRect itemRect(drawItemStruct->rcItem);
   UINT itemState = drawItemStruct->itemState;
 
+  // Guard against dangling layer pointers during document teardown
+  auto* document = AeSysDoc::GetDoc();
+  if (document == nullptr || document->IsClosing()) {
+    dc.FillSolidRect(itemRect, Eo::chromeColors.paneBackground);
+    dc.Detach();
+    return;
+  }
+
   auto* layer = reinterpret_cast<EoDbLayer*>(drawItemStruct->itemData);
+
+  // Validate the pointer against the live layer table. itemData was stored at BuildItemList time;
+  // a document state change (block edit, tracing edit enter/exit) may have invalidated it.
+  if (layer != nullptr) {
+    bool found = false;
+    for (int i = 0; i < document->GetLayerTableSize(); ++i) {
+      if (document->GetLayerTableLayerAt(i) == layer) { found = true; break; }
+    }
+    if (!found) { layer = nullptr; }
+  }
 
   const auto& schemeColors = Eo::chromeColors;
 

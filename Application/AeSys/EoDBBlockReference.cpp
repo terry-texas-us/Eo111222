@@ -135,7 +135,8 @@ EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(
   // Step 5: OCS → WCS using the DXF arbitrary axis algorithm
   EoGeOcsTransform tmOcsToWcs(m_normal);
 
-  return ((EoGeMatrix)tmNegBase * (EoGeMatrix)tmScale * (EoGeMatrix)tmZRot * (EoGeMatrix)tmInsertOcs * (EoGeMatrix)tmOcsToWcs);
+  return ((EoGeMatrix)tmNegBase * (EoGeMatrix)tmScale * (EoGeMatrix)tmZRot * (EoGeMatrix)tmInsertOcs *
+      (EoGeMatrix)tmOcsToWcs);
 }
 
 EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {
@@ -182,9 +183,7 @@ void EoDbBlockReference::ExportToDxf(EoDxfInterface* writer) const {
   insert.m_columnSpacing = m_columnSpacing;
   insert.m_rowSpacing = m_rowSpacing;
 
-  if (!m_attributeHandles.empty()) {
-    insert.SetAttributesFollow(true);
-  }
+  if (!m_attributeHandles.empty()) { insert.SetAttributesFollow(true); }
   writer->AddInsert(insert);
 
   // Emit ATTRIB entities owned by this INSERT, then SEQEND
@@ -192,9 +191,7 @@ void EoDbBlockReference::ExportToDxf(EoDxfInterface* writer) const {
     auto* document = AeSysDoc::GetDoc();
     for (const auto attribHandle : m_attributeHandles) {
       auto* primitive = document->FindPrimitiveByHandle(attribHandle);
-      if (primitive != nullptr) {
-        primitive->ExportToDxf(writer);
-      }
+      if (primitive != nullptr) { primitive->ExportToDxf(writer); }
     }
     // SEQEND terminates the ATTRIB sequence; its owner handle points to the INSERT
     EoDxfSeqend seqend;
@@ -420,8 +417,8 @@ EoDbBlockReference* EoDbBlockReference::ReadLegacyInsertPeg(CFile& file) {
 
   EoGeVector3d scaleFactors(scaleX, scaleY, scaleZ);
 
-  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color),
-      static_cast<std::uint16_t>(lineType), name, insertionPoint, normal, scaleFactors, rotation);
+  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(lineType),
+      name, insertionPoint, normal, scaleFactors, rotation);
   blockReference->m_columnCount = numberOfColumns;
   blockReference->m_rowCount = numberOfRows;
   blockReference->m_columnSpacing = columnSpacing;
@@ -444,8 +441,8 @@ EoDbBlockReference* EoDbBlockReference::ReadFromPeg(CFile& file) {
   double columnSpacing = EoDb::ReadDouble(file);
   double rowSpacing = EoDb::ReadDouble(file);
 
-  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color),
-      static_cast<std::uint16_t>(lineType), name, insertionPoint, normal, scaleFactors, rotation);
+  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(lineType),
+      name, insertionPoint, normal, scaleFactors, rotation);
   blockReference->m_columnCount = numberOfColumns;
   blockReference->m_rowCount = numberOfRows;
   blockReference->m_columnSpacing = columnSpacing;
@@ -472,16 +469,12 @@ bool EoDbBlockReference::Write(CFile& file) {
 
 void EoDbBlockReference::WriteV2Extension(CFile& file) const {
   EoDb::WriteUInt16(file, static_cast<std::uint16_t>(m_attributeHandles.size()));
-  for (auto handle : m_attributeHandles) {
-    EoDb::WriteUInt64(file, handle);
-  }
+  for (auto handle : m_attributeHandles) { EoDb::WriteUInt64(file, handle); }
 }
 
 void EoDbBlockReference::ReadV2Extension(CFile& file) {
   auto count = EoDb::ReadUInt16(file);
   m_attributeHandles.clear();
   m_attributeHandles.reserve(count);
-  for (std::uint16_t i = 0; i < count; ++i) {
-    m_attributeHandles.push_back(EoDb::ReadUInt64(file));
-  }
+  for (std::uint16_t i = 0; i < count; ++i) { m_attributeHandles.push_back(EoDb::ReadUInt64(file)); }
 }

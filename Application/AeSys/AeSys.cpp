@@ -159,9 +159,6 @@ BOOL AeSys::InitInstance() {
   m_pegDocumentTemplate = new CMultiDocTemplate(IDR_PEGTYPE, documentClass, frameClass, viewClass);
   AddDocTemplate(m_pegDocumentTemplate);
 
-  m_traDocumentTemplate = new CMultiDocTemplate(IDR_TRATYPE, documentClass, frameClass, viewClass);
-  AddDocTemplate(m_traDocumentTemplate);
-
   // Create main MDI Frame window
   CMainFrame* mainFrame = new CMainFrame;
   if (!mainFrame || !mainFrame->LoadFrame(IDR_MAINFRAME)) {

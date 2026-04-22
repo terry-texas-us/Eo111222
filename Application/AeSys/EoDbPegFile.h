@@ -13,6 +13,8 @@ class EoDbPegFile : public CFile {
 
   virtual ~EoDbPegFile() {}
 
+  [[nodiscard]] CString FileName() const { return m_strFileName; }
+
   /** @brief Loads the PEG file data into the provided AeSysDoc object.
    *
    * This method orchestrates the loading process by sequentially reading each section of the PEG file:

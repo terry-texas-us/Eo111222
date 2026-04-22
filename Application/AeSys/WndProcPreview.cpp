@@ -3,20 +3,15 @@
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDbBlock.h"
-#include "EoDbGroupList.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
-#include "EoGsRenderState.h"
 #include "EoGsRenderDeviceGdi.h"
+#include "EoGsRenderState.h"
 
 namespace {
 CBitmap* previewBitmap{};
 }  // namespace
 
-/** Clears the preview window by filling it with black.
- *
- * @param previewWindow Handle to the preview window.
- */
 void WndProcPreviewClear(HWND previewWindow) {
   if (previewWindow == nullptr || previewBitmap == nullptr) { return; }
 
@@ -35,11 +30,6 @@ void WndProcPreviewClear(HWND previewWindow) {
   ::InvalidateRect(previewWindow, nullptr, TRUE);
 }
 
-/** Updates the preview window to display the given block.
- *
- * @param previewWindow Handle to the preview window.
- * @param block Pointer to the block to display.
- */
 void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   auto* activeView = AeSysView::GetActiveView();
 
@@ -107,82 +97,13 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   InvalidateRect(previewWindow, 0, TRUE);
 }
 
-/** Updates the preview window to display the given group list.
- *
- * @param previewWindow Handle to the preview window.
- * @param groups Pointer to the group list to display.
- */
-void WndProcPreviewUpdateLayer(HWND previewWindow, EoDbGroupList* groups) {
-  auto* activeView = AeSysView::GetActiveView();
-
-  CRect previewWindowRect;
-  GetClientRect(previewWindow, &previewWindowRect);
-
-  CDC memoryContext;
-  memoryContext.CreateCompatibleDC(nullptr);
-
-  CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
-  memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, WHITENESS);
-
-  // Swap ACI 7 and ACI 0 to black for white background visibility
-  auto savedAci7 = Eo::ColorPalette[7];
-  auto savedAci0 = Eo::ColorPalette[0];
-  auto savedGray7 = Eo::GrayPalette[7];
-  auto savedGray0 = Eo::GrayPalette[0];
-  Eo::ColorPalette[7] = Eo::colorBlack;
-  Eo::ColorPalette[0] = Eo::colorBlack;
-  Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
-  Eo::GrayPalette[0] = RGB(0x22, 0x22, 0x22);
-
-  // 2px padding around preview content
-  constexpr int pad = 2;
-  CRect paddedRect = previewWindowRect;
-  paddedRect.DeflateRect(pad, pad);
-
-  activeView->ViewportPushActive();
-  activeView->SetViewportSize(paddedRect.Width(), paddedRect.Height());
-  activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
-  activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
-
-  EoGeTransformMatrix transformMatrix;
-
-  EoGePoint3d ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
-  EoGePoint3d ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
-
-  groups->GetExtents(activeView, ptMin, ptMax, transformMatrix);
-
-  double UExtent = ptMax.x - ptMin.x;
-  double VExtent = ptMax.y - ptMin.y;
-  EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
-
-  activeView->PushViewTransform();
-  activeView->SetCenteredWindow(UExtent, VExtent);
-  activeView->SetCameraTarget(ptTarget);
-  activeView->SetCameraPosition(activeView->CameraDirection());
-
-  int savedRenderState = Gs::renderState.Save();
-  EoGsRenderDeviceGdi renderDevice(&memoryContext);
-  groups->Display(activeView, &renderDevice);
-  Gs::renderState.Restore(&memoryContext, savedRenderState);
-  Eo::ColorPalette[7] = savedAci7;
-  Eo::ColorPalette[0] = savedAci0;
-  Eo::GrayPalette[7] = savedGray7;
-  Eo::GrayPalette[0] = savedGray0;
-
-  activeView->PopViewTransform();
-  activeView->ViewportPopActive();
-
-  memoryContext.SelectObject(Bitmap);
-  InvalidateRect(previewWindow, 0, TRUE);
-}
-
 /** Window procedure for the preview window.
  *
- * @param hwnd Handle to the window.
- * @param message Message identifier.
- * @param nParam Additional message information.
- * @param lParam Additional message information.
- * @return The result of the message processing.
+ * @param hwnd Handle to the preview window.
+ * @param message The message being processed.
+ * @param nParam Additional message information (WPARAM).
+ * @param lParam Additional message information (LPARAM).
+ * @return The result of message processing.
  */
 LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM lParam) {
   switch (message) {
@@ -194,9 +115,8 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
       GetClientRect(hwnd, &previewWindowRect);
       previewBitmap = new CBitmap;
       previewBitmap->CreateCompatibleBitmap(deviceContext, int(previewWindowRect.right), int(previewWindowRect.bottom));
-    }
       return FALSE;
-
+    }
     case WM_DESTROY:
       if (previewBitmap != nullptr) {
         delete previewBitmap;
@@ -223,10 +143,31 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
       dc.Detach();
 
       EndPaint(hwnd, &paintStruct);
-    }
-
       return FALSE;
-
+    }
+    case WM_SIZE: {
+      if (previewBitmap != nullptr) {
+        delete previewBitmap;
+        previewBitmap = nullptr;
+      }
+      CRect rect;
+      if (GetClientRect(hwnd, &rect) && rect.Width() > 0 && rect.Height() > 0) {
+        auto* activeView = AeSysView::GetActiveView();
+        CDC* deviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
+        // Fallback to screen DC if no view (safer than nullptr)
+        if (deviceContext == nullptr) {
+          CClientDC screenContext(nullptr);
+          deviceContext = &screenContext;
+        }
+        previewBitmap = new CBitmap();
+        if (!previewBitmap->CreateCompatibleBitmap(deviceContext, rect.Width(), rect.Height())) {
+          delete previewBitmap;
+          previewBitmap = nullptr;
+        }
+      }
+      InvalidateRect(hwnd, nullptr, TRUE);
+      return FALSE;
+    }
     case WM_LBUTTONDOWN:
       ::SetFocus(hwnd);
       ATLTRACE2(traceGeneral, 3, L"Preview WM_LBUTTONDOWN message\n");

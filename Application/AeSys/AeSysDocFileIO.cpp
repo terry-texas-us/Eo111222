@@ -406,7 +406,12 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       break;
     case EoDb::FileTypes::Tracing:
     case EoDb::FileTypes::Job:
-      TracingOpen(pathName);
+      m_isTracingSession = true;
+      SetCommonTableEntries();
+      if (!EnterTracingEditMode(pathName)) {
+        m_isTracingSession = false;
+        return FALSE;
+      }
       break;
 
     case EoDb::FileTypes::Unknown:

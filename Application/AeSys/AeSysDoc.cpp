@@ -1,24 +1,23 @@
 #include "Stdafx.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 #include "AeSys.h"
-#include "EoDlgAttributePrompt.h"
-#include "EoDlgEditBlockDefinition.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbBlock.h"
-#include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbLayer.h"
 #include "EoDbLineType.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
-#include "EoGePoint3d.h"
+#include "EoDbTracingFile.h"
+#include "EoDlgAttributePrompt.h"
+#include "EoDlgEditBlockDefinition.h"
 #include "EoGeReferenceSystem.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
@@ -62,9 +61,9 @@ ON_COMMAND(ID_EDIT_TRAPWORK, OnEditTrapWork)
 ON_COMMAND(ID_EDIT_TRAPWORKANDACTIVE, OnEditTrapWorkAndActive)
 ON_COMMAND(ID_FILE, OnFile)
 ON_COMMAND(ID_FILE_QUERY, OnFileQuery)
-ON_COMMAND(ID_FILE_MANAGE, OnFileManage)
+ON_COMMAND(ID_FILE_MANAGE_LAYERS, OnFileManageLayers)
+ON_COMMAND(ID_FILE_MANAGE_BLOCKS, OnFileManageBlocks)
 ON_COMMAND(ID_FILE_SEND_MAIL, CDocument::OnFileSendMail)
-ON_COMMAND(ID_FILE_TRACING, OnFileTracing)
 ON_COMMAND(ID_LAYER_ACTIVE, OnLayerActive)
 ON_COMMAND(ID_LAYER_STATIC, OnLayerStatic)
 ON_COMMAND(ID_LAYER_HIDDEN, OnLayerHidden)
@@ -200,19 +199,40 @@ void AeSysDoc::UnregisterGroupHandles(EoDbGroup* group) {
 }
 
 void AeSysDoc::DeleteContents() {
-  // Clean up any active block edit session without committing
-  if (m_isEditingBlock) {
+  // Clean up any active editor session without committing
+  if (m_editorMode == EditorMode::Block) {
     if (m_blockEditLayer != nullptr) {
       m_blockEditLayer->DeleteGroupsAndRemoveAll();
       delete m_blockEditLayer;
       m_blockEditLayer = nullptr;
     }
-    m_isEditingBlock = false;
     m_editingBlock = nullptr;
     m_editingBlockName.Empty();
-    m_savedBlockEditWorkLayer = nullptr;
     m_blockEditSnapshot.clear();
+  } else if (m_editorMode == EditorMode::Tracing) {
+    if (m_tracingEditLayer != nullptr) {
+      m_tracingEditLayer->DeleteGroupsAndRemoveAll();
+      delete m_tracingEditLayer;
+      m_tracingEditLayer = nullptr;
+    }
+    m_embeddedTracingLayer = nullptr;  // Layer is owned by the layer table, deleted below
+    m_editingTracingPath.Empty();
+    m_savedTracingLayerVisibility.clear();
+    // When a standalone tracing session document is closed directly (e.g. MDI tab X),
+    // ExitTracingEditMode is never called — restore the layout tab bar TRACING state on
+    // whatever view currently has it (the host document's active view).
+    if (m_isTracingSession) {
+      m_isTracingSession = false;
+      auto* hostView = AeSysView::GetActiveView();
+      if (hostView != nullptr) {
+        hostView->LayoutTabBar().UpdateBlockEditState(false);
+        hostView->LayoutTabBar().PopulateFromDocument(hostView->GetDocument());
+      }
+    }
   }
+  m_editorMode = EditorMode::None;
+  m_savedEditorWorkLayer = nullptr;
+  m_savedEditorTitle.Empty();
 
   m_handleManager.Reset();
   m_handleMap.clear();
@@ -231,8 +251,8 @@ void AeSysDoc::DeleteContents() {
   m_vportTable.clear();
 
   RemoveAllBlocks();
+  m_workLayer = nullptr;  // Null before layer deletion to prevent dangling access during repaints
   RemoveAllLayerTableLayers();
-  m_workLayer = nullptr;
   DeletedGroupsRemoveGroups();
 
   RemoveAllTrappedGroups();
@@ -285,22 +305,6 @@ AeSysDoc* AeSysDoc::GetDoc() {
 }
 
 
-void AeSysDoc::OnToolsEditBlockDefinition() {
-  if (m_isEditingBlock) {
-    app.AddStringToMessageList(L"Already editing a block definition.");
-    return;
-  }
-  if (BlockTableIsEmpty()) {
-    app.AddStringToMessageList(L"No blocks defined in this document.");
-    return;
-  }
-  EoDlgEditBlockDefinition dialog(this);
-  if (dialog.DoModal() != IDOK || dialog.m_selectedBlockName.IsEmpty()) { return; }
-  if (!EnterBlockEditMode(dialog.m_selectedBlockName)) {
-    app.AddStringToMessageList(L"Failed to enter block edit mode.");
-  }
-}
-
 bool AeSysDoc::EnterBlockEditMode(const CString& blockName) {
   EoDbBlock* block{};
   if (!LookupBlock(blockName, block)) { return false; }
@@ -309,8 +313,8 @@ bool AeSysDoc::EnterBlockEditMode(const CString& blockName) {
   m_editingBlockName = blockName;
 
   // Save current state
-  m_savedBlockEditWorkLayer = m_workLayer;
-  m_savedBlockEditSpace = m_activeSpace;
+  m_savedEditorWorkLayer = m_workLayer;
+  m_savedEditorSpace = m_activeSpace;
 
   // Create a temporary editing layer with deep-copied primitives from the block
   m_blockEditLayer = new EoDbLayer(CString(L"*BlockEdit"), EoDbLayer::State::isWork);
@@ -323,15 +327,15 @@ bool AeSysDoc::EnterBlockEditMode(const CString& blockName) {
 
   // Switch to model space and set the temp layer as work layer
   m_activeSpace = EoDxf::Space::ModelSpace;
-  m_isEditingBlock = true;
+  m_editorMode = EditorMode::Block;
 
-  if (m_savedBlockEditWorkLayer != nullptr) { m_savedBlockEditWorkLayer->SetStateActive(); }
+  if (m_savedEditorWorkLayer != nullptr) { m_savedEditorWorkLayer->SetStateActive(); }
   m_workLayer = m_blockEditLayer;
 
   // Update document title to indicate block edit mode
-  m_savedBlockEditTitle = GetTitle();
+  m_savedEditorTitle = GetTitle();
   CString editTitle;
-  editTitle.Format(L"%s [Editing: %s]", m_savedBlockEditTitle.GetString(), blockName.GetString());
+  editTitle.Format(L"%s [Editing: %s]", m_savedEditorTitle.GetString(), blockName.GetString());
   SetTitle(editTitle);
 
   CString message;
@@ -350,7 +354,7 @@ bool AeSysDoc::EnterBlockEditMode(const CString& blockName) {
 }
 
 void AeSysDoc::ExitBlockEditMode(bool commit) {
-  if (!m_isEditingBlock || m_editingBlock == nullptr || m_blockEditLayer == nullptr) { return; }
+  if (m_editorMode != EditorMode::Block || m_editingBlock == nullptr || m_blockEditLayer == nullptr) { return; }
 
   if (commit) {
     // Replace the original block's primitives with edited content
@@ -391,19 +395,19 @@ void AeSysDoc::ExitBlockEditMode(bool commit) {
   m_blockEditLayer = nullptr;
 
   // Restore state
-  m_workLayer = m_savedBlockEditWorkLayer;
+  m_workLayer = m_savedEditorWorkLayer;
   if (m_workLayer != nullptr) { m_workLayer->SetStateWork(); }
-  m_activeSpace = m_savedBlockEditSpace;
+  m_activeSpace = m_savedEditorSpace;
 
-  m_isEditingBlock = false;
+  m_editorMode = EditorMode::None;
   m_editingBlock = nullptr;
   m_editingBlockName.Empty();
-  m_savedBlockEditWorkLayer = nullptr;
+  m_savedEditorWorkLayer = nullptr;
   m_blockEditSnapshot.clear();
 
   // Restore document title
-  SetTitle(m_savedBlockEditTitle);
-  m_savedBlockEditTitle.Empty();
+  SetTitle(m_savedEditorTitle);
+  m_savedEditorTitle.Empty();
 
   // Refresh cursor and zoom to restored content
   auto* activeView = AeSysView::GetActiveView();
@@ -415,10 +419,26 @@ void AeSysDoc::ExitBlockEditMode(bool commit) {
   UpdateAllViews(nullptr);
 }
 
+void AeSysDoc::OnToolsEditBlockDefinition() {
+  if (IsInEditor()) {
+    app.AddStringToMessageList(L"Already in an editor session.");
+    return;
+  }
+  if (BlockTableIsEmpty()) {
+    app.AddStringToMessageList(L"No blocks defined in this document.");
+    return;
+  }
+  EoDlgEditBlockDefinition dialog(this);
+  if (dialog.DoModal() != IDOK || dialog.m_selectedBlockName.IsEmpty()) { return; }
+  if (!EnterBlockEditMode(dialog.m_selectedBlockName)) {
+    app.AddStringToMessageList(L"Failed to enter block edit mode.");
+  }
+}
+
 void AeSysDoc::OnToolsSaveBlockEdit() { ExitBlockEditMode(true); }
 
 void AeSysDoc::OnToolsSaveAsBlockEdit() {
-  if (!m_isEditingBlock || m_blockEditLayer == nullptr) { return; }
+  if (m_editorMode != EditorMode::Block || m_blockEditLayer == nullptr) { return; }
 
   // Prompt for a new block name using the attribute prompt dialog
   EoDlgAttributePrompt dlg;
@@ -467,10 +487,279 @@ void AeSysDoc::OnToolsSaveAsBlockEdit() {
 
 void AeSysDoc::OnToolsCancelBlockEdit() { ExitBlockEditMode(false); }
 
-void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) {
-  cmdUI->Enable(!m_isEditingBlock && !BlockTableIsEmpty());
+// --- Tracing Editor ---
+
+bool AeSysDoc::EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer) {
+  if (tracingLayer == nullptr || !tracingLayer->IsTracingLayer()) { return false; }
+  if (m_editorMode != EditorMode::None) { return false; }
+
+  // Save host document state
+  m_savedEditorWorkLayer = m_workLayer;
+  m_savedEditorSpace = m_activeSpace;
+  m_savedEditorTitle = GetTitle();
+  m_embeddedTracingLayer = tracingLayer;
+  m_editingTracingPath = CString(tracingLayer->TracingFilePath().c_str());
+
+  // Unlock and activate the tracing layer for editing
+  tracingLayer->SetLocked(false);
+  tracingLayer->SetStateWork();
+  if (m_savedEditorWorkLayer != nullptr) { m_savedEditorWorkLayer->SetStateActive(); }
+  m_workLayer = tracingLayer;
+  m_activeSpace = EoDxf::Space::ModelSpace;
+  m_editorMode = EditorMode::Tracing;
+
+  // Hide all model-space layers except the tracing layer being edited
+  m_savedTracingLayerVisibility.clear();
+  auto& modelLayers = SpaceLayers(EoDxf::Space::ModelSpace);
+  for (int i = 0; i < static_cast<int>(modelLayers.GetSize()); ++i) {
+    auto* layer = modelLayers.GetAt(i);
+    if (layer == tracingLayer) { continue; }
+    const auto savedState = layer->GetState();
+    m_savedTracingLayerVisibility.emplace_back(layer, savedState);
+    if (!layer->IsOff()) {
+      UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
+      layer->SetStateOff();
+    }
+  }
+
+  // Update document title to reflect tracing edit mode
+  std::filesystem::path filePath(static_cast<LPCWSTR>(m_editingTracingPath));
+  CString tracingName = filePath.stem().wstring().c_str();
+  CString editTitle;
+  editTitle.Format(L"[|%s]", tracingName.GetString());
+  SetTitle(editTitle);
+
+  CString message;
+  message.Format(L"Editing embedded tracing: %s", m_editingTracingPath.GetString());
+  app.AddStringToMessageList(message);
+
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView != nullptr) {
+    activeView->LayoutTabBar().UpdateBlockEditState(true, tracingName, L"TRACING");
+    activeView->ModelViewInitialize();
+    activeView->OnWindowBest();
+  }
+  UpdateAllViews(nullptr);
+  return true;
 }
 
-void AeSysDoc::OnUpdateToolsSaveBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(m_isEditingBlock); }
+bool AeSysDoc::EnterTracingEditMode(const CString& pathName) {
+  if (m_editorMode != EditorMode::None) { return false; }
 
-void AeSysDoc::OnUpdateToolsCancelBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(m_isEditingBlock); }
+  // Save current state
+  m_savedEditorWorkLayer = m_workLayer;
+  m_savedEditorSpace = m_activeSpace;
+  m_editingTracingPath = pathName;
+
+  // Create a temporary editing layer and load the .tra content into it
+  m_tracingEditLayer = new EoDbLayer(CString(L"*TracingEdit"), EoDbLayer::State::isWork);
+  m_tracingEditLayer->SetColorIndex(7);
+  m_tracingEditLayer->SetLineType(m_continuousLineType);
+
+  if (!TracingLoadLayer(pathName, m_tracingEditLayer)) {
+    // File doesn't exist yet or failed to load — start with empty layer for new tracing creation
+    app.AddStringToMessageList(L"Starting new tracing file.");
+  }
+
+  // Switch to model space and set the temp layer as work layer
+  m_activeSpace = EoDxf::Space::ModelSpace;
+  m_editorMode = EditorMode::Tracing;
+
+  if (m_savedEditorWorkLayer != nullptr) { m_savedEditorWorkLayer->SetStateActive(); }
+  m_workLayer = m_tracingEditLayer;
+
+  // Update document title to indicate tracing edit mode
+  m_savedEditorTitle = GetTitle();
+  std::filesystem::path filePath(static_cast<LPCWSTR>(pathName));
+  CString tracingName = filePath.stem().wstring().c_str();
+  CString editTitle;
+  editTitle.Format(L"[|%s]", tracingName.GetString());
+  SetTitle(editTitle);
+
+  CString message;
+  message.Format(L"Editing tracing: %s", pathName.GetString());
+  app.AddStringToMessageList(message);
+
+  // Zoom to tracing extents
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView != nullptr) {
+    activeView->LayoutTabBar().UpdateBlockEditState(true, tracingName, L"TRACING");
+    activeView->ModelViewInitialize();
+    activeView->OnWindowBest();
+  }
+  UpdateAllViews(nullptr);
+  return true;
+}
+
+void AeSysDoc::ExitTracingEditMode(bool commit) {
+  if (m_editorMode != EditorMode::Tracing) { return; }
+  const bool isEmbedded = (m_embeddedTracingLayer != nullptr);
+  if (!isEmbedded && m_tracingEditLayer == nullptr) { return; }
+
+  // For standalone sessions, set closing flag early to suppress repaints during cleanup
+  if (m_isTracingSession) { m_isClosing = true; }
+
+  if (isEmbedded) {
+    // Embedded mode — re-lock the layer and return it to static state
+    if (!commit) {
+      // Discard unsaved edits by reloading from disk
+      ReloadTracingLayer(m_embeddedTracingLayer);
+      app.AddStringToMessageList(L"Embedded tracing edit cancelled — changes discarded.");
+    }
+    m_embeddedTracingLayer->SetLocked(true);
+    m_embeddedTracingLayer->SetStateStatic();
+    m_embeddedTracingLayer = nullptr;
+  } else {
+    // Solo mode: save was already performed by the caller before ExitTracingEditMode;
+    // unconditionally discard the temp layer regardless of commit flag.
+    if (commit) {
+      app.AddStringToMessageList(L"Tracing saved.");
+    } else {
+      app.AddStringToMessageList(L"Tracing edit cancelled.");
+    }
+
+    // Clean up the temp layer
+    m_tracingEditLayer->DeleteGroupsAndRemoveAll();
+    delete m_tracingEditLayer;
+    m_tracingEditLayer = nullptr;
+  }
+
+  // Restore state
+  m_workLayer = m_savedEditorWorkLayer;
+  if (m_workLayer != nullptr) { m_workLayer->SetStateWork(); }
+  m_activeSpace = m_savedEditorSpace;
+
+  // Restore visibility of layers that were hidden during tracing edit
+  for (auto& [layer, savedState] : m_savedTracingLayerVisibility) {
+    if (savedState & static_cast<std::uint16_t>(EoDbLayer::State::isOff)) {
+      layer->SetStateOff();
+    } else if (savedState & static_cast<std::uint16_t>(EoDbLayer::State::isStatic)) {
+      layer->SetStateStatic();
+    } else {
+      layer->SetStateActive();
+    }
+  }
+  m_savedTracingLayerVisibility.clear();
+
+  m_editorMode = EditorMode::None;
+  m_editingTracingPath.Empty();
+  m_savedEditorWorkLayer = nullptr;
+
+  // Restore document title
+  SetTitle(m_savedEditorTitle);
+  m_savedEditorTitle.Empty();
+
+  // If this was a standalone .tra session, close the document immediately
+  if (m_isTracingSession) {
+    m_isTracingSession = false;
+    m_workLayer = nullptr;  // Prevent dangling access during async close teardown
+    SetModifiedFlag(FALSE);  // Prevent "Save changes?" prompt on close
+    auto pos = GetFirstViewPosition();
+    if (pos != nullptr) {
+      auto* view = GetNextView(pos);
+      if (view != nullptr && view->GetParentFrame() != nullptr) {
+        view->GetParentFrame()->PostMessageW(WM_CLOSE);
+      }
+    }
+    return;
+  }
+
+  auto* activeView = AeSysView::GetActiveView();
+  if (activeView != nullptr) {
+    activeView->LayoutTabBar().UpdateBlockEditState(false);
+    activeView->LayoutTabBar().PopulateFromDocument(this);
+    activeView->OnWindowBest();
+  }
+
+  UpdateAllViews(nullptr);
+}
+
+bool AeSysDoc::SaveTracingLayerToFile(const CString& filePath, EoDbLayer* layer) {
+  if (filePath.IsEmpty() || layer == nullptr) { return false; }
+
+  CFile file;
+  CFileException ex;
+  if (!file.Open(filePath, CFile::modeCreate | CFile::modeWrite, &ex)) {
+    CString msg;
+    msg.Format(L"Failed to save tracing file: %s", filePath.GetString());
+    app.AddStringToMessageList(msg);
+    return false;
+  }
+
+  EoDbTracingFile tracingFile;
+  tracingFile.WriteHeader(file);
+  tracingFile.WriteLayer(file, layer);
+  file.Close();
+  return true;
+}
+
+void AeSysDoc::OnToolsSaveTracingEdit() {
+  if (m_editorMode != EditorMode::Tracing) { return; }
+
+  const bool isEmbedded = (m_embeddedTracingLayer != nullptr);
+  EoDbLayer* layerToSave = isEmbedded ? m_embeddedTracingLayer : m_tracingEditLayer;
+  if (layerToSave == nullptr) { return; }
+
+  // If we somehow have no path yet, treat Save as Save As (common UX)
+  if (m_editingTracingPath.IsEmpty()) {
+    OnToolsSaveAsTracingEdit();
+    return;
+  }
+
+  if (SaveTracingLayerToFile(m_editingTracingPath, layerToSave)) {
+    CString message;
+    message.Format(L"Tracing saved: %s", m_editingTracingPath.GetString());
+    app.AddStringToMessageList(message);
+  }
+
+  if (isEmbedded) {
+    // Embedded mode — save and continue editing; do not exit the editor
+    return;
+  }
+
+  ExitTracingEditMode(true);  // Solo mode — exit after save
+}
+
+void AeSysDoc::OnToolsSaveAsTracingEdit() {
+  if (m_editorMode != EditorMode::Tracing) { return; }
+
+  const bool isEmbedded = (m_embeddedTracingLayer != nullptr);
+  EoDbLayer* layerToSave = isEmbedded ? m_embeddedTracingLayer : m_tracingEditLayer;
+  if (layerToSave == nullptr) { return; }
+
+  CFileDialog saveDialog(FALSE, L"tra", m_editingTracingPath,
+      OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST, L"Tracing Files (*.tra)|*.tra||", AfxGetMainWnd());
+
+  if (saveDialog.DoModal() != IDOK) { return; }
+
+  const CString newPath = saveDialog.GetPathName();
+
+  if (SaveTracingLayerToFile(newPath, layerToSave)) {
+    CString message;
+    message.Format(L"Tracing saved as: %s", newPath.GetString());
+    app.AddStringToMessageList(message);
+
+    // Update the path reference — applies to both modes
+    m_editingTracingPath = newPath;
+    if (isEmbedded && m_embeddedTracingLayer != nullptr) {
+      m_embeddedTracingLayer->SetTracingFilePath(newPath.GetString());
+    }
+  }
+
+  if (isEmbedded) {
+    // Embedded SaveAs — continue editing at the new path
+    return;
+  }
+
+  ExitTracingEditMode(true);  // Solo mode — exit after Save As
+}
+
+void AeSysDoc::OnToolsCancelTracingEdit() { ExitTracingEditMode(false); }
+
+void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) {
+  cmdUI->Enable(!IsInEditor() && !BlockTableIsEmpty());
+}
+
+void AeSysDoc::OnUpdateToolsSaveBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(IsEditingBlock()); }
+
+void AeSysDoc::OnUpdateToolsCancelBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(IsEditingBlock()); }

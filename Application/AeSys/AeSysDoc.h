@@ -229,22 +229,53 @@ class AeSysDoc : public CDocument {
     RegisterHandle(block);
   }
 
-  // Block Edit Mode
+  // Editor Mode — unified state for Block Editor and Tracing Editor
+  enum class EditorMode { None, Block, Tracing };
+
   /// @brief True when the user is editing a block definition in-place.
-  [[nodiscard]] bool IsEditingBlock() const noexcept { return m_isEditingBlock; }
+  [[nodiscard]] bool IsEditingBlock() const noexcept { return m_editorMode == EditorMode::Block; }
+  [[nodiscard]] bool IsEditingTracing() const noexcept { return m_editorMode == EditorMode::Tracing; }
+  [[nodiscard]] bool IsInEditor() const noexcept { return m_editorMode != EditorMode::None; }
+  [[nodiscard]] EditorMode CurrentEditorMode() const noexcept { return m_editorMode; }
   [[nodiscard]] const CString& EditingBlockName() const noexcept { return m_editingBlockName; }
   bool EnterBlockEditMode(const CString& blockName);
   void ExitBlockEditMode(bool commit);
 
+  // Tracing Editor
+  [[nodiscard]] const CString& EditingTracingPath() const noexcept { return m_editingTracingPath; }
+  [[nodiscard]] bool IsTracingSession() const noexcept { return m_isTracingSession; }
+  [[nodiscard]] bool IsClosing() const noexcept { return m_isClosing; }
+  bool EnterTracingEditMode(const CString& pathName);
+  bool EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer);
+  void ExitTracingEditMode(bool commit);
+  bool SaveTracingLayerToFile(const CString& filePath, EoDbLayer* layer);
+  void OnToolsSaveTracingEdit();
+  void OnToolsSaveAsTracingEdit();
+  void OnToolsCancelTracingEdit();
+  void InsertTracingLayer(const std::wstring& absolutePath);
+  void ReloadTracingLayer(EoDbLayer* layer);
+
  private:
-  bool m_isEditingBlock{};
+  EditorMode m_editorMode{EditorMode::None};
+  bool m_isTracingSession{};  ///< True when this document was created solely to edit a .tra file
+  bool m_isClosing{};  ///< True during document teardown to suppress paint/update cycles
+
+  // Block Editor state
   CString m_editingBlockName;
   EoDbBlock* m_editingBlock{};  ///< The block being edited (original in block table)
   EoDbLayer* m_blockEditLayer{};  ///< Temporary layer holding editable copies of block primitives
-  EoDbLayer* m_savedBlockEditWorkLayer{};  ///< Saved work layer to restore on exit
-  EoDxf::Space m_savedBlockEditSpace{EoDxf::Space::ModelSpace};  ///< Saved active space to restore on exit
+
+  // Tracing Editor state
+  CString m_editingTracingPath;  ///< Full path of the .tra file being edited
+  EoDbLayer* m_tracingEditLayer{};  ///< Temporary layer holding editable copies of tracing primitives (solo mode)
+  EoDbLayer* m_embeddedTracingLayer{};  ///< The |name layer being edited in embedded mode (not a temp copy)
+
+  // Shared editor state
+  EoDbLayer* m_savedEditorWorkLayer{};  ///< Saved work layer to restore on exit
+  EoDxf::Space m_savedEditorSpace{EoDxf::Space::ModelSpace};  ///< Saved active space to restore on exit
+  CString m_savedEditorTitle;  ///< Saved document title to restore on exit
   std::vector<std::pair<EoDbPrimitive*, EoDbGroup*>> m_blockEditSnapshot{};  ///< Snapshot for cancel
-  CString m_savedBlockEditTitle;  ///< Saved document title to restore on exit
+  std::vector<std::pair<EoDbLayer*, std::uint16_t>> m_savedTracingLayerVisibility{};  ///< Layers hidden during tracing ed
 
  public:
   void LayerBlank(const CString& strName);
@@ -708,9 +739,9 @@ class AeSysDoc : public CDocument {
   /// @brief Add all groups in all work and active layers to the trap.
   afx_msg void OnEditTrapWorkAndActive();
   afx_msg void OnFile();
-  afx_msg void OnFileManage();
+  afx_msg void OnFileManageBlocks();
+  afx_msg void OnFileManageLayers();
   afx_msg void OnFileQuery();
-  afx_msg void OnFileTracing();
   afx_msg void OnLayerActive();
   afx_msg void OnLayerHidden();
   afx_msg void OnLayerMelt();

@@ -131,11 +131,11 @@ BOOL EoMfLayoutTabBar::CreateTabBar(CWnd* parentWindow, UINT controlId) {
   m_blockEditCloseButton.Create(
       L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_CLOSE_BUTTON);
 
-  // Tooltips for block edit buttons
+  // Tooltips for editor buttons
   m_toolTip.Create(this, TTS_ALWAYSTIP);
-  m_toolTip.AddTool(&m_blockEditSaveButton, L"Save Block");
-  m_toolTip.AddTool(&m_blockEditSaveAsButton, L"Save Block As...");
-  m_toolTip.AddTool(&m_blockEditCloseButton, L"Close Block Editor");
+  m_toolTip.AddTool(&m_blockEditSaveButton, L"Save");
+  m_toolTip.AddTool(&m_blockEditSaveAsButton, L"Save As...");
+  m_toolTip.AddTool(&m_blockEditCloseButton, L"Close Editor");
   m_toolTip.Activate(TRUE);
 
   ApplyColorScheme();
@@ -597,10 +597,10 @@ void EoMfLayoutTabBar::OnSpaceTransferClicked() {
   parentView->SetFocus();
 }
 
-void EoMfLayoutTabBar::UpdateBlockEditState(bool isEditing, const CString& /*blockName*/) {
+void EoMfLayoutTabBar::UpdateBlockEditState(bool isEditing, const CString& /*editName*/, const CString& editorLabel) {
   m_isBlockEditing = isEditing;
   if (isEditing) {
-    m_spaceLabel.SetWindowTextW(L"BLOCK");
+    m_spaceLabel.SetWindowTextW(editorLabel);
     m_blockEditSaveButton.ShowWindow(SW_SHOW);
     m_blockEditSaveAsButton.ShowWindow(SW_SHOW);
     m_blockEditCloseButton.ShowWindow(SW_SHOW);
@@ -619,7 +619,11 @@ void EoMfLayoutTabBar::OnBlockEditSaveClicked() {
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
-  document->OnToolsSaveBlockEdit();
+  if (document->IsEditingTracing()) {
+    document->OnToolsSaveTracingEdit();
+  } else {
+    document->OnToolsSaveBlockEdit();
+  }
 }
 
 void EoMfLayoutTabBar::OnBlockEditSaveAsClicked() {
@@ -627,7 +631,11 @@ void EoMfLayoutTabBar::OnBlockEditSaveAsClicked() {
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
-  document->OnToolsSaveAsBlockEdit();
+  if (document->IsEditingTracing()) {
+    document->OnToolsSaveAsTracingEdit();
+  } else {
+    document->OnToolsSaveAsBlockEdit();
+  }
 }
 
 void EoMfLayoutTabBar::OnBlockEditCloseClicked() {
@@ -635,5 +643,9 @@ void EoMfLayoutTabBar::OnBlockEditCloseClicked() {
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
-  document->OnToolsCancelBlockEdit();
+  if (document->IsEditingTracing()) {
+    document->OnToolsCancelTracingEdit();
+  } else {
+    document->OnToolsCancelBlockEdit();
+  }
 }

@@ -30,7 +30,8 @@
 #include "EoDbText.h"
 #include "EoDlgDrawOptions.h"
 #include "EoDlgEditTrapCommandsQuery.h"
-#include "EoDlgFileManage.h"
+#include "EoDlgFileManageBlocks.h"
+#include "EoDlgFileManageLayers.h"
 #include "EoDlgLineTypesSelection.h"
 #include "EoDlgSelectGotoHomePoint.h"
 #include "EoDlgSetHomePoint.h"
@@ -53,8 +54,6 @@
 #if defined(USING_DDE)
 #include "ddeGItms.h"
 #endif
-
-UINT_PTR CALLBACK OFNHookProcFileTracing(HWND, UINT, WPARAM, LPARAM);
 
 // AeSysDoc commands
 
@@ -848,37 +847,16 @@ void AeSysDoc::OnSetupOptionsDraw() {
 
   if (Dialog.DoModal() == IDOK) { AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::All); }
 }
-void AeSysDoc::OnFileManage() {
-  EoDlgFileManage dlg(this);
 
+void AeSysDoc::OnFileManageBlocks() {
+  EoDlgFileManageBlocks dlg(this);
   if (dlg.DoModal() == IDOK) {}
 }
-void AeSysDoc::OnFileTracing() {
-  static DWORD filterIndex = 1;
 
-  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+void AeSysDoc::OnFileManageLayers() {
+  EoDlgFileManageLayers dlg(this);
 
-  wchar_t fileBuffer[MAX_PATH]{};
-
-  OPENFILENAME of{};
-  of.lStructSize = sizeof(OPENFILENAME);
-  of.hwndOwner = AfxGetMainWnd() ? AfxGetMainWnd()->GetSafeHwnd() : nullptr;
-  of.hInstance = AeSys::GetInstance();
-  of.lpstrFilter = L"Tracing Files (*.tra)\0*.tra\0\0";
-  of.lpstrFile = fileBuffer;
-  of.nMaxFile = MAX_PATH;
-  of.lpstrTitle = L"Tracing File";
-  of.Flags = OFN_EXPLORER | OFN_ENABLETEMPLATE | OFN_ENABLEHOOK | OFN_HIDEREADONLY | OFN_FILEMUSTEXIST;
-  of.lpstrDefExt = L"tra";
-  of.lpfnHook = OFNHookProcFileTracing;
-  of.lpTemplateName = MAKEINTRESOURCE(IDD_TRACING_EX);
-  of.nFilterIndex = filterIndex;
-
-  if (GetOpenFileNameW(&of)) {
-    filterIndex = of.nFilterIndex;
-
-    TracingOpen(of.lpstrFile);
-  }
+  if (dlg.DoModal() == IDOK) {}
 }
 
 void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {

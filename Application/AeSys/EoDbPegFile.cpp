@@ -65,6 +65,41 @@ void EoDbPegFile::Load(AeSysDoc* document) {
   ReadBlocksSection(document, fileVersion);
   ReadEntitiesSection(document, fileVersion);
   ReadPaperSpaceSection(document, fileVersion);
+
+  auto& modelLayers = document->SpaceLayers(EoDxf::Space::ModelSpace);
+
+  // V1 tracing layer rename: convert legacy 'walls.tra' / 'walls.jb1' external layers
+  // (IsInternal()==false) to the current '|stem' naming convention so IsTracingLayer()
+  // detection works correctly everywhere in the application.
+  if (fileVersion == EoDb::PegFileVersion::AE2011) {
+    CString pegDirectory = FileName();
+    const int lastBackslash = pegDirectory.ReverseFind(L'\\');
+    if (lastBackslash != -1) { pegDirectory = pegDirectory.Left(lastBackslash + 1); }
+    for (INT_PTR n = 0; n < modelLayers.GetSize(); n++) {
+      auto* layer = modelLayers.GetAt(n);
+      if (layer == nullptr || layer->IsInternal()) { continue; }
+      const CString name = layer->Name();
+      const bool isTra = name.GetLength() > 4 && name.Right(4).CompareNoCase(L".tra") == 0;
+      const bool isJb1 = name.GetLength() > 4 && name.Right(4).CompareNoCase(L".jb1") == 0;
+      if (isTra || isJb1) {
+        const int dotPos = name.ReverseFind(L'.');
+        const CString stem = name.Left(dotPos);
+        layer->SetTracingFilePath(std::wstring((pegDirectory + name).GetString()));
+        layer->SetName(CString(L"|") + stem);
+        layer->MakeInternal();
+        layer->SetLocked(true);
+      }
+    }
+  }
+
+  // Repopulate transient primitives for all embedded tracing layers.
+  // Primitives are not persisted — only the file path reference is saved.
+  for (INT_PTR n = 0; n < modelLayers.GetSize(); n++) {
+    auto* layer = modelLayers.GetAt(n);
+    if (layer != nullptr && layer->IsTracingLayer() && !layer->TracingFilePath().empty()) {
+      document->ReloadTracingLayer(layer);
+    }
+  }
 }
 
 void EoDbPegFile::ReadHeaderSection(AeSysDoc* document) {
@@ -266,6 +301,7 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
     bool isLocked{};
     bool plottingFlag{true};
     std::int32_t color24{-1};
+    std::wstring tracingFilePath;
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       layerHandle = EoDb::ReadUInt64(*this);
       layerOwnerHandle = EoDb::ReadUInt64(*this);
@@ -277,6 +313,9 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
       isLocked = (layerPropertyFlags & 0x02) != 0;
       plottingFlag = (layerPropertyFlags & 0x04) != 0;
       color24 = EoDb::ReadInt32(*this);
+      CString tracingFilePathCs;
+      EoDb::Read(*this, tracingFilePathCs);
+      tracingFilePath = tracingFilePathCs.GetString();
     }
 
     if (document->FindLayerTableLayer(layerName) < 0) {
@@ -294,6 +333,7 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
       layer->SetLocked(isLocked);
       layer->SetPlottingFlag(plottingFlag);
       layer->SetColor24(color24);
+      if (!tracingFilePath.empty()) { layer->SetTracingFilePath(tracingFilePath); }
 
       EoDbLineType* lineType{};
       if (document->LineTypeTable()->Lookup(lineTypeName, lineType)) {
@@ -379,7 +419,10 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion f
         layer->AddTail(group);
       }
     } else {
-      document->TracingLoadLayer(layer->Name(), layer);
+      // External tracing layer (V1: not yet renamed; V2: should not occur).
+      // numberOfGroups was read above (always 0 for tracing layers on write).
+      // Content is loaded by the post-processing ReloadTracingLayer pass after
+      // all layers have been renamed and TracingFilePath has been set.
     }
   }
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
@@ -715,9 +758,17 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
   for (INT_PTR n = 0; n < layers.GetSize(); n++) {
     EoDbLayer* layer = layers.GetAt(n);
     if (layer->IsResident()) {
-      EoDb::Write(*this, layer->Name());
+      // V1 save: revert '|stem' tracing layer names back to 'stem.tra' and clear
+      // isInternal so the V1 reader recognises them as external tracing references.
+      CString nameToWrite = layer->Name();
+      std::uint16_t stateToWrite = layer->GetState();
+      if (fileVersion == EoDb::PegFileVersion::AE2011 && layer->IsTracingLayer()) {
+        nameToWrite = layer->Name().Mid(1) + L".tra";
+        stateToWrite &= ~std::to_underlying(EoDbLayer::State::isInternal);
+      }
+      EoDb::Write(*this, nameToWrite);
       EoDb::WriteUInt16(*this, layer->GetTracingState());
-      EoDb::WriteUInt16(*this, layer->GetState());
+      EoDb::WriteUInt16(*this, stateToWrite);
       EoDb::WriteInt16(*this, layer->ColorIndex());
       EoDb::Write(*this, layer->LineTypeName());
       if (fileVersion == EoDb::PegFileVersion::AE2026) {
@@ -731,6 +782,7 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
         if (layer->PlottingFlag()) { layerPropertyFlags |= 0x04; }
         EoDb::WriteUInt16(*this, layerPropertyFlags);
         EoDb::WriteInt32(*this, layer->Color24());
+        EoDb::Write(*this, CString(layer->TracingFilePath().c_str()));
       }
     } else {
       numberOfLayers--;
@@ -1095,7 +1147,7 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion 
     auto* layer = layers.GetAt(n);
     if (!layer->IsResident()) { continue; }
 
-    if (layer->IsInternal()) {
+    if (layer->IsInternal() && !layer->IsTracingLayer()) {
       EoDb::WriteUInt16(*this, std::uint16_t(layer->GetCount()));
 
       auto position = layer->GetHeadPosition();

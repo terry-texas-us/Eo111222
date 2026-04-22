@@ -1,6 +1,7 @@
 #include "Stdafx.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <utility>
 #include <vector>
@@ -26,10 +27,13 @@ void AeSysDoc::GetExtents(
   ptMin.Set(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   ptMax.Set(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
-  // In block edit mode, compute extents from the temporary editing layer only
-  if (m_isEditingBlock && m_blockEditLayer != nullptr) {
-    m_blockEditLayer->GetExtents(view, ptMin, ptMax, transformMatrix);
-    return;
+  // In editor mode, compute extents from the temporary editing layer only
+  if (IsInEditor()) {
+    EoDbLayer* editLayer = IsEditingBlock() ? m_blockEditLayer : m_tracingEditLayer;
+    if (editLayer != nullptr) {
+      editLayer->GetExtents(view, ptMin, ptMax, transformMatrix);
+      return;
+    }
   }
 
   for (auto i = 0; i < GetLayerTableSize(); i++) {
@@ -324,15 +328,16 @@ int AeSysDoc::RemoveEmptyGroups() {
   while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
   return count;
 }
+
 // Work Layer interface
+
 void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
   if (m_workLayer == nullptr) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroup: m_workLayer is nullptr\n");
     return;
   }
   // In block edit mode, stamp primitives with layer "0" (the standard block content layer)
-  // instead of the temporary "*BlockEdit" layer name.
-  std::wstring layerName = m_isEditingBlock ? L"0" : std::wstring(m_workLayer->Name().GetString());
+  std::wstring layerName = IsInEditor() ? L"0" : std::wstring(m_workLayer->Name().GetString());
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = group->GetNext(position);
@@ -344,6 +349,7 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
   SetModifiedFlag(TRUE);
 }
+
 void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
   if (m_workLayer == nullptr) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::AddWorkLayerGroups: m_workLayer is nullptr\n");
@@ -516,6 +522,66 @@ void AeSysDoc::TracingFuse(CString& nameAndLocation) {
     layer->SetName(baseName);
   }
 }
+/// Inserts a .tra file as a locked XREF-style tracing layer in the current document.
+/// The layer is named |stem (e.g. |walls for walls.tra), loaded with the file's primitives,
+/// set to locked state, and added to the model-space layer table.
+void AeSysDoc::InsertTracingLayer(const std::wstring& absolutePath) {
+  std::filesystem::path filePath(absolutePath);
+  const CString layerName = CString(L"|") + filePath.stem().wstring().c_str();
+
+  // Reject duplicate — same tracing already referenced in this document
+  if (FindLayerInSpace(layerName, EoDxf::Space::ModelSpace) != nullptr) {
+    CString message;
+    message.Format(L"Tracing layer '%s' is already inserted.", layerName.GetString());
+    app.AddStringToMessageList(message);
+    return;
+  }
+
+  auto* layer = new EoDbLayer(layerName, EoDbLayer::State::isStatic);
+  layer->SetColorIndex(7);
+  layer->SetLineType(m_continuousLineType);
+  layer->SetLocked(true);
+  layer->SetTracingFilePath(absolutePath);
+  layer->MakeResident();
+  layer->MakeInternal();  // Prevents .jb1 suffix on PEG V1 read; marks as externally referenced
+
+  const CString pathCs(absolutePath.c_str());
+  if (!TracingLoadLayer(pathCs, layer)) {
+    CString message;
+    message.Format(L"Failed to load tracing file: %s", pathCs.GetString());
+    app.AddStringToMessageList(message);
+    delete layer;
+    return;
+  }
+
+  AddLayerToSpace(layer, EoDxf::Space::ModelSpace);
+
+  CString message;
+  message.Format(L"Inserted tracing layer '%s' from: %s", layerName.GetString(), pathCs.GetString());
+  app.AddStringToMessageList(message);
+
+  UpdateAllViews(nullptr);
+}
+
+/// Reloads primitives for a tracing layer from its associated .tra file on disk.
+/// Existing primitives are cleared first. Logs to the output pane if the file is missing.
+void AeSysDoc::ReloadTracingLayer(EoDbLayer* layer) {
+  if (layer == nullptr || !layer->IsTracingLayer()) { return; }
+  if (layer->TracingFilePath().empty()) { return; }
+
+  const CString pathCs(layer->TracingFilePath().c_str());
+
+  // Clear existing transient primitives
+  layer->DeleteGroupsAndRemoveAll();
+
+  if (!TracingLoadLayer(pathCs, layer)) {
+    CString message;
+    message.Format(L"Tracing file not found (layer '%s'): %s — layer will be empty.",
+        layer->Name().GetString(), pathCs.GetString());
+    app.AddStringToMessageList(message);
+  }
+}
+
 bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
   EoDb::FileTypes FileType = App::FileTypeFromPath(pathName);
   if (FileType != EoDb::FileTypes::Tracing && FileType != EoDb::FileTypes::Job) { return false; }

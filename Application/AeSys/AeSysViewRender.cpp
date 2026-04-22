@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <filesystem>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -35,6 +36,12 @@
 
 void AeSysView::OnDraw(CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
+
+  // Suppress all rendering during document teardown (async WM_CLOSE)
+  if (auto* doc = GetDocument(); doc != nullptr && doc->IsClosing()) {
+    ValidateRect(nullptr);
+    return;
+  }
 
   // Printing bypasses the back buffer — render directly to the printer DC
   if (deviceContext->IsPrinting()) {
@@ -202,8 +209,13 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       m_sceneInvalid = false;
       m_overlayDirty = false;
     }
-    UpdateStateInformation(All);
-    ModeLineDisplay();
+    {
+      auto* doc = GetDocument();
+      if (doc != nullptr && !doc->IsClosing()) {
+        UpdateStateInformation(All);
+        ModeLineDisplay();
+      }
+    }
     ValidateRect(nullptr);
     return;
   }
@@ -326,8 +338,13 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     Gs::renderState.Restore(deviceContext, savedUserState);
     m_overlayDirty = false;
 
-    UpdateStateInformation(All);
-    ModeLineDisplay();
+    {
+      auto* doc = AeSysDoc::GetDoc();
+      if (doc != nullptr && !doc->IsClosing()) {
+        UpdateStateInformation(All);
+        ModeLineDisplay();
+      }
+    }
     ValidateRect(nullptr);
   } catch (CException* e) { e->Delete(); }
 }
@@ -359,6 +376,25 @@ void AeSysView::OnInitialUpdate() {
   PushState(std::make_unique<IdleState>());
 #endif
   OnModeDraw();
+
+  // If the document entered an editor mode during OnOpenDocument (before the view existed),
+  // apply the tab bar editor state now that the view and tab bar are ready.
+  if (auto* doc = GetDocument()) {
+    if (doc->IsEditingTracing()) {
+      std::filesystem::path filePath(static_cast<LPCWSTR>(doc->EditingTracingPath()));
+      CString tracingName = filePath.stem().wstring().c_str();
+      LayoutTabBar().UpdateBlockEditState(true, tracingName, L"TRACING");
+
+      // MFC's SetPathName overrides our SetTitle from EnterTracingEditMode,
+      // so re-apply the editor title now that the framework is done.
+      CString editTitle;
+      editTitle.Format(L"[|%s]", tracingName.GetString());
+      doc->SetTitle(editTitle);
+
+      ModelViewInitialize();
+      OnWindowBest();
+    }
+  }
 }
 
 void AeSysView::ApplyActiveViewport() {
@@ -911,6 +947,9 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
   if (mainFrame == nullptr) { return; }
 
+  // Suppress state updates during document teardown
+  if (auto* doc = GetDocument(); doc != nullptr && doc->IsClosing()) { return; }
+
   if ((item & BothCounts) != 0) { mainFrame->GetPropertiesPane().UpdateDocumentStatistics(); }
 
   if ((item & Pen) == Pen) {
@@ -941,8 +980,8 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     mainFrame->SetPaneText(2, angle);
   }
   if ((item & Layer) == Layer) {
-    auto* document = AeSysDoc::GetDoc();
-    if (document != nullptr && document->GetWorkLayer() != nullptr) {
+    auto* document = GetDocument();
+    if (document != nullptr && !document->IsClosing() && document->GetWorkLayer() != nullptr) {
       mainFrame->SyncLayerCombo(document->GetWorkLayer()->Name());
     }
   }

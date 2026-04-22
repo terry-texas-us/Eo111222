@@ -38,6 +38,7 @@ class EoDbLayer : public EoDbGroupList {
   std::int32_t m_color24{-1};  ///< DXF group code 420; -1 means not set (use ACI color)
   std::uint64_t m_handle{};
   std::uint64_t m_ownerHandle{};
+  std::wstring m_tracingFilePath;  ///< Absolute path to .tra file; non-empty only for |name tracing layers
 
  public:
   enum class State : std::uint16_t {
@@ -105,9 +106,14 @@ class EoDbLayer : public EoDbGroupList {
   void SetColor24(std::int32_t color24) noexcept { m_color24 = color24; }
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 
-  [[nodiscard]] CString Name() const { return m_name; }
+  [[nodiscard]] CString Name() const noexcept { return m_name; }
+  void SetName(const CString& name) noexcept { m_name = name; }
 
-  void SetName(const CString& name) { m_name = name; }
+  /// Returns true when this layer is an embedded tracing reference (name starts with '|').
+  [[nodiscard]] bool IsTracingLayer() const noexcept { return !m_name.IsEmpty() && m_name[0] == L'|'; }
+
+  [[nodiscard]] const std::wstring& TracingFilePath() const noexcept { return m_tracingFilePath; }
+  void SetTracingFilePath(const std::wstring& path) { m_tracingFilePath = path; }
 
   void ClearTracingStateBit(std::uint16_t w = AllStateBits) noexcept { m_tracingState &= ~w; }
 

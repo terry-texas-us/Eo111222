@@ -173,6 +173,7 @@
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
     <ClCompile Include="EoCtrlTextStyleComboBox.cpp" />
     <ClCompile Include="EoDlgEditBlockDefinition.cpp" />
+    <ClCompile Include="EoDlgFileManageBlocks.cpp" />
     <ClCompile Include="EoDlgSheetSetupFormFactor.cpp" />
     <ClCompile Include="EoDlgTextStyleManager.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
@@ -271,7 +272,7 @@
     <ClCompile Include="EoDlgDrawOptions.cpp" />
     <ClCompile Include="EoDlgEditOptions.cpp" />
     <ClCompile Include="EoDlgEditTrapCommandsQuery.cpp" />
-    <ClCompile Include="EoDlgFileManage.cpp" />
+    <ClCompile Include="EoDlgFileManageLayers.cpp" />
     <ClCompile Include="EoDlgFixupOptions.cpp" />
     <ClCompile Include="EoDlgLineTypesSelection.cpp" />
     <ClCompile Include="EoDlgLowPressureDuctOptions.cpp" />
@@ -325,7 +326,6 @@
     <ClCompile Include="IdleState.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="ModeLine.cpp" />
-    <ClCompile Include="OFNHookProcFileTracing.cpp" />
     <ClCompile Include="Section.cpp" />
     <ClCompile Include="WndProcKeyPlan.cpp" />
     <ClCompile Include="WndProcPreview.cpp" />
@@ -395,7 +395,8 @@
     <ClInclude Include="EoDlgEditBlockDefinition.h" />
     <ClInclude Include="EoDlgEditOptions.h" />
     <ClInclude Include="EoDlgEditTrapCommandsQuery.h" />
-    <ClInclude Include="EoDlgFileManage.h" />
+    <ClInclude Include="EoDlgFileManageLayers.h" />
+    <ClInclude Include="EoDlgFileManageBlocks.h" />
     <ClInclude Include="EoDlgFixupOptions.h" />
     <ClInclude Include="EoDlgLineTypesSelection.h" />
     <ClInclude Include="EoDlgLowPressureDuctOptions.h" />
@@ -540,6 +541,7 @@
     <Image Include="res\Icons\output_wnd_hc.ico" />
     <Image Include="res\Icons\properties_wnd.ico" />
     <Image Include="res\Icons\properties_wnd_hc.ico" />
+    <Image Include="res\Toolbar Bitmaps\BlockEditLayout.bmp" />
     <Image Include="res\Toolbar Bitmaps\LayerManageButton.bmp" />
     <Image Include="res\Toolbar Bitmaps\LayerProperties.bmp" />
     <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />

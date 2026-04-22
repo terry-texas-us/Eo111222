@@ -66,7 +66,6 @@ class AeSys : public CWinAppEx {
  private:
   EoGePoint3d m_HomePoints[9]{};
   CMultiDocTemplate* m_pegDocumentTemplate{};
-  CMultiDocTemplate* m_traDocumentTemplate{};
   HMENU m_MainFrameMenuHandle{};
   char* m_SimplexStrokeFont{};
   int m_StrokeFontVersion{};  // 1 = legacy 96-entry header, 2 = extended 225-entry header with advance widths

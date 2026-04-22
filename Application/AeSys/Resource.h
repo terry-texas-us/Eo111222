@@ -50,7 +50,7 @@
 #define IDD_DRAW_OPTIONS                166
 #define IDD_GET_LAYER_NAME              167
 #define IDD_SET_SCALE                   168
-#define IDD_FILE_MANAGE                 169
+#define IDD_FILE_MANAGE_LAYERS          169
 #define IDD_ADD_NOTE                    170
 #define IDD_EDIT_OPTIONS                171
 #define IDD_VIEW_ZOOM                   172
@@ -115,6 +115,7 @@
 #define IDD_PLOT                        347
 #define IDR_LAYER_PROPERTIES            348
 #define IDD_EDIT_BLOCK_DEFINITION       349
+#define IDD_FILE_MANAGE_BLOCKS          351
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -210,13 +211,7 @@
 #define IDC_BACK_CLIP_DISTANCE          1209
 #define IDC_FILL                        1230
 #define IDC_CONSTRAINTS                 1231
-#define IDC_TRACLOAK                    1239
-#define IDC_TRAFUSE                     1241
-#define IDC_LAYMELT                     1243
-#define IDC_TRA                         1248
 #define IDC_LAYRENAME                   1249
-#define IDC_TRAEXCLUDE                  1250
-#define IDC_TRAINCLUDE                  1251
 #define IDC_GROUPS                      1256
 #define IDC_LEFT_DOWN                   1273
 #define IDC_EDIT1                       1274
@@ -237,14 +232,12 @@
 #define IDC_MOD_NOTE                    1295
 #define IDC_MOD_MARKER                  1296
 #define IDC_UP_ONE_LEVEL                1299
-#define IDC_TRAOPEN                     1300
 #define IDC_TRAMAP                      1302
 #define IDC_TRAVIEW                     1304
 #define IDC_FILE_NAME                   1307
 #define IDC_NEW_FOLDER                  1308
 #define IDC_DESCRIPTION                 1310
 #define IDC_LAYER_PREVIEW               1312
-#define IDC_SOLO                        1314
 #define IDC_BLOCKS_LIST                 1315
 #define IDC_REFERENCES                  1316
 #define IDC_APPEND                      1320
@@ -366,11 +359,12 @@
 #define IDC_EDIT4                       1495
 #define IDC_EDIT5                       1496
 #define IDC_EDIT6                       1497
-#define IDC_BLOCK_EDIT_SAVE_BUTTON      1500
-#define IDC_BLOCK_EDIT_CLOSE_BUTTON     1501
-#define IDC_BLOCK_EDIT_SAVEAS_BUTTON    1502
 #define IDC_CHECK3                      1498
 #define IDC_EDIT7                       1499
+#define IDC_BLOCK_EDIT_SAVE_BUTTON      1500
+#define IDC_BLOCK_PREVIEW               1500
+#define IDC_BLOCK_EDIT_CLOSE_BUTTON     1501
+#define IDC_BLOCK_EDIT_SAVEAS_BUTTON    1502
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -602,8 +596,9 @@
 #define ID_TRAPCOMMANDS_SQUARE          4584
 #define ID_TRAPCOMMANDS_QUERY           4585
 #define ID_TRAPCOMMANDS_FILTER          4586
-#define ID_FILE_MANAGE                  4587
-#define ID_TRAPCOMMANDS_BLOCK           4588
+#define ID_FILE_MANAGE_LAYERS           4587
+#define ID_FILE_MANAGE_BLOCKS           4588
+#define ID_TRAPCOMMANDS_BLOCK           4589
 #define ID_TRAPCOMMANDS_UNBLOCK         4590
 #define ID_TOOLS_GROUP_EXCHANGE         4591
 #define ID_EDIT_SEGTOWORK               4593
@@ -642,10 +637,8 @@
 #define ID_VIEW_CUSTOMIZE               4660
 #define ID_MDI_TABBED                   4661
 #define ID_WINDOW_MANAGER               4662
-#define ID_TOOLS_EDIT_BLOCK_DEFINITION  4669
-#define ID_TOOLS_SAVE_BLOCK_EDIT        4710
-#define ID_TOOLS_CANCEL_BLOCK_EDIT      4711
 #define ID_TOOLS_ENTRY                  4668
+#define ID_TOOLS_EDIT_BLOCK_DEFINITION  4669
 #define ID_USER_TOOL1                   4671
 #define ID_USER_TOOL2                   4672
 #define ID_USER_TOOL3                   4673
@@ -673,6 +666,8 @@
 #define ID_VIEW_USER_TOOLBAR8           4698
 #define ID_VIEW_USER_TOOLBAR9           4699
 #define ID_VIEW_USER_TOOLBAR10          4700
+#define ID_TOOLS_SAVE_BLOCK_EDIT        4710
+#define ID_TOOLS_CANCEL_BLOCK_EDIT      4711
 #define ID_SETUP_LAYERPROPERTIES        4733
 #define ID_PENCOLOR_COMBO               4764
 #define ID_LINETYPE_COMBO               4766
@@ -696,6 +691,9 @@
 #define ID_VIEWSANDPROJECTIONS_SEISOMETRIC 4911
 #define ID_VIEWSANDPROJECTIONS_NWISOMETRIC 4912
 #define ID_VIEWSANDPROJECTIONS_NWISOMETRIC4913 4913
+#define ID_INSERT_TRACING               4914
+#define ID_MANAGE_LAYERS                4915
+#define ID_MANAGE_BLOCKS                4916
 #define ID_DRAW_MODE_OPTIONS            5100
 #define ID_DRAW_MODE_POINT              5101
 #define ID_DRAW_MODE_LINE               5102
@@ -870,9 +868,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        351
-#define _APS_NEXT_COMMAND_VALUE         4914
-#define _APS_NEXT_CONTROL_VALUE         1500
+#define _APS_NEXT_RESOURCE_VALUE        353
+#define _APS_NEXT_COMMAND_VALUE         4918
+#define _APS_NEXT_CONTROL_VALUE         1501
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

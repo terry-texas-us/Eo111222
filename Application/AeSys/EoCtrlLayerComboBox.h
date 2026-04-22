@@ -1,9 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
-#include "Resource.h"
-
 class EoDbLayer;
 
 /// @brief Toolbar combo box for layer selection with integrated leading icon and owner-draw state icons.
@@ -54,6 +50,10 @@ class EoCtrlLayerComboBox : public CMFCToolBarComboBoxButton {
 
   /// @brief Opens the layer manager dialog.
   void OpenLayerManager();
+
+  /// @brief True while a deferred PopulateItems is queued via PostMessage.
+  /// Prevents repeated posting and suppresses content rendering until the list is fresh.
+  bool m_rebuildPending{false};
 };
 
 /// @brief Owner-draw combo box that renders layer state icons and color swatches.
@@ -63,6 +63,10 @@ class EoCtrlLayerOwnerDrawCombo : public CComboBox {
  public:
   void MeasureItem(LPMEASUREITEMSTRUCT measureItemStruct) override;
   void DrawItem(LPDRAWITEMSTRUCT drawItemStruct) override;
+
+  /// @brief Back-pointer to the owning toolbar button, set in CreateCombo.
+  /// Used by OnRebuildLayers to call PopulateItems() outside the paint handler.
+  EoCtrlLayerComboBox* m_ownerButton{nullptr};
 
   /// @brief Icon layout constants (pixel offsets within each item).
   /// Icons are rendered at native 24×24 with 24px step.
@@ -82,6 +86,7 @@ class EoCtrlLayerOwnerDrawCombo : public CComboBox {
   afx_msg void OnPaint();
   afx_msg void OnNcPaint();
   afx_msg BOOL OnEraseBkgnd(CDC* deviceContext);
+  afx_msg LRESULT OnRebuildLayers(WPARAM wParam, LPARAM lParam);
 
  private:
   CBrush m_dropdownBackgroundBrush;

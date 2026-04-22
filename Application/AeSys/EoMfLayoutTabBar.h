@@ -90,10 +90,10 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// @brief Clears the last-active viewport tracking (e.g., on layout tab switch).
   void ClearLastActiveViewport() noexcept { m_lastActiveViewport = nullptr; }
 
-  /// @brief Enters or exits block edit state in the layout tab bar.
-  /// When editing: shows "BLOCK" label with Save/Close buttons, hides normal controls and tabs.
+  /// @brief Enters or exits editor state in the layout tab bar.
+  /// When editing: shows editor label (BLOCK/TRACING) with Save/Close buttons, hides normal controls and tabs.
   /// When not editing: restores normal state.
-  void UpdateBlockEditState(bool isEditing, const CString& blockName = CString{});
+  void UpdateBlockEditState(bool isEditing, const CString& editName = CString{}, const CString& editorLabel = L"BLOCK");
 
  private:
   /// @brief Block record handles parallel to tab indices.
