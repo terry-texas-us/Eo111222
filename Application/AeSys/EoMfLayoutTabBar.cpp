@@ -622,7 +622,7 @@ void EoMfLayoutTabBar::OnBlockEditSaveClicked() {
   if (document->IsEditingTracing()) {
     document->OnToolsSaveTracingEdit();
   } else {
-    document->OnToolsSaveBlockEdit();
+    document->ExitBlockEditMode(true);
   }
 }
 
@@ -646,6 +646,6 @@ void EoMfLayoutTabBar::OnBlockEditCloseClicked() {
   if (document->IsEditingTracing()) {
     document->OnToolsExitTracingEdit();
   } else {
-    document->OnToolsCancelBlockEdit();
+    document->ExitBlockEditMode(false);
   }
 }

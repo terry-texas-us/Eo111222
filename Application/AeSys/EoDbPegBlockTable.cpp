@@ -2,6 +2,7 @@
 
 #include "AeSysDoc.h"
 #include "EoDbBlock.h"
+#include "EoDbBlockReference.h"
 
 int AeSysDoc::GetBlockReferenceCount(const CString& name) {
   int count = 0;
@@ -60,4 +61,64 @@ void AeSysDoc::RemoveUnusedBlocks() {
       delete Block;
     }
   }
+}
+
+bool AeSysDoc::RenameBlock(const CString& oldName, const CString& newName) {
+  if (newName.IsEmpty()) { return false; }
+  if (newName[0] == L'*') { return false; }  // reserved system/anonymous prefix
+  if (oldName == newName) { return true; }
+
+  EoDbBlock* block{};
+  if (!m_BlocksTable.Lookup(oldName, block)) { return false; }
+
+  EoDbBlock* existingBlock{};
+  if (m_BlocksTable.Lookup(newName, existingBlock)) { return false; }  // name already taken
+
+  // Re-key the block table entry
+  m_BlocksTable.RemoveKey(oldName);
+  m_BlocksTable.SetAt(newName, block);
+
+  // Helper: patches EoDbBlockReference primitives inside a single EoDbGroup
+  auto patchGroup = [&](EoDbGroup* group) {
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
+      if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
+        auto* blockRef = static_cast<EoDbBlockReference*>(primitive);
+        if (blockRef->BlockName() == oldName) { blockRef->SetName(newName); }
+      }
+    }
+  };
+
+  // Helper: patches all groups in a layer (EoDbGroupList)
+  auto patchGroupList = [&](EoDbGroupList& groupList) {
+    auto groupPosition = groupList.GetHeadPosition();
+    while (groupPosition != nullptr) {
+      patchGroup(groupList.GetNext(groupPosition));
+    }
+  };
+
+  // Patch model-space layers
+  for (INT_PTR i = 0; i < m_modelSpaceLayers.GetSize(); i++) {
+    patchGroupList(*m_modelSpaceLayers.GetAt(i));
+  }
+
+  // Patch all paper-space layout layers
+  for (auto& [handle, layers] : m_paperSpaceLayoutLayers) {
+    for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+      patchGroupList(*layers.GetAt(i));
+    }
+  }
+
+  // Patch block definitions (nested INSERT inside another block)
+  CString key;
+  EoDbBlock* blk{};
+  auto blockPosition = m_BlocksTable.GetStartPosition();
+  while (blockPosition != nullptr) {
+    m_BlocksTable.GetNextAssoc(blockPosition, key, blk);
+    patchGroup(blk);
+  }
+
+  SetModifiedFlag();
+  return true;
 }

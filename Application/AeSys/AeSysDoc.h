@@ -203,6 +203,14 @@ class AeSysDoc : public CDocument {
   }
   bool LookupBlock(CString name, EoDbBlock*& block);
 
+  /** @brief Renames a block in the block table and patches all block references that use the old name.
+   *
+   * @param oldName The current name of the block.
+   * @param newName The new name to assign. Must be non-empty and not already in use.
+   * @return true on success; false if oldName does not exist or newName is invalid/already taken.
+   */
+  bool RenameBlock(const CString& oldName, const CString& newName);
+
   /** @brief Removes all blocks from the block table. */
   void RemoveAllBlocks();
 
@@ -707,12 +715,8 @@ class AeSysDoc : public CDocument {
   afx_msg void OnBlocksRemoveUnused();
   afx_msg void OnBlocksUnload();
   afx_msg void OnToolsEditBlockDefinition();
-  afx_msg void OnToolsSaveBlockEdit();
   void OnToolsSaveAsBlockEdit();
-  afx_msg void OnToolsCancelBlockEdit();
   afx_msg void OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI);
-  afx_msg void OnUpdateToolsSaveBlockEdit(CCmdUI* cmdUI);
-  afx_msg void OnUpdateToolsCancelBlockEdit(CCmdUI* cmdUI);
   afx_msg void OnClearActiveLayers();
   afx_msg void OnClearAllLayers();
   afx_msg void OnClearAllTracings();

@@ -38,11 +38,7 @@ ON_COMMAND(ID_BLOCKS_LOAD, OnBlocksLoad)
 ON_COMMAND(ID_BLOCKS_REMOVEUNUSED, OnBlocksRemoveUnused)
 ON_COMMAND(ID_BLOCKS_UNLOAD, OnBlocksUnload)
 ON_COMMAND(ID_TOOLS_EDIT_BLOCK_DEFINITION, OnToolsEditBlockDefinition)
-ON_COMMAND(ID_TOOLS_SAVE_BLOCK_EDIT, OnToolsSaveBlockEdit)
-ON_COMMAND(ID_TOOLS_CANCEL_BLOCK_EDIT, OnToolsCancelBlockEdit)
 ON_UPDATE_COMMAND_UI(ID_TOOLS_EDIT_BLOCK_DEFINITION, OnUpdateToolsEditBlockDefinition)
-ON_UPDATE_COMMAND_UI(ID_TOOLS_SAVE_BLOCK_EDIT, OnUpdateToolsSaveBlockEdit)
-ON_UPDATE_COMMAND_UI(ID_TOOLS_CANCEL_BLOCK_EDIT, OnUpdateToolsCancelBlockEdit)
 ON_COMMAND(ID_CLEAR_ACTIVELAYERS, OnClearActiveLayers)
 ON_COMMAND(ID_CLEAR_ALLLAYERS, OnClearAllLayers)
 ON_COMMAND(ID_CLEAR_ALLTRACINGS, OnClearAllTracings)
@@ -441,7 +437,7 @@ void AeSysDoc::OnToolsEditBlockDefinition() {
   }
 }
 
-void AeSysDoc::OnToolsSaveBlockEdit() { ExitBlockEditMode(true); }
+
 
 void AeSysDoc::OnToolsSaveAsBlockEdit() {
   if (m_editorMode != EditorMode::Block || m_blockEditLayer == nullptr) { return; }
@@ -491,7 +487,7 @@ void AeSysDoc::OnToolsSaveAsBlockEdit() {
   app.AddStringToMessageList(message);
 }
 
-void AeSysDoc::OnToolsCancelBlockEdit() { ExitBlockEditMode(false); }
+
 
 // --- Tracing Editor ---
 
@@ -796,6 +792,4 @@ void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) {
   cmdUI->Enable(!IsInEditor() && !BlockTableIsEmpty());
 }
 
-void AeSysDoc::OnUpdateToolsSaveBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(IsEditingBlock()); }
 
-void AeSysDoc::OnUpdateToolsCancelBlockEdit(CCmdUI* cmdUI) { cmdUI->Enable(IsEditingBlock()); }

@@ -31,7 +31,25 @@ class EoDlgFileManageBlocks : public CDialog {
    * selected block and updates the reference count display and the block preview accordingly.
    */
   afx_msg void OnLbnSelchangeBlocksList();
+  afx_msg void OnContextMenu(CWnd* window, CPoint point);
 
  protected:
+  /// @brief Begins F2-style in-place rename for the currently selected list item.
+  void BeginInPlaceRename();
+
+  /// @brief Commits the in-place rename: validates, calls RenameBlock, refreshes the list.
+  void CommitRename();
+
+  /// @brief Cancels an active in-place rename without making changes.
+  void CancelRename();
+
+  CEdit m_inPlaceEdit;
+  int m_renamingIndex{-1};
+
+  afx_msg void OnEnKillfocusInPlaceEdit();
+  afx_msg void OnEnReturnInPlaceEdit();
+
+  BOOL PreTranslateMessage(MSG* message) override;
+
   DECLARE_MESSAGE_MAP()
 };

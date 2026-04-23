@@ -1,4 +1,4 @@
-//{{NO_DEPENDENCIES}}
+﻿//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by AeSys.rc
 //
@@ -364,6 +364,7 @@
 #define IDC_BLOCK_PREVIEW               1500
 #define IDC_BLOCK_EDIT_CLOSE_BUTTON     1501
 #define IDC_BLOCK_EDIT_SAVEAS_BUTTON    1502
+#define IDC_BLOCKS_RENAME_EDIT          1503
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783

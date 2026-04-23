@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+﻿// Microsoft Visual C++ generated resource script.
 //
 #include "Resource.h"
 
@@ -458,8 +458,6 @@ BEGIN
         MENUITEM "<User defined tools>",        ID_TOOLS_ENTRY
         MENUITEM SEPARATOR
         MENUITEM "Edit &Block Definition...",   ID_TOOLS_EDIT_BLOCK_DEFINITION
-        MENUITEM "Save Block &Edit",            ID_TOOLS_SAVE_BLOCK_EDIT
-        MENUITEM "Cancel Block Ed&it",          ID_TOOLS_CANCEL_BLOCK_EDIT
         MENUITEM SEPARATOR
         MENUITEM "&Customize...",               ID_VIEW_CUSTOMIZE
     END
