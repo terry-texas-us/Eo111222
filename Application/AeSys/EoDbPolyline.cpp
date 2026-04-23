@@ -20,7 +20,7 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "ddeGItms.h"
 #endif
 
@@ -427,7 +427,7 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   app.SetEngagedLength(edgeLength);
   app.SetEngagedAngle(angleInXYPlane);
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
   dde::PostAdvise(dde::EngLenInfo);
   dde::PostAdvise(dde::EngAngZInfo);
 #endif

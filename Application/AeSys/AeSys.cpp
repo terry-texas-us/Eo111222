@@ -28,7 +28,7 @@
 #include "MainFrm.h"
 #include "Resource.h"
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "Dde.h"
 #include "ddeGItms.h"
 namespace dde {
@@ -210,7 +210,7 @@ BOOL AeSys::InitInstance() {
   LoadHatchesFromFile(resourceFolder + L"Hatches\\DefaultSet.txt");
   // LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
   // Initialize DDE and register AeSys-specific topics, items, and commands
   dde::RegisterAeSysTopics();
 #endif
@@ -229,7 +229,7 @@ BOOL AeSys::InitInstance() {
 int AeSys::ExitInstance() {
   m_Options.Save();
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
   dde::Uninitialize();
 #endif
 

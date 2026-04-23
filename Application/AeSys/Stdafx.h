@@ -54,6 +54,6 @@ UINT AFXAPI HashKey(CString& str);
 // #define USING_STATE_PATTERN  // Deactivated: experimental state pattern to be restarted after preview group overlay
 //#define USING_DDE
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include <ddeml.h>
 #endif

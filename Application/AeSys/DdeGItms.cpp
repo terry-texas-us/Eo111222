@@ -1,6 +1,6 @@
 ﻿#include "Stdafx.h"
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "AeSys.h"
 #include "AeSysView.h"
 

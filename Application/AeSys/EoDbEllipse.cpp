@@ -25,7 +25,7 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "ddeGItms.h"
 #endif
 

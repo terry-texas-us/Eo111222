@@ -341,7 +341,7 @@ void AeSysView::DoNodalModeMouseMove() {
           auto* primitive = MaskedPrimitive->GetPrimitive();
           const DWORD Mask = MaskedPrimitive->GetMask();
           m_PreviewGroup.AddTail(primitive->Copy(primitive));
-          ((EoDbPrimitive*)m_PreviewGroup.GetTail())->TranslateUsingMask(Translate, Mask);
+          static_cast<EoDbPrimitive*>(m_PreviewGroup.GetTail())->TranslateUsingMask(Translate, Mask);
         }
         auto UniquePointPosition = document->GetFirstUniquePointPosition();
         while (UniquePointPosition != nullptr) {

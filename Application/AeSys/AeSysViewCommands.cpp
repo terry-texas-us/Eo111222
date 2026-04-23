@@ -28,7 +28,7 @@
 #include "DrawModeState.h"
 #endif
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "Dde.h"
 #include "DdeGItms.h"
 #endif
@@ -292,7 +292,7 @@ void AeSysView::OnSetupDimLength() {
   if (dialog.DoModal() == IDOK) {
     app.SetDimensionLength(dialog.Length());
     UpdateStateInformation(DimLen);
-#if defined(USING_DDE)
+#ifdef USING_DDE
     dde::PostAdvise(dde::DimLenInfo);
 #endif
   }
@@ -306,7 +306,7 @@ void AeSysView::OnSetupDimAngle() {
   if (dlg.DoModal() == IDOK) {
     app.SetDimensionAngle(dlg.m_dAngle);
     UpdateStateInformation(DimAng);
-#if defined(USING_DDE)
+#ifdef USING_DDE
     dde::PostAdvise(dde::DimAngZInfo);
 #endif
   }
@@ -724,7 +724,7 @@ void AeSysView::SetWorldScale(double scale) {
     CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
     MainFrame->GetPropertiesPane().GetActiveViewScaleProperty().SetValue(m_WorldScale);
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
     dde::PostAdvise(dde::ScaleInfo);
 #endif
   }

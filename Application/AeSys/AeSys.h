@@ -97,7 +97,7 @@ class AeSys : public CWinAppEx {
   Microsoft::WRL::ComPtr<ID2D1Factory> m_d2dFactory;
   Microsoft::WRL::ComPtr<IDWriteFactory> m_dwriteFactory;
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
   double m_ExtractedNumber{};
   CString m_ExtractedString;
 #endif
@@ -278,7 +278,7 @@ class AeSys : public CWinAppEx {
   afx_msg void OnModeLetter();
   afx_msg void OnModeRevise();
   afx_msg void OnTrapCommandsHighlight();
-#if defined(USING_DDE)
+#ifdef USING_DDE
   double ExtractedNumber() { return m_ExtractedNumber; }
   void SetExtractedNumber(double number) { m_ExtractedNumber = number; }
   CString ExtractedString() { return m_ExtractedString; }

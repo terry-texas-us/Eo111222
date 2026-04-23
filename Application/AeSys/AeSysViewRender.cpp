@@ -29,7 +29,7 @@
 #include "IdleState.h"
 #endif
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "Dde.h"
 #include "DdeGItms.h"
 #endif
@@ -886,7 +886,7 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   const int iWidSrc = rcWnd.Width();
   const int iHgtSrc = rcWnd.Height();
 
-  deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
+  deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, static_cast<int>(rcWnd.left), (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
 
   dcMem.SelectObject(pBitmap);
   deviceContext->SelectPalette(pPalette, FALSE);
@@ -934,7 +934,7 @@ void AeSysView::DisplayOdometer() {
   }
   if (auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd())) { mainFrame->SetPaneText(0, Position); }
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
   dde::PostAdvise(dde::RelPosXInfo);
   dde::PostAdvise(dde::RelPosYInfo);
   dde::PostAdvise(dde::RelPosZInfo);

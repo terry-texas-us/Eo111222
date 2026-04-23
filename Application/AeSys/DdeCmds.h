@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "dde.h"
 
 // prototypes for handling procedures

@@ -24,7 +24,7 @@
 #include "EoGsRenderState.h"
 #include "Hatch.h"
 
-#if defined(USING_DDE)
+#ifdef USING_DDE
 #include "ddeGItms.h"
 #endif
 
@@ -593,7 +593,7 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
 
     app.SetEngagedLength(dLen);
     app.SetEngagedAngle(dAng);
-#if defined(USING_DDE)
+#ifdef USING_DDE
     dde::PostAdvise(dde::EngLenInfo);
     dde::PostAdvise(dde::EngAngZInfo);
 #endif

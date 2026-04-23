@@ -94,7 +94,7 @@ class AeSysDoc : public CDocument {
   ~AeSysDoc() override;
 
  public:
-  void InitializeGroupAndPrimitiveEdit();
+  void InitializeGroupAndPrimitiveEdit() const;
 
   /** @brief Provides access to the document's header section.
    *

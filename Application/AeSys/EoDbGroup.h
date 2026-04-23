@@ -86,7 +86,7 @@ class EoDbGroup : public CObList {
   /// @brief Picks a prim if close enough to point.  Working in view space.
   EoDbPrimitive* SelPrimUsingPoint(AeSysView* view, const EoGePoint4d&, double&, EoGePoint3d&);
   bool SelectUsingLine(AeSysView* view, const EoGePoint3d& pt1, const EoGePoint3d& pt2);
-  bool SelectUsingPoint_(AeSysView* view, EoGePoint4d pt);
+  bool SelectUsingPoint_(AeSysView* view, EoGePoint4d point);
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
 
   /** @brief Sorts text primitives in the group by their Y coordinate in descending order, with text primitives
