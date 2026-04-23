@@ -189,7 +189,7 @@ void AeSysDoc::RegisterGroupHandles(EoDbGroup* group) {
 void AeSysDoc::UnregisterGroupHandles(EoDbGroup* group) {
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
-    auto* primitive = group->GetNext(position);
+    auto* const primitive = group->GetNext(position);
     UnregisterHandle(primitive->Handle());
   }
 }
@@ -261,10 +261,10 @@ void AeSysDoc::DeleteContents() {
 }
 
 void AeSysDoc::AddTextBlock(LPWSTR textBlock) {
-  auto cursorPosition = app.GetCursorPosition();
+  const auto cursorPosition = app.GetCursorPosition();
 
   const auto& fontDefinition = Gs::renderState.FontDefinition();
-  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
+  const auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
 
   EoGeReferenceSystem ReferenceSystem(cursorPosition, characterCellDefinition);
 
@@ -293,7 +293,7 @@ void AeSysDoc::DeletedGroupsRestore() {
 
 // Returns a pointer to the currently active document.
 AeSysDoc* AeSysDoc::GetDoc() {
-  auto* frame = static_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
+  auto* const frame = static_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
   if (frame == nullptr) { return nullptr; }
   auto* child = static_cast<CMDIChildWndEx*>(frame->MDIGetActive());
 
@@ -517,7 +517,7 @@ bool AeSysDoc::EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer) {
 
   // Update document title to reflect tracing edit mode
   std::filesystem::path filePath(static_cast<LPCWSTR>(m_editingTracingPath));
-  CString tracingName = filePath.stem().wstring().c_str();
+  const CString tracingName = filePath.stem().wstring().c_str();
   CString editTitle;
   editTitle.Format(L"[|%s]", tracingName.GetString());
   SetTitle(editTitle);
@@ -565,8 +565,8 @@ bool AeSysDoc::EnterTracingEditMode(const CString& pathName) {
 
   // Update document title to indicate tracing edit mode
   m_savedEditorTitle = GetTitle();
-  std::filesystem::path filePath(static_cast<LPCWSTR>(pathName));
-  CString tracingName = filePath.stem().wstring().c_str();
+  const std::filesystem::path filePath(static_cast<LPCWSTR>(pathName));
+  const CString tracingName = filePath.stem().wstring().c_str();
   CString editTitle;
   editTitle.Format(L"[|%s]", tracingName.GetString());
   SetTitle(editTitle);
@@ -762,8 +762,8 @@ void AeSysDoc::OnToolsExitTracingEdit() { ExitTracingEditMode(true); }
 
 void AeSysDoc::OnToolsCancelTracingEdit() {
   if (m_tracingEditDirty) {
-    std::filesystem::path filePath(static_cast<LPCWSTR>(m_editingTracingPath));
-    CString tracingName = filePath.stem().wstring().c_str();
+    const std::filesystem::path filePath(static_cast<LPCWSTR>(m_editingTracingPath));
+    const CString tracingName = filePath.stem().wstring().c_str();
     CString prompt;
     prompt.Format(L"Save changes to '%s'?", tracingName.GetString());
     const int result = AfxMessageBox(prompt, MB_YESNOCANCEL | MB_ICONQUESTION);

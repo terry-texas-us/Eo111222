@@ -34,7 +34,7 @@ static void MakeOrthonormalBasis(EoGeVector3d n, EoGeVector3d& u, EoGeVector3d& 
 
 // OCS -> WCS: W = u*x + v*y + n*z
 void OcsToWcs(const EoGeVector3d& extrusionNormal, const EoGePoint3d& ocsPt, EoGePoint3d& wcsPt) {
-  EoGeVector3d n = extrusionNormal;
+  const EoGeVector3d n = extrusionNormal;
   EoGeVector3d u, v;
   MakeOrthonormalBasis(n, u, v);
 
@@ -45,7 +45,7 @@ void OcsToWcs(const EoGeVector3d& extrusionNormal, const EoGePoint3d& ocsPt, EoG
 
 // WCS -> OCS: x = dot(wcs, u), y = dot(wcs, v), z = dot(wcs, n)
 void WcsToOcs(const EoGeVector3d& extrusionNormal, const EoGePoint3d& wcsPt, EoGePoint3d& ocsPt) {
-  EoGeVector3d n = extrusionNormal;
+  const EoGeVector3d n = extrusionNormal;
   EoGeVector3d u, v;
   MakeOrthonormalBasis(n, u, v);
 

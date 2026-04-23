@@ -24,12 +24,12 @@ void EoDbBlockFile::ReadBlocks(EoDbBlocks& blocks) {
 
   EoDbPrimitive* primitive{};
 
-  auto blockTableSize = EoDb::ReadUInt16(*this);
+  const auto blockTableSize = EoDb::ReadUInt16(*this);
   for (int BlockTableIndex = 0; BlockTableIndex < blockTableSize; BlockTableIndex++) {
-    auto numberOfPrimitives = EoDb::ReadUInt16(*this);
+    const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
     EoDb::Read(*this, strName);
-    auto wBlkTypFlgs = EoDb::ReadUInt16(*this);
+    const auto wBlkTypFlgs = EoDb::ReadUInt16(*this);
 
     auto* block = new EoDbBlock(wBlkTypFlgs, EoGePoint3d::kOrigin);
 
@@ -68,7 +68,7 @@ void EoDbBlockFile::ReadHeader() {
 void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
   std::uint16_t wPrims{};
 
-  auto countPosition = GetPosition();
+  const auto countPosition = GetPosition();
 
   EoDb::WriteUInt16(*this, wPrims);
   EoDb::Write(*this, strName);
@@ -79,7 +79,7 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
     auto* primitive = block->GetNext(BlockPosition);
     if (primitive->Write(*this)) { wPrims++; }
   }
-  auto dwPosition = GetPosition();
+  const auto dwPosition = GetPosition();
   Seek(static_cast<LONGLONG>(countPosition), begin);
   EoDb::WriteUInt16(*this, wPrims);
   Seek(static_cast<LONGLONG>(dwPosition), begin);

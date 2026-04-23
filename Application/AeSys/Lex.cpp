@@ -113,7 +113,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
 
 void lex::ConvertValToString(
     void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringBuffer, int* stringLength) {
-  int iDim = valueMetaInformation->GetDimension();
+  const int iDim = valueMetaInformation->GetDimension();
 
   if (valueMetaInformation->type == StringToken) {
     *stringLength = iDim;
@@ -211,7 +211,7 @@ void lex::ConvertStringToVal(
   wchar_t token[TokenBufferSize]{};
   int linePosition = 0;
 
-  int tokenType = Scan(token, inputLine, linePosition);
+  const int tokenType = Scan(token, inputLine, linePosition);
 
   auto throwConversionError = []() { throw std::invalid_argument("String format conversion error"); };
 
@@ -288,8 +288,8 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   int iTokStkId{};  // Start with first token
 
   while (iTokStkId < numberOfTokens) {
-    int tokenType = iExprTokTyp[iTokStkId];
-    int iTokLoc = iExprTokLoc[iTokStkId];
+    const int tokenType = iExprTokTyp[iTokStkId];
+    const int iTokLoc = iExprTokLoc[iTokStkId];
     if (TokenPropertiesTable[tokenType].tokenClass == Identifier) {
       // symbol table stuff if desired
       throw L"Identifier token class not implemented";
@@ -444,10 +444,10 @@ void lex::Parse(const wchar_t* inputLine) {
   wchar_t token[256]{};
 
   int linePosition{};
-  int lineLength = static_cast<int>(wcslen(inputLine));
+  const int lineLength = static_cast<int>(wcslen(inputLine));
 
   while (linePosition < lineLength) {
-    int tokenId = lex::Scan(token, inputLine, linePosition);
+    const int tokenId = lex::Scan(token, inputLine, linePosition);
 
     if (tokenId == -1) { return; }
     if (numberOfTokensInStream == MaxTokens) { return; }
@@ -509,7 +509,7 @@ void lex::ParseStringOperand(wchar_t* token) {
     values[iDim++] = token[next++];
   }
   values[--iDim] = '\0';
-  int iLen = 1 + (iDim - 1) / 2;
+  const int iLen = 1 + (iDim - 1) / 2;
   valueLocation[numberOfTokensInStream] = ++numberOfValues;
   lValues[numberOfValues] = MAKELONG(iDim, iLen);
   numberOfValues += iLen;
@@ -530,8 +530,8 @@ int lex::Scan(wchar_t* token, const wchar_t* inputLine, int& linePosition) {
     linePosition++;  // Advance one char
     tokenId = -1;  // Signal error
   } else {  // Copy matched text
-    std::wstring matched = lexer.wstr();
-    size_t length = lexer.wsize();
+    const std::wstring matched = lexer.wstr();
+    const size_t length = lexer.wsize();
     wcsncpy_s(token, length + 1, matched.c_str(), length);
     token[length] = L'\0';
     linePosition += static_cast<int>(length);
@@ -634,7 +634,7 @@ void lex::UnaryOp(int aiTokTyp, int* aiTyp, long* alDef, double* adOp) {
       valueMetaInformation.type = RealToken;
       valueMetaInformation.definition = *alDef;
       ConvertValToString(static_cast<void*>(adOp), &valueMetaInformation, stringBuffer, &iDim);
-      int iLen = 1 + (iDim - 1) / 4;
+      const int iLen = 1 + (iDim - 1) / 4;
       wcscpy_s(reinterpret_cast<wchar_t*>(adOp), 32, stringBuffer);
       *alDef = MAKELONG(iDim, iLen);
     } break;
@@ -707,7 +707,7 @@ wchar_t* lex::ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBu
   wchar_t* pStart = *ppArgBuf;
   wchar_t* pOut = pStart;
 
-  bool bInQuotes = *pIn == '"';
+  const bool bInQuotes = *pIn == '"';
 
   if (bInQuotes) { pIn++; }
 

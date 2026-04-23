@@ -63,7 +63,7 @@ EoGeLine currentLine{};
 [[nodiscard]] bool FindCenterFromRadiusAnd4Points(
     double radius, EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d* center) {
   if (center == nullptr) { return false; }
-  EoGeVector3d u(firstLine.begin, firstLine.end);  // Determine vector defined by endpoints of first line
+  const EoGeVector3d u(firstLine.begin, firstLine.end);  // Determine vector defined by endpoints of first line
   double firstLineLength = u.Length();
   if (firstLineLength < Eo::geometricTolerance) { return false; }
 
@@ -91,11 +91,11 @@ EoGeLine currentLine{};
   double dB2 = v.x / secondLineLength;
   double dDet = dA2 * dB1 - dA1 * dB2;
 
-  double dSgnRad = (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0. ? -std::abs(radius)
+  const double dSgnRad = (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0. ? -std::abs(radius)
                                                                                                    : std::abs(radius);
 
-  double dC1RAB1 = dSgnRad;
-  double dC2RAB2 =
+  const double dC1RAB1 = dSgnRad;
+  const double dC2RAB2 =
       (secondLine.begin.x * secondLine.end.y - secondLine.end.x * secondLine.begin.y) / secondLineLength + dSgnRad;
   center->x = (dB2 * dC1RAB1 - dB1 * dC2RAB2) / dDet;
   center->y = (dA1 * dC2RAB2 - dA2 * dC1RAB1) / dDet;
@@ -192,14 +192,14 @@ void AeSysView::OnFixupModeReference() {
         line->SetEndPoint(previousLine.end);
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, previousGroup);
 
-        EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
-        EoGeVector3d previousEndToReferenceBegin(previousLine.end, referenceLine.begin);
+        const EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
+        const EoGeVector3d previousEndToReferenceBegin(previousLine.end, referenceLine.begin);
         auto normal = CrossProduct(previousEndToIntersection, previousEndToReferenceBegin);
         normal.Unitize();
         if (SweepAngleFromNormalAnd3Points(
                 normal, previousLine.end, intersection, referenceLine.begin, center, angle)) {
-          auto majorAxis = EoGeVector3d(center, previousLine.end);
-          auto minorAxis = CrossProduct(normal, majorAxis);
+          const auto majorAxis = EoGeVector3d(center, previousLine.end);
+          const auto minorAxis = CrossProduct(normal, majorAxis);
 
           auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
           radialArc->SetColor(line->Color());
@@ -218,7 +218,7 @@ void AeSysView::OnFixupModeReference() {
 void AeSysView::OnFixupModeMend() {
   auto* document = GetDocument();
 
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d intersection;
   EoGePoint3d center;
@@ -302,14 +302,14 @@ void AeSysView::OnFixupModeMend() {
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
         pLine->SetBeginPoint(previousLine.begin);
         pLine->SetEndPoint(previousLine.end);
-        EoGeVector3d rPrvEndInter(previousLine.end, intersection);
-        EoGeVector3d rPrvEndSecBeg(previousLine.end, currentLine.begin);
+        const EoGeVector3d rPrvEndInter(previousLine.end, intersection);
+        const EoGeVector3d rPrvEndSecBeg(previousLine.end, currentLine.begin);
         EoGeVector3d normal = CrossProduct(rPrvEndInter, rPrvEndSecBeg);
         normal.Unitize();
         double angle{};
         if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, angle)) {
-          auto majorAxis = EoGeVector3d(center, previousLine.end);
-          auto minorAxis = CrossProduct(normal, majorAxis);
+          const auto majorAxis = EoGeVector3d(center, previousLine.end);
+          const auto minorAxis = CrossProduct(normal, majorAxis);
 
           auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
           radialArc->SetColor(Gs::renderState.Color());
@@ -334,7 +334,7 @@ void AeSysView::OnFixupModeMend() {
 
 void AeSysView::OnFixupModeChamfer() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
   currentPrimitive = EngagedPrimitive();
@@ -401,7 +401,7 @@ void AeSysView::OnFixupModeChamfer() {
 
 void AeSysView::OnFixupModeFillet() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
   currentPrimitive = EngagedPrimitive();
@@ -460,14 +460,14 @@ void AeSysView::OnFixupModeFillet() {
       linePrimitive->SetEndPoint(currentLine.end);
 
       EoGeVector3d normal;
-      EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
-      EoGeVector3d previousEndToCurrentBegin(previousLine.end, currentLine.begin);
+      const EoGeVector3d previousEndToIntersection(previousLine.end, intersection);
+      const EoGeVector3d previousEndToCurrentBegin(previousLine.end, currentLine.begin);
       normal = CrossProduct(previousEndToIntersection, previousEndToCurrentBegin);
       normal.Unitize();
       double angle;
       if (SweepAngleFromNormalAnd3Points(normal, previousLine.end, intersection, currentLine.begin, center, angle)) {
-        auto majorAxis = EoGeVector3d(center, previousLine.end);
-        auto minorAxis = CrossProduct(normal, majorAxis);
+        const auto majorAxis = EoGeVector3d(center, previousLine.end);
+        const auto minorAxis = CrossProduct(normal, majorAxis);
 
         // auto* radialArc = EoDbConic::CreateRadialArc(center, normal, majorAxis.Length(), 0.0, angle);
         auto* radialArc = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, angle);
@@ -496,7 +496,7 @@ void AeSysView::OnFixupModeSquare() {
 
   linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
   currentLine = linePrimitive->Line();
-  double dLen = currentLine.Length();
+  const double dLen = currentLine.Length();
   document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, currentGroup);
   currentLine.begin = SnapPointToAxis(cursorPosition, currentLine.begin);
   currentLine.end = currentLine.begin.ProjectToward(cursorPosition, dLen);
@@ -507,7 +507,7 @@ void AeSysView::OnFixupModeSquare() {
 
 void AeSysView::OnFixupModeParallel() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
   if (referenceGroup == nullptr || currentGroup == nullptr) { return; }

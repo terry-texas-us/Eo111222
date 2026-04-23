@@ -43,10 +43,10 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, WHITENESS);
 
   // Swap ACI 7 and ACI 0 to black for white background visibility
-  auto savedAci7 = Eo::ColorPalette[7];
-  auto savedAci0 = Eo::ColorPalette[0];
-  auto savedGray7 = Eo::GrayPalette[7];
-  auto savedGray0 = Eo::GrayPalette[0];
+  const auto savedAci7 = Eo::ColorPalette[7];
+  const auto savedAci0 = Eo::ColorPalette[0];
+  const auto savedGray7 = Eo::GrayPalette[7];
+  const auto savedGray0 = Eo::GrayPalette[0];
   Eo::ColorPalette[7] = Eo::colorBlack;
   Eo::ColorPalette[0] = Eo::colorBlack;
   Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
@@ -62,26 +62,26 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   activeView->SetDeviceWidthInInches(static_cast<double>(memoryContext.GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch);
   activeView->SetDeviceHeightInInches(static_cast<double>(memoryContext.GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch);
 
-  EoGeTransformMatrix transformMatrix;
+  const EoGeTransformMatrix transformMatrix;
 
   EoGePoint3d ptMin(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   EoGePoint3d ptMax(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
   block->GetExtents(activeView, ptMin, ptMax, transformMatrix);
 
-  double UExtent = ptMax.x - ptMin.x;
-  double VExtent = ptMax.y - ptMin.y;
+  const double UExtent = ptMax.x - ptMin.x;
+  const double VExtent = ptMax.y - ptMin.y;
 
   activeView->PushViewTransform();
 
   activeView->SetCenteredWindow(UExtent, VExtent);
 
-  EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
+  const EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
 
   activeView->SetCameraTarget(ptTarget);
   activeView->SetCameraPosition(activeView->CameraDirection());
 
-  int savedRenderState = Gs::renderState.Save();
+  const int savedRenderState = Gs::renderState.Save();
   EoGsRenderDeviceGdi renderDevice(&memoryContext);
   block->Display(activeView, &renderDevice);
 

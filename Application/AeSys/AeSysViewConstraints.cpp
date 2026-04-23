@@ -75,13 +75,13 @@ void AeSysView::SetGridSnapSpacing(double x, double y, double z) {
 }
 
 void AeSysView::DisplayGrid(CDC* deviceContext) {
-  double dHalfPts = m_MaximumDotsPerLine * 0.5;
+  const double dHalfPts = m_MaximumDotsPerLine * 0.5;
 
   if (DisplayGridWithPoints()) {
     EoGePoint3d pt;
 
     if (Eo::IsGeometricallyNonZero(m_YGridPointSpacing) && Eo::IsGeometricallyNonZero(m_ZGridPointSpacing)) {
-      COLORREF Color = app.PenColorsGetHot(1);
+      const COLORREF Color = app.PenColorsGetHot(1);
 
       pt.x = m_GridOrigin.x;
       pt.z = m_GridOrigin.z - dHalfPts * m_ZGridPointSpacing;
@@ -95,7 +95,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       }
     }
     if (Eo::IsGeometricallyNonZero(m_XGridPointSpacing) && Eo::IsGeometricallyNonZero(m_ZGridPointSpacing)) {
-      COLORREF Color = app.PenColorsGetHot(2);
+      const COLORREF Color = app.PenColorsGetHot(2);
 
       pt.x = m_GridOrigin.x - dHalfPts * m_XGridPointSpacing;
       pt.y = m_GridOrigin.y;
@@ -109,7 +109,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       }
     }
     if (Eo::IsGeometricallyNonZero(m_XGridPointSpacing) && Eo::IsGeometricallyNonZero(m_YGridPointSpacing)) {
-      COLORREF Color = app.PenColorsGetHot(3);
+      const COLORREF Color = app.PenColorsGetHot(3);
 
       pt.y = m_GridOrigin.y - dHalfPts * m_YGridPointSpacing;
       pt.z = m_GridOrigin.z;
@@ -129,8 +129,8 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
       EoGsRenderDeviceGdi renderDevice(deviceContext);
 
       int i;
-      std::int16_t color = Gs::renderState.Color();
-      std::int16_t LineType = Gs::renderState.LineTypeIndex();
+      const std::int16_t color = Gs::renderState.Color();
+      const std::int16_t LineType = Gs::renderState.LineTypeIndex();
       Gs::renderState.SetPen(this, deviceContext, 250, 1);
 
       ln.begin.x = m_GridOrigin.x - dHalfPts * m_XGridLineSpacing;
@@ -155,7 +155,7 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
   }
 }
 EoGePoint3d AeSysView::SnapPointToAxis(const EoGePoint3d& begin, const EoGePoint3d& end) const {
-  EoGeLine line(begin, end);
+  const EoGeLine line(begin, end);
 
   return (line.ConstrainToAxis(m_AxisConstraintInfluenceAngle, m_AxisConstraintOffsetAngle));
 }

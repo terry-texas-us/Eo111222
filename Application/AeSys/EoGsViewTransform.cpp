@@ -42,15 +42,15 @@ EoGsViewTransform& EoGsViewTransform::operator=(const EoGsViewTransform& other) 
   return *this;
 }
 void EoGsViewTransform::AdjustWindow(double aspectRatio) {
-  double uExtent = m_UMax - m_UMin;
-  double vExtent = m_VMax - m_VMin;
+  const double uExtent = m_UMax - m_UMin;
+  const double vExtent = m_VMax - m_VMin;
 
   if (uExtent < Eo::geometricTolerance || vExtent / uExtent > aspectRatio) {
-    double adjustment = (vExtent / aspectRatio - uExtent) * 0.5;
+    const double adjustment = (vExtent / aspectRatio - uExtent) * 0.5;
     m_UMin -= adjustment;
     m_UMax += adjustment;
   } else {
-    double adjustment = (uExtent * aspectRatio - vExtent) * 0.5;
+    const double adjustment = (uExtent * aspectRatio - vExtent) * 0.5;
     m_VMin -= adjustment;
     m_VMax += adjustment;
   }
@@ -68,7 +68,7 @@ void EoGsViewTransform::BuildTransformMatrix() {
   auto v = CrossProduct(n, u);
   v.Unitize();
 
-  EoGeVector3d vector = EoGeVector3d(Position(), EoGePoint3d::kOrigin);
+  const auto vector = EoGeVector3d(Position(), EoGePoint3d::kOrigin);
 
   m_Matrix[0][0] = u.x;
   m_Matrix[0][1] = u.y;
@@ -90,9 +90,9 @@ void EoGsViewTransform::BuildTransformMatrix() {
   m_Matrix[3][2] = 0.0;
   m_Matrix[3][3] = 1.0;
 
-  DirectX::XMVECTOR XMPosition = DirectX::XMLoadFloat3(&mx_Position);
-  DirectX::XMVECTOR XMTarget = DirectX::XMLoadFloat3(&mx_Target);
-  DirectX::XMVECTOR XMViewUp = DirectX::XMLoadFloat3(&mx_ViewUp);
+  const auto XMPosition = DirectX::XMLoadFloat3(&mx_Position);
+  const auto XMTarget = DirectX::XMLoadFloat3(&mx_Target);
+  const auto XMViewUp = DirectX::XMLoadFloat3(&mx_ViewUp);
   DirectX::XMMATRIX XViewMatrix = DirectX::XMMatrixLookAtRH(XMPosition, XMTarget, XMViewUp);
 
   XViewMatrix = DirectX::XMMatrixTranspose(XViewMatrix);
@@ -102,9 +102,9 @@ void EoGsViewTransform::BuildTransformMatrix() {
 
   m_ProjectionMatrix.Identity();
 
-  double UExtent = m_UMax - m_UMin;
-  double VExtent = m_VMax - m_VMin;
-  double NExtent = m_FarClipDistance - m_NearClipDistance;
+  const double UExtent = m_UMax - m_UMin;
+  const double VExtent = m_VMax - m_VMin;
+  const double NExtent = m_FarClipDistance - m_NearClipDistance;
 
   if (IsPerspectiveOn()) {
     m_ProjectionMatrix[0][0] = 2.0f * m_NearClipDistance / UExtent;
@@ -164,8 +164,8 @@ void EoGsViewTransform::Initialize(const EoGsViewport& viewport) {
   // corner sits at the world origin.
   SetCenteredWindow(viewport, 48.0, 36.0);
 
-  auto target = EoGePoint3d(UExtent() / 2.0, VExtent() / 2.0, 0.0);
-  auto position = target + (EoGeVector3d::positiveUnitZ * m_LensLength);
+  const auto target = EoGePoint3d(UExtent() / 2.0, VExtent() / 2.0, 0.0);
+  const auto position = target + (EoGeVector3d::positiveUnitZ * m_LensLength);
 
   SetView(position, target, EoGeVector3d::positiveUnitY);
   SetDirection(EoGeVector3d::positiveUnitZ);
@@ -214,11 +214,11 @@ void EoGsViewTransform::SetWindow(double uMin, double vMin, double uMax, double 
   BuildTransformMatrix();
 }
 
-void EoGsViewTransform::TransformPoints(EoGePoint4dArray& points) {
-  int iPts = (int)points.GetSize();
+void EoGsViewTransform::TransformPoints(EoGePoint4dArray& points) const {
+  const auto iPts = static_cast<int>(points.GetSize());
   for (int i = 0; i < iPts; i++) { points[i] = m_Matrix * points[i]; }
 }
 
-void EoGsViewTransform::TransformPoints(int numberOfPoints, EoGePoint4d* points) {
+void EoGsViewTransform::TransformPoints(int numberOfPoints, EoGePoint4d* points) const {
   for (int i = 0; i < numberOfPoints; i++) { points[i] = m_Matrix * points[i]; }
 }

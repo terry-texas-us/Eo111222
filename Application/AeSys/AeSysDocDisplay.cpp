@@ -26,12 +26,12 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
     if (IsInEditor()) {
       EoDbLayer* editLayer = IsEditingBlock() ? m_blockEditLayer : m_tracingEditLayer;
       if (editLayer != nullptr) {
-        bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
+        const bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
 
         RemoveAllGroupsFromAllViews();
         EoDbPolygon::SetSpecialPolygonStyle(
             view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
-        int savedRenderState = Gs::renderState.Save();
+        const int savedRenderState = Gs::renderState.Save();
         editLayer->Display(view, renderDevice, identifyTrap);
         Gs::renderState.Restore(renderDevice, savedRenderState);
         EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
@@ -39,19 +39,19 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
       }
     }
 
-    bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
+    const bool identifyTrap = app.IsTrapHighlighted() && !IsTrapEmpty();
 
     RemoveAllGroupsFromAllViews();
 
     const bool isPaperSpace = m_activeSpace == EoDxf::Space::PaperSpace;
-    auto backgroundColor = renderDevice->SetBkColor(Eo::ViewBackgroundColorForSpace(isPaperSpace));
+    const auto backgroundColor = renderDevice->SetBkColor(Eo::ViewBackgroundColorForSpace(isPaperSpace));
 
     // Draw the paper-space sheet background and viewport outlines before entity content
     if (isPaperSpace) { DisplayPaperSpaceSheet(view, renderDevice); }
 
     EoDbPolygon::SetSpecialPolygonStyle(
         view->RenderAsWireframe() ? EoDb::PolygonStyle::Hollow : EoDb::PolygonStyle::Special);
-    int savedRenderState = Gs::renderState.Save();
+    const int savedRenderState = Gs::renderState.Save();
 
     for (int i = 0; i < GetLayerTableSize(); i++) {
       auto* layer = GetLayerTableLayerAt(i);
@@ -270,7 +270,7 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
         static_cast<float>(clipRectGdi.right), static_cast<float>(clipRectGdi.bottom));
 
     const auto bgColor = Eo::PaperSpaceBackgroundColor();
-    auto dimColor = D2D1::ColorF(GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f,
+    const auto dimColor = D2D1::ColorF(GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f,
         GetBValue(bgColor) / 255.0f, 100.0f / 255.0f);
 
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> dimBrush;
@@ -284,7 +284,7 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
 
     // Create combined geometry: full clip area minus the active viewport rectangle.
     // This dims everything except the active viewport's model-space content.
-    auto vpRect = D2D1::RectF(
+    const auto vpRect = D2D1::RectF(
         static_cast<float>(vpLeft), static_cast<float>(vpTop),
         static_cast<float>(vpRight), static_cast<float>(vpBottom));
 
@@ -302,7 +302,7 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     combinedGeometry->Open(&sink);
     if (!sink) { return; }
 
-    HRESULT hr = fullGeometry->CombineWithGeometry(
+    const HRESULT hr = fullGeometry->CombineWithGeometry(
         vpGeometry.Get(), D2D1_COMBINE_MODE_EXCLUDE, nullptr, sink.Get());
     sink->Close();
     if (FAILED(hr)) { return; }
@@ -359,7 +359,7 @@ EoDbViewport* AeSysDoc::HitTestViewport(const EoGePoint3d& worldPoint) {
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* group = layer->GetNext(position);
+      auto* const group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();
@@ -453,7 +453,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         const double halfWidth = viewport->Width() / 2.0;
         const double halfHeight = viewport->Height() / 2.0;
         // Compute the 4 corners of the viewport boundary in paper space
-        EoGePoint3d corners[4] = {
+        const EoGePoint3d corners[4] = {
             {centerPoint.x - halfWidth, centerPoint.y - halfHeight, centerPoint.z},
             {centerPoint.x + halfWidth, centerPoint.y - halfHeight, centerPoint.z},
             {centerPoint.x + halfWidth, centerPoint.y + halfHeight, centerPoint.z},
@@ -469,10 +469,10 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         }
 
         // Compute the bounding device rectangle for the GDI clip
-        int clipLeft = (std::min)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
-        int clipTop = (std::min)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
-        int clipRight = (std::max)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
-        int clipBottom = (std::max)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+        const int clipLeft = (std::min)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+        const int clipTop = (std::min)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+        const int clipRight = (std::max)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+        const int clipBottom = (std::max)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
 
         // Skip if the clip rectangle is degenerate
         if (clipRight <= clipLeft || clipBottom <= clipTop) { continue; }
@@ -523,7 +523,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
             windowCenterV + halfExtentV);
 
         // Render model-space layers through this viewport
-        int savedModelRenderState = Gs::renderState.Save();
+        const int savedModelRenderState = Gs::renderState.Save();
         DisplayModelSpaceLayers(view, renderDevice);
         Gs::renderState.Restore(renderDevice, savedModelRenderState);
 
@@ -546,7 +546,7 @@ void AeSysDoc::CreateDefaultPaperSpaceViewport(AeSysView* view) {
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* group = layer->GetNext(position);
+      auto* const group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();

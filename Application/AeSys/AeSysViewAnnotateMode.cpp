@@ -157,7 +157,7 @@ void AeSysView::OnAnnotateModeHook() {
   }
   m_PreviousOp = ModeLineHighlightOp(ID_OP5);
 
-  auto circle = EoDbConic::CreateCircleInView(cursorPosition, CircleRadius());
+  const auto circle = EoDbConic::CreateCircleInView(cursorPosition, CircleRadius());
   circle->SetColor(1);
   circle->SetLineTypeName(L"CONTINUOUS");
 
@@ -170,7 +170,7 @@ void AeSysView::OnAnnotateModeHook() {
 
 void AeSysView::OnAnnotateModeUnderline() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   pts.RemoveAll();
 
@@ -194,7 +194,7 @@ void AeSysView::OnAnnotateModeUnderline() {
 }
 
 void AeSysView::OnAnnotateModeBox() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (m_PreviousOp != ID_OP7) {
     if (m_PreviousOp != 0) {
       RubberBandingDisable();
@@ -373,7 +373,7 @@ void AeSysView::OnAnnotateModeEscape() {
 
 bool AeSysView::CorrectLeaderEndpoints(
     int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const {
-  double LineSegmentLength = EoGeVector3d(beginPoint, endPoint).Length();
+  const double LineSegmentLength = EoGeVector3d(beginPoint, endPoint).Length();
 
   double BeginDistance = 0.;
 
@@ -441,13 +441,13 @@ void AeSysView::DoAnnotateModeMouseMove() {
 
 void AeSysView::GenerateLineEndItem(
     int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const {
-  EoGeVector3d cameraDirection = CameraDirection();
+  const auto cameraDirection = CameraDirection();
 
   EoGePoint3dArray itemPoints;
 
   if (type == 1 || type == 2) {
-    double angle{0.244978663127};
-    double length{size / 0.970142500145};
+    const double angle{0.244978663127};
+    const double length{size / 0.970142500145};
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
     itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, angle));
@@ -457,8 +457,8 @@ void AeSysView::GenerateLineEndItem(
     if (type == 2) { polyline->SetClosed(true); }
     group->AddTail(polyline);
   } else if (type == 3) {
-    double angle{9.96686524912e-2};
-    double length{size / 0.99503719021};
+    const double angle{9.96686524912e-2};
+    const double length{size / 0.99503719021};
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
     itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, angle));
@@ -466,8 +466,8 @@ void AeSysView::GenerateLineEndItem(
 
     group->AddTail(new EoDbPolyline(1, 1, itemPoints));
   } else if (type == 4) {
-    double angle{0.785398163397};
-    double length{0.5 * size / 0.707106781187};
+    const double angle{0.785398163397};
+    const double length{0.5 * size / 0.707106781187};
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
     itemPoints.Add(pt.RotateAboutAxis(endPoint, cameraDirection, angle));

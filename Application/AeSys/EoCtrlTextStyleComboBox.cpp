@@ -139,10 +139,10 @@ BOOL EoCtrlTextStyleComboBox::NotifyCommand(int notifyCode) {
 }
 
 void EoCtrlTextStyleComboBox::OnSelectionChanged() {
-  int selectedIndex = GetCurSel();
+  const int selectedIndex = GetCurSel();
   if (selectedIndex < 0) { return; }
 
-  LPCTSTR selectedName = GetItem(selectedIndex);
+  const LPCTSTR selectedName = GetItem(selectedIndex);
   if (selectedName == nullptr) { return; }
 
   auto* document = AeSysDoc::GetDoc();
@@ -191,8 +191,8 @@ void EoCtrlTextStyleComboBox::OnMove() {
 
 BOOL EoCtrlTextStyleComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
   // Check if the click is in the icon area (left of the CComboBox HWND).
-  DWORD messagePos = ::GetMessagePos();
-  CPoint screenPoint(GET_X_LPARAM(messagePos), GET_Y_LPARAM(messagePos));
+  const auto messagePos = ::GetMessagePos();
+  const CPoint screenPoint(GET_X_LPARAM(messagePos), GET_Y_LPARAM(messagePos));
   CPoint clientPoint = screenPoint;
   if (parentWindow != nullptr) { parentWindow->ScreenToClient(&clientPoint); }
 
@@ -240,7 +240,7 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
     return;
   }
 
-  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  const BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
     if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
@@ -254,11 +254,11 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
     deviceContext->FillSolidRect(rectCombo, schemeColors.paneBackground);
 
     // Draw icon area with separator line
-    CRect iconRect(rectCombo.left, rectCombo.top, rectCombo.left + kIconAreaWidth - 2, rectCombo.bottom);
+    const CRect iconRect(rectCombo.left, rectCombo.top, rectCombo.left + kIconAreaWidth - 2, rectCombo.bottom);
     DrawTextStyleIcon(deviceContext, iconRect, schemeColors.menuText);
 
     // Subtle vertical separator between icon and combo content
-    int separatorX = rectCombo.left + kIconAreaWidth - 2;
+    const int separatorX = rectCombo.left + kIconAreaWidth - 2;
     CPen separatorPen(PS_SOLID, 1, schemeColors.borderColor);
     CPen* oldPen = deviceContext->SelectObject(&separatorPen);
     deviceContext->MoveTo(separatorX, rectCombo.top + 2);
@@ -309,7 +309,7 @@ END_MESSAGE_MAP()
 
 HBRUSH EoCtrlTextStyleThemedCombo::OnCtlColor(CDC* deviceContext, CWnd* /*control*/, UINT ctlColor) {
   if (ctlColor == CTLCOLOR_LISTBOX || ctlColor == CTLCOLOR_STATIC) {
-    COLORREF bgColor = (ctlColor == CTLCOLOR_LISTBOX) ? Eo::chromeColors.menuBackground : Eo::chromeColors.paneBackground;
+    const COLORREF bgColor = (ctlColor == CTLCOLOR_LISTBOX) ? Eo::chromeColors.menuBackground : Eo::chromeColors.paneBackground;
     m_dropdownBackgroundBrush.DeleteObject();
     m_dropdownBackgroundBrush.CreateSolidBrush(bgColor);
     deviceContext->SetBkColor(bgColor);

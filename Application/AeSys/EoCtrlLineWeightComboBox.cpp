@@ -81,7 +81,7 @@ CString EoCtrlLineWeightComboBox::LineWeightToName(EoDxfLineWeights::LineWeight 
     case EoDxfLineWeights::LineWeight::kLnWtByBlock: return L"ByBlock";
     case EoDxfLineWeights::LineWeight::kLnWtByLwDefault: return L"Default";
     default: {
-      auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
+      const auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
       CString text;
       text.Format(L"%.2f mm", dxfCode * 0.01);
       return text;
@@ -91,16 +91,16 @@ CString EoCtrlLineWeightComboBox::LineWeightToName(EoDxfLineWeights::LineWeight 
 
 void EoCtrlLineWeightComboBox::DrawWeightPreview(
     CDC* deviceContext, const CRect& rect, EoDxfLineWeights::LineWeight lineWeight, COLORREF lineColor) {
-  int yCenter = rect.top + rect.Height() / 2;
-  int xStart = rect.left + 2;
-  int xEnd = rect.right - 2;
+  const int yCenter = rect.top + rect.Height() / 2;
+  const int xStart = rect.left + 2;
+  const int xEnd = rect.right - 2;
   if (xEnd <= xStart) { return; }
 
   // Determine pixel thickness for preview: special values draw as 1px
   int thickness = 1;
   auto enumIndex = static_cast<std::int8_t>(lineWeight);
   if (enumIndex >= 0 && enumIndex <= 23) {
-    auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
+    const auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
     // Scale: 0.00mm→1px, 2.11mm→~8px, proportional to DXF code
     UINT dpi = ::GetDpiForSystem();
     if (dpi == 0) { dpi = 96; }
@@ -128,7 +128,7 @@ void EoCtrlLineWeightComboBox::Serialize(CArchive& ar) {
     auto currentWeight = static_cast<std::int32_t>(Gs::renderState.LineWeight());
     int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
-      auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
+      const auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
       currentWeight = static_cast<std::int32_t>(itemData);
     }
     ar << currentWeight;
@@ -172,11 +172,11 @@ BOOL EoCtrlLineWeightComboBox::NotifyCommand(int notifyCode) {
 }
 
 void EoCtrlLineWeightComboBox::OnSelectionChanged() {
-  int selectedIndex = GetCurSel();
+  const int selectedIndex = GetCurSel();
   if (selectedIndex < 0) { return; }
 
-  auto data = GetItemData(selectedIndex);
-  auto newWeight = static_cast<EoDxfLineWeights::LineWeight>(data);
+  const auto data = GetItemData(selectedIndex);
+  const auto newWeight = static_cast<EoDxfLineWeights::LineWeight>(data);
   Gs::renderState.SetLineWeight(newWeight);
 }
 
@@ -189,7 +189,7 @@ void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMF
     return;
   }
 
-  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  const BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
   if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
@@ -222,15 +222,15 @@ void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMF
       // Weight preview area
       UINT dpi = ::GetDpiForSystem();
       if (dpi == 0) { dpi = 96; }
-      int previewWidth = ::MulDiv(32, dpi, 96);
+      const int previewWidth = ::MulDiv(32, dpi, 96);
 
-      auto lineWeight = static_cast<EoDxfLineWeights::LineWeight>(itemData);
+      const auto lineWeight = static_cast<EoDxfLineWeights::LineWeight>(itemData);
 
       int previewRight = rectContent.left + 2 + previewWidth;
       if (previewRight > rectContent.right - 40) {
         previewRight = rectContent.right - 40;  // Leave room for text
       }
-      CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
+      const CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
       DrawWeightPreview(deviceContext, previewRect, lineWeight, schemeColors.menuText);
 
       CRect textRect(previewRight + 4, rectContent.top, rectContent.right - 1, rectContent.bottom);
@@ -319,7 +319,7 @@ void EoCtrlLineWeightOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
 
   CRect itemRect(drawItemStruct->rcItem);
   auto itemData = drawItemStruct->itemData;
-  UINT itemState = drawItemStruct->itemState;
+  const auto itemState = drawItemStruct->itemState;
 
   const auto& schemeColors = Eo::chromeColors;
 
@@ -343,13 +343,13 @@ void EoCtrlLineWeightOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   // Weight preview area
   UINT dpi = ::GetDpiForWindow(m_hWnd);
   if (dpi == 0) { dpi = 96; }
-  int previewWidth = ::MulDiv(48, dpi, 96);
+  const auto previewWidth = ::MulDiv(48, dpi, 96);
 
-  auto lineWeight = static_cast<EoDxfLineWeights::LineWeight>(itemData);
+  const auto lineWeight = static_cast<EoDxfLineWeights::LineWeight>(itemData);
 
   int previewRight = itemRect.left + 2 + previewWidth;
   if (previewRight > itemRect.right - 40) { previewRight = itemRect.right - 40; }
-  CRect previewRect(itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom);
+  const CRect previewRect(itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom);
   EoCtrlLineWeightComboBox::DrawWeightPreview(&dc, previewRect, lineWeight, textColor);
 
   CRect textRect(previewRight + 4, itemRect.top, itemRect.right - 1, itemRect.bottom);

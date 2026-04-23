@@ -60,7 +60,7 @@ void EoDbGroup::AddPrimsToTreeViewControl(HWND tree, HTREEITEM parent) {
 }
 
 HTREEITEM EoDbGroup::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  auto treeItem = tvAddItem(tree, parent, L"<Group>", this);
+  const auto treeItem = tvAddItem(tree, parent, L"<Group>", this);
   AddPrimsToTreeViewControl(tree, treeItem);
   return treeItem;
 }
@@ -69,12 +69,12 @@ void EoDbGroup::BreakPolylines() {
   auto* document = AeSysDoc::GetDoc();
   auto position = GetHeadPosition();
   while (position != nullptr) {
-    auto PrimitivePosition = position;
+    auto primitivePosition = position;
     auto* primitive = GetNext(position);
     if (primitive->Is(EoDb::kPolylinePrimitive)) {
-      auto color = primitive->Color();
+      const auto color = primitive->Color();
       const auto& lineTypeName = primitive->LineTypeName();
-      auto lineWeight = primitive->LineWeight();
+      const auto lineWeight = primitive->LineWeight();
 
       EoGePoint3dArray points;
       static_cast<EoDbPolyline*>(primitive)->GetAllPoints(points);
@@ -83,17 +83,17 @@ void EoDbGroup::BreakPolylines() {
         for (auto i = 0; i < points.GetSize() - 1; i++) {
           auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName, lineWeight);
           document->RegisterHandle(line);
-          CObList::InsertBefore(PrimitivePosition, line);
+          CObList::InsertBefore(primitivePosition, line);
         }
 
         if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
           auto* line =
               EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName, lineWeight);
           document->RegisterHandle(line);
-          CObList::InsertBefore(PrimitivePosition, line);
+          CObList::InsertBefore(primitivePosition, line);
         }
       }
-      this->RemoveAt(PrimitivePosition);
+      this->RemoveAt(primitivePosition);
       document->UnregisterHandle(primitive->Handle());
       delete primitive;
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
@@ -246,7 +246,7 @@ bool EoDbGroup::IsInView(AeSysView* view) {
 }
 
 bool EoDbGroup::SelectUsingLine(AeSysView* view, const EoGePoint3d& pt1, const EoGePoint3d& pt2) {
-  EoGeLine line(pt1, pt2);
+  const EoGeLine line(pt1, pt2);
   EoGePoint3dArray intersections;
 
   auto position = GetHeadPosition();
@@ -415,7 +415,7 @@ void EoDbGroup::SortTextOnY() {
       auto secondPosition = firstPosition;
       auto* secondPrimitive = GetNext(secondPosition);
       if (firstPrimitive->Is(EoDb::kTextPrimitive) && secondPrimitive->Is(EoDb::kTextPrimitive)) {
-        double firstTextPrimitiveY = static_cast<EoDbText*>(firstPrimitive)->ReferenceOrigin().y;
+        const double firstTextPrimitiveY = static_cast<EoDbText*>(firstPrimitive)->ReferenceOrigin().y;
         double secondTextPrimitiveY = static_cast<EoDbText*>(secondPrimitive)->ReferenceOrigin().y;
         if (firstTextPrimitiveY < secondTextPrimitiveY) {
           SetAt(position, secondPrimitive);
@@ -485,7 +485,7 @@ void EoDbGroup::Write(CFile& file, std::uint8_t* buffer) {
   // group flags
   buffer[0] = 0;
   // number of primitives in group
-  auto primitiveCount = static_cast<std::int16_t>(GetCount());
+  const auto primitiveCount = static_cast<std::int16_t>(GetCount());
   std::memcpy(&buffer[1], &primitiveCount, sizeof(primitiveCount));
 
   auto position = GetHeadPosition();

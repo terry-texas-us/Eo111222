@@ -268,7 +268,7 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
 }  // anonymous namespace
 
 void Polygon_Display(AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4dArray& ndcPoints) {
-  int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
+  const int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
   if (numberOfPoints < 2) { return; }
 
   std::vector<CPoint> clientPoints(static_cast<size_t>(numberOfPoints));
@@ -474,15 +474,15 @@ EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPolygon::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  std::int16_t color = LogicalColor();
+  const auto color = LogicalColor();
 
   Gs::renderState.SetColor(renderDevice, color);
-  EoDb::PolygonStyle polygonStyle =
+  const EoDb::PolygonStyle polygonStyle =
       sm_SpecialPolygonStyle == EoDb::PolygonStyle::Special ? m_polygonStyle : sm_SpecialPolygonStyle;
   Gs::renderState.SetPolygonIntStyle(polygonStyle);  // hollow, solid, pattern, hatch
   Gs::renderState.SetPolygonIntStyleId(m_fillStyleIndex);
 
-  int iPtLstsId = m_numberOfVertices;
+  const int iPtLstsId = m_numberOfVertices;
 
   if (m_polygonStyle == EoDb::PolygonStyle::Hatch) {
     EoGeTransformMatrix transformMatrix(m_hatchOrigin, m_positiveX, m_positiveY);
@@ -609,9 +609,9 @@ void EoDbPolygon::FormatGeometry(CString& str) {
 }
 
 CString EoDbPolygon::FormatIntStyle() {
-  CString strStyle[] = {L"Hollow", L"Solid", L"Pattern", L"Hatch"};
+  const CString strStyle[] = {L"Hollow", L"Solid", L"Pattern", L"Hatch"};
 
-  CString str = (m_polygonStyle >= EoDb::PolygonStyle::Hollow && m_polygonStyle <= EoDb::PolygonStyle::Hatch)
+  const CString str = (m_polygonStyle >= EoDb::PolygonStyle::Hollow && m_polygonStyle <= EoDb::PolygonStyle::Hatch)
       ? strStyle[static_cast<int>(m_polygonStyle)]
       : CString(L"Invalid!");
 
@@ -623,15 +623,15 @@ void EoDbPolygon::FormatExtra(CString& str) {
   str += L'\t';
 }
 EoGePoint3d EoDbPolygon::GetControlPoint() {
-  std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
-  std::uint16_t wEnd = std::uint16_t(sm_Edge % m_numberOfVertices);
-  EoGePoint3d pt = EoGeLine(m_vertices[wBeg], m_vertices[wEnd]).Midpoint();
+  const auto wBeg = static_cast<std::uint16_t>(sm_Edge - 1);
+  const auto wEnd = static_cast<std::uint16_t>(sm_Edge % m_numberOfVertices);
+  const auto pt = EoGeLine(m_vertices[wBeg], m_vertices[wEnd]).Midpoint();
   return pt;
 };
 
 EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
   if (sm_pivotVertex >= m_numberOfVertices) {  // have not yet rocked to a vertex
-    std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
+    const auto wBeg = static_cast<std::uint16_t>(sm_Edge - 1);
     std::uint16_t wEnd = std::uint16_t(sm_Edge % m_numberOfVertices);
 
     if (m_vertices[wEnd].x > m_vertices[wBeg].x) {
@@ -839,13 +839,13 @@ void EoDbPolygon::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 
 EoDbPolygon* EoDbPolygon::ReadFromPeg(CFile& file) {
-  auto penColor = EoDb::ReadInt16(file);
-  auto polygonStyle = static_cast<EoDb::PolygonStyle>(EoDb::ReadInt16(file));
-  auto interiorStyleIndex = EoDb::ReadInt16(file);
-  auto numberOfPoints = EoDb::ReadUInt16(file);
-  auto hatchOrigin = EoDb::ReadPoint3d(file);
-  auto hatchXAxis = EoDb::ReadVector3d(file);
-  auto hatchYAxis = EoDb::ReadVector3d(file);
+  const auto penColor = EoDb::ReadInt16(file);
+  const auto polygonStyle = static_cast<EoDb::PolygonStyle>(EoDb::ReadInt16(file));
+  const auto interiorStyleIndex = EoDb::ReadInt16(file);
+  const auto numberOfPoints = EoDb::ReadUInt16(file);
+  const auto hatchOrigin = EoDb::ReadPoint3d(file);
+  const auto hatchXAxis = EoDb::ReadVector3d(file);
+  const auto hatchYAxis = EoDb::ReadVector3d(file);
 
   EoGePoint3dArray points;
   points.SetSize(numberOfPoints);

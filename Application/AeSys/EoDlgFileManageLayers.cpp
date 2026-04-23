@@ -111,12 +111,12 @@ BOOL EoDlgFileManageLayers::OnInitDialog() {
 
   // Apply glyphs from the shared state image list to the New and Delete buttons
   if (auto* newButton = static_cast<CMFCButton*>(GetDlgItem(IDC_MFCBUTTON_NEW))) {
-    HICON hIcon = m_stateImages.ExtractIcon(11);
+    const HICON hIcon = m_stateImages.ExtractIcon(11);
     newButton->SetImage(hIcon, TRUE);
     newButton->SetWindowTextW(L"");
   }
   if (auto* deleteButton = static_cast<CMFCButton*>(GetDlgItem(IDC_MFCBUTTON_DEL))) {
-    HICON hIcon = m_stateImages.ExtractIcon(13);
+    const HICON hIcon = m_stateImages.ExtractIcon(13);
     deleteButton->SetImage(hIcon, TRUE);
     deleteButton->SetWindowTextW(L"");
   }
@@ -128,7 +128,7 @@ BOOL EoDlgFileManageLayers::OnInitDialog() {
   if (auto* deleteButton = GetDlgItem(IDC_MFCBUTTON_DEL)) { m_toolTip.AddTool(deleteButton, L"Delete / Detach Layer"); }
   m_toolTip.Activate(TRUE);
 
-  if (auto* currentLayer = m_Document->GetWorkLayer()) {
+  if (auto* const currentLayer = m_Document->GetWorkLayer()) {
     CString layerName;
     layerName.Format(L"%s", currentLayer->Name().GetString());
     GetDlgItem(IDC_STATIC_WORK_LAYER)->SetWindowTextW(layerName);
@@ -150,7 +150,7 @@ void EoDlgFileManageLayers::OnBnClickedMfcbuttonNew() {
   layer->SetLineType(m_Document->ContinuousLineType());
   m_Document->AddLayerTableLayer(layer);
 
-  int itemCount = m_layersListControl.GetItemCount();
+  const int itemCount = m_layersListControl.GetItemCount();
   m_layersListControl.InsertItem(itemCount, L"");
   m_layersListControl.SetItemData(itemCount, DWORD_PTR(layer));
 }
@@ -158,7 +158,7 @@ void EoDlgFileManageLayers::OnBnClickedMfcbuttonNew() {
 void EoDlgFileManageLayers::OnBnClickedMfcbuttonDel() {
   auto position = m_layersListControl.GetFirstSelectedItemPosition();
   if (position == nullptr) { return; }
-  int item = m_layersListControl.GetNextSelectedItem(position);
+  const int item = m_layersListControl.GetNextSelectedItem(position);
   auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(item));
 
   if (layer->Name() == L"0") {
@@ -205,7 +205,7 @@ void EoDlgFileManageLayers::OnBnClickedMfcbuttonDel() {
 }
 
 void EoDlgFileManageLayers::DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& itemRectangle) {
-  auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(itemID));
+  auto* const layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(itemID));
   if (layer == nullptr) { return; }
   switch (labelIndex) {
     case Status:
@@ -218,28 +218,28 @@ void EoDlgFileManageLayers::DrawItem(CDC& deviceContext, int itemID, int labelIn
       }
       break;
     case Name: {
-      CString layerName = layer->Name();
+      const CString layerName = layer->Name();
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 4, ETO_CLIPPED, &itemRectangle, layerName,
           static_cast<UINT>(layerName.GetLength()), nullptr);
     } break;
     case On: {
-      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
-      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      const int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      const int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
       m_stateImages.Draw(&deviceContext, layer->IsOff() ? 3 : 2, CPoint(iconX, iconY), ILD_TRANSPARENT);
     } break;
     case Freeze: {
-      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
-      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      const int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      const int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
       m_stateImages.Draw(&deviceContext, layer->IsFrozen() ? 4 : 5, CPoint(iconX, iconY), ILD_TRANSPARENT);
     } break;
     case Lock: {
-      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
-      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      const int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      const int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
       m_stateImages.Draw(&deviceContext, layer->IsStatic() ? 0 : 1, CPoint(iconX, iconY), ILD_TRANSPARENT);
     } break;
     case Plot: {
-      int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
-      int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
+      const int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
+      const int iconY = itemRectangle.top + ((itemRectangle.bottom - itemRectangle.top) - 24) / 2;
       m_stateImages.Draw(&deviceContext, layer->PlottingFlag() ? 6 : 7, CPoint(iconX, iconY), ILD_TRANSPARENT);
     } break;
     case Color: {
@@ -261,7 +261,7 @@ void EoDlgFileManageLayers::DrawItem(CDC& deviceContext, int itemID, int labelIn
       }
     } break;
     case LineType: {
-      CString LineTypeName = layer->LineTypeName();
+      const CString LineTypeName = layer->LineTypeName();
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 4, ETO_CLIPPED, &itemRectangle,
           LineTypeName, static_cast<UINT>(LineTypeName.GetLength()), nullptr);
     } break;
@@ -281,7 +281,7 @@ void EoDlgFileManageLayers::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT l
         // clear item
         CRect rcItem(lpDrawItemStruct->rcItem);
         CDC DeviceContext;
-        COLORREF rgbBkgnd =
+        const COLORREF rgbBkgnd =
             ::GetSysColor((lpDrawItemStruct->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW);
         DeviceContext.Attach(lpDrawItemStruct->hDC);
         CBrush br(rgbBkgnd);
@@ -290,7 +290,7 @@ void EoDlgFileManageLayers::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT l
         int itemID = static_cast<int>(lpDrawItemStruct->itemID);
         if (itemID != -1) {
           // The text color is stored as the item data.
-          COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
+          const COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
                                                                           : ::GetSysColor(COLOR_WINDOWTEXT);
           DeviceContext.SetBkColor(rgbBkgnd);
           DeviceContext.SetTextColor(rgbText);
@@ -316,7 +316,7 @@ void EoDlgFileManageLayers::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT l
 }
 
 void EoDlgFileManageLayers::OnNMRclickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult) {
-  LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+  const auto pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
   const int item = pNMItemActivate->iItem;
   *pResult = 0;
   if (item < 0) { return; }
@@ -380,12 +380,12 @@ void EoDlgFileManageLayers::OnNMRclickLayersListControl(NMHDR* pNMHDR, LRESULT* 
 }
 
 void EoDlgFileManageLayers::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* pResult) {
-  LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+  const auto pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 
-  auto item = pNMItemActivate->iItem;
+  const auto item = pNMItemActivate->iItem;
   if (item < 0) { return; }
 
-  auto subItem = pNMItemActivate->iSubItem;
+  const auto subItem = pNMItemActivate->iSubItem;
 
   auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(item));
 
@@ -449,7 +449,7 @@ void EoDlgFileManageLayers::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* p
       break;
     }
     case LineType: {
-      auto lineTypes = m_Document->LineTypeTable();
+      const auto lineTypes = m_Document->LineTypeTable();
       EoDlgLineTypesSelection dialog(*lineTypes);
       if (dialog.DoModal() == IDOK) { layer->SetLineType(dialog.GetSelectedLineType()); }
       break;
@@ -466,12 +466,12 @@ void EoDlgFileManageLayers::OnNMClickLayersListControl(NMHDR* pNMHDR, LRESULT* p
 }
 
 void EoDlgFileManageLayers::OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* result) {
-  LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+  const auto pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
 
-  auto item = pNMItemActivate->iItem;
+  const auto item = pNMItemActivate->iItem;
   if (item < 0) { return; }
 
-  auto subItem = pNMItemActivate->iSubItem;
+  const auto subItem = pNMItemActivate->iSubItem;
   auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(item));
 
   if (subItem == Name && !layer->IsTracingLayer() && layer->Name() != L"0") {
@@ -482,9 +482,9 @@ void EoDlgFileManageLayers::OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* 
 }
 
 void EoDlgFileManageLayers::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* result) {
-  LPNMLISTVIEW ListViewNotificationMessage = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+  const auto ListViewNotificationMessage = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
-  int item = ListViewNotificationMessage->iItem;
+  const auto item = ListViewNotificationMessage->iItem;
 
   // Track which item is selected so the Name-column single-click guard works correctly
   if (ListViewNotificationMessage->uNewState & LVIS_SELECTED) {
@@ -493,7 +493,7 @@ void EoDlgFileManageLayers::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESUL
     if (m_selectedItemForEdit == item) { m_selectedItemForEdit = -1; }
   }
 
-  auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(item));
+  auto* const layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(item));
   if (layer == nullptr) { return; }
 
   CString numberOfGroups;
@@ -561,9 +561,9 @@ LRESULT EoDlgFileManageLayers::OnDeferredEditLabel(WPARAM wParam, LPARAM) {
 void EoDlgFileManageLayers::OnTimer(UINT_PTR nIDEvent) {
   if (nIDEvent == 101) {
     KillTimer(101);
-    auto* editCtrl = m_layersListControl.GetEditControl();
+    auto* const editCtrl = m_layersListControl.GetEditControl();
     if (editCtrl != nullptr && editCtrl->IsWindowVisible() && m_editItemForRepos >= 0) {
-      auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(m_editItemForRepos));
+      auto* const layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(m_editItemForRepos));
       CRect nameRect;
       CHeaderCtrl* headerCtrl = m_layersListControl.GetHeaderCtrl();
       if (headerCtrl != nullptr) {

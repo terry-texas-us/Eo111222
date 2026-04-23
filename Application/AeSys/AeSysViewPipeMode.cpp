@@ -91,8 +91,8 @@ void AeSysView::OnPipeModeFitting() {
   EoDbLine* horizontalSection{};
   auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
   if (group != nullptr) {
-    EoGePoint3d begin = horizontalSection->Begin();
-    EoGePoint3d end = horizontalSection->End();
+    const EoGePoint3d begin = horizontalSection->Begin();
+    const EoGePoint3d end = horizontalSection->End();
     if (!pts.IsEmpty()) { cursorPosition = SnapPointToAxis(pts[0], cursorPosition); }
     cursorPosition = horizontalSection->ProjectPointToLine(cursorPosition);
     horizontalSection->SetEndPoint(cursorPosition);
@@ -561,8 +561,8 @@ void AeSysView::OnPipeModeWye() {
   if (DistanceToSection >= 0.25) {
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
     InvalidateOverlay();
-    EoGePoint3d begin = horizontalSection->Begin();
-    EoGePoint3d EndPoint = horizontalSection->End();
+    const EoGePoint3d begin = horizontalSection->Begin();
+    const EoGePoint3d EndPoint = horizontalSection->End();
 
     double DistanceBetweenSectionPoints = EoGeVector3d(BeginPointProjectedToSection, PointOnSection).Length();
 
@@ -589,7 +589,7 @@ void AeSysView::OnPipeModeWye() {
       EoGePoint3d PointAtBend;
 
       if (DistanceBetweenSectionPoints - 0.25 <= DistanceToSection) {
-        double d3 = (DistanceBetweenSectionPoints > 0.25) ? DistanceBetweenSectionPoints : 0.125;
+        const double d3 = (DistanceBetweenSectionPoints > 0.25) ? DistanceBetweenSectionPoints : 0.125;
         PointAtBend = BeginPointProjectedToSection.ProjectToward(pts[0], d3);
         PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, d3);
       } else {
@@ -635,7 +635,7 @@ void AeSysView::OnPipeModeEscape() {
 void AeSysView::DoPipeModeMouseMove() {
   const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
-  auto numberOfPoints = pts.GetSize();
+  const auto numberOfPoints = pts.GetSize();
   if (numberOfPoints == 0) { return; }
 
   switch (m_PreviousOp) {
@@ -712,8 +712,8 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, Eo
   auto* document = GetDocument();
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, section);
 
-  EoGePoint3d begin = section->Begin();
-  EoGePoint3d end = section->End();
+  const EoGePoint3d begin = section->Begin();
+  const EoGePoint3d end = section->End();
 
   auto cutPoint = point.ProjectToward(begin, m_PipeRiseDropRadius);
   section->SetEndPoint(cutPoint);
@@ -735,8 +735,8 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, Eo
 
 void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
   auto* document = GetDocument();
-  EoGePoint3d begin = section->Begin();
-  EoGePoint3d end = section->End();
+  const EoGePoint3d begin = section->Begin();
+  const EoGePoint3d end = section->End();
 
   section->SetEndPoint(point);
   group->AddTail(EoDbLine::CreateLine(point, end)
@@ -755,13 +755,12 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, Eo
 
 bool AeSysView::GenerateTickMark(
     const EoGePoint3d& begin, const EoGePoint3d& end, double distance, EoDbGroup* group) const {
-  auto pointOnLine = begin.ProjectToward(end, distance);
+  const auto pointOnLine = begin.ProjectToward(end, distance);
 
   EoGeVector3d Projection(pointOnLine, end);
 
-  double DistanceToEndPoint = Projection.Length();
-
-  bool markGenerated = DistanceToEndPoint > Eo::geometricTolerance;
+  const double DistanceToEndPoint = Projection.Length();
+  const bool markGenerated = DistanceToEndPoint > Eo::geometricTolerance;
   if (markGenerated) {
     Projection *= m_PipeTicSize / DistanceToEndPoint;
 

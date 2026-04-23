@@ -106,7 +106,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color,
     : EoDbPrimitive(color, lineType), m_center(center) {
   auto* activeView = AeSysView::GetActiveView();
 
-  auto normal = activeView->CameraDirection();
+  const auto normal = activeView->CameraDirection();
 
   m_minorAxis = activeView->ViewUp() * radius;
   m_majorAxis = m_minorAxis;
@@ -136,7 +136,7 @@ EoDbEllipse::EoDbEllipse(
   m_majorAxis.Unitize();
   m_majorAxis *= radius;
   m_minorAxis = m_majorAxis;
-  EoGeTransformMatrix transformMatrix(center, PlaneNormal, Eo::HalfPi);
+  const EoGeTransformMatrix transformMatrix(center, PlaneNormal, Eo::HalfPi);
   m_minorAxis = transformMatrix * m_minorAxis;
   m_sweepAngle = Eo::TwoPi;
 }
@@ -158,7 +158,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   m_color = Gs::renderState.Color();
   SetLineTypeName(Gs::renderState.LineTypeName());
 
-  auto cameraDirection = activeView->CameraDirection();
+  const auto cameraDirection = activeView->CameraDirection();
 
   m_center = center;
   m_majorAxis = EoGeVector3d(center, start);
@@ -193,8 +193,8 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
 
   m_sweepAngle = 0.0;
 
-  EoGeVector3d startToIntermediate(start, intermediate);
-  EoGeVector3d startToEnd(start, end);
+  const EoGeVector3d startToIntermediate(start, intermediate);
+  const EoGeVector3d startToEnd(start, end);
   auto normal = CrossProduct(startToIntermediate, startToEnd);
   normal.Unitize();
 
@@ -214,7 +214,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
   double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
   if (Eo::IsGeometricallyNonZero(determinant)) {  // Three points are not colinear
-    double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
+    const double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
     m_center.x = (pt[1].x - pt[1].y * dT) * 0.5;
     m_center.y = (pt[1].y + pt[1].x * dT) * 0.5;
@@ -238,7 +238,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
       dAng[i] = atan2(pt[i].y, pt[i].x);
       if (dAng[i] < 0.0) { dAng[i] += Eo::TwoPi; }
     }
-    double dMin = std::min(dAng[0], dAng[2]);
+    const double dMin = std::min(dAng[0], dAng[2]);
     double dMax = std::max(dAng[0], dAng[2]);
 
     if (Eo::IsGeometricallyNonZero(dAng[1] - dMax) && Eo::IsGeometricallyNonZero(dAng[1] - dMin)) {
@@ -250,7 +250,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
         m_sweepAngle = Eo::TwoPi - m_sweepAngle;
         if (dAng[2] == dMax) { m_sweepAngle = -m_sweepAngle; }
       }
-      EoGePoint3d ptRot = start.RotateAboutAxis(m_center, normal, Eo::HalfPi);
+      const EoGePoint3d ptRot = start.RotateAboutAxis(m_center, normal, Eo::HalfPi);
 
       m_majorAxis = EoGeVector3d(m_center, start);
       m_minorAxis = EoGeVector3d(m_center, ptRot);
@@ -363,10 +363,10 @@ void EoDbEllipse::CutAt2Points(
       m_sweepAngle = Eo::TwoPi - m_sweepAngle;
     } else {  // Arc section with a cut
       pArc = new EoDbEllipse(*this);
-      double dSwpAng = m_sweepAngle;
+      const double dSwpAng = m_sweepAngle;
 
-      double dAng1 = dRel[0] * m_sweepAngle;
-      double dAng2 = dRel[1] * m_sweepAngle;
+      const double dAng1 = dRel[0] * m_sweepAngle;
+      const double dAng2 = dRel[1] * m_sweepAngle;
 
       if (dRel[0] > Eo::geometricTolerance && dRel[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
         pArc->SetSweepAngle(dAng1);
@@ -410,14 +410,14 @@ void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
     return;
   }
 
-  double dRel = SweepAngleToPoint(point) / m_sweepAngle;
+  const double dRel = SweepAngleToPoint(point) / m_sweepAngle;
 
   if (dRel < Eo::geometricTolerance || dRel >= 1.0 - Eo::geometricTolerance) {
     // Nothing to cut
     return;
   }
 
-  double dSwpAng = m_sweepAngle * dRel;
+  const double dSwpAng = m_sweepAngle * dRel;
 
   EoDbEllipse* pArc = new EoDbEllipse(*this);
   pArc->SetSweepAngle(dSwpAng);
@@ -434,8 +434,8 @@ void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 void EoDbEllipse::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   if (Eo::IsGeometricallyZero(m_sweepAngle)) { return; }
 
-  auto color = LogicalColor();
-  auto lineType = LogicalLineType();
+  const auto color = LogicalColor();
+  const auto lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
   Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
@@ -493,16 +493,16 @@ void EoDbEllipse::GenPts(
     EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const {
   // Number of points based on angle and a smothness coefficient
 
-  double maxAxisLength = std::max(majorAxis.Length(), minorAxis.Length());
+  const double maxAxisLength = std::max(majorAxis.Length(), minorAxis.Length());
   int numberOfPoints = std::max(2, abs(Eo::Round(sweepAngle / Eo::TwoPi * 32.0)));
   numberOfPoints = std::min(128, std::max(numberOfPoints, abs(Eo::Round(sweepAngle * maxAxisLength / 0.250))));
 
   EoGeTransformMatrix transformMatrix(centerPoint, majorAxis, minorAxis);
   transformMatrix.Inverse();
 
-  double segmentAngle = sweepAngle / (numberOfPoints - 1);
-  double angleCosine = std::cos(segmentAngle);
-  double angleSine = std::sin(segmentAngle);
+  const double segmentAngle = sweepAngle / (numberOfPoints - 1);
+  const double angleCosine = std::cos(segmentAngle);
+  const double angleSine = std::sin(segmentAngle);
 
   EoGePoint3d point(1.0, 0.0, 0.0);
 
@@ -538,10 +538,10 @@ EoGePoint3d EoDbEllipse::PointAtEndAngle() {
 }
 
 void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* arMin, EoGePoint3d* arMax) const {
-  double dx = double(m_center.x - arBeg.x);
-  double dy = double(m_center.y - arBeg.y);
+  const double dx = double(m_center.x - arBeg.x);
+  const double dy = double(m_center.y - arBeg.y);
 
-  double dRad = std::sqrt(dx * dx + dy * dy);
+  const double dRad = std::sqrt(dx * dx + dy * dy);
 
   arMin->x = m_center.x - dRad;
   arMin->y = m_center.y - dRad;
@@ -687,7 +687,7 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   EoGePoint3d ptEnd = PointAtEndAngle();
 
   if (vPlnNorm.z < 0.0) {
-    EoGePoint3d pt = ptBeg;
+    const EoGePoint3d pt = ptBeg;
     ptBeg = ptEnd;
     ptEnd = pt;
 
@@ -715,7 +715,7 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   double dOff;
   int iSecs = 0;
 
-  double dRad = EoGeVector3d(m_center, ptBeg).Length();
+  const double dRad = EoGeVector3d(m_center, ptBeg).Length();
   if (ptMax.x > upperRight.x) {  // Arc may intersect with right window boundary
     dDis = upperRight.x - m_center.x;
     dOff = std::sqrt(dRad * dRad - dDis * dDis);
@@ -766,7 +766,7 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   }
   if (iSecs == 0) { return 0; }
 
-  double dBegAng = atan2(ptBeg.y - m_center.y, ptBeg.x - m_center.x);  // Arc begin angle (-π to π)
+  const double dBegAng = atan2(ptBeg.y - m_center.y, ptBeg.x - m_center.x);  // Arc begin angle (-π to π)
 
   double dIntAng[8]{};
   double dWrkAng;
@@ -791,10 +791,10 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
   for (int i1 = 0; i1 < iInts; i1++) {  // Sort intersections from begin to end of sweep
     for (int i2 = 1; i2 < iInts - i1; i2++) {
       if (std::abs(dIntAng[i2]) < std::abs(dIntAng[i2 - 1])) {
-        double dAng = dIntAng[i2 - 1];
+        const double dAng = dIntAng[i2 - 1];
         dIntAng[i2 - 1] = dIntAng[i2];
         dIntAng[i2] = dAng;
-        EoGePoint3d pt = ptInt[i2 - 1];
+        const EoGePoint3d pt = ptInt[i2 - 1];
         ptInt[i2 - 1] = ptInt[i2];
         ptInt[i2] = pt;
       }
@@ -819,7 +819,7 @@ int EoDbEllipse::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& u
 }
 
 EoGePoint3d EoDbEllipse::GoToNextControlPoint() {
-  double angle = (sm_RelationshipOfPoint < Eo::geometricTolerance) ? m_sweepAngle : 0.0;
+  const double angle = (sm_RelationshipOfPoint < Eo::geometricTolerance) ? m_sweepAngle : 0.0;
   return (PointOnArcAtAngle(m_center, m_majorAxis, m_minorAxis, angle));
 }
 
@@ -847,7 +847,7 @@ EoGePoint3d EoDbEllipse::SelectAtControlPoint(AeSysView* view, const EoGePoint4d
 
   double dAPert = sm_SelectApertureSize;
 
-  EoGePoint3d ptCtrl[] = {PointAtStartAngle(), PointAtEndAngle()};
+  const EoGePoint3d ptCtrl[] = {PointAtStartAngle(), PointAtEndAngle()};
 
   for (auto i = 0; i < 2; i++) {
     EoGePoint4d pt(ptCtrl[i]);
@@ -911,8 +911,8 @@ void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
   ptsBox[3] = EoGePoint3d(-1.0, 1.0, 0.0);
 
   if (m_sweepAngle < 3. * Eo::TwoPi / 4.0) {
-    double dEndX = std::cos(m_sweepAngle);
-    double dEndY = std::sin(m_sweepAngle);
+    const double dEndX = std::cos(m_sweepAngle);
+    const double dEndY = std::sin(m_sweepAngle);
 
     if (dEndX >= 0.0) {
       if (dEndY >= 0.0) {  // Arc ends in quadrant one
@@ -945,7 +945,7 @@ double EoDbEllipse::SweepAngleToPoint(EoGePoint3d point) {
   auto normal = CrossProduct(m_majorAxis, m_minorAxis);
   normal.Unitize();
 
-  EoGeTransformMatrix transformMatrix(m_center, normal);
+  const EoGeTransformMatrix transformMatrix(m_center, normal);
 
   EoGePoint3d beginPoint = m_center + m_majorAxis;
   EoGePoint3d endPoint = point;

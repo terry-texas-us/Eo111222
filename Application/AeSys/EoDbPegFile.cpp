@@ -181,7 +181,7 @@ void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fil
 
   // Layout table is optional in V2 — peek to check if present before kEndOfSection.
   if (fileVersion == EoDb::PegFileVersion::AE2026) {
-    auto peekPosition = CFile::GetPosition();
+    const auto peekPosition = CFile::GetPosition();
     auto peekedSentinel = EoDb::ReadUInt16(*this);
     if (peekedSentinel == EoDb::kLayoutTable) {
       // Rewind past the sentinel so ReadLayoutTable can consume it.
@@ -258,7 +258,7 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document, EoDb::PegFileVersion fi
 void EoDbPegFile::ReadLinetypeDefinition(
     std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength) {
   EoDb::Read(*this, name);
-  uint16_t flags = EoDb::ReadUInt16(*this);
+  const auto flags = EoDb::ReadUInt16(*this);
   (void)flags;  // currently unused, but may be used in the future to indicate properties of the linetype
   EoDb::Read(*this, description);
   definitionLength = EoDb::ReadUInt16(*this);
@@ -276,11 +276,11 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
 
   CString layerName;
   CString lineTypeName;
-  auto numberOfLayers = EoDb::ReadUInt16(*this);
+  const auto numberOfLayers = EoDb::ReadUInt16(*this);
   for (auto n = 0; n < numberOfLayers; n++) {
     EoDb::Read(*this, layerName);
 
-    auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
+    const auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
     auto state = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
 
     state |= std::to_underlying(EoDbLayer::State::isResident);
@@ -289,7 +289,7 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
         std::to_underlying(EoDbLayer::State::isInternal)) {
       if (layerName.Find('.') == -1) { layerName += L".jb1"; }
     }
-    auto colorIndex = EoDb::ReadInt16(*this);
+    const auto colorIndex = EoDb::ReadInt16(*this);
     EoDb::Read(*this, lineTypeName);
 
     std::uint64_t layerHandle{};
@@ -304,10 +304,10 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       layerHandle = EoDb::ReadUInt64(*this);
       layerOwnerHandle = EoDb::ReadUInt64(*this);
-      auto lineWeightDxfCode = EoDb::ReadInt16(*this);
+      const auto lineWeightDxfCode = EoDb::ReadInt16(*this);
       layerLineWeight = EoDxfLineWeights::DxfIndexToLineWeight(lineWeightDxfCode);
       layerLineTypeScale = EoDb::ReadDouble(*this);
-      auto layerPropertyFlags = EoDb::ReadUInt16(*this);
+      const auto layerPropertyFlags = EoDb::ReadUInt16(*this);
       isFrozen = (layerPropertyFlags & 0x01) != 0;
       isLocked = (layerPropertyFlags & 0x02) != 0;
       plottingFlag = (layerPropertyFlags & 0x04) != 0;
@@ -359,14 +359,14 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fil
   CString Name;
   CString XRefPathName;
 
-  auto numberOfBlocks = EoDb::ReadUInt16(*this);
+  const auto numberOfBlocks = EoDb::ReadUInt16(*this);
 
   for (std::uint16_t n = 0; n < numberOfBlocks; n++) {
-    auto numberOfPrimitives = EoDb::ReadUInt16(*this);
+    const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
     EoDb::Read(*this, Name);
-    auto blockTypeFlags = EoDb::ReadUInt16(*this);
-    auto basePoint = EoDb::ReadPoint3d(*this);
+    const auto blockTypeFlags = EoDb::ReadUInt16(*this);
+    const auto basePoint = EoDb::ReadPoint3d(*this);
     auto* block = new EoDbBlock(blockTypeFlags, basePoint, XRefPathName);
     document->InsertBlock(Name, block);
 
@@ -394,7 +394,7 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion f
 
   EoDbPrimitive* primitive{};
 
-  auto numberOfLayers = EoDb::ReadUInt16(*this);
+  const auto numberOfLayers = EoDb::ReadUInt16(*this);
 
   for (auto n = 0; n < numberOfLayers; n++) {
     auto* layer = document->GetLayerTableLayerAt(n);
@@ -403,12 +403,12 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion f
       throw std::runtime_error("Exception EoDbPegFile: Layer table index out of range in entities section.");
     }
 
-    auto numberOfGroups = EoDb::ReadUInt16(*this);
+    const auto numberOfGroups = EoDb::ReadUInt16(*this);
 
     if (layer->IsInternal()) {
       for (auto GroupIndex = 0; GroupIndex < numberOfGroups; GroupIndex++) {
         auto* group = new EoDbGroup;
-        auto numberOfPrimitives = EoDb::ReadUInt16(*this);
+        const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
         for (auto PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
           if (EoDb::Read(*this, primitive, fileVersion)) {
             document->RegisterHandle(primitive);
@@ -466,7 +466,7 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
     auto layoutCount = EoDb::ReadUInt16(*this);
 
     for (std::uint16_t layoutIndex = 0; layoutIndex < layoutCount; layoutIndex++) {
-      auto layoutHandle = EoDb::ReadUInt64(*this);
+      const auto layoutHandle = EoDb::ReadUInt64(*this);
 
       ReadPaperSpaceLayoutLayers(document, fileVersion, layoutHandle);
       ReadPaperSpaceLayoutEntities(document, fileVersion, layoutHandle);
@@ -509,11 +509,11 @@ void EoDbPegFile::ReadPaperSpaceLayoutLayers(
 
   CString layerName;
   CString lineTypeName;
-  auto numberOfLayers = EoDb::ReadUInt16(*this);
+  const auto numberOfLayers = EoDb::ReadUInt16(*this);
 
   for (auto n = 0; n < numberOfLayers; n++) {
     EoDb::Read(*this, layerName);
-    auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
+    const auto tracingState = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
     auto state = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
     state |= std::to_underlying(EoDbLayer::State::isResident);
 
@@ -521,7 +521,7 @@ void EoDbPegFile::ReadPaperSpaceLayoutLayers(
         std::to_underlying(EoDbLayer::State::isInternal)) {
       if (layerName.Find('.') == -1) { layerName += L".jb1"; }
     }
-    auto colorIndex = EoDb::ReadInt16(*this);
+    const auto colorIndex = EoDb::ReadInt16(*this);
     EoDb::Read(*this, lineTypeName);
 
     std::uint64_t layerHandle{};
@@ -533,7 +533,7 @@ void EoDbPegFile::ReadPaperSpaceLayoutLayers(
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       layerHandle = EoDb::ReadUInt64(*this);
       layerOwnerHandle = EoDb::ReadUInt64(*this);
-      auto lineWeightDxfCode = EoDb::ReadInt16(*this);
+      const auto lineWeightDxfCode = EoDb::ReadInt16(*this);
       layerLineWeight = EoDxfLineWeights::DxfIndexToLineWeight(lineWeightDxfCode);
       layerLineTypeScale = EoDb::ReadDouble(*this);
       layerPropertyFlags = EoDb::ReadUInt16(*this);
@@ -573,7 +573,7 @@ void EoDbPegFile::ReadPaperSpaceLayoutEntities(
 
   EoDbPrimitive* primitive{};
   auto& layoutLayers = document->LayoutLayers(layoutHandle);
-  auto numberOfEntityLayers = EoDb::ReadUInt16(*this);
+  const auto numberOfEntityLayers = EoDb::ReadUInt16(*this);
 
   for (auto n = 0; n < numberOfEntityLayers; n++) {
     auto* layer = (n < static_cast<int>(layoutLayers.GetSize())) ? layoutLayers.GetAt(n) : nullptr;
@@ -582,12 +582,12 @@ void EoDbPegFile::ReadPaperSpaceLayoutEntities(
       throw std::runtime_error("Exception EoDbPegFile: Paper-space layer table index out of range.");
     }
 
-    auto numberOfGroups = EoDb::ReadUInt16(*this);
+    const auto numberOfGroups = EoDb::ReadUInt16(*this);
 
     if (layer->IsInternal()) {
       for (auto groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
         auto* group = new EoDbGroup;
-        auto numberOfPrimitives = EoDb::ReadUInt16(*this);
+        const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
         for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
           if (EoDb::Read(*this, primitive, fileVersion)) {
             document->RegisterHandle(primitive);
@@ -713,7 +713,7 @@ void EoDbPegFile::WriteVPortTable(AeSysDoc* document, [[maybe_unused]] EoDb::Peg
 void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   auto* lineTypeTable = document->LineTypeTable();
 
-  auto numberOfLinetypes = std::uint16_t(lineTypeTable->Size());
+  const auto numberOfLinetypes = std::uint16_t(lineTypeTable->Size());
 
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLinetypeTable));
   EoDb::WriteUInt16(*this, numberOfLinetypes);
@@ -729,9 +729,9 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document, EoDb::PegFileVersion fi
     EoDb::WriteUInt16(*this, std::uint16_t(0));
     EoDb::Write(*this, linetype->Description());
 
-    auto numberOfDashes = linetype->GetNumberOfDashes();
+    const auto numberOfDashes = linetype->GetNumberOfDashes();
     EoDb::WriteUInt16(*this, numberOfDashes);
-    double patternLength = linetype->GetPatternLength();
+    const double patternLength = linetype->GetPatternLength();
     EoDb::WriteDouble(*this, patternLength);
 
     const auto& dashElements = linetype->DashElements();
@@ -751,7 +751,7 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
 
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayerTable));
 
-  auto savedFilePosition = CFile::GetPosition();
+  const auto savedFilePosition = CFile::GetPosition();
   EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
 
   for (INT_PTR n = 0; n < layers.GetSize(); n++) {
@@ -790,7 +790,7 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 
   if (numberOfLayers != static_cast<int>(layers.GetSize())) {
-    auto currentFilePosition = CFile::GetPosition();
+    const auto currentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
     EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
     CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
@@ -1083,7 +1083,7 @@ void EoDbPegFile::WriteLayoutTable(AeSysDoc* document, [[maybe_unused]] EoDb::Pe
 void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kBlocksSection));
 
-  std::uint16_t numberOfBlocks = document->BlockTableSize();
+  const auto numberOfBlocks = document->BlockTableSize();
   EoDb::WriteUInt16(*this, numberOfBlocks);
 
   CString name;
@@ -1092,7 +1092,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fi
   auto position = document->GetFirstBlockPosition();
   while (position != nullptr) {
     document->GetNextBlock(position, name, block);
-    auto savedFilePosition = CFile::GetPosition();
+    const auto savedFilePosition = CFile::GetPosition();
     EoDb::WriteUInt16(*this, std::uint16_t(0));
     std::uint16_t numberOfPrimitives{};
 
@@ -1119,7 +1119,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fi
         numberOfPrimitives++;
       }
     }
-    auto currentFilePosition = CFile::GetPosition();
+    const auto currentFilePosition = CFile::GetPosition();
     CFile::Seek(static_cast<LONGLONG>(savedFilePosition), CFile::begin);
     EoDb::WriteUInt16(*this, numberOfPrimitives);
     CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
@@ -1206,7 +1206,7 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
     EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayerTable));
 
     int numberOfLayers = static_cast<int>(layers.GetSize());
-    auto savedLayerCountPosition = CFile::GetPosition();
+    const auto savedLayerCountPosition = CFile::GetPosition();
     EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
 
     for (INT_PTR n = 0; n < layers.GetSize(); n++) {
@@ -1234,7 +1234,7 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
     EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfTable));
 
     if (numberOfLayers != static_cast<int>(layers.GetSize())) {
-      auto currentFilePosition = CFile::GetPosition();
+      const auto currentFilePosition = CFile::GetPosition();
       CFile::Seek(static_cast<LONGLONG>(savedLayerCountPosition), CFile::begin);
       EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
       CFile::Seek(static_cast<LONGLONG>(currentFilePosition), CFile::begin);
@@ -1359,7 +1359,7 @@ void EoDb::Read(CFile& file, CString& string) {
   }
   if (buffer.empty()) { return; }
 
-  int wideLength = MultiByteToWideChar(CP_ACP, 0, buffer.data(), static_cast<int>(buffer.size()), nullptr, 0);
+  const int wideLength = MultiByteToWideChar(CP_ACP, 0, buffer.data(), static_cast<int>(buffer.size()), nullptr, 0);
 
   if (wideLength <= 0) { return; }
 
@@ -1424,9 +1424,9 @@ std::uint16_t EoDb::ReadUInt16(CFile& file) {
  * @param codePage The code page to use for encoding the string.
  */
 void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
-  int wideLength = string.GetLength();
+  const int wideLength = string.GetLength();
   if (wideLength > 0) {
-    auto bufferSize =
+    const auto bufferSize =
         static_cast<size_t>(WideCharToMultiByte(codePage, 0, string, wideLength, nullptr, 0, nullptr, nullptr));
     if (bufferSize > 0) {
       std::vector<char> buffer(bufferSize);

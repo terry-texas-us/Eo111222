@@ -26,7 +26,7 @@ void EoDlgSelectGotoHomePoint::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSelectGotoHomePoint::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  auto Names = App::LoadStringResource(IDS_HOME_POINT_GO_NAMES);
+  const auto Names = App::LoadStringResource(IDS_HOME_POINT_GO_NAMES);
   m_HomePointNames.ResetContent();
   int Position = 0;
   while (Position < Names.GetLength()) {
@@ -35,7 +35,7 @@ BOOL EoDlgSelectGotoHomePoint::OnInitDialog() {
   }
   m_HomePointNames.SetCurSel(9);
 
-  EoGePoint3d Origin = m_ActiveView->GridOrign();
+  const auto Origin = m_ActiveView->GridOrign();
 
   CString Length;
 

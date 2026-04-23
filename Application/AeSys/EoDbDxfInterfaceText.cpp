@@ -30,7 +30,7 @@ void EoDbDxfInterface::AddAttrib(const EoDxfAttrib& attrib) {
   if (attribPrimitive == nullptr) { return; }
 
   if (m_currentInsertPrimitive != nullptr) {
-    auto insertHandle = m_currentInsertPrimitive->Handle();
+    const auto insertHandle = m_currentInsertPrimitive->Handle();
     attribPrimitive->SetInsertHandle(insertHandle);
     attribPrimitive->SetOwnerHandle(insertHandle);
     m_currentInsertPrimitive->AddAttributeHandle(attribPrimitive->Handle());

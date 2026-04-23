@@ -445,7 +445,7 @@ LRESULT AeSysView::OnLayoutTabChange(WPARAM wParam, LPARAM lParam) {
   auto* document = GetDocument();
   if (document == nullptr) { return 0; }
 
-  int selectedTab = static_cast<int>(wParam);
+  const int selectedTab = static_cast<int>(wParam);
   if (selectedTab < 0) { return 0; }
 
   // Deactivate any active viewport when switching layouts
@@ -463,7 +463,7 @@ LRESULT AeSysView::OnLayoutTabChange(WPARAM wParam, LPARAM lParam) {
     document->SetActiveSpace(EoDxf::Space::ModelSpace);
   } else {
     // Switch to the selected paper-space layout
-    auto blockRecordHandle = m_layoutTabBar.BlockRecordHandleAt(selectedTab);
+    const auto blockRecordHandle = m_layoutTabBar.BlockRecordHandleAt(selectedTab);
     document->SetActiveSpace(EoDxf::Space::PaperSpace);
     if (blockRecordHandle != 0) { document->SetActiveLayoutHandle(blockRecordHandle); }
 
@@ -504,7 +504,7 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
 void AeSysView::OnKillFocus(CWnd* newWindow) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
 
-  HACCEL AcceleratorTableHandle = ((CMainFrame*)AfxGetMainWnd())->m_hAccelTable;
+  const HACCEL AcceleratorTableHandle = ((CMainFrame*)AfxGetMainWnd())->m_hAccelTable;
 
   ::DestroyAcceleratorTable(AcceleratorTableHandle);
 

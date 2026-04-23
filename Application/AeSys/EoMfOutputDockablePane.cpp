@@ -101,8 +101,8 @@ void EoMfOutputListBox::OnContextMenu(CWnd* window, CPoint point) {
     CMenu menu;
     menu.LoadMenu(IDR_OUTPUT_POPUP);
 
-    auto* subMenu = menu.GetSubMenu(0);
-    auto* popupMenu = new CMFCPopupMenu;
+    auto* const subMenu = menu.GetSubMenu(0);
+    auto* const popupMenu = new CMFCPopupMenu;
 
     if (!popupMenu->Create(this, point.x, point.y, subMenu->GetSafeHmenu(), FALSE, TRUE)) { return; }
     frameWindow->OnShowPopupMenu(popupMenu);
@@ -115,13 +115,13 @@ void EoMfOutputListBox::OnContextMenu(CWnd* window, CPoint point) {
  *  @note If multiple items are selected, they are combined into a single string with newlines separating them before
  * copying. */
 void EoMfOutputListBox::OnEditCopy() {
-  auto selectedCount = GetSelCount();
+  const auto selectedCount = GetSelCount();
   if (selectedCount < 1) { return; }
 
   CString combinedText;
 
   if (selectedCount == 1) {
-    int selectedIndex = GetCurSel();
+    const int selectedIndex = GetCurSel();
     GetText(selectedIndex, combinedText);
   } else {  // Multiple selections
     std::vector<int> selectedIndices(static_cast<size_t>(selectedCount));
@@ -144,7 +144,7 @@ void EoMfOutputListBox::OnEditCopy() {
   if (OpenClipboard()) {
     EmptyClipboard();
 
-    size_t size = static_cast<size_t>(combinedText.GetLength() + 1) * sizeof(wchar_t);
+    const auto size = static_cast<size_t>(combinedText.GetLength() + 1) * sizeof(wchar_t);
     auto clipboardDataHandle = GlobalAlloc(GMEM_MOVEABLE, size);
 
     if (clipboardDataHandle != nullptr) {

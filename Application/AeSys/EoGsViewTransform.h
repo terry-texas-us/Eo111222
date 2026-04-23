@@ -54,8 +54,8 @@ class EoGsViewTransform : public EoGsAbstractView {
   void SetWindow(double uMin, double vMin, double uMax, double vMax);
   void TransformPoint(EoGePoint4d& point) { point = m_Matrix * point; }
 
-  void TransformPoints(EoGePoint4dArray& pointsArray);
-  void TransformPoints(int numberOfPoints, EoGePoint4d* points);
+  void TransformPoints(EoGePoint4dArray& pointsArray) const;
+  void TransformPoints(int numberOfPoints, EoGePoint4d* points) const;
   void TransformVector(EoGeVector3d& vector) { vector = m_Matrix * vector; }
 
   [[nodiscard]] double UExtent() const { return static_cast<double>(m_UMax - m_UMin); }

@@ -180,7 +180,7 @@ void EoDbLineTypeTable::LoadLineTypesFromTxtFile(const CString& pathName) {
       if (inputLine.IsEmpty() || inputLine[0] == L';') { continue; }
 
       int nextToken{};
-      auto label = std::int16_t(_wtoi(inputLine.Tokenize(L"=", nextToken)));
+      const auto label = static_cast<std::int16_t>(_wtoi(inputLine.Tokenize(L"=", nextToken)));
 
       auto name = inputLine.Tokenize(L",", nextToken);
       auto comment = inputLine.Tokenize(L"\n", nextToken);

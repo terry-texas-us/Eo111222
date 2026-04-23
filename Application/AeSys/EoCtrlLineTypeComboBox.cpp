@@ -199,10 +199,10 @@ BOOL EoCtrlLineTypeComboBox::NotifyCommand(int notifyCode) {
 }
 
 void EoCtrlLineTypeComboBox::OnSelectionChanged() {
-  int selectedIndex = GetCurSel();
+  const int selectedIndex = GetCurSel();
   if (selectedIndex < 0) { return; }
 
-  DWORD_PTR data = GetItemData(selectedIndex);
+  const auto data = GetItemData(selectedIndex);
 
   if (data == kLoadLineTypes) {
     // Open the line type selection dialog (same flow as OnSetupLineType)
@@ -276,9 +276,9 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
 
 void EoCtrlLineTypeComboBox::DrawDashPreview(
     CDC* deviceContext, const CRect& rect, const EoDbLineType* lineType, COLORREF lineColor) {
-  int yCenter = rect.top + rect.Height() / 2;
-  double xStart = rect.left + 2.0;
-  double xEnd = rect.right - 2.0;
+  const int yCenter = rect.top + rect.Height() / 2;
+  const double xStart = rect.left + 2.0;
+  const double xEnd = rect.right - 2.0;
   if (xEnd <= xStart) { return; }
 
   CPen pen(PS_SOLID, 1, lineColor);
@@ -290,7 +290,7 @@ void EoCtrlLineTypeComboBox::DrawDashPreview(
     deviceContext->LineTo(static_cast<int>(xEnd), yCenter);
   } else {
     const auto& dashElements = lineType->DashElements();
-    double availableWidth = xEnd - xStart;
+    const double availableWidth = xEnd - xStart;
 
     // Compute total pattern length from absolute dash/gap values.
     double patternLength = lineType->GetPatternLength();
@@ -300,11 +300,11 @@ void EoCtrlLineTypeComboBox::DrawDashPreview(
     // This produces a consistent preview regardless of the drawing-unit scale
     // of the linetype definition (AeSys native vs DXF standard).
     constexpr double targetRepetitions = 3.0;
-    double scale = availableWidth / (patternLength * targetRepetitions);
+    const double scale = availableWidth / (patternLength * targetRepetitions);
 
     double x = xStart;
     while (x < xEnd) {
-      for (double len : dashElements) {
+      for (const double len : dashElements) {
         double pixelLen = std::abs(len) * scale;
         if (pixelLen < 1.0) { pixelLen = 1.0; }
         if (len > 0.0) {
@@ -333,7 +333,7 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCT
     return;
   }
 
-  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  const BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
   if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
@@ -354,28 +354,28 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCT
           deviceContext, rectButton, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
     }
 
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
-      DWORD_PTR itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
+      const auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
       LPCTSTR itemText = CMFCToolBarComboBoxButton::GetItem(curSel);
       if (itemText == nullptr) { itemText = L""; }
 
       CRect rectContent = rectCombo;
       rectContent.right = m_rectButton.left;
 
-      bool isLoadEntry = (itemData == kLoadLineTypes);
+      const bool isLoadEntry = (itemData == kLoadLineTypes);
 
       // Dash pattern preview area (~DPI-scaled 1" or 64px at 96 DPI)
       UINT dpi = ::GetDpiForSystem();
       if (dpi == 0) { dpi = 96; }
-      int previewWidth = ::MulDiv(64, dpi, 96);
+      const int previewWidth = ::MulDiv(64, dpi, 96);
 
       if (!isLoadEntry) {
         int previewRight = rectContent.left + 2 + previewWidth;
         if (previewRight > rectContent.right - 40) {
           previewRight = rectContent.right - 40;  // Leave room for text
         }
-        CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
+        const CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
 
         // Determine the line type pointer — only dereference when a document is open
         // and the pointer is verified against the current document's line type table
@@ -500,8 +500,8 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   dc.Attach(drawItemStruct->hDC);
 
   CRect itemRect(drawItemStruct->rcItem);
-  auto itemData = drawItemStruct->itemData;
-  UINT itemState = drawItemStruct->itemState;
+  const auto itemData = drawItemStruct->itemData;
+  const auto itemState = drawItemStruct->itemState;
 
   const auto& schemeColors = Eo::chromeColors;
 
@@ -522,12 +522,12 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   CString itemText;
   GetLBText(static_cast<int>(drawItemStruct->itemID), itemText);
 
-  bool isLoadEntry = (itemData == EoCtrlLineTypeComboBox::kLoadLineTypes);
+  const bool isLoadEntry = (itemData == EoCtrlLineTypeComboBox::kLoadLineTypes);
 
   // Dash pattern preview area (~DPI-scaled 1" or 64px at 96 DPI)
   UINT dpi = ::GetDpiForWindow(m_hWnd);
   if (dpi == 0) { dpi = 96; }
-  int previewWidth = ::MulDiv(64, dpi, 96);
+  const int previewWidth = ::MulDiv(64, dpi, 96);
 
   if (!isLoadEntry) {
     int previewRight = itemRect.left + 2 + previewWidth;

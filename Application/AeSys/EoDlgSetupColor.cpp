@@ -95,7 +95,7 @@ void EoDlgSetupColor::OnBnClickedBylayerButton() {
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnChangeColorEdit() {
-  std::uint16_t Index = std::uint16_t(GetDlgItemInt(IDC_COLOR_EDIT));
+  const auto Index = std::uint16_t(GetDlgItemInt(IDC_COLOR_EDIT));
   DrawSelectionInformation(Index);
 }
 BOOL EoDlgSetupColor::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) {

@@ -60,7 +60,7 @@ EoDbGroup* AeSysView::SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt) {
   m_EngagedGroup = nullptr;
   m_EngagedPrimitive = nullptr;
 
-  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
+  const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
@@ -85,7 +85,7 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& point) {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 
-  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
+  const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   double apertureSize = m_SelectApertureSize;
 
@@ -158,7 +158,7 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
 
   double tol = m_SelectApertureSize;
 
-  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
+  const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   auto GroupPosition = GetFirstVisibleGroupPosition();
   while (GroupPosition != nullptr) {
@@ -203,7 +203,7 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
 }
 
 void AeSysView::OnToolsPrimitiveSnapto() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   EoGePoint3d ptDet;
 

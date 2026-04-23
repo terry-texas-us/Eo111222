@@ -16,7 +16,7 @@ EoGeTransformMatrix EoGsModelTransform::GetInverseCompositeMatrix() const {
 
 void EoGsModelTransform::InverseTransformPoint(EoGePoint3d& point) const {
   if (m_depth > 0) {
-    auto inverse = GetInverseCompositeMatrix();
+    const auto inverse = GetInverseCompositeMatrix();
     point = inverse * point;
   }
 }

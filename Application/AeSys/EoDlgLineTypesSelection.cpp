@@ -24,10 +24,10 @@ int LineTypeSortPriority(const CString& name) {
 /// ByBlock, ByLayer, and CONTINUOUS always sort before other entries;
 /// remaining entries are sorted alphabetically.
 int CALLBACK CompareLineTypeNames(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) {
-  auto* lineType1 = reinterpret_cast<EoDbLineType*>(lParam1);
-  auto* lineType2 = reinterpret_cast<EoDbLineType*>(lParam2);
+  auto* const lineType1 = reinterpret_cast<EoDbLineType*>(lParam1);
+  auto* const lineType2 = reinterpret_cast<EoDbLineType*>(lParam2);
   if (lineType1 == nullptr || lineType2 == nullptr) { return 0; }
-  int priority1 = LineTypeSortPriority(lineType1->Name());
+  const int priority1 = LineTypeSortPriority(lineType1->Name());
   int priority2 = LineTypeSortPriority(lineType2->Name());
   if (priority1 != priority2) { return priority1 - priority2; }
   return lineType1->Name().CompareNoCase(lineType2->Name());
@@ -125,7 +125,7 @@ BOOL EoDlgLineTypesSelection::PreTranslateMessage(MSG* messageStruct) {
   if (messageStruct->message == WM_KEYDOWN) {
     // Check for digit keys '0' to '9'
     if (messageStruct->wParam >= '0' && messageStruct->wParam <= '9') {
-      auto index = static_cast<int>(messageStruct->wParam - '0');
+      const auto index = static_cast<int>(messageStruct->wParam - '0');
       int itemCount = m_lineTypesListControl.GetItemCount();
       if (index < itemCount) {
         m_lineTypesListControl.SetItemState(index, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
@@ -159,7 +159,7 @@ void EoDlgLineTypesSelection::PopulateList() {
     m_lineTypes.GetNextAssoc(position, name, lineType);
 
     CString indexString = lineType->IndexToString();
-    int indexItem = m_lineTypesListControl.InsertItem(lineType->Index(), indexString);
+    const int indexItem = m_lineTypesListControl.InsertItem(lineType->Index(), indexString);
     m_lineTypesListControl.SetItemText(indexItem, 1, lineType->Name());
     m_lineTypesListControl.SetItemText(
         indexItem, lineTypePreviewColumnIndex, L"");  // Empty text for preview column; we'll draw it custom
@@ -196,7 +196,7 @@ void EoDlgLineTypesSelection::PopulateFileList() {
     m_fileLineTypes.GetNextAssoc(position, name, lineType);
 
     CString indexString = lineType->IndexToString();
-    int indexItem = m_fileLineTypesListControl.InsertItem(lineType->Index(), indexString);
+    const int indexItem = m_fileLineTypesListControl.InsertItem(lineType->Index(), indexString);
     m_fileLineTypesListControl.SetItemText(indexItem, 1, lineType->Name());
     m_fileLineTypesListControl.SetItemText(indexItem, lineTypePreviewColumnIndex, L"");
     m_fileLineTypesListControl.SetItemData(indexItem, reinterpret_cast<DWORD_PTR>(lineType));
@@ -230,26 +230,26 @@ void EoDlgLineTypesSelection::DrawLineTypePreview(
 
     case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
       if (listViewCustomDraw->iSubItem == lineTypePreviewColumnIndex) {
-        int item = static_cast<int>(listViewCustomDraw->nmcd.dwItemSpec);
-        auto* lineType = reinterpret_cast<EoDbLineType*>(listControl.GetItemData(item));
+        const auto item = static_cast<int>(listViewCustomDraw->nmcd.dwItemSpec);
+        auto* const lineType = reinterpret_cast<EoDbLineType*>(listControl.GetItemData(item));
 
         if (lineType) {
           CDC controlContext;
           controlContext.Attach(listViewCustomDraw->nmcd.hdc);
           CRect controlRect(listViewCustomDraw->nmcd.rc);
 
-          auto state = listControl.GetItemState(item, LVIS_SELECTED);
-          COLORREF backgroundColor =
+          const auto state = listControl.GetItemState(item, LVIS_SELECTED);
+          const COLORREF backgroundColor =
               (state & LVIS_SELECTED) ? GetSysColor(COLOR_HIGHLIGHT) : GetSysColor(COLOR_WINDOW);
           controlContext.FillSolidRect(controlRect, backgroundColor);
 
           const auto& dashElements = lineType->DashElements();
 
           if (!dashElements.empty()) {
-            int yCenter = controlRect.top + controlRect.Height() / 2;
-            double xStart = controlRect.left + 4.0;
-            double xEnd = controlRect.right - 4.0;
-            double availableWidth = xEnd - xStart;
+            const int yCenter = controlRect.top + controlRect.Height() / 2;
+            const double xStart = controlRect.left + 4.0;
+            const double xEnd = controlRect.right - 4.0;
+            const double availableWidth = xEnd - xStart;
 
             // Compute total pattern length from absolute dash/gap values.
             double patternLength = lineType->GetPatternLength();
@@ -257,14 +257,14 @@ void EoDlgLineTypesSelection::DrawLineTypePreview(
 
             // Scale the pattern so it repeats ~3 times across the preview width.
             constexpr double targetRepetitions = 3.0;
-            double scale = availableWidth / (patternLength * targetRepetitions);
+            const double scale = availableWidth / (patternLength * targetRepetitions);
 
             CPen pen(PS_SOLID, 1, Eo::colorBlack);
             CPen* oldPen = controlContext.SelectObject(&pen);
 
             double x = xStart;
             while (x < xEnd) {
-              for (double len : dashElements) {
+              for (const double len : dashElements) {
                 double pixelLen = std::abs(len) * scale;
                 if (pixelLen < 1.0) { pixelLen = 1.0; }
                 if (len > 0.0) {

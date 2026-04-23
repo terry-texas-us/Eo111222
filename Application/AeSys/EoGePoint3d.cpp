@@ -40,9 +40,9 @@ EoGePoint3d EoGePoint3d::operator/(double t) const {
 }
 
 double EoGePoint3d::DistanceTo(const EoGePoint3d& p) const noexcept {
-  double xDelta = p.x - x;
-  double yDelta = p.y - y;
-  double zDelta = p.z - z;
+  const double xDelta = p.x - x;
+  const double yDelta = p.y - y;
+  const double zDelta = p.z - z;
   return std::sqrt(xDelta * xDelta + yDelta * yDelta + zDelta * zDelta);
 }
 
@@ -93,15 +93,15 @@ int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, cons
 EoGePoint3d EoGePoint3d::RotateAboutAxis(
     const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, double angle) {
   if (referenceAxis == EoGeVector3d::positiveUnitZ) {
-    double sinAngle = std::sin(angle);
-    double cosAngle = std::cos(angle);
+    const double sinAngle = std::sin(angle);
+    const double cosAngle = std::cos(angle);
 
-    EoGeVector3d v(referenceOrigin, *this);
+    const EoGeVector3d v(referenceOrigin, *this);
 
     return (EoGePoint3d(referenceOrigin.x + (v.x * cosAngle - v.y * sinAngle),
         referenceOrigin.y + (v.x * sinAngle + v.y * cosAngle), z));
   } else {
-    EoGeTransformMatrix transformMatrix(referenceOrigin, referenceAxis, angle);
+    const EoGeTransformMatrix transformMatrix(referenceOrigin, referenceAxis, angle);
     return (transformMatrix * (*this));
   }
 }
@@ -119,8 +119,8 @@ void EoGePoint3d::Write(CFile& file) const {
 }
 
 double EoGePoint3d::Distance(const EoGePoint3d& p, const EoGePoint3d& q) noexcept {
-  double x = q.x - p.x;
-  double y = q.y - p.y;
-  double z = q.z - p.z;
+  const double x = q.x - p.x;
+  const double y = q.y - p.y;
+  const double z = q.z - p.z;
   return std::sqrt(x * x + y * y + z * z);
 }

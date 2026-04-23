@@ -33,23 +33,23 @@ void EoDlgActiveViewKeyplan::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  double ViewportWidth = m_ActiveView->WidthInInches();
-  double ViewportHeight = m_ActiveView->HeightInInches();
+  const double viewportWidth = m_ActiveView->WidthInInches();
+  const double viewportHeight = m_ActiveView->HeightInInches();
 
-  double UMin = -ViewportWidth * 0.5;
-  double UMax = UMin + ViewportWidth;
+  double UMin = -viewportWidth * 0.5;
+  double UMax = UMin + viewportWidth;
 
-  double VMin = -ViewportHeight * 0.5;
-  double VMax = VMin + ViewportHeight;
+  double VMin = -viewportHeight * 0.5;
+  double VMax = VMin + viewportHeight;
 
   m_ActiveView->ModelViewAdjustWindow(UMin, VMin, UMax, VMax, 1.0);
 
-  auto UExtent = std::abs(UMax - UMin);
-  auto VExtent = std::abs(VMax - VMin);
+  const auto UExtent = std::abs(UMax - UMin);
+  const auto VExtent = std::abs(VMax - VMin);
 
   auto cursorPosition = app.GetCursorPosition();
-  auto cameraDirection = m_ActiveView->CameraDirection();
-  auto target = m_ActiveView->CameraTarget();
+  const auto cameraDirection = m_ActiveView->CameraDirection();
+  const auto target = m_ActiveView->CameraTarget();
   EoGeLine::IntersectionWithPln(cursorPosition, cameraDirection, target, cameraDirection, &cursorPosition);
 
   UMin = cursorPosition.x - (UExtent * 0.5);
@@ -57,16 +57,16 @@ BOOL EoDlgActiveViewKeyplan::OnInitDialog() {
   VMin = cursorPosition.y - (VExtent * 0.5);
   VMax = VMin + VExtent;
 
-  CRect KeyplanArea;
-  GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&KeyplanArea);
+  CRect keyplanArea;
+  GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&keyplanArea);
 
-  double UMinOverview = target.x + m_ActiveView->OverviewUMin();
-  double VMinOverview = target.y + m_ActiveView->OverviewVMin();
+  const double UMinOverview = target.x + m_ActiveView->OverviewUMin();
+  const double VMinOverview = target.y + m_ActiveView->OverviewVMin();
 
-  m_rcWnd.left = Eo::Round((UMin - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
-  m_rcWnd.right = Eo::Round((UMax - UMinOverview) / m_ActiveView->OverviewUExt() * KeyplanArea.right);
-  m_rcWnd.top = Eo::Round((1.0 - (VMax - VMinOverview) / m_ActiveView->OverviewVExt()) * KeyplanArea.bottom);
-  m_rcWnd.bottom = Eo::Round((1.0 - (VMin - VMinOverview) / m_ActiveView->OverviewVExt()) * KeyplanArea.bottom);
+  m_rcWnd.left = Eo::Round((UMin - UMinOverview) / m_ActiveView->OverviewUExt() * keyplanArea.right);
+  m_rcWnd.right = Eo::Round((UMax - UMinOverview) / m_ActiveView->OverviewUExt() * keyplanArea.right);
+  m_rcWnd.top = Eo::Round((1.0 - (VMax - VMinOverview) / m_ActiveView->OverviewVExt()) * keyplanArea.bottom);
+  m_rcWnd.bottom = Eo::Round((1.0 - (VMin - VMinOverview) / m_ActiveView->OverviewVExt()) * keyplanArea.bottom);
 
   Refresh();
   return TRUE;
@@ -81,17 +81,17 @@ void EoDlgActiveViewKeyplan::OnOK() {
 
   EoGePoint3d ptTarget = m_ActiveView->CameraTarget();
 
-  double OverviewUMin = m_ActiveView->OverviewUMin();
-  double UMin = m_rcWnd.left / static_cast<double>(rcKey.right) * m_ActiveView->OverviewUExt() + OverviewUMin;
-  double UMax = m_rcWnd.right / static_cast<double>(rcKey.right) * m_ActiveView->OverviewUExt() + OverviewUMin;
+  const double overviewUMin = m_ActiveView->OverviewUMin();
+  double UMin = m_rcWnd.left / static_cast<double>(rcKey.right) * m_ActiveView->OverviewUExt() + overviewUMin;
+  double UMax = m_rcWnd.right / static_cast<double>(rcKey.right) * m_ActiveView->OverviewUExt() + overviewUMin;
 
-  double OverviewVMin = m_ActiveView->OverviewVMin();
-  double VMin = (-m_rcWnd.bottom / static_cast<double>(rcKey.bottom + 1)) * m_ActiveView->OverviewVExt() + OverviewVMin;
-  double VMax = (-m_rcWnd.top / static_cast<double>(rcKey.bottom + 1)) * m_ActiveView->OverviewVExt() + OverviewVMin;
+  const double overviewVMin = m_ActiveView->OverviewVMin();
+  double VMin = (-m_rcWnd.bottom / static_cast<double>(rcKey.bottom + 1)) * m_ActiveView->OverviewVExt() + overviewVMin;
+  double VMax = (-m_rcWnd.top / static_cast<double>(rcKey.bottom + 1)) * m_ActiveView->OverviewVExt() + overviewVMin;
 
-  double Ratio = (m_ActiveView->WidthInInches() / std::abs(UMax - UMin));
+  const double ratio = (m_ActiveView->WidthInInches() / std::abs(UMax - UMin));
   m_ActiveView->CopyActiveModelViewToPreviousModelView();
-  m_ActiveView->ModelViewAdjustWindow(UMin, VMin, UMax, VMax, Ratio);
+  m_ActiveView->ModelViewAdjustWindow(UMin, VMin, UMax, VMax, ratio);
   m_ActiveView->SetViewWindow(UMin, VMin, UMax, VMax);
 }
 
@@ -108,8 +108,8 @@ void EoDlgActiveViewKeyplan::Refresh() {
   if (m_hbmKeyplan == nullptr) {
     CRect rcKey;
     GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&rcKey);
-    CDC* DeviceContext = m_ActiveView->GetDC();
-    m_hbmKeyplan = CreateCompatibleBitmap(DeviceContext->GetSafeHdc(), rcKey.right, rcKey.bottom);
+    CDC* deviceContext = m_ActiveView->GetDC();
+    m_hbmKeyplan = CreateCompatibleBitmap(deviceContext->GetSafeHdc(), rcKey.right, rcKey.bottom);
   }
   dcMem.SelectObject(CBitmap::FromHandle(m_hbmKeyplan));
 

@@ -12,7 +12,7 @@ void AeSysView::OnTrapModeRemoveAdd() { OnTrapCommandsAddGroups(); }
 void AeSysView::OnTrapModePoint() {
   auto* document = GetDocument();
 
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
@@ -36,7 +36,7 @@ void AeSysView::OnTrapModeStitch() {
     RubberBandingStartAtEnable(m_PreviousPnt, Lines);
     m_PreviousOp = ModeLineHighlightOp(ID_OP2);
   } else {
-    EoGePoint3d pt = GetCursorPosition();
+    const EoGePoint3d pt = GetCursorPosition();
 
     if (m_PreviousPnt == pt) { return; }
 
@@ -68,7 +68,7 @@ void AeSysView::OnTrapModeField() {
     RubberBandingStartAtEnable(m_PreviousPnt, Rectangles);
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
-    auto cursorPosition = GetCursorPosition();
+    const auto cursorPosition = GetCursorPosition();
     if (m_PreviousPnt == cursorPosition) { return; }
 
     auto* document = GetDocument();
@@ -77,8 +77,8 @@ void AeSysView::OnTrapModeField() {
 
     ModelViewTransformPoints(2, ptView);
 
-    EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
-    EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
+    const EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
+    const EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
 
     auto position = GetFirstVisibleGroupPosition();
     while (position != nullptr) {
@@ -129,7 +129,7 @@ void AeSysView::OnTrapModeEngage() {
 void AeSysView::OnTrapModeMenu() {
   CPoint currentPosition;
   ::GetCursorPos(&currentPosition);
-  auto trapMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
+  const auto trapMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
   auto* subMenu = CMenu::FromHandle(GetSubMenu(trapMenu, 0));
   subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
   ::DestroyMenu(trapMenu);
@@ -155,7 +155,7 @@ void AeSysView::OnTraprModeRemoveAdd() { OnTrapCommandsAddGroups(); }
 void AeSysView::OnTraprModePoint() {
   auto* document = GetDocument();
 
-  EoGePoint3d cursorPosition = GetCursorPosition();
+  const EoGePoint3d cursorPosition = GetCursorPosition();
 
   EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
@@ -180,7 +180,7 @@ void AeSysView::OnTraprModeStitch() {
     RubberBandingStartAtEnable(m_PreviousPnt, Lines);
     m_PreviousOp = ModeLineHighlightOp(ID_OP2);
   } else {
-    EoGePoint3d cursorPosition = GetCursorPosition();
+    const EoGePoint3d cursorPosition = GetCursorPosition();
 
     if (m_PreviousPnt == cursorPosition) { return; }
     auto* document = GetDocument();
@@ -210,7 +210,7 @@ void AeSysView::OnTraprModeField() {
     RubberBandingStartAtEnable(m_PreviousPnt, Rectangles);
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
-    auto cursorPosition = GetCursorPosition();
+    const auto cursorPosition = GetCursorPosition();
     if (m_PreviousPnt == cursorPosition) { return; }
 
     auto* document = GetDocument();
@@ -219,8 +219,8 @@ void AeSysView::OnTraprModeField() {
 
     ModelViewTransformPoints(2, ptView);
 
-    EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
-    EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
+    const EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
+    const EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
 
     auto position = document->GetFirstTrappedGroupPosition();
     while (position != nullptr) {
@@ -251,7 +251,7 @@ void AeSysView::OnTraprModeEngage() {
 void AeSysView::OnTraprModeMenu() {
   CPoint currentPosition;
   ::GetCursorPos(&currentPosition);
-  HMENU TrapMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
+  const HMENU TrapMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
   CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(TrapMenu, 0));
   SubMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
   ::DestroyMenu(TrapMenu);

@@ -17,7 +17,7 @@ void EoDbGroupList::AddToTreeViewControl(HWND hTree, HTREEITEM htiParent) {
 
   while (position != nullptr) {
     auto* group = GetNext(position);
-    HTREEITEM htiSeg = group->AddToTreeViewControl(hTree, htiParent);
+    const HTREEITEM htiSeg = group->AddToTreeViewControl(hTree, htiParent);
     if (group->GetCount() == 1) { TreeView_Expand(hTree, htiSeg, TVE_EXPAND); }
   }
 }
@@ -47,7 +47,7 @@ void EoDbGroupList::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
 }
 
 POSITION EoDbGroupList::Remove(EoDbGroup* group) {
-  auto position = Find(group);
+  const auto position = Find(group);
   if (position != nullptr) { RemoveAt(position); }
 
   return position;
@@ -125,7 +125,7 @@ int EoDbGroupList::RemoveEmptyGroups() {
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
-    POSITION posPrev = position;
+    const auto posPrev = position;
     auto* group = GetNext(position);
     if (group->GetCount() == 0) {
       RemoveAt(posPrev);

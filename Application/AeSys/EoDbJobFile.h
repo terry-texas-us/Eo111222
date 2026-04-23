@@ -51,6 +51,6 @@ class EoDbJobFile {
   EoDbPrimitive* ConvertVersion1PointPrimitive();
 
   /// @brief Converts a deprecated version 1 CSpline to a BSpline
-  void ConvertCSplineToBSpline();
+  void ConvertCSplineToBSpline() const;
   void ConvertTagToPoint();
 };

@@ -50,7 +50,7 @@ void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool id
 
       COLORREF* pCurColTbl = pColTbl;
 
-      bool LayerIsDetectable = IsOpened() || IsWork() || IsActive();
+      const bool LayerIsDetectable = IsOpened() || IsWork() || IsActive();
 
       pColTbl = LayerIsDetectable ? Eo::ColorPalette : Eo::GrayPalette;
 
@@ -75,7 +75,7 @@ void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool id
 }
 
 std::int16_t EoDbLayer::LineTypeIndex() const {
-  std::int16_t index = (m_lineType == nullptr ? 0 : m_lineType->Index());
+  const std::int16_t index = (m_lineType == nullptr ? 0 : m_lineType->Index());
   return index;
 }
 

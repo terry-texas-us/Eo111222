@@ -198,9 +198,9 @@ void EoDbAttrib::Write(CFile& file, std::uint8_t* buffer) {
 
 EoDbAttrib* EoDbAttrib::ReadFromPeg(CFile& file) {
   // Read V1 text data (same layout as kTextPrimitive, minus the type code which was already consumed)
-  auto color = EoDb::ReadInt16(file);
+  const auto color = EoDb::ReadInt16(file);
   (void)color;
-  auto lineType = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
   (void)lineType;
   EoDbFontDefinition fontDefinition;
   fontDefinition.Read(file);
@@ -212,8 +212,8 @@ EoDbAttrib* EoDbAttrib::ReadFromPeg(CFile& file) {
   // Read V2 attribute extension
   CString tagString;
   EoDb::Read(file, tagString);
-  auto attributeFlags = EoDb::ReadInt16(file);
-  auto insertHandle = EoDb::ReadUInt64(file);
+  const auto attributeFlags = EoDb::ReadInt16(file);
+  const auto insertHandle = EoDb::ReadUInt64(file);
 
   auto* attribPrimitive =
       new EoDbAttrib(fontDefinition, referenceSystem, std::wstring(text.GetString()),

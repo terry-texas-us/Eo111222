@@ -19,7 +19,7 @@ void EoDlgTrapModify::OnOK() {
   if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(Gs::renderState.Color()); }
   if (IsDlgButtonChecked(IDC_MOD_LINE)) { m_Document->ModifyTrappedGroupsLineType(Gs::renderState.LineTypeName()); }
   if (IsDlgButtonChecked(IDC_MOD_FILL)) { ModifyPolygons(); }
-  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
+  const auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
   const auto& fontDefinition = Gs::renderState.FontDefinition();
 
   if (IsDlgButtonChecked(IDC_MOD_NOTE)) {

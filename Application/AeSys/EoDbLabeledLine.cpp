@@ -119,26 +119,26 @@ void EoDbLabeledLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 }
 
 void EoDbLabeledLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  std::int16_t color = LogicalColor();
+  const auto color = LogicalColor();
   Gs::renderState.SetPen(
       view, renderDevice, color, LogicalLineType(), LogicalLineTypeName(), m_lineWeight, m_lineTypeScale);
   m_line.Display(view, renderDevice);
 
   Gs::renderState.SetColor(renderDevice, m_textColor);
 
-  std::int16_t LineType = Gs::renderState.LineTypeIndex();
+  const auto lineType = Gs::renderState.LineTypeIndex();
   Gs::renderState.SetLineType(renderDevice, 1);
 
   DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_text);
 
-  Gs::renderState.SetLineType(renderDevice, LineType);
+  Gs::renderState.SetLineType(renderDevice, lineType);
 }
 
 void EoDbLabeledLine::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(CString(L"<LabeledLine>"));
   EoDbPrimitive::AddReportToMessageList(point);
 
-  double length = Length();
+  const auto length = Length();
   double angle = m_line.AngleFromXAxisXY();
 
   double dRel{};
@@ -191,7 +191,7 @@ EoGePoint3d EoDbLabeledLine::GoToNextControlPoint() {
   } else if (sm_controlPointIndex == 1) {
     sm_controlPointIndex = 0;
   } else {  // Initial rock .. jump to point at lower left or down if vertical
-    EoGePoint3d ptBeg = m_line.begin;
+    const EoGePoint3d ptBeg = m_line.begin;
     EoGePoint3d ptEnd = m_line.end;
 
     if (ptEnd.x > ptBeg.x) {
@@ -312,7 +312,7 @@ void EoDbLabeledLine::SetDefaultNote() {
 
   m_ReferenceSystem.SetOrigin(m_line.Midpoint());
   double angle{};
-  wchar_t cText0 = m_text[0];
+  const wchar_t cText0 = m_text[0];
   if (cText0 != 'R' && cText0 != 'D') {
     angle = m_line.AngleFromXAxisXY();
     double dDis = 0.075;
@@ -324,7 +324,7 @@ void EoDbLabeledLine::SetDefaultNote() {
     EoGeLine(m_ReferenceSystem.Origin(), m_line.end).ProjPtFrom_xy(0.0, dDis, &ptOrigin);
     m_ReferenceSystem.SetOrigin(ptOrigin);
   }
-  auto cameraDirection = activeView->CameraDirection();
+  const auto cameraDirection = activeView->CameraDirection();
 
   EoGeVector3d yDirection = activeView->ViewUp();
   yDirection.RotateAboutArbitraryAxis(cameraDirection, angle);
@@ -371,11 +371,11 @@ void EoDbLabeledLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   SetDefaultNote();
 }
 EoDbLabeledLine* EoDbLabeledLine::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineType = EoDb::ReadInt16(file);
-  auto beginPoint = EoDb::ReadPoint3d(file);
-  auto endPoint = EoDb::ReadPoint3d(file);
-  auto textColor = EoDb::ReadInt16(file);
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
+  const auto beginPoint = EoDb::ReadPoint3d(file);
+  const auto endPoint = EoDb::ReadPoint3d(file);
+  const auto textColor = EoDb::ReadInt16(file);
   EoDbFontDefinition fontDefinition;
   fontDefinition.Read(file);
   EoGeReferenceSystem referenceSystem;

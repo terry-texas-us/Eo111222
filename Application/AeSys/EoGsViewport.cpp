@@ -41,7 +41,7 @@ void EoGsViewport::ProjectToClient(CPoint* clientPoints, int numberOfPoints, con
 }
 
 void EoGsViewport::ProjectToClient(CPoint* clientPoints, EoGePoint4dArray& ndcPoints) const {
-  int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
+  const int numberOfPoints = static_cast<int>(ndcPoints.GetSize());
   for (int i = 0; i < numberOfPoints; ++i) {
     clientPoints[i] = ProjectToClient(ndcPoints[i].x, ndcPoints[i].y, ndcPoints[i].w);
   }

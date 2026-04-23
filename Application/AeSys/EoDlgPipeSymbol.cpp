@@ -14,7 +14,7 @@ void EoDlgPipeSymbol::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgPipeSymbol::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  auto Names = App::LoadStringResource(IDS_PIPE_SYMBOL_NAMES);
+  const auto Names = App::LoadStringResource(IDS_PIPE_SYMBOL_NAMES);
   int Position = 0;
   while (Position < Names.GetLength()) {
     CString NamesItem = Names.Tokenize(L"\n", Position);

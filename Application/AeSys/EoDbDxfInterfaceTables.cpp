@@ -212,8 +212,8 @@ void EoDbDxfInterface::ConvertLayerTable(const EoDxfLayer& layer, AeSysDoc* docu
   edited. (This flag is for the benefit of AutoCAD commands. It can be ignored by most programs that read DXF files and
   need not be set by programs that write DXF files)
    */
-  auto isFrozen = (layer.m_flagValues & 0x01) == 0x01;
-  auto isLocked = (layer.m_flagValues & 0x04) == 0x04;
+  const auto isFrozen = (layer.m_flagValues & 0x01) == 0x01;
+  const auto isLocked = (layer.m_flagValues & 0x04) == 0x04;
 
   // Resolve the line type once for both space layers
   const auto& lineTypeName = layer.m_linetypeName;
@@ -287,7 +287,7 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
   EoDbLineType* convertedLinetype{};
 
   if (!lineTypeTable->Lookup(lineTypeName.c_str(), convertedLinetype)) {
-    auto numberOfElements =
+    const auto numberOfElements =
         static_cast<std::uint16_t>(linetype.m_numberOfLinetypeElements);  // Number of linetype elements (group code 73)
     // double patternLength = linetype.length;                        // group code 40
 
@@ -296,9 +296,9 @@ void EoDbDxfInterface::ConvertLinetypesTable(const EoDxfLinetype& linetype, AeSy
     for (std::uint16_t index = 0; index < numberOfElements; index++) {
       dashLengths[index] = linetype.path[index];  // group code 49
     }
-    CString name(lineTypeName.c_str());
-    CString desc(lineTypeDesc.c_str());
-    auto lineTypeIndex = lineTypeTable->LegacyLineTypeIndex(name);
+    const CString name(lineTypeName.c_str());
+    const CString desc(lineTypeDesc.c_str());
+    const auto lineTypeIndex = lineTypeTable->LegacyLineTypeIndex(name);
 
     convertedLinetype = new EoDbLineType(lineTypeIndex, name, desc, numberOfElements, dashLengths.data());
     convertedLinetype->SetHandle(linetype.m_handle);
@@ -434,7 +434,7 @@ void EoDbDxfInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
  * @param ownerHandle The entity's owner BLOCK_RECORD handle (code 330). For paper-space
  *   entities this identifies the layout. NoHandle falls back to the default layout (0x1E).
  */
-EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle) {
+EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle) const {
   // Override space for entities inside *Paper_Space layout pseudo-blocks.
   // Many DXF writers (including ODA Converter) don't set group code 67 for entities
   // inside *Paper_Space blocks — the block context already implies paper space.
@@ -444,12 +444,12 @@ EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* d
     space = EoDxf::Space::PaperSpace;
   }
 
-  auto layerName = primitive->LayerName().c_str();
+  const auto layerName = primitive->LayerName().c_str();
 
   EoDbLayer* layer{};
   if (space == EoDxf::Space::PaperSpace) {
     // Determine the layout handle from the entity's owner handle
-    auto layoutHandle = (ownerHandle != EoDxf::NoHandle) ? ownerHandle : EoDxf::Handles::PaperSpaceBlockRecord;
+    const auto layoutHandle = (ownerHandle != EoDxf::NoHandle) ? ownerHandle : EoDxf::Handles::PaperSpaceBlockRecord;
 
     layer = document->FindLayerInLayout(layerName, layoutHandle);
     if (layer == nullptr) {

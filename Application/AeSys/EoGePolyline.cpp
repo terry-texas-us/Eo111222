@@ -71,9 +71,9 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
   transformMatrix.Inverse();
 
   // Determine the parameter (angular increment)
-  double AngleIncrement = Eo::TwoPi / double(numberOfPoints);
-  double CosIncrement = std::cos(AngleIncrement);
-  double SinIncrement = std::sin(AngleIncrement);
+  const double AngleIncrement = Eo::TwoPi / double(numberOfPoints);
+  const double CosIncrement = std::cos(AngleIncrement);
+  const double SinIncrement = std::sin(AngleIncrement);
   pts.SetSize(numberOfPoints);
 
   pts[0].Set(1.0, 0.0, 0.0);

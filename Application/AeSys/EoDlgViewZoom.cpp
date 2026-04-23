@@ -12,7 +12,7 @@ void EoDlgViewZoom::DoDataExchange(CDataExchange* dataExchange) {
   DDV_MinMaxDouble(dataExchange, m_Ratio, 0.001, 999.0);
 }
 BOOL EoDlgViewZoom::OnInitDialog() {
-  double factor = std::pow(10.0, 3);
+  const double factor = std::pow(10.0, 3);
   m_Ratio = std::round(m_Ratio * factor) / factor;
 
   CDialog::OnInitDialog();

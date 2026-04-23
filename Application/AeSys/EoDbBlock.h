@@ -61,7 +61,7 @@ class EoDbBlock : public EoDbGroup {
   [[nodiscard]] bool IsSystemBlock(const CString& blockName) const noexcept {
     if (blockName.IsEmpty()) { return false; }
 
-    wchar_t first = blockName[0];
+    const wchar_t first = blockName[0];
     return first == L'_';
   }
 

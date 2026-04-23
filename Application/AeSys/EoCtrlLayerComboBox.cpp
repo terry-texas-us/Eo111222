@@ -162,7 +162,7 @@ BOOL EoCtrlLayerComboBox::NotifyCommand(int notifyCode) {
 }
 
 void EoCtrlLayerComboBox::OnSelectionChanged() {
-  int selectedIndex = GetCurSel();
+  const int selectedIndex = GetCurSel();
   if (selectedIndex < 0) { return; }
 
   auto* layer = reinterpret_cast<EoDbLayer*>(GetItemData(selectedIndex));
@@ -195,8 +195,8 @@ void EoCtrlLayerComboBox::OnMove() {
 }
 
 BOOL EoCtrlLayerComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
-  DWORD messagePos = ::GetMessagePos();
-  CPoint screenPoint(GET_X_LPARAM(messagePos), GET_Y_LPARAM(messagePos));
+  const auto messagePos = ::GetMessagePos();
+  const CPoint screenPoint(GET_X_LPARAM(messagePos), GET_Y_LPARAM(messagePos));
   CPoint clientPoint = screenPoint;
   if (parentWindow != nullptr) { parentWindow->ScreenToClient(&clientPoint); }
 
@@ -240,7 +240,7 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     return;
   }
 
-  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  const BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
   if (m_bFlat) {
     const auto& schemeColors = Eo::chromeColors;
@@ -256,11 +256,11 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     deviceContext->FillSolidRect(rectCombo, schemeColors.paneBackground);
 
     // Draw icon area with separator line
-    CRect iconRect(rectCombo.left, rectCombo.top, rectCombo.left + kIconAreaWidth - 2, rectCombo.bottom);
+    const CRect iconRect(rectCombo.left, rectCombo.top, rectCombo.left + kIconAreaWidth - 2, rectCombo.bottom);
     DrawLayerIcon(deviceContext, iconRect);
 
     // Subtle vertical separator between icon and combo content
-    int separatorX = rectCombo.left + kIconAreaWidth - 2;
+    const int separatorX = rectCombo.left + kIconAreaWidth - 2;
     CPen separatorPen(PS_SOLID, 1, schemeColors.borderColor);
     CPen* oldPen = deviceContext->SelectObject(&separatorPen);
     deviceContext->MoveTo(separatorX, rectCombo.top + 2);
@@ -268,7 +268,7 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     deviceContext->SelectObject(oldPen);
 
     // Drop-down button.
-    CRect rectButton = m_rectButton;
+    const CRect rectButton = m_rectButton;
     if (CMFCVisualManager::GetInstance() != nullptr) {
       CMFCVisualManager::GetInstance()->OnDrawComboDropButton(
           deviceContext, rectButton, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
@@ -312,7 +312,7 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
         auto& stateImages = GetLayerStateImages();
         constexpr int iconSize = EoCtrlLayerOwnerDrawCombo::kIconSize;
         constexpr int iconStep = EoCtrlLayerOwnerDrawCombo::kIconStep;
-        int iconY = rectContent.top + (rectContent.Height() - iconSize) / 2;
+        const int iconY = rectContent.top + (rectContent.Height() - iconSize) / 2;
         int x = rectContent.left + EoCtrlLayerOwnerDrawCombo::kOnOffX;
 
         // On/Off icon
@@ -331,7 +331,7 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
 
         // Color swatch
         constexpr int swatchSize = EoCtrlLayerOwnerDrawCombo::kColorWidth;
-        int swatchY = rectContent.top + (rectContent.Height() - swatchSize) / 2;
+        const int swatchY = rectContent.top + (rectContent.Height() - swatchSize) / 2;
         CRect swatchRect(x, swatchY, x + swatchSize, swatchY + swatchSize);
         deviceContext->FillSolidRect(swatchRect, layer->ColorValue());
         CBrush borderBrush(schemeColors.borderColor);
@@ -377,11 +377,11 @@ static LRESULT CALLBACK ListboxSubclassProc(
     HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR /*subclassId*/, DWORD_PTR refData) {
   if (message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN) {
     auto* combo = reinterpret_cast<EoCtrlLayerOwnerDrawCombo*>(refData);
-    CPoint point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+    const CPoint point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
     // Hit-test which item
     LRESULT hitResult = ::SendMessage(hwnd, LB_ITEMFROMPOINT, 0, MAKELPARAM(point.x, point.y));
-    int itemIndex = LOWORD(hitResult);
+    const int itemIndex = LOWORD(hitResult);
     if (HIWORD(hitResult) == 0 && itemIndex >= 0 && itemIndex < combo->GetCount()) {
       auto* layer = reinterpret_cast<EoDbLayer*>(combo->GetItemData(itemIndex));
 
@@ -407,7 +407,7 @@ static LRESULT CALLBACK ListboxSubclassProc(
 
       // WM_LBUTTONDOWN icon-area handling
       if (layer != nullptr) {
-        int clickX = point.x;
+        const int clickX = point.x;
         bool handled = false;
         auto* document = AeSysDoc::GetDoc();
 
@@ -515,7 +515,7 @@ void EoCtrlLayerOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   dc.Attach(drawItemStruct->hDC);
 
   CRect itemRect(drawItemStruct->rcItem);
-  UINT itemState = drawItemStruct->itemState;
+  const UINT itemState = drawItemStruct->itemState;
 
   // Guard against dangling layer pointers during document teardown
   auto* document = AeSysDoc::GetDoc();
@@ -560,7 +560,7 @@ void EoCtrlLayerOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   }
 
   auto& stateImages = GetLayerStateImages();
-  int iconY = itemRect.top + (itemRect.Height() - kIconSize) / 2;
+  const int iconY = itemRect.top + (itemRect.Height() - kIconSize) / 2;
   int x = itemRect.left + kOnOffX;
 
   // On/Off icon
@@ -576,7 +576,7 @@ void EoCtrlLayerOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   x += kIconStep;
 
   // Color swatch
-  int swatchY = itemRect.top + (itemRect.Height() - kColorWidth) / 2;
+  const int swatchY = itemRect.top + (itemRect.Height() - kColorWidth) / 2;
   CRect swatchRect(x, swatchY, x + kColorWidth, swatchY + kColorWidth);
   dc.FillSolidRect(swatchRect, layer->ColorValue());
   CBrush borderBrush(schemeColors.borderColor);

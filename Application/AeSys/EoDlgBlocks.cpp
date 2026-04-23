@@ -47,7 +47,7 @@ BOOL EoDlgBlocks::OnInitDialog() {
   captionText += m_document->GetPathName();
   SetWindowTextW(captionText);
 
-  auto* previewWindow = GetDlgItem(IDC_BLOCK_PREVIEW);
+  const auto* previewWindow = GetDlgItem(IDC_BLOCK_PREVIEW);
   m_previewWindowHandle = previewWindow ? previewWindow->GetSafeHwnd() : nullptr;
 
   m_blocksList.SetHorizontalExtent(512);

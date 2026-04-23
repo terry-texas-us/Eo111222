@@ -90,7 +90,7 @@ void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
   EoDbBlock* Block{};
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return; }
 
-  auto hti = tvAddItem(tree, parent, L"<BlockReference>", this);
+  const auto hti = tvAddItem(tree, parent, L"<BlockReference>", this);
 
   ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(tree, hti);
 }
@@ -126,14 +126,14 @@ EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(
   tmScale.Scale(m_scaleFactors);
 
   // Step 3: Rotate around OCS Z-axis by INSERT rotation angle
-  auto tmZRot = EoGeTransformMatrix::ZAxisRotation(std::sin(m_rotation), std::cos(m_rotation));
+  const auto tmZRot = EoGeTransformMatrix::ZAxisRotation(std::sin(m_rotation), std::cos(m_rotation));
 
   // Step 4: Translate by insertion point in OCS (before OCS→WCS transform)
   EoGeTransformMatrix tmInsertOcs;
   tmInsertOcs.Translate(EoGeVector3d(EoGePoint3d::kOrigin, ocsInsertionPoint));
 
   // Step 5: OCS → WCS using the DXF arbitrary axis algorithm
-  EoGeOcsTransform tmOcsToWcs(m_normal);
+  const EoGeOcsTransform tmOcsToWcs(m_normal);
 
   return ((EoGeMatrix)tmNegBase * (EoGeMatrix)tmScale * (EoGeMatrix)tmZRot * (EoGeMatrix)tmInsertOcs *
       (EoGeMatrix)tmOcsToWcs);
@@ -267,14 +267,14 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return false; }
 
-  auto basePoint = Block->BasePoint();
+  const auto basePoint = Block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
 
-  bool bInView = Block->IsInView(view);
+  const bool bInView = Block->IsInView(view);
 
   view->PopModelTransform();
   return bInView;
@@ -293,7 +293,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return ptCtrl; }
 
-  auto basePoint = block->BasePoint();
+  const auto basePoint = block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
@@ -323,14 +323,14 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return false; }
 
-  auto basePoint = block->BasePoint();
+  const auto basePoint = block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
 
-  bool bResult = block->SelectUsingRectangle(view, pt1, pt2);
+  const bool bResult = block->SelectUsingRectangle(view, pt1, pt2);
 
   view->PopModelTransform();
   return bResult;
@@ -341,7 +341,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return bResult; }
-  auto basePoint = block->BasePoint();
+  const auto basePoint = block->BasePoint();
 
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
@@ -378,44 +378,43 @@ void EoDbBlockReference::TranslateUsingMask(EoGeVector3d v, DWORD mask) {
 }
 
 EoDbBlockReference* EoDbBlockReference::ReadLegacyInsertPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineType = EoDb::ReadInt16(file);
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
   CString name;
   EoDb::Read(file, name);
-  auto insertionPoint(EoDb::ReadPoint3d(file));
-  auto xAxis(EoDb::ReadVector3d(file));
-  auto yAxis(EoDb::ReadVector3d(file));
-  auto zAxis(EoDb::ReadVector3d(file));
-  auto numberOfColumns = EoDb::ReadInt16(file);
-  auto numberOfRows = EoDb::ReadInt16(file);
-  double columnSpacing = EoDb::ReadDouble(file);
-  double rowSpacing = EoDb::ReadDouble(file);
-
+  const auto insertionPoint(EoDb::ReadPoint3d(file));
+  const auto xAxis(EoDb::ReadVector3d(file));
+  const auto yAxis(EoDb::ReadVector3d(file));
+  const auto zAxis(EoDb::ReadVector3d(file));
+  const auto numberOfColumns = EoDb::ReadInt16(file);
+  const auto numberOfRows = EoDb::ReadInt16(file);
+  const double columnSpacing = EoDb::ReadDouble(file);
+  const double rowSpacing = EoDb::ReadDouble(file);
   // Convert legacy axis vectors to modern normal/scaleFactors/rotation representation.
   // Legacy format stores a full 3-axis local reference system; modern format stores
   // normal direction, per-axis scale factors, and a rotation angle relative to OCS X.
-  auto scaleX = xAxis.Length();
-  auto scaleY = yAxis.Length();
-  auto scaleZ = zAxis.Length();
+  const auto scaleX = xAxis.Length();
+  const auto scaleY = yAxis.Length();
+  const auto scaleZ = zAxis.Length();
 
   EoGeVector3d normal;
   if (!zAxis.IsNearNull()) {
     normal = zAxis.Unitized();
   } else {
-    auto cross = CrossProduct(xAxis, yAxis);
+    const auto cross = CrossProduct(xAxis, yAxis);
     normal = cross.IsNearNull() ? EoGeVector3d::positiveUnitZ : cross.Unitized();
   }
 
   double rotation = 0.0;
   if (scaleX > Eo::geometricTolerance) {
-    auto unitX = xAxis * (1.0 / scaleX);
+    const auto unitX = xAxis * (1.0 / scaleX);
     auto ocsXAxis = ComputeArbitraryAxis(normal);
     ocsXAxis.Unitize();
     auto ocsYAxis = CrossProduct(normal, ocsXAxis);
     rotation = atan2(DotProduct(unitX, ocsYAxis), DotProduct(unitX, ocsXAxis));
   }
 
-  EoGeVector3d scaleFactors(scaleX, scaleY, scaleZ);
+  const EoGeVector3d scaleFactors(scaleX, scaleY, scaleZ);
 
   auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(lineType),
       name, insertionPoint, normal, scaleFactors, rotation);
@@ -428,18 +427,18 @@ EoDbBlockReference* EoDbBlockReference::ReadLegacyInsertPeg(CFile& file) {
 }
 
 EoDbBlockReference* EoDbBlockReference::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineType = EoDb::ReadInt16(file);
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
   CString name;
   EoDb::Read(file, name);
-  auto insertionPoint(EoDb::ReadPoint3d(file));
-  auto normal(EoDb::ReadVector3d(file));
-  auto scaleFactors(EoDb::ReadVector3d(file));
-  double rotation = EoDb::ReadDouble(file);
-  auto numberOfColumns = EoDb::ReadInt16(file);
-  auto numberOfRows = EoDb::ReadInt16(file);
-  double columnSpacing = EoDb::ReadDouble(file);
-  double rowSpacing = EoDb::ReadDouble(file);
+  const auto insertionPoint(EoDb::ReadPoint3d(file));
+  const auto normal(EoDb::ReadVector3d(file));
+  const auto scaleFactors(EoDb::ReadVector3d(file));
+  const double rotation = EoDb::ReadDouble(file);
+  const auto numberOfColumns = EoDb::ReadInt16(file);
+  const auto numberOfRows = EoDb::ReadInt16(file);
+  const double columnSpacing = EoDb::ReadDouble(file);
+  const double rowSpacing = EoDb::ReadDouble(file);
 
   auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(lineType),
       name, insertionPoint, normal, scaleFactors, rotation);
@@ -469,11 +468,11 @@ bool EoDbBlockReference::Write(CFile& file) {
 
 void EoDbBlockReference::WriteV2Extension(CFile& file) const {
   EoDb::WriteUInt16(file, static_cast<std::uint16_t>(m_attributeHandles.size()));
-  for (auto handle : m_attributeHandles) { EoDb::WriteUInt64(file, handle); }
+  for (const auto handle : m_attributeHandles) { EoDb::WriteUInt64(file, handle); }
 }
 
 void EoDbBlockReference::ReadV2Extension(CFile& file) {
-  auto count = EoDb::ReadUInt16(file);
+  const auto count = EoDb::ReadUInt16(file);
   m_attributeHandles.clear();
   m_attributeHandles.reserve(count);
   for (std::uint16_t i = 0; i < count; ++i) { m_attributeHandles.push_back(EoDb::ReadUInt64(file)); }

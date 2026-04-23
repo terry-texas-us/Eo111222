@@ -53,10 +53,10 @@ void EoCtrlColorsButton::DrawCell(CDC* deviceContext, std::uint16_t index, COLOR
   // border thickness scaled for DPI
   double scale = 1.0;
   if (GetSafeHwnd()) {
-    auto dpi = static_cast<double>(GetDpiForSystem());
+    const auto dpi = static_cast<double>(GetDpiForSystem());
     scale = dpi / 96.0;
   }
-  int frameThickness = std::max(1, ScaleInt(scale, 1));
+  const int frameThickness = std::max(1, ScaleInt(scale, 1));
 
   if (index == m_currentIndex || index == m_selectedIndex) {
     CBrush FrameBrush;
@@ -88,13 +88,13 @@ CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
   // Apply scaling to spacing/margins when computing final size
   double scale = 1.0;
   if (GetSafeHwnd()) {
-    auto dpi = static_cast<double>(GetDpiForSystem());
+    const auto dpi = static_cast<double>(GetDpiForSystem());
     scale = dpi / 96.0;
   }
-  int scaledSpacingX = ScaleInt(scale, m_cellSpacing.cx);
-  int scaledMarginX = ScaleInt(scale, m_margins.cx);
-  int scaledSpacingY = ScaleInt(scale, m_cellSpacing.cy);
-  int scaledMarginY = ScaleInt(scale, m_margins.cy);
+  const int scaledSpacingX = ScaleInt(scale, m_cellSpacing.cx);
+  const int scaledMarginX = ScaleInt(scale, m_margins.cx);
+  const int scaledSpacingY = ScaleInt(scale, m_cellSpacing.cy);
+  const int scaledMarginY = ScaleInt(scale, m_margins.cy);
 
   Size.cx += 2 * (scaledSpacingX + scaledMarginX);
   Size.cy += 2 * (scaledSpacingY + scaledMarginY);
@@ -117,17 +117,16 @@ CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
 void EoCtrlColorsButton::SubItemRectangleByIndex(std::uint16_t index, CRect& rectangle) const {
   double scale{1.0};
   if (GetSafeHwnd()) {
-    auto dpi = static_cast<double>(GetDpiForSystem());
+    const auto dpi = static_cast<double>(GetDpiForSystem());
     scale = dpi / 96.0;
   }
 
-  int xMargins = ScaleInt(scale, m_margins.cx);
-  int yMargins = ScaleInt(scale, m_margins.cy);
-  int xCellSpacing = ScaleInt(scale, m_cellSpacing.cx);
-  int yCellSpacing = ScaleInt(scale, m_cellSpacing.cy);
-  int xCellSize = ScaleInt(scale, m_cellSize.cx);
-  int yCellSize = ScaleInt(scale, m_cellSize.cy);
-
+  const int xMargins = ScaleInt(scale, m_margins.cx);
+  const int yMargins = ScaleInt(scale, m_margins.cy);
+  const int xCellSpacing = ScaleInt(scale, m_cellSpacing.cx);
+  const int yCellSpacing = ScaleInt(scale, m_cellSpacing.cy);
+  const int xCellSize = ScaleInt(scale, m_cellSize.cx);
+  const int yCellSize = ScaleInt(scale, m_cellSize.cy);
   rectangle.top = yMargins + yCellSpacing;
   rectangle.left = xMargins + xCellSpacing;
 

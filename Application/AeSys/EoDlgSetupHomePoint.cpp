@@ -29,7 +29,7 @@ void EoDlgSetHomePoint::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetHomePoint::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  auto Names = App::LoadStringResource(IDS_HOME_POINT_SET_NAMES);
+  const auto Names = App::LoadStringResource(IDS_HOME_POINT_SET_NAMES);
   m_HomePointNames.ResetContent();
   int Position = 0;
   while (Position < Names.GetLength()) {
@@ -53,14 +53,14 @@ BOOL EoDlgSetHomePoint::OnInitDialog() {
 void EoDlgSetHomePoint::OnOK() {
   wchar_t itemText[32]{};
 
-  Eo::Units CurrentUnits = app.GetUnits();
+  const auto currentUnits = app.GetUnits();
 
   m_X.GetWindowTextW(itemText, 32);
-  m_CursorPosition.x = app.ParseLength(CurrentUnits, itemText);
+  m_CursorPosition.x = app.ParseLength(currentUnits, itemText);
   m_Y.GetWindowTextW(itemText, 32);
-  m_CursorPosition.y = app.ParseLength(CurrentUnits, itemText);
+  m_CursorPosition.y = app.ParseLength(currentUnits, itemText);
   m_Z.GetWindowTextW(itemText, 32);
-  m_CursorPosition.z = app.ParseLength(CurrentUnits, itemText);
+  m_CursorPosition.z = app.ParseLength(currentUnits, itemText);
 
   int NamesItemIndex = m_HomePointNames.GetCurSel();
 

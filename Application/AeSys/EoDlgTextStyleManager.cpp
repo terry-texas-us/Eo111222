@@ -101,7 +101,7 @@ void EoDlgTextStyleManager::BeginInPlaceEdit(int row, int column) {
   m_editingRow = row;
   m_editingColumn = column;
 
-  CString currentText = m_styleList.GetItemText(row, column);
+  const CString currentText = m_styleList.GetItemText(row, column);
 
   if (!m_inPlaceEdit.GetSafeHwnd()) {
     m_inPlaceEdit.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_RIGHT, subItemRect, &m_styleList,
@@ -137,13 +137,13 @@ void EoDlgTextStyleManager::CommitInPlaceEdit() {
   }
 
   // Update the list display
-  auto formattedText = std::format(L"{:.4f}", newValue);
+  const auto formattedText = std::format(L"{:.4f}", newValue);
   m_styleList.SetItemText(editingRow, editingColumn, formattedText.c_str());
 
   // Find the corresponding style in the document and update it.
   auto* document = AeSysDoc::GetDoc();
   if (document != nullptr) {
-    CString styleName = m_styleList.GetItemText(editingRow, 0);
+    const CString styleName = m_styleList.GetItemText(editingRow, 0);
     auto& textStyleTable = document->TextStyleTable();
     for (auto& style : textStyleTable) {
       if (style.m_flagValues & 0x01) { continue; }

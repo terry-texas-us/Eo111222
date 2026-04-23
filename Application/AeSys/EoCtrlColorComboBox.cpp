@@ -93,10 +93,10 @@ void EoCtrlColorComboBox::Serialize(CArchive& ar) {
     ar << static_cast<DWORD>(m_dwStyle);
 
     // Save only the selected ACI color — items are rebuilt on load.
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     auto selectedColor = static_cast<std::int32_t>(Gs::renderState.Color());
     if (curSel >= 0) {
-      auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
+      const auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
       if (itemData != kMoreColors) { selectedColor = static_cast<std::int32_t>(itemData); }
     }
     ar << selectedColor;
@@ -163,17 +163,17 @@ BOOL EoCtrlColorComboBox::NotifyCommand(int notifyCode) {
 }
 
 void EoCtrlColorComboBox::OnSelectionChanged() {
-  int selectedIndex = GetCurSel();
+  const int selectedIndex = GetCurSel();
   if (selectedIndex < 0) { return; }
 
-  DWORD_PTR data = GetItemData(selectedIndex);
+  const DWORD_PTR data = GetItemData(selectedIndex);
 
   if (data == kMoreColors) {
     // Open the full color selection dialog
     EoDlgSetupColor dialog;
     dialog.m_ColorIndex = static_cast<std::uint16_t>(Gs::renderState.Color());
     if (dialog.DoModal() == IDOK) {
-      auto newColor = static_cast<std::int16_t>(dialog.m_ColorIndex);
+      const auto newColor = static_cast<std::int16_t>(dialog.m_ColorIndex);
       Gs::renderState.SetColor(static_cast<CDC*>(nullptr), newColor);
       auto* activeView = AeSysView::GetActiveView();
       if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Pen); }
@@ -183,7 +183,7 @@ void EoCtrlColorComboBox::OnSelectionChanged() {
     return;
   }
 
-  auto newColor = static_cast<std::int16_t>(data);
+  const auto newColor = static_cast<std::int16_t>(data);
   Gs::renderState.SetColor(static_cast<CDC*>(nullptr), newColor);
   auto* activeView = AeSysView::GetActiveView();
   if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Pen); }
@@ -197,7 +197,7 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     return;
   }
 
-  BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
+  const BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
   if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
@@ -225,26 +225,26 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     // Draw selected item content directly on the toolbar DC.
     // Uses the button's internal item list — not the combo control — because the control
     // may not yet be populated when the toolbar first paints.
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
-      DWORD_PTR itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
+      const auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
       LPCTSTR itemText = CMFCToolBarComboBoxButton::GetItem(curSel);
       if (itemText == nullptr) { itemText = L""; }
 
       CRect rectContent = rectCombo;
       rectContent.right = m_rectButton.left;
 
-      bool isMoreColors = (itemData == kMoreColors);
+      const bool isMoreColors = (itemData == kMoreColors);
 
       constexpr int swatchMargin = 2;
-      int swatchSize = rectContent.Height() - 2 * swatchMargin;
+      const int swatchSize = rectContent.Height() - 2 * swatchMargin;
 
       if (!isMoreColors && swatchSize > 0) {
         CRect swatchRect(rectContent.left + swatchMargin + 1, rectContent.top + swatchMargin,
             rectContent.left + swatchMargin + 1 + swatchSize, rectContent.top + swatchMargin + swatchSize);
 
-        auto aciIndex = static_cast<std::int16_t>(itemData);
-        COLORREF swatchColor = (aciIndex == EoDbPrimitive::COLOR_BYLAYER || aciIndex == EoDbPrimitive::COLOR_BYBLOCK)
+        const auto aciIndex = static_cast<std::int16_t>(itemData);
+        const COLORREF swatchColor = (aciIndex == EoDbPrimitive::COLOR_BYLAYER || aciIndex == EoDbPrimitive::COLOR_BYBLOCK)
             ? RGB(255, 255, 255)
             : AciToColorRef(aciIndex);
         deviceContext->FillSolidRect(swatchRect, swatchColor);
@@ -252,7 +252,7 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
         deviceContext->FrameRect(swatchRect, &borderBrush);
       }
 
-      int textLeft =
+      const int textLeft =
           isMoreColors ? rectContent.left + swatchMargin + 1 : rectContent.left + swatchMargin + 1 + swatchSize + 4;
       CRect textRect(textLeft, rectContent.top, rectContent.right - 1, rectContent.bottom);
 
@@ -349,8 +349,8 @@ void EoCtrlColorOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   dc.Attach(drawItemStruct->hDC);
 
   CRect itemRect(drawItemStruct->rcItem);
-  auto itemData = drawItemStruct->itemData;
-  UINT itemState = drawItemStruct->itemState;
+  const auto itemData = drawItemStruct->itemData;
+  const UINT itemState = drawItemStruct->itemState;
 
   const auto& schemeColors = Eo::chromeColors;
 
@@ -375,11 +375,11 @@ void EoCtrlColorOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   GetLBText(static_cast<int>(drawItemStruct->itemID), itemText);
 
   constexpr int swatchMargin = 2;
-  int swatchSize = itemRect.Height() - 2 * swatchMargin;
+  const int swatchSize = itemRect.Height() - 2 * swatchMargin;
   CRect swatchRect(itemRect.left + swatchMargin + 1, itemRect.top + swatchMargin,
       itemRect.left + swatchMargin + 1 + swatchSize, itemRect.top + swatchMargin + swatchSize);
 
-  bool isMoreColors = (itemData == EoCtrlColorComboBox::kMoreColors);
+  const bool isMoreColors = (itemData == EoCtrlColorComboBox::kMoreColors);
 
   if (!isMoreColors) {
     auto aciIndex = static_cast<std::int16_t>(itemData);
@@ -391,7 +391,7 @@ void EoCtrlColorOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
       dc.FrameRect(swatchRect, &borderBrush);
     } else {
       // Filled color swatch
-      COLORREF swatchColor = EoCtrlColorComboBox::AciToColorRef(aciIndex);
+      const COLORREF swatchColor = EoCtrlColorComboBox::AciToColorRef(aciIndex);
       dc.FillSolidRect(swatchRect, swatchColor);
       CBrush borderBrush(schemeColors.borderColor);
       dc.FrameRect(swatchRect, &borderBrush);
@@ -399,7 +399,7 @@ void EoCtrlColorOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   }
 
   // Text after swatch (or at left margin for "More Colors...")
-  int textLeft = isMoreColors ? itemRect.left + swatchMargin + 1 : swatchRect.right + 4;
+  const int textLeft = isMoreColors ? itemRect.left + swatchMargin + 1 : swatchRect.right + 4;
   CRect textRect(textLeft, itemRect.top, itemRect.right - 1, itemRect.bottom);
   dc.SetBkMode(TRANSPARENT);
   dc.SetTextColor(textColor);

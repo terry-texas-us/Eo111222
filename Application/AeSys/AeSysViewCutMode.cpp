@@ -25,12 +25,12 @@ void AeSysView::OnCutModeOptions() {}
 void AeSysView::OnCutModeTorch() {
   auto* document = GetDocument();
 
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   auto* groups = new EoDbGroupList;
 
   EoGePoint3d ptCut;
 
-  EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
+  const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
   EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
@@ -61,14 +61,14 @@ void AeSysView::OnCutModeTorch() {
 }
 
 void AeSysView::OnCutModeSlice() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP2) {
     previousPosition = cursorPosition;
     RubberBandingStartAtEnable(cursorPosition, Lines);
     previousKeyDown = ModeLineHighlightOp(ID_OP2);
   } else {
-    EoGePoint3d pt1 = previousPosition;
-    EoGePoint3d pt2 = cursorPosition;
+    const EoGePoint3d pt1 = previousPosition;
+    const EoGePoint3d pt2 = cursorPosition;
 
     auto* document = GetDocument();
 
@@ -80,7 +80,7 @@ void AeSysView::OnCutModeSlice() {
     EoGePoint4d ptView[] = {EoGePoint4d(pt1), EoGePoint4d(pt2)};
     ModelViewTransformPoints(2, ptView);
 
-    EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
+    const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
     auto GroupPosition = GetFirstVisibleGroupPosition();
     while (GroupPosition != nullptr) {
@@ -116,7 +116,7 @@ void AeSysView::OnCutModeSlice() {
 }
 
 void AeSysView::OnCutModeField() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP4) {
     previousPosition = cursorPosition;
     RubberBandingStartAtEnable(cursorPosition, Rectangles);
@@ -129,8 +129,8 @@ void AeSysView::OnCutModeField() {
     rUR.x = std::max(previousPosition.x, cursorPosition.x);
     rUR.y = std::max(previousPosition.y, cursorPosition.y);
 
-    EoGePoint3d lowerLeft = rLL;
-    EoGePoint3d upperRight = rUR;
+    const EoGePoint3d lowerLeft = rLL;
+    const EoGePoint3d upperRight = rUR;
 
     EoDbGroup* group{};
     EoDbPrimitive* primitive{};
@@ -140,8 +140,8 @@ void AeSysView::OnCutModeField() {
 
     auto* document = GetDocument();
 
-    auto color = Gs::renderState.Color();
-    auto lineType = Gs::renderState.LineTypeIndex();
+    const auto color = Gs::renderState.Color();
+    const auto lineType = Gs::renderState.LineTypeIndex();
 
     EoDbGroupList* GroupsOut = new EoDbGroupList;
     EoDbGroupList* GroupsIn = new EoDbGroupList;
@@ -196,25 +196,25 @@ void AeSysView::OnCutModeField() {
 }
 
 void AeSysView::OnCutModeClip() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (previousKeyDown != ID_OP7) {
     previousPosition = cursorPosition;
     previousKeyDown = ModeLineHighlightOp(ID_OP7);
   } else {
-    EoGePoint3d pt1 = previousPosition;
-    EoGePoint3d pt2 = cursorPosition;
+    const EoGePoint3d pt1 = previousPosition;
+    const EoGePoint3d pt2 = cursorPosition;
 
     if (pt1 == pt2) { return; }
 
     double dRel[2]{};
     EoGePoint3d ptCut[2]{};
 
-    std::int16_t color = Gs::renderState.Color();
-    std::int16_t LineType = Gs::renderState.LineTypeIndex();
+    const std::int16_t color = Gs::renderState.Color();
+    const std::int16_t LineType = Gs::renderState.LineTypeIndex();
 
     auto* document = GetDocument();
 
-    EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
+    const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
     EoGePoint4d ptView[] = {EoGePoint4d(pt1), EoGePoint4d(pt2)};
 
@@ -245,7 +245,7 @@ void AeSysView::OnCutModeClip() {
         ptCut[0] = transformMatrix * ptCut[0];
         ptCut[1] = transformMatrix * ptCut[1];
         if (dRel[0] > dRel[1]) {
-          EoGePoint3d ptTmp = ptCut[0];
+          const EoGePoint3d ptTmp = ptCut[0];
           ptCut[0] = ptCut[1];
           ptCut[1] = ptTmp;
         }

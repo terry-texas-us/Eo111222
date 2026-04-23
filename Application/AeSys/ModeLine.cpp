@@ -12,7 +12,7 @@ constexpr int statusOp0{3};  // mode panes start at index 3 (after message, leng
 void AeSysView::ModeLineDisplay() {
   if (app.CurrentMode() == 0) { return; }
 
-  auto modeInformation = App::LoadStringResource(UINT(app.CurrentMode()));
+  const auto modeInformation = App::LoadStringResource(UINT(app.CurrentMode()));
 
   CString paneText;
 
@@ -22,7 +22,7 @@ void AeSysView::ModeLineDisplay() {
   for (int i = 0; i < 10; i++) {
     AfxExtractSubString(paneText, modeInformation, i + 1, '\n');
 
-    auto textExtent = context->GetTextExtent(paneText);
+    const auto textExtent = context->GetTextExtent(paneText);
 
     GetStatusBar().SetPaneInfo(::statusOp0 + i, static_cast<UINT>(ID_OP0 + i), SBPS_NORMAL, textExtent.cx);
     GetStatusBar().SetPaneText(::statusOp0 + i, paneText);
@@ -47,7 +47,7 @@ std::uint16_t AeSysView::ModeLineHighlightOp(std::uint16_t command) {
   m_OpHighlighted = command;
 
   if (command == 0) { return 0; }
-  int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
+  const int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 
   const auto& schemeColors = Eo::chromeColors;
   GetStatusBar().SetPaneBackgroundColor(paneIndex, schemeColors.captionActiveBackground);
@@ -58,7 +58,7 @@ std::uint16_t AeSysView::ModeLineHighlightOp(std::uint16_t command) {
 
 void AeSysView::ModeLineUnhighlightOp(std::uint16_t& command) {
   if (command == 0 || m_OpHighlighted == 0) { return; }
-  int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
+  const int paneIndex = ::statusOp0 + m_OpHighlighted - ID_OP0;
 
   const auto& schemeColors = Eo::chromeColors;
   GetStatusBar().SetPaneBackgroundColor(paneIndex);

@@ -56,7 +56,7 @@ class EoDbHeaderSection {
    * @return A pointer to the HeaderVariable if found, nullptr otherwise.
    */
   const HeaderVariable* SetVariable(const std::wstring& name) const {
-    auto iterator = m_variables.find(name);
+    const auto iterator = m_variables.find(name);
     return iterator != m_variables.end() ? &iterator->second : nullptr;
   }
 
@@ -66,7 +66,7 @@ class EoDbHeaderSection {
    * @return The group code if stored, or 0 if no group code was recorded.
    */
   [[nodiscard]] int GetGroupCode(const std::wstring& name) const {
-    auto iterator = m_groupCodes.find(name);
+    const auto iterator = m_groupCodes.find(name);
     return iterator != m_groupCodes.end() ? iterator->second : 0;
   }
 

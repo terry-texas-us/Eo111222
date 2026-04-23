@@ -75,8 +75,8 @@ void AeSysView::OnFilePlot() {
 
           // Build DEVNAMES
           const auto& printerName = m_plotSettings.printerName;
-          size_t devNamesSize = sizeof(DEVNAMES) + (printerName.size() + 1) * sizeof(wchar_t) * 3;
-          HGLOBAL hDevNames = ::GlobalAlloc(GHND, devNamesSize);
+          const size_t devNamesSize = sizeof(DEVNAMES) + (printerName.size() + 1) * sizeof(wchar_t) * 3;
+          const HGLOBAL hDevNames = ::GlobalAlloc(GHND, devNamesSize);
           if (hDevNames != nullptr) {
             auto* devNames = static_cast<DEVNAMES*>(::GlobalLock(hDevNames));
             if (devNames != nullptr) {
@@ -165,8 +165,8 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
     return 1;
   }
 
-  double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
-  double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
+  const double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
+  const double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
 
   horizontalPages = static_cast<UINT>(Eo::Round(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
   verticalPages = static_cast<UINT>(Eo::Round(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
@@ -203,7 +203,7 @@ void AeSysView::OnViewSolid() {}
 void AeSysView::OnViewWindow() {
   CPoint CurrentPosition;
   ::GetCursorPos(&CurrentPosition);
-  HMENU WindowMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_WINDOW));
+  const HMENU WindowMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_WINDOW));
   CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(WindowMenu, 0));
   SubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), nullptr);
   ::DestroyMenu(WindowMenu);
@@ -255,7 +255,7 @@ void AeSysView::OnViewBackgroundToggle() {
   Eo::SyncAci7WithBackground();
   app.m_Options.m_viewBackground = Eo::activeViewBackground;
   app.m_Options.Save();
-  auto previousBrush = reinterpret_cast<HBRUSH>(
+  const auto previousBrush = reinterpret_cast<HBRUSH>(
       SetClassLongPtr(GetSafeHwnd(), GCLP_HBRBACKGROUND, (LONG_PTR)::CreateSolidBrush(Eo::ViewBackgroundColor)));
   if (previousBrush != nullptr) { ::DeleteObject(previousBrush); }
   InvalidateScene();

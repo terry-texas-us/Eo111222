@@ -98,8 +98,8 @@ void EoDbLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 }
 
 void EoDbLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  std::int16_t color = LogicalColor();
-  std::int16_t lineType = LogicalLineType();
+  const auto color = LogicalColor();
+  const auto lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
   Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
@@ -119,7 +119,7 @@ void EoDbLine::ExportToDxf(EoDxfInterface* writer) const {
 }
 
 void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {
-  double length = Length();
+  const auto length = Length();
   double angle = m_line.AngleFromXAxisXY();
 
   double relation{};
@@ -185,7 +185,7 @@ EoGePoint3d EoDbLine::GoToNextControlPoint() {
   } else if (sm_controlPointIndex == 1) {
     sm_controlPointIndex = 0;
   } else {  // Initial rock .. jump to point at lower left or down if vertical
-    EoGePoint3d ptBeg = m_line.begin;
+    const EoGePoint3d ptBeg = m_line.begin;
     EoGePoint3d ptEnd = m_line.end;
 
     if (ptEnd.x > ptBeg.x) {
@@ -312,11 +312,11 @@ bool EoDbLine::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
 void EoDbLine::Square(AeSysView* view) {
-  auto ptBeg = view->SnapPointToGrid(m_line.begin);
+  const auto ptBeg = view->SnapPointToGrid(m_line.begin);
   auto ptEnd = view->SnapPointToGrid(m_line.end);
 
-  auto pt = EoGeLine(ptBeg, ptEnd).Midpoint();
-  double dLen = EoGeVector3d(ptBeg, ptEnd).Length();
+  const auto pt = EoGeLine(ptBeg, ptEnd).Midpoint();
+  const auto dLen = EoGeVector3d(ptBeg, ptEnd).Length();
   ptEnd = view->SnapPointToAxis(pt, ptEnd);
   SetBeginPoint(ptEnd.ProjectToward(pt, dLen));
   SetEndPoint(ptEnd);
@@ -333,10 +333,10 @@ void EoDbLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if ((mask & 2) == 2) { SetEndPoint(m_line.end + v); }
 }
 EoDbLine* EoDbLine::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineTypeIndex = EoDb::ReadInt16(file);
-  auto begin = EoDb::ReadPoint3d(file);
-  auto end = EoDb::ReadPoint3d(file);
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineTypeIndex = EoDb::ReadInt16(file);
+  const auto begin = EoDb::ReadPoint3d(file);
+  const auto end = EoDb::ReadPoint3d(file);
 
   auto* line = new EoDbLine(begin, end);
   line->SetColor(color);

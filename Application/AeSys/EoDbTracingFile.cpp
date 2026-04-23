@@ -26,7 +26,7 @@ bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
     throw std::runtime_error("Exception EoDbTracingFile: Expecting sentinel EoDb::kGroupsSection.");
   }
 
-  auto numberOfGroups = EoDb::ReadUInt16(file);
+  const auto numberOfGroups = EoDb::ReadUInt16(file);
 
   for (std::uint16_t n = 0; n < numberOfGroups; n++) {
     auto* group = ReadGroup(file);
@@ -39,7 +39,7 @@ bool EoDbTracingFile::ReadLayer(CFile& file, EoDbLayer* layer) {
 }
 
 EoDbGroup* EoDbTracingFile::ReadGroup(CFile& file) {
-  auto numberOfPrimitives = EoDb::ReadUInt16(file);
+  const auto numberOfPrimitives = EoDb::ReadUInt16(file);
 
   auto* group = new EoDbGroup;
   EoDbPrimitive* primitive{};

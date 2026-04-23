@@ -32,15 +32,15 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 
   auto* activeView = AeSysView::GetActiveView();
 
-  auto cameraTarget = activeView->CameraTarget();
+  const auto cameraTarget = activeView->CameraTarget();
 
-  double uMin = cameraTarget.x + activeView->UMin();
-  double uMax = cameraTarget.x + activeView->UMax();
-  double vMin = cameraTarget.y + activeView->VMin();
-  double vMax = cameraTarget.y + activeView->VMax();
+  const double uMin = cameraTarget.x + activeView->UMin();
+  const double uMax = cameraTarget.x + activeView->UMax();
+  const double vMin = cameraTarget.y + activeView->VMin();
+  const double vMax = cameraTarget.y + activeView->VMax();
 
-  double uMinOverview = cameraTarget.x + activeView->OverviewUMin();
-  double vMinOverview = cameraTarget.y + activeView->OverviewVMin();
+  const double uMinOverview = cameraTarget.x + activeView->OverviewUMin();
+  const double vMinOverview = cameraTarget.y + activeView->OverviewVMin();
 
   CRect rectangle;
   rectangle.left = Eo::Round((uMin - uMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);
@@ -48,7 +48,7 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
   rectangle.top = Eo::Round((1.0 - (vMax - vMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
   rectangle.bottom = Eo::Round((1.0 - (vMin - vMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
 
-  auto drawMode = deviceContext.SetROP2(R2_XORPEN);
+  const auto drawMode = deviceContext.SetROP2(R2_XORPEN);
 
   // Show current window as light gray rectangle with no outline
   deviceContext.SelectStockObject(LTGRAY_BRUSH);
@@ -74,15 +74,15 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 
 void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
   if (LOWORD(nParam) != MK_LBUTTON) { return; }
-  CPoint currentPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+  const CPoint currentPoint(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
-  auto deviceContextHandle = ::GetDC(hwnd);
-  auto drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
+  auto* const deviceContextHandle = ::GetDC(hwnd);
+  const auto drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
 
   // Show defining window as hollow rectangle with dark gray outline
-  HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
-  HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
-  HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
+  const HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
+  const HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
+  const HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
   ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
       EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
@@ -113,26 +113,26 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
 }
 
 void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
-  double ratio = *(double*)(LPDWORD)lParam;
+  const double ratio = *(double*)(LPDWORD)lParam;
 
   auto* activeView = AeSysView::GetActiveView();
   assert(activeView != nullptr);
 
-  auto cameraTarget = activeView->CameraTarget();
+  const auto cameraTarget = activeView->CameraTarget();
 
-  double uExtent = activeView->WidthInInches() / ratio;
-  double uMin = cameraTarget.x - (uExtent * 0.5);
-  double uMax = uMin + uExtent;
-  double vExtent = activeView->HeightInInches() / ratio;
-  double vMin = cameraTarget.y - (vExtent * 0.5);
-  double vMax = vMin + vExtent;
+  const double uExtent = activeView->WidthInInches() / ratio;
+  const double uMin = cameraTarget.x - (uExtent * 0.5);
+  const double uMax = uMin + uExtent;
+  const double vExtent = activeView->HeightInInches() / ratio;
+  const double vMin = cameraTarget.y - (vExtent * 0.5);
+  const double vMax = vMin + vExtent;
 
-  HDC deviceContextHandle = ::GetDC(hwnd);
-  int drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
+  const HDC deviceContextHandle = ::GetDC(hwnd);
+  const int drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
 
-  HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
-  HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
-  HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
+  const auto brush = static_cast<HBRUSH>(::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH)));
+  const auto grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
+  const auto pen = static_cast<HPEN>(::SelectObject(deviceContextHandle, grayPen));
   Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
       EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
@@ -143,8 +143,8 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
   BITMAP bitmap{};
   GetObjectW(EoDlgActiveViewKeyplan::m_hbmKeyplan, sizeof(BITMAP), &bitmap);
 
-  double dUMinOverview = cameraTarget.x + activeView->OverviewUMin();
-  double dVMinOverview = cameraTarget.y + activeView->OverviewVMin();
+  const double dUMinOverview = cameraTarget.x + activeView->OverviewUMin();
+  const double dVMinOverview = cameraTarget.y + activeView->OverviewVMin();
 
   EoDlgActiveViewKeyplan::m_rcWnd.left =
       Eo::Round((uMin - dUMinOverview) / activeView->OverviewUExt() * bitmap.bmWidth);

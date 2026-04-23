@@ -109,7 +109,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   // Prevent the menu bar from taking the focus on activation
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
-  DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+  const DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 
   // Default button/image sizes for initial toolbar creation. The actual button height
   // is adjusted after the first RecalcLayout, which creates the combo HWNDs via
@@ -245,7 +245,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) {
 }
 
 BOOL CMainFrame::CreateDockablePanes() {
-  CSize defaultSize(200, 200);
+  const CSize defaultSize(200, 200);
 
   const DWORD sharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
 
@@ -264,14 +264,14 @@ BOOL CMainFrame::CreateDockablePanes() {
 }
 
 void CMainFrame::SetDockablePanesIcons() {
-  CSize smallIconSize(::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
-  HINSTANCE resourceHandle(::AfxGetResourceHandle());
+  const CSize smallIconSize(::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
+  const HINSTANCE resourceHandle(::AfxGetResourceHandle());
 
-  HICON propertiesPaneIcon = static_cast<HICON>(LoadImageW(
+  const HICON propertiesPaneIcon = static_cast<HICON>(LoadImageW(
       resourceHandle, MAKEINTRESOURCE(IDI_PROPERTIES_WND_HC), IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_propertiesPane.SetIcon(propertiesPaneIcon, FALSE);
 
-  HICON outputPaneIcon = static_cast<HICON>(LoadImageW(
+  const HICON outputPaneIcon = static_cast<HICON>(LoadImageW(
       resourceHandle, MAKEINTRESOURCE(IDI_OUTPUT_WND_HC), IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_outputPane.SetIcon(outputPaneIcon, FALSE);
 
@@ -286,12 +286,12 @@ void CMainFrame::OnViewCustomize() {
 }
 
 LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp, LPARAM name) {
-  LRESULT result = CMDIFrameWndEx::OnToolbarCreateNew(wp, name);
+  const auto result = CMDIFrameWndEx::OnToolbarCreateNew(wp, name);
   if (result == 0) { return 0; }
   auto* userToolbar = (CMFCToolBar*)result;
   assert(userToolbar != nullptr);
 
-  auto customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
+  const auto customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
 
   userToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, customize);
   return result;
@@ -344,7 +344,7 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
   }
 
   // Enable customization button for user toolbars (standard and render properties are locked)
-  auto customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
+  const auto customize = App::LoadStringResource(IDS_TOOLBAR_CUSTOMIZE);
   for (int i = 0; i < maxUserToolbars; i++) {
     auto* userToolbar = GetUserToolBarByIndex(i);
     if (userToolbar != nullptr) { userToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, customize); }
@@ -369,7 +369,7 @@ LRESULT CMainFrame::OnToolbarContextMenu(WPARAM, LPARAM point) {
   assert(SubMenu != nullptr);
 
   if (SubMenu) {
-    CPoint Point(AFX_GET_X_LPARAM(point), AFX_GET_Y_LPARAM(point));
+    const CPoint Point(AFX_GET_X_LPARAM(point), AFX_GET_Y_LPARAM(point));
 
     auto* PopupMenu = new CMFCPopupMenu;
     PopupMenu->Create(this, Point.x, Point.y, SubMenu->Detach());
@@ -389,7 +389,7 @@ BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
     CMenu menu;
     VERIFY(menu.LoadMenu(IDR_POPUP_TOOLBAR));
 
-    auto* PopupSubMenu = menu.GetSubMenu(0);
+    auto* const PopupSubMenu = menu.GetSubMenu(0);
     assert(PopupSubMenu != nullptr);
 
     if (PopupSubMenu) { pMenuPopup->GetMenuBar()->ImportFromMenu(*PopupSubMenu, TRUE); }
@@ -529,7 +529,7 @@ void CMainFrame::ApplyColorScheme() {
   if (visualManager != nullptr) { visualManager->RefreshColors(); }
 
   // Set status bar text color for all panes
-  int paneCount = m_statusBar.GetCount();
+  const int paneCount = m_statusBar.GetCount();
   for (int i = 0; i < paneCount; i++) { m_statusBar.SetPaneTextColor(i, Eo::chromeColors.statusBarText, FALSE); }
 
   m_propertiesPane.ApplyColorScheme();

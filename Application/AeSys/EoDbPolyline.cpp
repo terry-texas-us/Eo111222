@@ -45,7 +45,7 @@ EoDbPolyline::EoDbPolyline(
 
   auto* activeView = AeSysView::GetActiveView();
 
-  auto planeNormal = activeView->CameraDirection();
+  const auto planeNormal = activeView->CameraDirection();
   auto minorAxis = activeView->ViewUp();
   auto majorAxis = minorAxis;
   majorAxis.RotateAboutArbitraryAxis(planeNormal, -Eo::HalfPi);
@@ -112,8 +112,8 @@ void EoDbPolyline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   const auto numberOfVertices = m_pts.GetSize();
   if (numberOfVertices < 2) { return; }
 
-  std::int16_t color = LogicalColor();
-  std::int16_t lineType = LogicalLineType();
+  const auto color = LogicalColor();
+  const auto lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
   Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
@@ -369,9 +369,9 @@ void EoDbPolyline::ExportToDxf(EoDxfInterface* writer) const {
 }
 
 void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
-  auto numberOfVertices = std::uint16_t(m_pts.GetSize());
+  const auto numberOfVertices = static_cast<std::uint16_t>(m_pts.GetSize());
   if (sm_Edge == 0 || sm_Edge > numberOfVertices) { return; }
-  int beginVertexIndex = static_cast<int>(sm_Edge) - 1;
+  const int beginVertexIndex = static_cast<int>(sm_Edge) - 1;
 
   EoGePoint3d begin = m_pts[beginVertexIndex];
   EoGePoint3d end = m_pts[sm_Edge % numberOfVertices];
@@ -416,7 +416,7 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   app.FormatLength(lengthAsString, app.GetUnits(), edgeLength);
   app.FormatAngle(angleAsString, angleInXYPlane, 8, 3);
 
-  auto edgeType = (Eo::IsGeometricallyNonZero(bulge)) ? L"Polyline Arc" : L"Polyline Edge";
+  const auto edgeType = (Eo::IsGeometricallyNonZero(bulge)) ? L"Polyline Arc" : L"Polyline Edge";
   app.AddStringToMessageList(edgeType);
   EoDbPrimitive::AddReportToMessageList(point);
 
@@ -456,12 +456,13 @@ void EoDbPolyline::GetAllPoints(EoGePoint3dArray& points) {
 }
 
 EoGePoint3d EoDbPolyline::GetControlPoint() {
-  int wPts = static_cast<int>(m_pts.GetSize());
-  std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
-  std::uint16_t wEnd = std::uint16_t(sm_Edge % wPts);
-  EoGePoint3d pt = EoGeLine(m_pts[wBeg], m_pts[wEnd]).Midpoint();
+  const auto wPts = static_cast<int>(m_pts.GetSize());
+  const auto wBeg = static_cast<std::uint16_t>(sm_Edge - 1);
+  const auto wEnd = static_cast<std::uint16_t>(sm_Edge % wPts);
+  const auto pt = EoGeLine(m_pts[wBeg], m_pts[wEnd]).Midpoint();
   return pt;
 }
+
 void EoDbPolyline::GetExtents(
     AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray tessellatedPoints;
@@ -480,8 +481,8 @@ EoGePoint3d EoDbPolyline::GoToNextControlPoint() {
   int wPts = static_cast<int>(m_pts.GetSize());
 
   if (sm_pivotVertex >= wPts) {  // have not yet rocked to a vertex
-    std::uint16_t wBeg = std::uint16_t(sm_Edge - 1);
-    std::uint16_t wEnd = std::uint16_t(sm_Edge % wPts);
+    const auto wBeg = static_cast<std::uint16_t>(sm_Edge - 1);
+    const auto wEnd = static_cast<std::uint16_t>(sm_Edge % wPts);
 
     if (m_pts[wEnd].x > m_pts[wBeg].x) {
       sm_pivotVertex = wBeg;
@@ -541,7 +542,7 @@ bool EoDbPolyline::IsPointOnControlPoint([[maybe_unused]] AeSysView* view, [[may
 }
 
 bool EoDbPolyline::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptView) {
-  std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
+  const auto wPts = static_cast<std::uint16_t>(m_pts.GetSize());
 
   if (sm_pivotVertex >= wPts) {
     // Not engaged at a vertex
@@ -569,7 +570,7 @@ bool EoDbPolyline::PivotOnControlPoint(AeSysView* view, const EoGePoint4d& ptVie
   return true;
 }
 EoGePoint3d EoDbPolyline::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) {
-  std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
+  const auto wPts = static_cast<std::uint16_t>(m_pts.GetSize());
 
   sm_controlPointIndex = SHRT_MAX;
   double dApert = sm_SelectApertureSize;
@@ -597,9 +598,9 @@ bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
   const auto numberOfVertices = m_pts.GetSize();
   if (numberOfVertices < 2) { return false; }
 
-  std::uint16_t wEdges = std::uint16_t(numberOfVertices);
+  std::uint16_t wEdges = static_cast<std::uint16_t>(numberOfVertices);
   if (!IsClosed()) { wEdges--; }
-  std::uint16_t wPts = std::uint16_t(numberOfVertices);
+  const auto wPts = static_cast<std::uint16_t>(numberOfVertices);
 
   if (HasBulge()) {
     std::vector<EoGePoint3d> arcPoints;
@@ -776,10 +777,10 @@ void EoDbPolyline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   }
 }
 EoDbPolyline* EoDbPolyline::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineType = EoDb::ReadInt16(file);
-  auto flags = static_cast<std::int16_t>(EoDb::ReadUInt16(file));
-  auto numberOfVertices = EoDb::ReadUInt16(file);
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
+  const auto flags = static_cast<std::int16_t>(EoDb::ReadUInt16(file));
+  const auto numberOfVertices = EoDb::ReadUInt16(file);
 
   EoGePoint3dArray points;
   points.SetSize(numberOfVertices);
@@ -806,11 +807,11 @@ EoDbPolyline* EoDbPolyline::ReadFromPeg(CFile& file) {
 }
 
 EoDbPolyline* EoDbPolyline::ReadFromCSplinePeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineType = EoDb::ReadInt16(file);
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
 
   file.Seek(sizeof(std::uint16_t), CFile::current);
-  auto numberOfPoints = EoDb::ReadUInt16(file);
+  const auto numberOfPoints = EoDb::ReadUInt16(file);
   file.Seek(sizeof(std::uint16_t), CFile::current);
   file.Seek(sizeof(EoGeVector3d), CFile::current);
   file.Seek(sizeof(EoGeVector3d), CFile::current);
@@ -895,12 +896,12 @@ void EoDbPolyline::BuildTessellatedPoints(EoGePoint3dArray& tessellatedPoints) c
 }
 
 std::uint16_t EoDbPolyline::SwingVertex() {
-  std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
+  const auto wPts = static_cast<std::uint16_t>(m_pts.GetSize());
 
   std::uint16_t wSwingVertex;
 
   if (sm_pivotVertex == 0) {
-    wSwingVertex = std::uint16_t(sm_Edge == 1 ? 1 : wPts - 1);
+    wSwingVertex = static_cast<std::uint16_t>(sm_Edge == 1 ? 1 : wPts - 1);
   } else if (sm_pivotVertex == std::uint16_t(wPts - 1)) {
     wSwingVertex = std::uint16_t(sm_Edge == wPts ? 0 : sm_pivotVertex - 1);
   } else {

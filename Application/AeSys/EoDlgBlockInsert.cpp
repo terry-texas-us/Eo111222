@@ -78,9 +78,9 @@ static EoDbAttrib* CreateAttribFromAttDef(
   const bool isDefaultAlignment = (horizontalAlignment == 0 && verticalAlignment == 0);
   const bool isAlignedOrFit = (horizontalAlignment == 3 || horizontalAlignment == 5);
 
-  auto firstPoint =
+  const auto firstPoint =
       EoGePoint3d{attdef.m_firstAlignmentPoint.x, attdef.m_firstAlignmentPoint.y, attdef.m_firstAlignmentPoint.z};
-  auto secondPoint =
+  const auto secondPoint =
       EoGePoint3d{attdef.m_secondAlignmentPoint.x, attdef.m_secondAlignmentPoint.y, attdef.m_secondAlignmentPoint.z};
 
   EoGePoint3d referenceOrigin;

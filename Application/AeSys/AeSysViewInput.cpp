@@ -161,7 +161,7 @@ bool AeSysView::ConfigureViewportTransform(const EoDbViewport* viewport) {
 
   // Project the viewport's four paper-space corners through the current (paper-space) view transform
   // to obtain the device clip rectangle — same math as DisplayModelSpaceThroughViewports.
-  EoGePoint3d corners[4] = {
+  const EoGePoint3d corners[4] = {
       {centerPoint.x - halfWidth, centerPoint.y - halfHeight, centerPoint.z},
       {centerPoint.x + halfWidth, centerPoint.y - halfHeight, centerPoint.z},
       {centerPoint.x + halfWidth, centerPoint.y + halfHeight, centerPoint.z},
@@ -258,7 +258,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   if (state) { state->OnMouseMove(this, flags, point); }
 #endif
   if (m_middleButtonPanInProgress) {
-    auto delta = point - m_middleButtonPanStartPoint;
+    const auto delta = point - m_middleButtonPanStartPoint;
     m_middleButtonPanStartPoint = point;
 
     if (IsViewportActive()) {
@@ -354,7 +354,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
       InvalidateScene();
     } else if (m_rubberbandType == Lines) {
       auto* deviceContext = GetDC();
-      auto drawMode = deviceContext->SetROP2(R2_XORPEN);
+      const auto drawMode = deviceContext->SetROP2(R2_XORPEN);
       CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
       auto* pen = deviceContext->SelectObject(&grayPen);
 
@@ -369,7 +369,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
       ReleaseDC(deviceContext);
     } else {  // Rectangles, GDI path
       auto* deviceContext = GetDC();
-      auto drawMode = deviceContext->SetROP2(R2_XORPEN);
+      const auto drawMode = deviceContext->SetROP2(R2_XORPEN);
       CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
       auto* pen = deviceContext->SelectObject(&grayPen);
       auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
@@ -408,7 +408,7 @@ void AeSysView::RubberBandingDisable() {
       return;
     }
     auto* deviceContext = GetDC();
-    int drawMode = deviceContext->SetROP2(R2_XORPEN);
+    const auto drawMode = deviceContext->SetROP2(R2_XORPEN);
     CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
     auto* pen = deviceContext->SelectObject(&grayPen);
 
@@ -527,19 +527,19 @@ void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
 /// @param desiredSize Target cursor size in pixels (e.g., DPI value for 1-inch cursor)
 /// @return HCURSOR on success, nullptr on failure
 static HCURSOR LoadCursorFromRcData(UINT resourceIdentifier, int desiredSize) {
-  auto instance = AeSys::GetInstance();
-  auto resourceInfo = FindResourceW(instance, MAKEINTRESOURCE(resourceIdentifier), RT_RCDATA);
+  const auto instance = AeSys::GetInstance();
+  const auto resourceInfo = FindResourceW(instance, MAKEINTRESOURCE(resourceIdentifier), RT_RCDATA);
   if (resourceInfo == nullptr) { return nullptr; }
 
-  auto resourceHandle = LoadResource(instance, resourceInfo);
+  const auto resourceHandle = LoadResource(instance, resourceInfo);
   if (resourceHandle == nullptr) { return nullptr; }
 
-  auto* data = static_cast<const BYTE*>(LockResource(resourceHandle));
-  auto dataSize = SizeofResource(instance, resourceInfo);
+  const auto* data = static_cast<const BYTE*>(LockResource(resourceHandle));
+  const auto dataSize = SizeofResource(instance, resourceInfo);
   if (data == nullptr || dataSize < 6) { return nullptr; }
 
   // .cur header: WORD reserved (0), WORD type (2 = cursor), WORD imageCount
-  auto imageCount = *reinterpret_cast<const WORD*>(data + 4);
+  const auto imageCount = *reinterpret_cast<const WORD*>(data + 4);
   if (imageCount == 0 || dataSize < static_cast<DWORD>(6 + imageCount * 16)) { return nullptr; }
 
   // .cur directory entry (16 bytes each):
@@ -550,8 +550,8 @@ static HCURSOR LoadCursorFromRcData(UINT resourceIdentifier, int desiredSize) {
   int bestDelta = INT_MAX;
   for (int i = 0; i < imageCount; i++) {
     const auto* entry = data + 6 + i * 16;
-    int entryWidth = entry[0] == 0 ? 256 : entry[0];
-    int delta = std::abs(entryWidth - desiredSize);
+    const int entryWidth = entry[0] == 0 ? 256 : entry[0];
+    const int delta = std::abs(entryWidth - desiredSize);
     if (delta < bestDelta) {
       bestDelta = delta;
       bestIndex = i;
@@ -559,16 +559,16 @@ static HCURSOR LoadCursorFromRcData(UINT resourceIdentifier, int desiredSize) {
   }
 
   const auto* bestEntry = data + 6 + bestIndex * 16;
-  int bestWidth = bestEntry[0] == 0 ? 256 : bestEntry[0];
-  auto hotspotX = *reinterpret_cast<const WORD*>(bestEntry + 4);
-  auto hotspotY = *reinterpret_cast<const WORD*>(bestEntry + 6);
-  auto imageSize = *reinterpret_cast<const DWORD*>(bestEntry + 8);
-  auto imageOffset = *reinterpret_cast<const DWORD*>(bestEntry + 12);
+  const int bestWidth = bestEntry[0] == 0 ? 256 : bestEntry[0];
+  const auto hotspotX = *reinterpret_cast<const WORD*>(bestEntry + 4);
+  const auto hotspotY = *reinterpret_cast<const WORD*>(bestEntry + 6);
+  const auto imageSize = *reinterpret_cast<const DWORD*>(bestEntry + 8);
+  const auto imageOffset = *reinterpret_cast<const DWORD*>(bestEntry + 12);
 
   if (imageOffset + imageSize > dataSize) { return nullptr; }
 
   // CreateIconFromResourceEx for cursors expects: [WORD xHotspot][WORD yHotspot][image data]
-  auto bufferSize = static_cast<DWORD>(4 + imageSize);
+  const auto bufferSize = static_cast<DWORD>(4 + imageSize);
   auto buffer = std::make_unique<BYTE[]>(bufferSize);
   *reinterpret_cast<WORD*>(buffer.get()) = hotspotX;
   *reinterpret_cast<WORD*>(buffer.get() + 2) = hotspotY;

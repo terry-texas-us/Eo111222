@@ -94,7 +94,7 @@ void AeSysView::OnDimensionModeOptions() {
 
 void AeSysView::OnDimensionModeArrow() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
@@ -358,7 +358,7 @@ void AeSysView::OnDimensionModeDiameter() {
 
 void AeSysView::OnDimensionModeAngle() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   static EoGePoint3d rProjPt[2];
   static EoGePoint3d center;
@@ -392,12 +392,12 @@ void AeSysView::OnDimensionModeAngle() {
     } else {
       double sweepAngle{};
 
-      EoGeVector3d vCenterToProjPt(center, rProjPt[0]);
-      EoGeVector3d vCenterToCur(center, cursorPosition);
+      const EoGeVector3d vCenterToProjPt(center, rProjPt[0]);
+      const EoGeVector3d vCenterToCur(center, cursorPosition);
       auto normal = CrossProduct(vCenterToProjPt, vCenterToCur);
       normal.Unitize();
       if (SweepAngleFromNormalAnd3Points(normal, rProjPt[0], cursorPosition, rProjPt[1], center, sweepAngle)) {
-        double dRad = EoGeVector3d(center, cursorPosition).Length();
+        const double dRad = EoGeVector3d(center, cursorPosition).Length();
 
         line.begin = center.ProjectToward(rProjPt[0], dRad);
         line.end = line.begin.RotateAboutAxis(center, normal, sweepAngle);
@@ -514,7 +514,7 @@ void AeSysView::OnDimensionModeConvert() {
 }
 
 void AeSysView::OnDimensionModeReturn() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);

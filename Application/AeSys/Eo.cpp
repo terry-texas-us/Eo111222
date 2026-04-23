@@ -6,7 +6,7 @@ namespace Eo {
 
 std::wstring MultiByteToWString(const char* multiByte) {
   if (!multiByte) { return {L""}; }
-  int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
+  const int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
   if (size == 0) { return {L""}; }
   std::wstring string;
   string.resize(static_cast<size_t>(size) - 1);
@@ -16,7 +16,7 @@ std::wstring MultiByteToWString(const char* multiByte) {
 
 std::string WStringToMultiByte(const std::wstring& wideString) {
   if (wideString.empty()) { return std::string(); }
-  int size = ::WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, nullptr, 0, nullptr, nullptr);
+  const int size = ::WideCharToMultiByte(CP_UTF8, 0, wideString.c_str(), -1, nullptr, 0, nullptr, nullptr);
   if (size == 0) { return std::string(); }
   std::string multiByte;
   multiByte.resize(static_cast<size_t>(size) - 1);

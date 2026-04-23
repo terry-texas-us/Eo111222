@@ -41,8 +41,8 @@ bool EoGePoint4d::IsEqualTo(const EoGePoint4d& p, double tolerance) const noexce
 }
 
 bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
-  double BoundaryCodeA[] = {ptA.w + ptA.x, ptA.w - ptA.x, ptA.w + ptA.y, ptA.w - ptA.y, ptA.w + ptA.z, ptA.w - ptA.z};
-  double BoundaryCodeB[] = {ptB.w + ptB.x, ptB.w - ptB.x, ptB.w + ptB.y, ptB.w - ptB.y, ptB.w + ptB.z, ptB.w - ptB.z};
+  const double BoundaryCodeA[] = {ptA.w + ptA.x, ptA.w - ptA.x, ptA.w + ptA.y, ptA.w - ptA.y, ptA.w + ptA.z, ptA.w - ptA.z};
+  const double BoundaryCodeB[] = {ptB.w + ptB.x, ptB.w - ptB.x, ptB.w + ptB.y, ptB.w - ptB.y, ptB.w + ptB.z, ptB.w - ptB.z};
 
   int OutCodeA = 0;
   int OutCodeB = 0;
@@ -70,7 +70,7 @@ bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
     }
     if (dTIn > dTOut) { return false; }
   }
-  EoGePoint4d pt(ptA);
+  const EoGePoint4d pt(ptA);
 
   if (OutCodeA != 0) { ptA = pt + (ptB - pt) * dTIn; }
   if (OutCodeB != 0) { ptB = pt + (ptB - pt) * dTOut; }
@@ -89,7 +89,7 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
   for (int iPln = 0; iPln < 6; iPln++) {
     IntersectionWithPln(pointsArray, ptPln[iPln], vPln[iPln], PointsArrayOut);
 
-    int iPtsOut = (int)PointsArrayOut.GetSize();
+    const int iPtsOut = (int)PointsArrayOut.GetSize();
     pointsArray.SetSize(iPtsOut);
 
     if (iPtsOut == 0) { break; }
@@ -106,7 +106,7 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   EoGePoint4d ptEdge[2]{};
   bool bEdgeVis[2]{};
 
-  bool bVisVer0 =
+  const bool bVisVer0 =
       DotProduct(EoGeVector3d(EoGePoint3d{ptQ}, EoGePoint3d{pointsArrayIn[0]}), planeNormal) >= -Eo::geometricTolerance
           ? true
           : false;
@@ -115,7 +115,7 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   bEdgeVis[0] = bVisVer0;
 
   if (bVisVer0) { pointsArrayOut.Add(pointsArrayIn[0]); }
-  int iPtsIn = (int)pointsArrayIn.GetSize();
+  const auto iPtsIn = static_cast<int>(pointsArrayIn.GetSize());
   for (int i = 1; i < iPtsIn; i++) {
     ptEdge[1] = pointsArrayIn[i];
     bEdgeVis[1] =
@@ -140,8 +140,8 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
 
 double EoGePoint4d::DistanceToPointXY(const EoGePoint4d& q) const noexcept {
   // Just dehomogenize the x and y components to calculate the distance, ignoring z.
-  double xDelta = q.x / q.w - x / w;
-  double yDelta = q.y / q.w - y / w;
+  const double xDelta = q.x / q.w - x / w;
+  const double yDelta = q.y / q.w - y / w;
 
   return std::sqrt(xDelta * xDelta + yDelta * yDelta);
 }

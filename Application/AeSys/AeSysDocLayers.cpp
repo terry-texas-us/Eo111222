@@ -71,7 +71,7 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
 }
 
 EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& name) {
-  auto i = FindLayerTableLayer(name);
+  const auto i = FindLayerTableLayer(name);
   return (i < 0 ? nullptr : ActiveSpaceLayers().GetAt(i));
 }
 EoDbLayer* AeSysDoc::GetLayerTableLayerAt(int index) {
@@ -226,7 +226,7 @@ bool AeSysDoc::LayerMelt(CString& strName) {
 
   bool bRetVal{};
 
-  auto Filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+  const auto Filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
@@ -345,7 +345,7 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
     return;
   }
   // In block edit mode, stamp primitives with layer "0" (the standard block content layer)
-  std::wstring layerName = IsInEditor() ? L"0" : std::wstring(m_workLayer->Name().GetString());
+  const std::wstring layerName = IsInEditor() ? L"0" : std::wstring(m_workLayer->Name().GetString());
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = group->GetNext(position);
@@ -545,7 +545,7 @@ void AeSysDoc::TracingFuse(CString& nameAndLocation) {
 /// Inserts a .tra file as a locked XREF-style tracing layer in the current document. The layer is named `|stem` for
 /// `stem.tra`, loaded with the file's primitives, set to locked state, and added to the model-space layer table.
 void AeSysDoc::InsertTracingLayer(const std::wstring& absolutePath) {
-  std::filesystem::path filePath(absolutePath);
+  const std::filesystem::path filePath(absolutePath);
   const CString layerName = CString(L"|") + filePath.stem().wstring().c_str();
 
   // Reject duplicate — same tracing already referenced in this document
@@ -602,11 +602,11 @@ void AeSysDoc::ReloadTracingLayer(EoDbLayer* layer) {
 }
 
 bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
-  EoDb::FileTypes FileType = App::FileTypeFromPath(pathName);
+  const EoDb::FileTypes FileType = App::FileTypeFromPath(pathName);
   if (FileType != EoDb::FileTypes::Tracing && FileType != EoDb::FileTypes::Job) { return false; }
   if (layer == nullptr) { return false; }
 
-  bool bFileOpen = false;
+  const bool bFileOpen{};
 
   if (FileType == EoDb::FileTypes::Tracing) {
     CFileException e;

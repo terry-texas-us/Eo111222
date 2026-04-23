@@ -48,7 +48,7 @@ double CVaxFloat::Convert() {
   BYTE* pvax = (BYTE*)&m_f;
   BYTE* pms = (BYTE*)&fMS;
 
-  BYTE bSign = BYTE(pvax[1] & 0x80);
+  const BYTE bSign = BYTE(pvax[1] & 0x80);
   BYTE bExp = BYTE((pvax[1] << 1) & 0xff);
   bExp |= pvax[0] >> 7;
 
@@ -79,7 +79,7 @@ void CVaxFloat::Convert(const double& dMS) {
     BYTE* pMS = (BYTE*)&fMS;
     BYTE* pVax = (BYTE*)&fVax;
 
-    BYTE bSign = BYTE(pMS[3] & 0x80);
+    const BYTE bSign = BYTE(pMS[3] & 0x80);
     BYTE bExp = BYTE((pMS[3] << 1) & 0xff);
     bExp |= pMS[2] >> 7;
 
@@ -168,7 +168,7 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
     EoDbPrimitive* primitive{};
     if (!GetNextPrimitive(file, primitive)) { return false; }
     group = new EoDbGroup(primitive);
-    std::uint16_t numberOfPrimitives = *((std::uint16_t*)((m_Version == 1) ? &m_PrimBuf[2] : &m_PrimBuf[1]));
+    const std::uint16_t numberOfPrimitives = *((std::uint16_t*)((m_Version == 1) ? &m_PrimBuf[2] : &m_PrimBuf[1]));
     for (std::uint16_t w = 1; w < numberOfPrimitives; w++) {
       try {
         Position = file.GetPosition();
@@ -183,7 +183,7 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
     }
   } catch (const std::runtime_error& ex) {
     if (Position >= 96) {
-      std::wstring errorMessage(ex.what(), ex.what() + strlen(ex.what()));
+      const std::wstring errorMessage(ex.what(), ex.what() + strlen(ex.what()));
       if (::MessageBoxW(nullptr, errorMessage.c_str(), nullptr, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) { return false; }
     }
     file.Seek(static_cast<LONGLONG>(Position + 32), CFile::begin);
@@ -204,9 +204,9 @@ bool EoDbJobFile::ReadNextPrimitive(CFile& file, std::uint8_t* buffer, std::int1
   primitiveType = *((std::int16_t*)&buffer[4]);
 
   if (!IsValidPrimitive(primitiveType)) { throw std::runtime_error("Exception.FileJob: Invalid primitive type."); }
-  int LengthInChunks = (m_Version == 1) ? buffer[6] : buffer[3];
+  const int LengthInChunks = (m_Version == 1) ? buffer[6] : buffer[3];
   if (LengthInChunks > 1) {
-    UINT BytesRemaining = static_cast<UINT>(LengthInChunks - 1) * 32U;
+    const auto BytesRemaining = static_cast<UINT>(LengthInChunks - 1) * 32U;
 
     if (BytesRemaining >= EoDbPrimitive::BUFFER_SIZE - 32) {
       throw std::runtime_error("Exception.FileJob: Primitive buffer overflow.");
@@ -365,12 +365,12 @@ void EoDbJobFile::ConstructPrimitiveFromVersion1(EoDbPrimitive*& primitive) {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
-  auto color = std::int16_t(m_PrimBuf[6]);
-  auto lineTypeIndex = std::int16_t(m_PrimBuf[7]);
+  const auto color = std::int16_t(m_PrimBuf[6]);
+  const auto lineTypeIndex = std::int16_t(m_PrimBuf[7]);
 
-  auto center = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
-  auto majorAxis = ((CVaxVec*)&m_PrimBuf[20])->Convert();
-  auto minorAxis = ((CVaxVec*)&m_PrimBuf[32])->Convert();
+  const auto center = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
+  const auto majorAxis = ((CVaxVec*)&m_PrimBuf[20])->Convert();
+  const auto minorAxis = ((CVaxVec*)&m_PrimBuf[32])->Convert();
   auto sweepAngle = ((CVaxFloat*)&m_PrimBuf[44])->Convert();
 
   if (sweepAngle > Eo::TwoPi || sweepAngle < -Eo::TwoPi) { sweepAngle = Eo::TwoPi; }
@@ -386,8 +386,8 @@ EoDbPrimitive* EoDbJobFile::ConvertEllipsePrimitive() {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertLinePrimitive() {
-  std::int16_t color = std::int16_t(m_PrimBuf[6]);
-  std::int16_t lineTypeIndex = std::int16_t(m_PrimBuf[7]);
+  const auto color = std::int16_t(m_PrimBuf[6]);
+  const auto lineTypeIndex = std::int16_t(m_PrimBuf[7]);
 
   EoGeLine line;
   line.begin = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
@@ -397,10 +397,10 @@ EoDbPrimitive* EoDbJobFile::ConvertLinePrimitive() {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertPointPrimitive() {
-  std::int16_t PenColor = std::int16_t(m_PrimBuf[6]);
-  std::int16_t PointStyle = std::int16_t(m_PrimBuf[7]);
+  const auto PenColor = std::int16_t(m_PrimBuf[6]);
+  const auto PointStyle = std::int16_t(m_PrimBuf[7]);
 
-  EoGePoint3d Point = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
+  const auto Point = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
 
   double Data[3]{};
 
@@ -412,8 +412,8 @@ EoDbPrimitive* EoDbJobFile::ConvertPointPrimitive() {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
-  auto color = std::int16_t(m_PrimBuf[4] & 0x000f);
-  auto lineTypeIndex = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);
+  const auto color = std::int16_t(m_PrimBuf[4] & 0x000f);
+  const auto lineTypeIndex = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);
 
   EoGePoint3d begin(((CVaxFloat*)&m_PrimBuf[8])->Convert(), ((CVaxFloat*)&m_PrimBuf[12])->Convert(), 0.0);
   begin *= 1.e-3;
@@ -432,7 +432,7 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
   } else {
     majorAxis = begin - center;
   }
-  auto minorAxis = CrossProduct(EoGeVector3d::positiveUnitZ, majorAxis);
+  const auto minorAxis = CrossProduct(EoGeVector3d::positiveUnitZ, majorAxis);
   sweepAngle = std::abs(sweepAngle);
 
   auto* conic = EoDbConic::CreateConicFromEllipsePrimitive(center, majorAxis, minorAxis, sweepAngle);
@@ -444,8 +444,8 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1EllipsePrimitive() {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertVersion1LinePrimitive() {
-  std::int16_t color = std::int16_t(m_PrimBuf[4] & 0x000f);
-  std::int16_t lineTypeIndex = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);
+  const auto color = static_cast<std::int16_t>(m_PrimBuf[4] & 0x000f);
+  const auto lineTypeIndex = static_cast<std::int16_t>((m_PrimBuf[4] & 0x00ff) >> 4);
   const std::wstring lineTypeName = EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex);
 
   EoGeLine line;
@@ -456,22 +456,23 @@ EoDbPrimitive* EoDbJobFile::ConvertVersion1LinePrimitive() {
 }
 
 EoDbPrimitive* EoDbJobFile::ConvertVersion1PointPrimitive() {
-  std::int16_t PenColor = std::int16_t(m_PrimBuf[4] & 0x000f);
-  std::int16_t PointStyle = std::int16_t((m_PrimBuf[4] & 0x00ff) >> 4);
+  const auto penColor = static_cast<std::int16_t>(m_PrimBuf[4] & 0x000f);
+  const auto pointStyle = static_cast<std::int16_t>((m_PrimBuf[4] & 0x00ff) >> 4);
 
-  EoGePoint3d Point = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
-  Point *= 1.e-3;
+  EoGePoint3d point = ((CVaxPnt*)&m_PrimBuf[8])->Convert();
+  point *= 1.e-3;
 
-  double Data[3]{};
+  double data[3]{};
 
-  Data[0] = ((CVaxFloat*)&m_PrimBuf[20])->Convert();
-  Data[1] = ((CVaxFloat*)&m_PrimBuf[24])->Convert();
-  Data[2] = ((CVaxFloat*)&m_PrimBuf[28])->Convert();
+  data[0] = ((CVaxFloat*)&m_PrimBuf[20])->Convert();
+  data[1] = ((CVaxFloat*)&m_PrimBuf[24])->Convert();
+  data[2] = ((CVaxFloat*)&m_PrimBuf[28])->Convert();
 
-  return new EoDbPoint(PenColor, PointStyle, Point, 3, Data);
+  return new EoDbPoint(penColor, pointStyle, point, 3, data);
 }
-void EoDbJobFile::ConvertCSplineToBSpline() {
-  std::uint16_t NumberOfControlPoints = *((std::uint16_t*)&m_PrimBuf[10]);
+
+void EoDbJobFile::ConvertCSplineToBSpline() const {
+  const auto NumberOfControlPoints = *((std::uint16_t*)&m_PrimBuf[10]);
 
   m_PrimBuf[3] = static_cast<std::uint8_t>((2 + NumberOfControlPoints * 3) / 8 + 1);
   *((std::uint16_t*)&m_PrimBuf[4]) = std::uint16_t(EoDb::kSplinePrimitive);
@@ -479,6 +480,7 @@ void EoDbJobFile::ConvertCSplineToBSpline() {
   m_PrimBuf[9] = m_PrimBuf[11];
   ::MoveMemory(&m_PrimBuf[10], &m_PrimBuf[38], NumberOfControlPoints * 3 * sizeof(CVaxFloat));
 }
+
 void EoDbJobFile::ConvertTagToPoint() {
   *((std::uint16_t*)&m_PrimBuf[4]) = EoDb::kPointPrimitive;
   ::ZeroMemory(&m_PrimBuf[20], 12);
@@ -502,9 +504,9 @@ EoDbLabeledLine::EoDbLabeledLine(std::uint8_t* buffer) {
   m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[55])->Convert());
   m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[67])->Convert());
 
-  std::int16_t TextLength = *((std::int16_t*)&buffer[79]);
+  const auto textLength = *((std::int16_t*)&buffer[79]);
 
-  buffer[81 + TextLength] = '\0';
+  buffer[81 + textLength] = '\0';
   m_text = CString((LPCSTR)&buffer[81]);
 }
 
@@ -603,7 +605,7 @@ EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
     m_color = std::int16_t(buffer[4] & 0x000f);
     SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(std::int16_t((buffer[4] & 0x00ff) >> 4)));
 
-    std::uint16_t wPts = std::uint16_t(((CVaxFloat*)&buffer[8])->Convert());
+    const auto wPts = std::uint16_t(((CVaxFloat*)&buffer[8])->Convert());
 
     int bufferIndex{12};
 
@@ -616,7 +618,7 @@ EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
     m_color = std::int16_t(buffer[6]);
     SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(std::int16_t(buffer[7])));
 
-    std::uint16_t wPts = static_cast<std::uint16_t>(*((std::int16_t*)&buffer[8]));
+    const auto wPts = static_cast<std::uint16_t>(*((std::int16_t*)&buffer[8]));
 
     int bufferIndex{10};
 
@@ -637,7 +639,7 @@ EoDbText::EoDbText(std::uint8_t* buffer, int version) {
     m_fontDefinition.SetCharacterSpacing(((CVaxFloat*)&buffer[36])->Convert());
     m_fontDefinition.SetCharacterSpacing(std::min(std::max(m_fontDefinition.CharacterSpacing(), 0.0), 4.0));
 
-    double d = ((CVaxFloat*)&buffer[40])->Convert();
+    const auto d = ((CVaxFloat*)&buffer[40])->Convert();
 
     m_fontDefinition.SetPath(static_cast<EoDb::Path>(fmod(d, 10.0)));
     if (m_fontDefinition.Path() < EoDb::Path::Right || m_fontDefinition.Path() > EoDb::Path::Down) {
@@ -701,8 +703,8 @@ EoDbText::EoDbText(std::uint8_t* buffer, int version) {
     m_ReferenceSystem.SetXDirection(((CVaxVec*)&buffer[29])->Convert());
     m_ReferenceSystem.SetYDirection(((CVaxVec*)&buffer[41])->Convert());
 
-    std::int16_t TextLength = *((std::int16_t*)&buffer[53]);
-    buffer[55 + TextLength] = '\0';
+    const auto textLength = *((std::int16_t*)&buffer[53]);
+    buffer[55 + textLength] = '\0';
     m_strText = CString((LPCSTR)&buffer[55]);
   }
 }
@@ -711,7 +713,7 @@ void EoDbConic::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 2;
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kConicPrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  const auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
   buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
@@ -727,7 +729,7 @@ void EoDbEllipse::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 2;
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kEllipsePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  const auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
   buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
@@ -739,12 +741,12 @@ void EoDbEllipse::Write(CFile& file, std::uint8_t* buffer) {
   file.Write(buffer, 64);
 }
 void EoDbLabeledLine::Write(CFile& file, std::uint8_t* buffer) {
-  std::uint16_t TextLength = std::uint16_t(m_text.GetLength());
+  const auto textLength = std::uint16_t(m_text.GetLength());
 
-  buffer[3] = std::uint8_t((118 + TextLength) / 32);
+  buffer[3] = std::uint8_t((118 + textLength) / 32);
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kDimensionPrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  const auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
   buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
@@ -759,14 +761,14 @@ void EoDbLabeledLine::Write(CFile& file, std::uint8_t* buffer) {
   buffer[41] = static_cast<std::uint8_t>(m_fontDefinition.HorizontalAlignment());
   buffer[42] = static_cast<std::uint8_t>(m_fontDefinition.VerticalAlignment());
 
-  EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
+  const EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
 
   ((CVaxPnt*)&buffer[43])->Convert(ReferenceSystem.Origin());
   ((CVaxVec*)&buffer[55])->Convert(ReferenceSystem.XDirection());
   ((CVaxVec*)&buffer[67])->Convert(ReferenceSystem.YDirection());
 
-  *((std::int16_t*)&buffer[79]) = static_cast<std::int16_t>(TextLength);
-  memcpy(&buffer[81], (LPCWSTR)m_text, TextLength);
+  *((std::int16_t*)&buffer[79]) = static_cast<std::int16_t>(textLength);
+  memcpy(&buffer[81], (LPCWSTR)m_text, textLength);
 
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }
@@ -774,7 +776,7 @@ void EoDbLine::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = 1;
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kLinePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  const auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
   buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
   if (buffer[7] >= 16) { buffer[7] = 2; }
 
@@ -828,7 +830,7 @@ void EoDbSpline::Write(CFile& file, std::uint8_t* buffer) {
   buffer[3] = static_cast<std::uint8_t>((2 + m_pts.GetSize() * 3) / 8 + 1);
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kSplinePrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
-  auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
+  const auto lineTypeIdx = EoDbLineTypeTable::LegacyLineTypeIndex(m_lineType);
   buffer[7] = static_cast<std::uint8_t>(IsLineTypeByLayer() ? sm_layerLineTypeIndex : lineTypeIdx);
 
   *((std::int16_t*)&buffer[8]) = (std::int16_t)m_pts.GetSize();
@@ -843,9 +845,9 @@ void EoDbSpline::Write(CFile& file, std::uint8_t* buffer) {
 }
 
 void EoDbText::Write(CFile& file, std::uint8_t* buffer) {
-  std::uint16_t TextLength = std::uint16_t(m_strText.GetLength());
+  const auto textLength = std::uint16_t(m_strText.GetLength());
 
-  buffer[3] = static_cast<std::uint8_t>((86 + TextLength) / 32);
+  buffer[3] = static_cast<std::uint8_t>((86 + textLength) / 32);
   *((std::uint16_t*)&buffer[4]) = std::uint16_t(EoDb::kTextPrimitive);
   buffer[6] = static_cast<std::uint8_t>(m_color == COLOR_BYLAYER ? sm_layerColor : m_color);
   buffer[7] = static_cast<std::uint8_t>(m_fontDefinition.Precision());
@@ -855,13 +857,13 @@ void EoDbText::Write(CFile& file, std::uint8_t* buffer) {
   buffer[15] = static_cast<std::uint8_t>(m_fontDefinition.HorizontalAlignment());
   buffer[16] = static_cast<std::uint8_t>(m_fontDefinition.VerticalAlignment());
 
-  EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
+  const EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
   ((CVaxPnt*)&buffer[17])->Convert(ReferenceSystem.Origin());
   ((CVaxVec*)&buffer[29])->Convert(ReferenceSystem.XDirection());
   ((CVaxVec*)&buffer[41])->Convert(ReferenceSystem.YDirection());
 
-  *((std::uint16_t*)&buffer[53]) = TextLength;
-  memcpy(&buffer[55], (LPCWSTR)m_strText, TextLength);
+  *((std::uint16_t*)&buffer[53]) = textLength;
+  memcpy(&buffer[55], (LPCWSTR)m_strText, textLength);
 
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }

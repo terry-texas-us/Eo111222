@@ -31,12 +31,12 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   }
   const EoGeVector3d normalizedAxis = referenceAxis / axisLength;
 
-  double sinAngle = std::sin(angle);
-  double cosAngle = std::cos(angle);
+  const double sinAngle = std::sin(angle);
+  const double cosAngle = std::cos(angle);
 
-  double xSquared = normalizedAxis.x * normalizedAxis.x;
-  double ySquared = normalizedAxis.y * normalizedAxis.y;
-  double zSquared = normalizedAxis.z * normalizedAxis.z;
+  const double xSquared = normalizedAxis.x * normalizedAxis.x;
+  const double ySquared = normalizedAxis.y * normalizedAxis.y;
+  const double zSquared = normalizedAxis.z * normalizedAxis.z;
 
   m_4X4[0][0] = (xSquared + (1.0 - xSquared) * cosAngle);
   m_4X4[0][1] = (normalizedAxis.x * normalizedAxis.y * (1.0 - cosAngle) - normalizedAxis.z * sinAngle);
@@ -92,7 +92,7 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   EoGeVector3d xAxisTransformed = xAxis;
   xAxisTransformed = *this * xAxisTransformed;
 
-  double xyMagnitude = std::sqrt(xAxisTransformed.x * xAxisTransformed.x + xAxisTransformed.y * xAxisTransformed.y);
+  const double xyMagnitude = std::sqrt(xAxisTransformed.x * xAxisTransformed.x + xAxisTransformed.y * xAxisTransformed.y);
   if (xyMagnitude < Eo::geometricTolerance) { return; }
   EoGeVector3d scaleVector(1.0 / xyMagnitude, 1.0, 1.0);
 
@@ -112,7 +112,7 @@ EoGeTransformMatrix::EoGeTransformMatrix(
 
   // Add shear to matrix which gets positive y-axis reference vector as y-axis
   if (Eo::IsGeometricallyNonZero(yAxisTransformed.x)) {
-    double shearFactor = -yAxisTransformed.x / yAxisTransformed.y;
+    const double shearFactor = -yAxisTransformed.x / yAxisTransformed.y;
     for (int i = 0; i < 4; i++) { m_4X4[0][i] += m_4X4[1][i] * shearFactor; }
   }
   Scale(scaleVector);
@@ -167,8 +167,8 @@ void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(
   Identity();
   Translate(EoGeVector3d(referencePoint, EoGePoint3d::kOrigin));
 
-  double yNormalAbs = std::abs(normal.y);
-  double zNormalAbs = std::abs(normal.z);
+  const double yNormalAbs = std::abs(normal.y);
+  const double zNormalAbs = std::abs(normal.z);
 
   double d{};
   if (zNormalAbs < Eo::geometricTolerance) {

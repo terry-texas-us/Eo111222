@@ -39,9 +39,9 @@ void EoDlgEditTrapCommandsQuery::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgEditTrapCommandsQuery::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  auto groupTreeWindow = ::GetDlgItem(this->GetSafeHwnd(), IDC_GROUP_TREE);
+  const auto groupTreeWindow = ::GetDlgItem(this->GetSafeHwnd(), IDC_GROUP_TREE);
   auto* groupsInTrap = AeSysDoc::GetDoc()->GroupsInTrap();
-  auto groupListTreeItem = tvAddItem(groupTreeWindow, TVI_ROOT, L"<Groups>", groupsInTrap);
+  const auto groupListTreeItem = tvAddItem(groupTreeWindow, TVI_ROOT, L"<Groups>", groupsInTrap);
   groupsInTrap->AddToTreeViewControl(groupTreeWindow, groupListTreeItem);
 
   const auto oneInchWidth = static_cast<int>(GetDpiForSystem());
@@ -59,7 +59,7 @@ BOOL EoDlgEditTrapCommandsQuery::OnInitDialog() {
 }
 
 void EoDlgEditTrapCommandsQuery::OnTvnSelchangedGroupTree(NMHDR* pNMHDR, LRESULT* pResult) {
-  LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+  const auto pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
 
   wchar_t text[256]{};
 
@@ -100,7 +100,7 @@ void EoDlgEditTrapCommandsQuery::FillExtraList(EoDbPrimitive* primitive) {
 
     offset += delimiter + 1;
     delimiter = extra.Mid(offset).Find('\t');
-    int nLen = std::min(delimiter, static_cast<int>(sizeof(szBuf) / sizeof(wchar_t)) - 1);
+    const int nLen = std::min(delimiter, static_cast<int>(sizeof(szBuf) / sizeof(wchar_t)) - 1);
     wcscpy_s(szBuf, 64, extra.Mid(offset, nLen));
 
     m_ExtraListViewControl.SetItemText(iItem++, 1, szBuf);

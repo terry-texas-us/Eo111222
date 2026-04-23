@@ -117,10 +117,10 @@ void EoDbText::ConvertFormattingCharacters() {
     if (m_strText[i] != '^') { continue; }
     if (m_strText[i + 1] != '/') { continue; }
 
-    int endCaret = m_strText.Find('^', i + 1);
+    const auto endCaret = m_strText.Find('^', i + 1);
     if (endCaret == -1) { continue; }
 
-    int fractionBar = m_strText.Find('/', i + 2);
+    const auto fractionBar = m_strText.Find('/', i + 2);
     if (fractionBar == -1 || fractionBar >= endCaret) { continue; }
 
     m_strText.SetAt(i++, '\\');
@@ -131,10 +131,10 @@ void EoDbText::ConvertFormattingCharacters() {
 }
 
 void EoDbText::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  std::int16_t color = LogicalColor();
+  const auto color = LogicalColor();
   Gs::renderState.SetColor(renderDevice, color);
 
-  std::int16_t lineTypeIndex = Gs::renderState.LineTypeIndex();
+  const auto lineTypeIndex = Gs::renderState.LineTypeIndex();
   Gs::renderState.SetLineType(renderDevice, 1);
 
   if (m_mtextProperties.has_value()
@@ -292,8 +292,8 @@ void EoDbText::FormatExtra(CString& str) {
   str += L'\t';
 }
 void EoDbText::FormatGeometry(CString& str) {
-  EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
-  EoGePoint3d Origin = ReferenceSystem.Origin();
+  const EoGeReferenceSystem ReferenceSystem = m_ReferenceSystem;
+  const EoGePoint3d Origin = ReferenceSystem.Origin();
 
   str += L"Origin;" + Origin.ToString();
   str += L"X Axis;" + ReferenceSystem.XDirection().ToString();
@@ -305,7 +305,7 @@ void EoDbText::GetBoundingBox(EoGePoint3dArray& ptsBox, double spaceFactor) {
 
 void EoDbText::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
-  auto origin = m_ReferenceSystem.Origin();
+  const auto origin = m_ReferenceSystem.Origin();
   points.Add(origin);
 }
 
@@ -357,7 +357,7 @@ void EoDbText::ModifyState() {
   EoDbPrimitive::ModifyState();
 
   m_fontDefinition = Gs::renderState.FontDefinition();
-  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
+  const auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
   m_ReferenceSystem.Rescale(characterCellDefinition);
 }
 
@@ -413,9 +413,9 @@ void EoDbText::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
 }
 EoDbText* EoDbText::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
+  const auto color = EoDb::ReadInt16(file);
   (void)color;  // currently unused, but may be used in the future to indicate the text color
-  auto lineType = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
   (void)lineType;  // currently unused, but may be used in the future to indicate the text line type
   EoDbFontDefinition fontDefinition;
   fontDefinition.Read(file);
@@ -533,8 +533,8 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* render
     maxCharacterCode = Eo::strokeFontV1MaxCharacterCode;
   }
 
-  double interCharacterGap = (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
-  double fixedCharacterAdvance = 1.0 + interCharacterGap;
+  const auto interCharacterGap = (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+  const auto fixedCharacterAdvance = 1.0 + interCharacterGap;
 
   EoGePoint3d ptStroke = EoGePoint3d::kOrigin;
   EoGePoint3d ptChrPos = ptStroke;
@@ -550,7 +550,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* render
 
     // Apply left bearing offset so character strokes are left-aligned within their proportional cell
     if (leftBearingTable != nullptr) {
-      int rawLeftBearing = leftBearingTable[character - 32];
+      const int rawLeftBearing = leftBearingTable[character - 32];
       ptStroke += EoGeVector3d(-rawLeftBearing * 0.01 / Eo::defaultCharacterCellAspectRatio, 0.0, 0.0);
     }
 
@@ -573,7 +573,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* render
     // Per-character proportional advance when v2 advance widths are available
     double characterAdvance = fixedCharacterAdvance;
     if (advanceWidthTable != nullptr) {
-      int rawAdvanceWidth = advanceWidthTable[character - 32];
+      const int rawAdvanceWidth = advanceWidthTable[character - 32];
       if (rawAdvanceWidth > 0) {
         double characterCellWidth = rawAdvanceWidth * 0.01 / Eo::defaultCharacterCellAspectRatio;
         characterAdvance = characterCellWidth + interCharacterGap;
@@ -610,7 +610,7 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
 
   EoGePoint4d ndcPoint = EoGePoint4d{transformMatrix * EoGePoint3d::kOrigin};
   view->ModelViewTransformPoint(ndcPoint);
-  CPoint clientPoint = view->ProjectToClient(ndcPoint);
+  const CPoint clientPoint = view->ProjectToClient(ndcPoint);
 
   EoGePoint4d ndcPoints[3]{};
 
@@ -625,10 +625,10 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
   clientPoints[1] = view->ProjectToClient(ndcPoints[1]);
   clientPoints[2] = view->ProjectToClient(ndcPoints[2]);
 
-  EoGeVector3d vX(double(clientPoints[2].x - clientPoint.x), double(clientPoints[2].y - clientPoint.y), 0.0);
-  EoGeVector3d vY(double(clientPoints[1].x - clientPoint.x), double(clientPoints[1].y - clientPoint.y), 0.0);
+  const EoGeVector3d vX(double(clientPoints[2].x - clientPoint.x), double(clientPoints[2].y - clientPoint.y), 0.0);
+  const EoGeVector3d vY(double(clientPoints[1].x - clientPoint.x), double(clientPoints[1].y - clientPoint.y), 0.0);
 
-  double dHeight = vY.Length();
+  const double dHeight = vY.Length();
   if (dHeight == 0.0) { return true; }
   LOGFONT logfont{};
   logfont.lfHeight = -Eo::Round(1.33 * dHeight);
@@ -643,8 +643,8 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
   wcscpy_s(logfont.lfFaceName, LF_FACESIZE, fontDefinition.FontName());
 
   renderDevice->SelectFont(&logfont);
-  UINT uTextAlign = renderDevice->SetTextAlign(TA_LEFT | TA_BASELINE);
-  int iBkMode = renderDevice->SetBkMode(TRANSPARENT);
+  const auto uTextAlign = renderDevice->SetTextAlign(TA_LEFT | TA_BASELINE);
+  const int iBkMode = renderDevice->SetBkMode(TRANSPARENT);
 
   const wchar_t* textData = static_cast<const wchar_t*>(text) + startPosition;
   renderDevice->TextOut(clientPoint.x, clientPoint.y, textData, numberOfCharacters);
@@ -829,13 +829,13 @@ static double ComputeStrokeFontTextExtent(const EoDbFontDefinition& fontDefiniti
     maxCharacterCode = Eo::strokeFontV2MaxCharacterCode;
   }
 
-  double interCharacterGap = (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+  const auto interCharacterGap = (0.32 + fontDefinition.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
   int displayableCount = 0;
   double totalCellWidth = 0.0;
 
   int currentPosition = 0;
   while (currentPosition < text.GetLength()) {
-    wchar_t c = text[currentPosition++];
+    const wchar_t c = text[currentPosition++];
 
     // Skip formatting sequences (mirrors LengthSansFormattingCharacters logic)
     if (c == '\\' && currentPosition < text.GetLength()) {
@@ -997,11 +997,11 @@ EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition, EoGeRef
     double lineSpaceFactor, double characterSpaceFactor) {
   auto position = referenceSystem.Origin();
   auto path = referenceSystem.XDirection();
-  auto yDirection = referenceSystem.YDirection();
+  const auto yDirection = referenceSystem.YDirection();
 
   if (fontDefinition.Path() == EoDb::Path::Right || fontDefinition.Path() == EoDb::Path::Left) {
     position += path * characterSpaceFactor;
-    EoGeVector3d unitNormal = referenceSystem.UnitNormal();
+    const auto unitNormal = referenceSystem.UnitNormal();
 
     path.Unitize();
     path *= -(yDirection.Length() * lineSpaceFactor);
@@ -1024,17 +1024,17 @@ void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, E
   }
 
   // Compute the inter-character gap in normalized units (same formula as DisplayTextSegmentUsingStrokeFont)
-  double interCharacterGap = (0.32 + fd.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
+  const auto interCharacterGap = (0.32 + fd.CharacterSpacing()) / Eo::defaultCharacterCellAspectRatio;
 
   // Convert the MTEXT reference rectangle width from world units to normalized stroke-font units.
   // xDirection.Length() = height * defaultCharacterCellAspectRatio * widthScale, which is the
   // world-unit width of one normalized unit along the text path.
-  double xDirectionLength = referenceSystem.XDirection().Length();
+  const auto xDirectionLength = referenceSystem.XDirection().Length();
   if (xDirectionLength < Eo::geometricTolerance) {
     DisplayText(view, renderDevice, fd, referenceSystem, text);
     return;
   }
-  double wrapThreshold = mtextProperties.referenceRectangleWidth / xDirectionLength;
+  const auto wrapThreshold = mtextProperties.referenceRectangleWidth / xDirectionLength;
 
   // Split text into word-wrapped lines. Each line is a CString that will be rendered
   // via DisplayText (which handles alignment and inline formatting codes like \S).
@@ -1047,7 +1047,7 @@ void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, E
 
   int pos = 0;
   while (pos < text.GetLength()) {
-    wchar_t c = text[pos];
+    const wchar_t c = text[pos];
 
     // Check for hard paragraph break (\P)
     if (c == '\\' && pos + 1 < text.GetLength() && text[pos + 1] == 'P') {

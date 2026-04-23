@@ -49,7 +49,7 @@ namespace {
  */
 std::wstring MultiByteToWString(const char* multiByte) {
   if (!multiByte) { return {L""}; }
-  int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
+  const int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
   if (size == 0) { return {L""}; }
   std::wstring string;
   string.resize(static_cast<size_t>(size) - 1);
@@ -205,7 +205,7 @@ BOOL AeSys::InitInstance() {
       reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
   if (FAILED(hr)) { ATLTRACE2(traceGeneral, 0, L"DWriteCreateFactory failed: 0x%08X\n", hr); }
 
-  CString resourceFolder = App::ResourceFolderPath();
+  const CString resourceFolder = App::ResourceFolderPath();
   LoadSimplexStrokeFont(resourceFolder + Eo::defaultStrokeFont);
   LoadHatchesFromFile(resourceFolder + L"Hatches\\DefaultSet.txt");
   // LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
@@ -246,14 +246,14 @@ void AeSys::PreLoadState() {
 }
 
 int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string) {
-  auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
+  const auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
 
   CString formattedResourceString;
   formattedResourceString.Format(formatSpecification, string.GetString());
 
   int nextToken{0};
-  CString message = formattedResourceString.Tokenize(L"\t", nextToken);
-  CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
+  const CString message = formattedResourceString.Tokenize(L"\t", nextToken);
+  const CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
 
   return (MessageBoxW(nullptr, message, caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
 }
@@ -285,13 +285,13 @@ void AeSys::AddModeInformationToMessageList() {
 }
 
 void AeSys::AddStringToMessageList(UINT stringResourceIdentifier) {
-  auto resourceString = App::LoadStringResource(stringResourceIdentifier);
+  const auto resourceString = App::LoadStringResource(stringResourceIdentifier);
 
   AddStringToMessageList(resourceString);
 }
 
 void AeSys::AddStringToMessageList(UINT stringResourceIdentifier, const CString& string) {
-  auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
+  const auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
 
   CString formattedResourceString;
   formattedResourceString.Format(formatSpecification, string.GetString());
@@ -300,24 +300,23 @@ void AeSys::AddStringToMessageList(UINT stringResourceIdentifier, const CString&
 }
 
 void AeSys::WarningMessageBox(UINT stringResourceIdentifier) {
-  auto resourceString = App::LoadStringResource(stringResourceIdentifier);
+  const auto resourceString = App::LoadStringResource(stringResourceIdentifier);
 
   int nextToken{0};
-  CString message = resourceString.Tokenize(L"\t", nextToken);
-  CString caption = resourceString.Tokenize(L"\n", nextToken);
-
+  const CString message = resourceString.Tokenize(L"\t", nextToken);
+  const CString caption = resourceString.Tokenize(L"\n", nextToken);
   MessageBoxW(nullptr, message, caption, MB_ICONWARNING | MB_OK);
 }
 
 void AeSys::WarningMessageBox(UINT stringResourceIdentifier, const CString& string) {
-  auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
+  const auto formatSpecification = App::LoadStringResource(stringResourceIdentifier);
 
   CString formattedResourceString;
   formattedResourceString.Format(formatSpecification, string.GetString());
 
   int nextToken{0};
-  CString message = formattedResourceString.Tokenize(L"\t", nextToken);
-  CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
+  const CString message = formattedResourceString.Tokenize(L"\t", nextToken);
+  const CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
 
   MessageBoxW(nullptr, message, caption, MB_ICONWARNING | MB_OK);
 }
@@ -369,18 +368,18 @@ void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
     if (inputLine[0] == L'\0' || inputLine[0] == L'#' || inputLine[0] == L';') { continue; }
 
     wchar_t* context = nullptr;
-    wchar_t* penIndexText = wcstok_s(inputLine, L"=", &context);
+    wchar_t* const penIndexText = wcstok_s(inputLine, L"=", &context);
     if (penIndexText == nullptr) { continue; }
 
     wchar_t* penIndexEnd = nullptr;
-    unsigned long penIndex = std::wcstoul(penIndexText, &penIndexEnd, 10);
+    const unsigned long penIndex = std::wcstoul(penIndexText, &penIndexEnd, 10);
     if (penIndexEnd == penIndexText) { continue; }
 
-    wchar_t* penWidthText = wcstok_s(nullptr, L",\n", &context);
+    wchar_t* const penWidthText = wcstok_s(nullptr, L",\n", &context);
     if (penWidthText == nullptr) { continue; }
 
     wchar_t* penValueEnd = nullptr;
-    double penWidth = std::wcstod(penWidthText, &penValueEnd);
+    const double penWidth = std::wcstod(penWidthText, &penValueEnd);
     if (penValueEnd == penWidthText) { continue; }
 
     if (static_cast<size_t>(penIndex) < numberOfPenWidths) { penWidths[penIndex] = penWidth; }
@@ -478,7 +477,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   EoDbCharacterCellDefinition characterCellDefinition{};
   Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
-  EoDbFontDefinition fontDefinition;
+  const EoDbFontDefinition fontDefinition;
   Gs::renderState.SetFontDefinition(deviceContext, fontDefinition);
 
   SetUnits(Eo::Units::Inches);
@@ -519,19 +518,19 @@ void AeSys::LoadPenColorsFromFile(const CString& fileName) {
 
     while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != nullptr && *pBuf != '<') {
       wchar_t* nextToken = nullptr;
-      wchar_t* index = wcstok_s(pBuf, L"=", &nextToken);
-      auto colorIndex = _wtoi(index);
+      wchar_t* const index = wcstok_s(pBuf, L"=", &nextToken);
+      const auto colorIndex = _wtoi(index);
 
       if (colorIndex < 0 || colorIndex >= static_cast<int>(std::size(Eo::ColorPalette))) { continue; }
-      wchar_t* redColorPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* greenColorPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* blueColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* const redColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* const greenColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* const blueColorPalette = wcstok_s(nullptr, L",", &nextToken);
       Eo::ColorPalette[colorIndex] = RGB(_wtoi(redColorPalette), _wtoi(greenColorPalette), _wtoi(blueColorPalette));
 
       if (colorIndex >= static_cast<int>(std::size(Eo::GrayPalette))) { continue; }
-      wchar_t* redGrayPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* greenGrayPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* blueGrayPalette = wcstok_s(nullptr, L"\n", &nextToken);
+      wchar_t* const redGrayPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* const greenGrayPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* const blueGrayPalette = wcstok_s(nullptr, L"\n", &nextToken);
       Eo::GrayPalette[colorIndex] = RGB(_wtoi(redGrayPalette), _wtoi(greenGrayPalette), _wtoi(blueGrayPalette));
     }
   }
@@ -573,14 +572,14 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
   } else {
     HRSRC ResourceHandle = FindResourceW(nullptr, MAKEINTRESOURCE(IDR_PEGSTROKEFONT), L"STROKEFONT");
     if (ResourceHandle != nullptr) {
-      rsize_t ResourceSize = SizeofResource(nullptr, ResourceHandle);
+      const rsize_t ResourceSize = SizeofResource(nullptr, ResourceHandle);
       m_SimplexStrokeFont = new char[ResourceSize];
-      LPVOID Resource = LockResource(LoadResource(nullptr, ResourceHandle));
+      LPVOID const Resource = LockResource(LoadResource(nullptr, ResourceHandle));
       memcpy_s(m_SimplexStrokeFont, ResourceSize, Resource, ResourceSize);
     }
   }
   if (m_SimplexStrokeFont != nullptr) {
-    auto* fontData = reinterpret_cast<long*>(m_SimplexStrokeFont);
+    auto* const fontData = reinterpret_cast<long*>(m_SimplexStrokeFont);
     m_StrokeFontVersion = (fontData[0] == Eo::strokeFontV2MagicNumber) ? 2 : 1;
   }
 }
@@ -600,12 +599,12 @@ void AeSys::BuildModifiedAcceleratorTable() {
   HACCEL AcceleratorTableHandle = MainFrame->m_hAccelTable;
   ::DestroyAcceleratorTable(AcceleratorTableHandle);
 
-  HACCEL ModeAcceleratorTableHandle =
+  HACCEL const ModeAcceleratorTableHandle =
       ::LoadAccelerators(AeSys::GetInstance(), MAKEINTRESOURCE(m_ModeResourceIdentifier));
   int ModeAcceleratorTableEntries = CopyAcceleratorTableW(ModeAcceleratorTableHandle, nullptr, 0);
 
   AcceleratorTableHandle = ::LoadAccelerators(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
-  int AcceleratorTableEntries = CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
+  int const AcceleratorTableEntries = CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
 
   LPACCEL ModifiedAcceleratorTable =
       new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
@@ -623,7 +622,7 @@ void AeSys::BuildModifiedAcceleratorTable() {
 void AeSys::OnFileSaveAll() {
   POSITION templatePosition = GetFirstDocTemplatePosition();
   while (templatePosition != nullptr) {
-    auto* docTemplate = GetNextDocTemplate(templatePosition);
+    auto* const docTemplate = GetNextDocTemplate(templatePosition);
     POSITION docPosition = docTemplate->GetFirstDocPosition();
     while (docPosition != nullptr) {
       auto* document = docTemplate->GetNextDoc(docPosition);
@@ -703,9 +702,9 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
   if (numerator > 0) {
     wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize), (units == Eo::Units::ArchitecturalS) ? L"\\S" : L"-");
-    int iGrtComDivisor = std::gcd(numerator, fractionPrecision);
+    const int iGrtComDivisor = std::gcd(numerator, fractionPrecision);
     numerator /= iGrtComDivisor;
-    int Denominator = fractionPrecision / iGrtComDivisor;
+    const int Denominator = fractionPrecision / iGrtComDivisor;
     _itow_s(numerator, szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
     wcscat_s(lengthAsBuffer, bufSize, L"/");
@@ -742,7 +741,7 @@ void AeSys::FormatLengthEngineering(
 
       CString FractionalInches;
       FractionalInches.Format(FormatSpecification, ScaledLength);
-      int DecimalPointPosition = FractionalInches.Find('.');
+      const int DecimalPointPosition = FractionalInches.Find('.');
       FractionalInches = FractionalInches.Mid(DecimalPointPosition) + L"\"";
 
       wcscat_s(lengthAsBuffer, bufSize, FractionalInches);
@@ -751,7 +750,7 @@ void AeSys::FormatLengthEngineering(
 }
 void AeSys::FormatLengthSimple(
     LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length, const int width, const int precision) {
-  double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
+  const double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   CString formatSpecification;
   formatSpecification.Format(L"%%%i.%if", width, precision);
@@ -809,13 +808,13 @@ void AeSys::FormatLengthSimple(
 static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* end) {
   wchar_t token[32]{};
   int linePosition{};
-  int tokenType = lex::Scan(token, inputLine, linePosition);
+  const int tokenType = lex::Scan(token, inputLine, linePosition);
 
   double totalLength = feetLength;
 
   // Check if end of feet portion is end of inputLine and investigate inches portion if not
   if (end[1] != L'\0') {  // Parse inches portion
-    double inches = wcstod(&end[1], &end);
+    const double inches = wcstod(&end[1], &end);
     if (end == nullptr) { throw L"Invalid inches value in length string."; }
     // Add/subtract inches to totallength
     totalLength += std::copysign(inches, totalLength);
@@ -824,12 +823,12 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
       // that also
       if (*end == L'-') {
         wchar_t* fractionEnd{};
-        double numerator = wcstod(&end[1], &fractionEnd);
+        const double numerator = wcstod(&end[1], &fractionEnd);
         if (fractionEnd == &end[1]) { throw L"Invalid fraction in length string."; }  // allowing 0.0 numerator here
         end = fractionEnd;
-        double denominator = wcstod(&end[1], &fractionEnd);
+        const double denominator = wcstod(&end[1], &fractionEnd);
         if (fractionEnd == &end[1] || denominator == 0.0) { throw L"Invalid fraction denominator in length string."; }
-        double fraction = numerator / denominator;
+        const double fraction = numerator / denominator;
         // Add/subtract fraction to totallength
         totalLength += std::copysign(fraction, totalLength);
         end = fractionEnd;
@@ -853,7 +852,7 @@ double AeSys::ParseLength(wchar_t* inputLine) {
   // `{sign}{fraction}(\'|\"|{metric_units})`
   if (*end == L'/') {
     wchar_t* fractionEnd{};
-    double denominator = wcstod(&end[1], &fractionEnd);
+    const double denominator = wcstod(&end[1], &fractionEnd);
     if (fractionEnd == &end[1] || denominator == 0.0) { throw L"Invalid length format."; }
     length = length / denominator;
     end = fractionEnd;
@@ -1011,7 +1010,7 @@ EoDb::FileTypes FileTypeFromPath(const CString& pathName) {
 
 CString PathFromCommandLine() {
   CString pathName = ::GetCommandLineW();
-  int lastPathDelimiter = pathName.ReverseFind(L'\\');
+  const int lastPathDelimiter = pathName.ReverseFind(L'\\');
   pathName = pathName.Mid(1, lastPathDelimiter - 1);
 
   return pathName;
@@ -1030,7 +1029,7 @@ CString LoadStringResource(UINT resourceIdentifier) {
 }
 
 CString ResourceFolderPath() {
-  auto applicationPath = PathFromCommandLine();
+  const auto applicationPath = PathFromCommandLine();
   return applicationPath + L"\\res\\";
 }
 

@@ -77,7 +77,7 @@ void AeSysView::OnLpdModeDuct() {
       m_OriginalPreviousGroupDisplayed = true;
       m_PreviousSection = m_CurrentSection;
     }
-    double TransitionLength = (m_PreviousSection == m_CurrentSection)
+    const double TransitionLength = (m_PreviousSection == m_CurrentSection)
         ? 0.
         : LengthOfTransition(m_DuctJustification, m_TransitionSlope, m_PreviousSection, m_CurrentSection);
     EoGeLine ReferenceLine(m_currentReferenceLine);
@@ -146,7 +146,7 @@ void AeSysView::OnLpdModeTap() {
   EoDbLine* LinePrimitive{};
   auto* group = SelectLineUsingPoint(cursorPosition, LinePrimitive);
   if (group != nullptr) {
-    EoGePoint3d TestPoint(cursorPosition);
+    const EoGePoint3d TestPoint(cursorPosition);
     cursorPosition = SnapPointToAxis(m_PreviousPnt, cursorPosition);
     cursorPosition = LinePrimitive->ProjectPointToLine(cursorPosition);
     m_currentReferenceLine(m_PreviousPnt, cursorPosition);
@@ -208,19 +208,19 @@ void AeSysView::OnLpdModeEll() {
       return;
     }
     cursorPosition = EndPointPrimitive->GetPt();
-    Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
+    const Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
 
     EoDbPoint* BeginPointPrimitive = ExistingGroup->GetFirstDifferentPoint(EndPointPrimitive);
     if (BeginPointPrimitive != nullptr) {
       EoGeLine ExistingSectionReferenceLine(BeginPointPrimitive->GetPt(), cursorPosition);
 
-      EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjectPointToLine(m_PreviousPnt));
+      const EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjectPointToLine(m_PreviousPnt));
       double Relationship{};
       if (!ExistingSectionReferenceLine.ComputeParametricRelation(IntersectionPoint, Relationship)) { return; }
 
       if (Relationship > Eo::geometricTolerance) {
         m_currentReferenceLine(m_PreviousPnt, IntersectionPoint);
-        double SectionLength = m_currentReferenceLine.Length() -
+        const double SectionLength = m_currentReferenceLine.Length() -
             (m_PreviousSection.Width() + m_DuctSeamSize + ExistingSection.Width() * 0.5);
         if (SectionLength > Eo::geometricTolerance) {
           m_currentReferenceLine.end = m_currentReferenceLine.ProjectToEndPoint(SectionLength);
@@ -299,15 +299,15 @@ void AeSysView::OnLpdModeSize() {
     if (m_EndCapPoint->Color() == 15 && m_EndCapPoint->PointStyle() == 8) {
       auto position = m_EndCapGroup->Find(m_EndCapPoint);
       m_EndCapGroup->GetNext(position);
-      auto* endCap = static_cast<EoDbLine*>(m_EndCapGroup->GetAt(position));
-      EoGeLine line = endCap->Line();
+      auto* endCap = dynamic_cast<EoDbLine*>(m_EndCapGroup->GetAt(position));
+      const EoGeLine line = endCap->Line();
       angle = fmod(line.AngleFromXAxisXY(), Eo::Pi);
       if (angle <= Eo::Radian) { angle += Eo::Pi; }
       angle -= Eo::HalfPi;
     }
     m_EndCapPoint = nullptr;
   }
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   GenSizeNote(cursorPosition, angle, m_PreviousSection);
   if (m_PreviousOp != 0) { RubberBandingDisable(); }
@@ -316,7 +316,7 @@ void AeSysView::OnLpdModeSize() {
 }
 
 void AeSysView::OnLpdModeReturn() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (m_PreviousOp != 0) { OnLpdModeEscape(); }
   m_PreviousPnt = cursorPosition;
@@ -369,7 +369,7 @@ void AeSysView::DoDuctModeMouseMove() {
       SelectPointUsingPoint(cursorPosition, endCapTolerance, endCapColor, endCapPointStyle, EndPointPrimitive);
   if (ExistingGroup != nullptr) {
     cursorPosition = EndPointPrimitive->GetPt();
-    Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
+    const Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
 
     auto* BeginPointPrimitive = ExistingGroup->GetFirstDifferentPoint(EndPointPrimitive);
     if (BeginPointPrimitive != nullptr) {
@@ -380,7 +380,7 @@ void AeSysView::DoDuctModeMouseMove() {
       if (!ExistingSectionReferenceLine.ComputeParametricRelation(IntersectionPoint, Relationship)) { return; }
       if (Relationship > Eo::geometricTolerance) {
         m_currentReferenceLine(m_PreviousPnt, IntersectionPoint);
-        double SectionLength = m_currentReferenceLine.Length() -
+        const double SectionLength = m_currentReferenceLine.Length() -
             (m_PreviousSection.Width() + m_DuctSeamSize + ExistingSection.Width() * 0.5);
         if (SectionLength > Eo::geometricTolerance) {
           m_currentReferenceLine.end = m_currentReferenceLine.ProjectToEndPoint(SectionLength);
@@ -391,7 +391,7 @@ void AeSysView::DoDuctModeMouseMove() {
       }
     }
   } else {
-    double TransitionLength = (m_PreviousSection == m_CurrentSection)
+    const double TransitionLength = (m_PreviousSection == m_CurrentSection)
         ? 0.0
         : LengthOfTransition(m_DuctJustification, m_TransitionSlope, m_PreviousSection, m_CurrentSection);
     EoGeLine ReferenceLine(m_currentReferenceLine);
@@ -425,7 +425,7 @@ void AeSysView::DoDuctModeMouseMove() {
 }
 
 void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group) {
-  EoGePoint3d Midpoint = EoGePoint3d::Mid(beginPoint, endPoint);
+  const EoGePoint3d Midpoint = EoGePoint3d::Mid(beginPoint, endPoint);
 
   double Data[] = {section.Width(), section.Depth()};
 
@@ -447,7 +447,7 @@ EoGePoint3d AeSysView::GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& e
 
 void AeSysView::GenerateFullElbowTakeoff(
     EoDbGroup*, EoGeLine& existingSectionReferenceLine, Section existingSection, EoDbGroup* group) {
-  EoGeVector3d NewSectionDirection(existingSectionReferenceLine.begin, existingSectionReferenceLine.end);
+  const EoGeVector3d NewSectionDirection(existingSectionReferenceLine.begin, existingSectionReferenceLine.end);
 
   EoGePoint3d IntersectionPoint(existingSectionReferenceLine.ProjectPointToLine(m_PreviousPnt));
   EoGeLine PreviousReferenceLine(m_PreviousPnt, IntersectionPoint);
@@ -481,13 +481,13 @@ void AeSysView::GenerateFullElbowTakeoff(
     Points[1] =
         Points[0].ProjectToward(existingSectionReferenceLine.end, existingSection.Width() + m_PreviousSection.Width());
 
-    EoGePoint3d MiddleOfTransition = Points[0] + EoGeVector3d(Points[0], Points[1]) * 0.5;
+    const EoGePoint3d MiddleOfTransition = Points[0] + EoGeVector3d(Points[0], Points[1]) * 0.5;
     EoGeLine TransitionReferenceLine(MiddleOfTransition, MiddleOfTransition + NewSectionDirection);
 
-    double Width = m_PreviousSection.Width() + existingSection.Width();
-    double Depth = m_PreviousSection.Depth() + existingSection.Depth();
-    Section ContinueGroup(Width, Depth, Section::Rectangular);
-    Section CurrentSection(Width * 0.75, Depth * 0.75, Section::Rectangular);
+    const double Width = m_PreviousSection.Width() + existingSection.Width();
+    const double Depth = m_PreviousSection.Depth() + existingSection.Depth();
+    const Section ContinueGroup(Width, Depth, Section::Rectangular);
+    const Section CurrentSection(Width * 0.75, Depth * 0.75, Section::Rectangular);
 
     GenerateTransition(TransitionReferenceLine, m_centerLineEccentricity, m_DuctJustification, m_TransitionSlope,
         ContinueGroup, CurrentSection, group);
@@ -499,7 +499,7 @@ void AeSysView::GenerateFullElbowTakeoff(
 
 void AeSysView::GenerateRiseDrop(
     const std::wstring& indicatorLineTypeName, Section section, EoGeLine& referenceLine, EoDbGroup* group) {
-  double sectionLength = referenceLine.Length();
+  const double sectionLength = referenceLine.Length();
 
   EoGeLine leftLine;
   EoGeLine rightLine;
@@ -587,10 +587,10 @@ void AeSysView::GenSizeNote(EoGePoint3d point, double angle, Section section) {
   app.FormatLength(Width, std::max(app.GetUnits(), Eo::Units::Inches), section.Width(), 0, 2);
   CString Depth;
   app.FormatLength(Depth, std::max(app.GetUnits(), Eo::Units::Inches), section.Depth(), 0, 2);
-  CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
+  const CString Note = Width.TrimLeft() + L"/" + Depth.TrimLeft();
 
   auto* deviceContext = GetDC();
-  int savedRenderState = Gs::renderState.Save();
+  const int savedRenderState = Gs::renderState.Save();
   Gs::renderState.SetColor(deviceContext, 2);
 
   EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
@@ -644,8 +644,8 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
   Section->AddTail(EoDbLine::CreateLine(LeftLine.end, LeftLine.begin)->WithProperties(Gs::renderState));
 
   if (m_GenerateTurningVanes) {
-    EoGePoint3d beginPoint = ((justification == Left) ? RightLine : LeftLine).ProjectToBeginPoint(-m_DuctTapSize / 3.0);
-    EoGePoint3d endPoint = m_currentReferenceLine.ProjectToBeginPoint(-m_DuctTapSize / 2.0);
+    const EoGePoint3d beginPoint = ((justification == Left) ? RightLine : LeftLine).ProjectToBeginPoint(-m_DuctTapSize / 3.0);
+    const EoGePoint3d endPoint = m_currentReferenceLine.ProjectToBeginPoint(-m_DuctTapSize / 2.0);
     auto* circle = EoDbConic::CreateCircleInView(beginPoint, 0.01);
     circle->SetColor(1);
     circle->SetLineTypeName(Gs::renderState.LineTypeName());
@@ -659,10 +659,10 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
 
 void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,
     Section previousSection, Section currentSection, EoDbGroup* group) {
-  double ReferenceLength = referenceLine.Length();
+  const double ReferenceLength = referenceLine.Length();
   if (ReferenceLength < Eo::geometricTolerance) { return; }
 
-  double WidthChange = currentSection.Width() - previousSection.Width();
+  const double WidthChange = currentSection.Width() - previousSection.Width();
   double TransitionLength = LengthOfTransition(justification, slope, previousSection, currentSection);
   TransitionLength = std::min(TransitionLength, ReferenceLength);
 
@@ -685,7 +685,7 @@ void AeSysView::GenerateTransition(EoGeLine& referenceLine, double eccentricity,
 }
 
 void AeSysView::SetDuctOptions(Section& section) {
-  Eo::Units units = app.GetUnits();
+  const Eo::Units units = app.GetUnits();
   app.SetUnits(std::max(units, Eo::Units::Inches));
 
   EoDlgLowPressureDuctOptions dlg(this);
@@ -709,8 +709,8 @@ void AeSysView::SetDuctOptions(Section& section) {
 
 double AeSysView::LengthOfTransition(
     EJust justification, double slope, Section previousSection, Section currentSection) {
-  double widthChange = currentSection.Width() - previousSection.Width();
-  double depthChange = currentSection.Depth() - previousSection.Depth();
+  const double widthChange = currentSection.Width() - previousSection.Width();
+  const double depthChange = currentSection.Depth() - previousSection.Depth();
 
   double length = std::max(std::abs(widthChange), std::abs(depthChange)) * slope;
   if (justification == Center) { length *= 0.5; }
@@ -748,9 +748,9 @@ bool AeSysView::Find2LinesUsingLineEndpoints(
   EoDbLine* RightLinePrimitive{};
   int DirectedRelationship{};
 
-  EoGeLine testLine = testLinePrimitive->Line();
+  const EoGeLine testLine = testLinePrimitive->Line();
 
-  double TestLineAngle = fmod(testLine.AngleFromXAxisXY(), Eo::Pi);
+  const double TestLineAngle = fmod(testLine.AngleFromXAxisXY(), Eo::Pi);
 
   auto GroupPosition = GetLastGroupPosition();
   while (GroupPosition != nullptr) {
@@ -764,7 +764,7 @@ bool AeSysView::Find2LinesUsingLineEndpoints(
       auto* LinePrimitive = static_cast<EoDbLine*>(primitive);
       Line = LinePrimitive->Line();
       if (Line.begin == testLine.begin || Line.begin == testLine.end) {  // Exchange points
-        EoGePoint3d Point = Line.begin;
+        const EoGePoint3d Point = Line.begin;
         Line.begin = Line.end;
         Line.end = Point;
       } else if (Line.end != testLine.begin && Line.end != testLine.end) {

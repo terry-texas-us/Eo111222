@@ -124,7 +124,7 @@ void EoMfPropertiesDockablePane::AdjustLayout() {
   CRect rectClient;
   GetClientRect(rectClient);
 
-  int cyTlb = m_PropertiesToolBar.CalcFixedLayout(FALSE, TRUE).cy;
+  const int cyTlb = m_PropertiesToolBar.CalcFixedLayout(FALSE, TRUE).cy;
 
   m_PropertiesToolBar.SetWindowPos(
       nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
@@ -143,15 +143,15 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   m_PropertyGrid.MarkModifiedProperties(TRUE, TRUE);
 
-  auto* activeView = AeSysView::GetActiveView();
-  double scale = (activeView == nullptr) ? 1.0 : activeView->GetWorldScale();
+  auto* const activeView = AeSysView::GetActiveView();
+  const double scale = (activeView == nullptr) ? 1.0 : activeView->GetWorldScale();
 
   // --- Document Statistics group (first in the grid) ---
   auto* document = AeSysDoc::GetDoc();
-  int workCount = (document != nullptr)
+  const int workCount = (document != nullptr)
       ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers()
       : 0;
-  int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
+  const int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
 
   auto* documentStatisticsGroup = new CMFCPropertyGridProperty(L"Document Statistics");
   auto* workCountProperty = new CMFCPropertyGridProperty(
@@ -276,10 +276,10 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 void EoMfPropertiesDockablePane::UpdateDocumentStatistics() {
   auto* document = AeSysDoc::GetDoc();
 
-  int workCount = (document != nullptr)
+  const int workCount = (document != nullptr)
       ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers()
       : 0;
-  int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
+  const int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
 
   auto* workCountProperty = m_PropertyGrid.FindItemByData(kWorkGroupCount);
   if (workCountProperty != nullptr) {

@@ -120,7 +120,7 @@ void EoMfVisualManager::OnDrawTab(CDC* deviceContext, CRect rectTab, int tabInde
   const auto& colors = Eo::chromeColors;
 
   // Clip to tab bounds to prevent bleeding into adjacent tabs
-  int savedDC = deviceContext->SaveDC();
+  const int savedDC = deviceContext->SaveDC();
   deviceContext->IntersectClipRect(rectTab);
 
   // Fill tab background
@@ -161,9 +161,9 @@ void EoMfVisualManager::OnDrawTab(CDC* deviceContext, CRect rectTab, int tabInde
     tabWnd->GetTabLabel(tabIndex, tabText);
 
     if (!tabText.IsEmpty()) {
-      auto previousTextColor =
+      const auto previousTextColor =
           deviceContext->SetTextColor(isActive ? colors.tabActiveText : colors.tabInactiveText);
-      auto previousBkMode = deviceContext->SetBkMode(TRANSPARENT);
+      const auto previousBkMode = deviceContext->SetBkMode(TRANSPARENT);
 
       deviceContext->DrawText(tabText, textRect, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 
@@ -194,21 +194,20 @@ void EoMfVisualManager::OnDrawTabCloseButton(CDC* deviceContext, CRect rect,
   }
 
   // DPI-aware pen width for the X glyph
-  UINT dpi = ::GetDpiForWindow(deviceContext->GetWindow()->GetSafeHwnd());
-  int penWidth = (std::max)(1, static_cast<int>(dpi) / 96);
+  const UINT dpi = ::GetDpiForWindow(deviceContext->GetWindow()->GetSafeHwnd());
+  const int penWidth = (std::max)(1, static_cast<int>(dpi) / 96);
 
   // Draw the X glyph — use paneText for normal visibility, tabActiveText on hover
-  COLORREF xColor = (isHighlighted || isPressed) ? colors.tabActiveText : colors.paneText;
+  const COLORREF xColor = (isHighlighted || isPressed) ? colors.tabActiveText : colors.paneText;
   CPen xPen(PS_SOLID, penWidth, xColor);
   CPen* previousPen = deviceContext->SelectObject(&xPen);
 
   // Center the X within the button rect, sized proportionally
-  int margin = (std::max)(2, rect.Width() / 4);
-  int left = rect.left + margin;
-  int top = rect.top + margin;
-  int right = rect.right - margin;
-  int bottom = rect.bottom - margin;
-
+  const int margin = (std::max)(2, rect.Width() / 4);
+  const int left = rect.left + margin;
+  const int top = rect.top + margin;
+  const int right = rect.right - margin;
+  const int bottom = rect.bottom - margin;
   deviceContext->MoveTo(left, top);
   deviceContext->LineTo(right, bottom);
   deviceContext->MoveTo(right, top);
@@ -283,25 +282,25 @@ void EoMfVisualManager::OnDrawCaptionButton(CDC* deviceContext, CMFCCaptionButto
   }
 
   // Choose glyph color
-  COLORREF glyphColor = isDisabled ? colors.borderColor
+  const COLORREF glyphColor = isDisabled ? colors.borderColor
       : (button->m_bFocused || button->m_bPushed) ? colors.tabActiveText
                                                    : colors.captionText;
 
   // DPI-aware pen width for glyph strokes
-  UINT dpi = ::GetDpiForWindow(deviceContext->GetWindow()->GetSafeHwnd());
-  int penWidth = (std::max)(1, static_cast<int>(dpi) / 96);
+  const UINT dpi = ::GetDpiForWindow(deviceContext->GetWindow()->GetSafeHwnd());
+  const int penWidth = (std::max)(1, static_cast<int>(dpi) / 96);
 
   // Draw the glyph — pin (AFX_HTLEFTBUTTON) or close (AFX_HTCLOSE)
   CPen glyphPen(PS_SOLID, penWidth, glyphColor);
   CPen* previousPen = deviceContext->SelectObject(&glyphPen);
 
-  int margin = (std::max)(4, rect.Width() / 4);
-  int left = rect.left + margin;
-  int top = rect.top + margin;
-  int right = rect.right - margin;
-  int bottom = rect.bottom - margin;
-  int centerX = rect.CenterPoint().x;
-  int centerY = rect.CenterPoint().y;
+  const int margin = (std::max)(4, rect.Width() / 4);
+  const int left = rect.left + margin;
+  const int top = rect.top + margin;
+  const int right = rect.right - margin;
+  const int bottom = rect.bottom - margin;
+  const int centerX = rect.CenterPoint().x;
+  const int centerY = rect.CenterPoint().y;
 
   UINT hitTest = button->GetHit();
   if (hitTest == AFX_HTCLOSE) {
@@ -357,17 +356,17 @@ void EoMfVisualManager::OnDrawComboDropButton(CDC* deviceContext, CRect rect, BO
   deviceContext->FillRect(rect, &fillBrush);
 
   // DPI-aware downward-pointing arrow glyph.
-  UINT dpi = ::GetDpiForSystem();
-  int arrowWidth = ::MulDiv(7, dpi, 96) | 1;  // Ensure odd for centered tip
+  const UINT dpi = ::GetDpiForSystem();
+  const int arrowWidth = ::MulDiv(7, dpi, 96) | 1;  // Ensure odd for centered tip
   int arrowHeight = ::MulDiv(4, dpi, 96);
   if (arrowHeight < 3) { arrowHeight = 3; }
 
-  int centerX = (rect.left + rect.right) / 2;
-  int centerY = (rect.top + rect.bottom) / 2;
-  int left = centerX - arrowWidth / 2;
-  int top = centerY - arrowHeight / 2;
+  const int centerX = (rect.left + rect.right) / 2;
+  const int centerY = (rect.top + rect.bottom) / 2;
+  const int left = centerX - arrowWidth / 2;
+  const int top = centerY - arrowHeight / 2;
 
-  POINT points[3] = {{left, top}, {left + arrowWidth, top}, {centerX, top + arrowHeight}};
+  const POINT points[3] = {{left, top}, {left + arrowWidth, top}, {centerX, top + arrowHeight}};
   CBrush arrowBrush(colors.menuText);
   CPen arrowPen(PS_SOLID, 1, colors.menuText);
   auto* oldBrush = deviceContext->SelectObject(&arrowBrush);
@@ -393,11 +392,11 @@ void EoMfVisualManager::OnDrawSeparator(CDC* deviceContext, CBasePane* /*bar*/, 
   CPen* previousPen = deviceContext->SelectObject(&m_separatorPen);
 
   if (isHorizontal) {
-    int centerY = rect.CenterPoint().y;
+    const int centerY = rect.CenterPoint().y;
     deviceContext->MoveTo(rect.left, centerY);
     deviceContext->LineTo(rect.right, centerY);
   } else {
-    int centerX = rect.CenterPoint().x;
+    const int centerX = rect.CenterPoint().x;
     deviceContext->MoveTo(centerX, rect.top);
     deviceContext->LineTo(centerX, rect.bottom);
   }

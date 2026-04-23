@@ -37,10 +37,10 @@ void AeSysView::PopViewTransform() {
 void AeSysView::PushViewTransform() { m_ViewTransforms.AddTail(m_ViewTransform); }
 
 void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio) {
-  double AspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
+  const double AspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
 
-  double UExtent = std::abs(static_cast<double>(uMax - uMin));
-  double VExtent = std::abs(static_cast<double>(vMax - vMin));
+  const double UExtent = std::abs(static_cast<double>(uMax - uMin));
+  const double VExtent = std::abs(static_cast<double>(vMax - vMin));
 
   double XAdjustment = 0.0;
   double YAdjustment = 0.0;
@@ -82,7 +82,7 @@ void AeSysView::DoCameraRotate(int rotationDirection) {
     v.Unitize();
 
     auto position = m_ViewTransform.Position();
-    auto target = m_ViewTransform.Target();
+    const auto target = m_ViewTransform.Target();
     switch (rotationDirection) {
       case ID_CAMERA_ROTATELEFT:
         position = position.RotateAboutAxis(target, v, Eo::DegreeToRadian(-10.0));
@@ -112,15 +112,15 @@ void AeSysView::DoCameraRotate(int rotationDirection) {
 void AeSysView::DoWindowPan(double ratio) {
   ratio = std::min(std::max(ratio, minimumWindowRatio), maximumWindowRatio);
 
-  double UExtent = m_Viewport.WidthInInches() / ratio;
-  double VExtent = m_Viewport.HeightInInches() / ratio;
+  const double UExtent = m_Viewport.WidthInInches() / ratio;
+  const double VExtent = m_Viewport.HeightInInches() / ratio;
 
   m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
 
   auto cursorPosition = GetCursorPosition();
 
   auto direction = m_ViewTransform.Direction();
-  auto target = m_ViewTransform.Target();
+  const auto target = m_ViewTransform.Target();
 
   EoGeLine::IntersectionWithPln(cursorPosition, direction, target, direction, &cursorPosition);
 
@@ -257,15 +257,15 @@ void AeSysView::OnWindowBest() {
   if (ptMin.x < ptMax.x) {
     m_PreviousViewTransform = m_ViewTransform;
 
-    double UExtent = m_ViewTransform.UExtent() * (ptMax.x - ptMin.x) / 2.0;
-    double VExtent = m_ViewTransform.VExtent() * (ptMax.y - ptMin.y) / 2.0;
+    const double UExtent = m_ViewTransform.UExtent() * (ptMax.x - ptMin.x) / 2.0;
+    const double VExtent = m_ViewTransform.VExtent() * (ptMax.y - ptMin.y) / 2.0;
 
     m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
 
     EoGeTransformMatrix transformMatrix;
     document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
-    EoGePoint3d Target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
+    const EoGePoint3d Target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
 
     m_ViewTransform.SetTarget(Target);
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
@@ -393,7 +393,7 @@ void AeSysView::OnWindowZoomIn() {
     const double dcsCursorX = DotProduct(offset, dcsX);
     const double dcsCursorY = DotProduct(offset, dcsY);
 
-    EoGePoint3d newCenter(
+    const EoGePoint3d newCenter(
         dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
         dcsCursorY + (oldCenter.y - dcsCursorY) * factor,
         oldCenter.z);
@@ -425,7 +425,7 @@ void AeSysView::OnWindowZoomOut() {
     const double dcsCursorX = DotProduct(offset, dcsX);
     const double dcsCursorY = DotProduct(offset, dcsY);
 
-    EoGePoint3d newCenter(
+    const EoGePoint3d newCenter(
         dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
         dcsCursorY + (oldCenter.y - dcsCursorY) * factor,
         oldCenter.z);

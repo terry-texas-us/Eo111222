@@ -105,7 +105,7 @@ void AeSysView::OnDraw2ModeWall() {
     } else if (m_PreviousOp == ID_OP2) {
       m_assemblyGroup = new EoDbGroup;
       document->AddWorkLayerGroup(m_assemblyGroup);
-      EoGeLine beginCap{m_currentLeftLine.begin, m_currentRightLine.begin};
+      const EoGeLine beginCap{m_currentLeftLine.begin, m_currentRightLine.begin};
       auto* beginCapLine = EoDbLine::CreateLine(beginCap)->WithProperties(Gs::renderState);
       m_assemblyGroup->AddTail(beginCapLine);
     }
@@ -117,7 +117,7 @@ void AeSysView::OnDraw2ModeWall() {
 
     if (m_endSectionLinePrimitive == nullptr) { return; }
 
-    EoGePoint3d begin = m_endSectionLinePrimitive->Begin();
+    const EoGePoint3d begin = m_endSectionLinePrimitive->Begin();
     EoDbLine* linePrimitive = new EoDbLine(*m_endSectionLinePrimitive);
     if (EoGeLine(m_PreviousPnt, cursorPosition).DirRelOfPt(begin) < 0.0) {
       m_endSectionLinePrimitive->SetEndPoint(m_currentRightLine.end);
@@ -206,7 +206,7 @@ bool AeSysView::StartAssemblyFromLine() {
   auto* document = GetDocument();
   if (document == nullptr || m_beginSectionLinePrimitive == nullptr) { return false; }
 
-  EoGeLine line = m_beginSectionLinePrimitive->Line();
+  const EoGeLine line = m_beginSectionLinePrimitive->Line();
 
   bool isParallelTo = line.ParallelTo(m_currentReferenceLine);
   if (isParallelTo) { return false; }
@@ -224,7 +224,7 @@ bool AeSysView::StartAssemblyFromLine() {
 
   auto* linePrimitive = new EoDbLine(*m_beginSectionLinePrimitive);
 
-  double leftDistance = EoGeVector3d(line.begin, m_currentLeftLine.begin).Length();
+  const double leftDistance = EoGeVector3d(line.begin, m_currentLeftLine.begin).Length();
   double rightDistance = EoGeVector3d(line.begin, m_currentRightLine.begin).Length();
 
   if (leftDistance > rightDistance) {
@@ -258,7 +258,7 @@ void AeSysView::DoDraw2ModeMouseMove() {
       return;
     }
 
-    EoGeLine beginCap{previewLines[0].begin, previewLines[1].begin};
+    const EoGeLine beginCap{previewLines[0].begin, previewLines[1].begin};
     auto* beginCapLine = EoDbLine::CreateLine(beginCap)->WithProperties(Gs::renderState);
     m_PreviewGroup.AddTail(beginCapLine);
 
@@ -267,7 +267,7 @@ void AeSysView::DoDraw2ModeMouseMove() {
 
     m_PreviewGroup.AddTail(leftLine);
     m_PreviewGroup.AddTail(rightLine);
-    EoGeLine endCap{previewLines[1].end, previewLines[0].end};
+    const EoGeLine endCap{previewLines[1].end, previewLines[0].end};
     auto* endCapLine = EoDbLine::CreateLine(endCap)->WithProperties(Gs::renderState);
     m_PreviewGroup.AddTail(endCapLine);
     InvalidateOverlay();

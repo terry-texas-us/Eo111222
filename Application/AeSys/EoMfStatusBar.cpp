@@ -97,7 +97,7 @@ void EoMfStatusBar::CommitLengthEdit() {
 
   wchar_t buffer[64]{};
   wcsncpy_s(buffer, editText.GetString(), _TRUNCATE);
-  double newLength = app.ParseLength(app.GetUnits(), buffer);
+  const double newLength = app.ParseLength(app.GetUnits(), buffer);
   app.SetDimensionLength(newLength);
 
   auto* activeView = AeSysView::GetActiveView();
@@ -165,7 +165,7 @@ void EoMfStatusBar::BeginScaleEdit() {
   }
 
   auto* activeView = AeSysView::GetActiveView();
-  double worldScale = (activeView != nullptr) ? activeView->GetWorldScale() : 1.0;
+  const double worldScale = (activeView != nullptr) ? activeView->GetWorldScale() : 1.0;
   CString scaleText;
   scaleText.Format(L"%.2f", worldScale);
   m_edit.SetWindowTextW(scaleText);
@@ -185,7 +185,7 @@ void EoMfStatusBar::CommitScaleEdit() {
 
   if (editText.IsEmpty()) { return; }
 
-  double newScale = _wtof(editText.GetString());
+  const double newScale = _wtof(editText.GetString());
   if (newScale <= 0.0) { return; }
 
   auto* activeView = AeSysView::GetActiveView();

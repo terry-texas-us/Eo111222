@@ -62,14 +62,14 @@ void EoDlgViewParameters::OnBnClickedApply() {
   modelView->SetTarget(target);
 
   GetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, itemText, 32);
-  double nearClipDistance = app.ParseLength(app.GetUnits(), itemText);
+  const double nearClipDistance = app.ParseLength(app.GetUnits(), itemText);
   GetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, itemText, 32);
-  double farClipDistance = app.ParseLength(app.GetUnits(), itemText);
+  const double farClipDistance = app.ParseLength(app.GetUnits(), itemText);
 
   GetDlgItemTextW(IDC_LENS_LENGTH, itemText, 32);
-  double lensLength = app.ParseLength(app.GetUnits(), itemText);
+  const double lensLength = app.ParseLength(app.GetUnits(), itemText);
 
-  auto direction = target - position;
+  const auto direction = target - position;
 
   modelView->SetDirection(direction);
 
@@ -99,31 +99,31 @@ void EoDlgViewParameters::OnBnClickedApply() {
 BOOL EoDlgViewParameters::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  auto* ModelView = reinterpret_cast<EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
+  const auto* modelView = reinterpret_cast<const EoGsViewTransform*>(static_cast<uintptr_t>(m_ModelView));
 
-  CString Length;
-  Eo::Units units = std::max(app.GetUnits(), Eo::Units::Engineering);
-  app.FormatLength(Length, units, ModelView->Position().x);
-  SetDlgItemTextW(IDC_POSITION_X, Length);
-  app.FormatLength(Length, units, ModelView->Position().y);
-  SetDlgItemTextW(IDC_POSITION_Y, Length);
-  app.FormatLength(Length, units, ModelView->Position().z);
-  SetDlgItemTextW(IDC_POSITION_Z, Length);
+  CString length;
+  const Eo::Units units = std::max(app.GetUnits(), Eo::Units::Engineering);
+  app.FormatLength(length, units, modelView->Position().x);
+  SetDlgItemTextW(IDC_POSITION_X, length);
+  app.FormatLength(length, units, modelView->Position().y);
+  SetDlgItemTextW(IDC_POSITION_Y, length);
+  app.FormatLength(length, units, modelView->Position().z);
+  SetDlgItemTextW(IDC_POSITION_Z, length);
 
-  app.FormatLength(Length, units, ModelView->Target().x);
-  SetDlgItemTextW(IDC_TARGET_X, Length);
-  app.FormatLength(Length, units, ModelView->Target().y);
-  SetDlgItemTextW(IDC_TARGET_Y, Length);
-  app.FormatLength(Length, units, ModelView->Target().z);
-  SetDlgItemTextW(IDC_TARGET_Z, Length);
+  app.FormatLength(length, units, modelView->Target().x);
+  SetDlgItemTextW(IDC_TARGET_X, length);
+  app.FormatLength(length, units, modelView->Target().y);
+  SetDlgItemTextW(IDC_TARGET_Y, length);
+  app.FormatLength(length, units, modelView->Target().z);
+  SetDlgItemTextW(IDC_TARGET_Z, length);
 
-  app.FormatLength(Length, units, ModelView->NearClipDistance());
-  SetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, Length);
-  app.FormatLength(Length, units, ModelView->FarClipDistance());
-  SetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, Length);
+  app.FormatLength(length, units, modelView->NearClipDistance());
+  SetDlgItemTextW(IDC_FRONT_CLIP_DISTANCE, length);
+  app.FormatLength(length, units, modelView->FarClipDistance());
+  SetDlgItemTextW(IDC_BACK_CLIP_DISTANCE, length);
 
-  app.FormatLength(Length, units, ModelView->LensLength());
-  SetDlgItemTextW(IDC_LENS_LENGTH, Length);
+  app.FormatLength(length, units, modelView->LensLength());
+  SetDlgItemTextW(IDC_LENS_LENGTH, length);
 
   GetDlgItem(IDC_APPLY)->EnableWindow(FALSE);
 

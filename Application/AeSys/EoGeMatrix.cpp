@@ -67,7 +67,7 @@ EoGeMatrixRow EoGeMatrixRow::operator*(double scaleFactor) const {
 double& EoGeMatrixRow::operator[](int i) { return m_d[i]; }
 const double& EoGeMatrixRow::operator[](int i) const { return m_d[i]; }
 void EoGeMatrixRow::Exchange(EoGeMatrixRow& rowA, EoGeMatrixRow& rowB) {
-  EoGeMatrixRow row(rowA);
+  const EoGeMatrixRow row(rowA);
   rowA = rowB;
   rowB = row;
 }
@@ -98,7 +98,7 @@ EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
     ATLTRACE2(traceGeneral, 3, L"EoGeMatrix::operator/=: division by near-zero\n");
     return *this;
   }
-  double inverseScaleFactor = 1.0 / scaleFactor;
+  const double inverseScaleFactor = 1.0 / scaleFactor;
 
   m_row[0] *= inverseScaleFactor;
   m_row[1] *= inverseScaleFactor;
@@ -191,7 +191,7 @@ EoGeMatrix EoGeMatrix::Lerp(const EoGeMatrix& other, double t) const noexcept {
   if (t >= 1.0) { return other; }
 
   // Linear interpolation: result = this * (1 - t) + other * t
-  double oneMinusT = 1.0 - t;
+  const double oneMinusT = 1.0 - t;
 
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) { result.m_4X4[i][j] = m_4X4[i][j] * oneMinusT + other.m_4X4[i][j] * t; }

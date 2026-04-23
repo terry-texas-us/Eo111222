@@ -64,8 +64,8 @@ EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbSpline::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  std::int16_t color = LogicalColor();
-  std::int16_t lineType = LogicalLineType();
+  const auto color = LogicalColor();
+  const auto lineType = LogicalLineType();
   const auto& lineTypeName = LogicalLineTypeName();
 
   Gs::renderState.SetPen(view, renderDevice, color, lineType, lineTypeName, m_lineWeight, m_lineTypeScale);
@@ -171,7 +171,7 @@ void EoDbSpline::GetExtents(
 EoGePoint3d EoDbSpline::GoToNextControlPoint() {
   EoGePoint3d point;
 
-  auto i = m_pts.GetSize() - 1;
+  const auto i = m_pts.GetSize() - 1;
 
   if (sm_RelationshipOfPoint < Eo::geometricTolerance) {
     point = m_pts[i];
@@ -247,9 +247,9 @@ void EoDbSpline::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 
 EoDbSpline* EoDbSpline::ReadFromPeg(CFile& file) {
-  auto penColor = EoDb::ReadInt16(file);
-  auto lineType = EoDb::ReadInt16(file);
-  auto numberOfPoints = EoDb::ReadUInt16(file);
+  const auto penColor = EoDb::ReadInt16(file);
+  const auto lineType = EoDb::ReadInt16(file);
+  const auto numberOfPoints = EoDb::ReadUInt16(file);
 
   EoGePoint3dArray points;
   points.SetSize(numberOfPoints);
@@ -282,8 +282,8 @@ int EoDbSpline::GenPts(const std::int16_t order, const EoGePoint3dArray& control
 
   int i, i2, i4;
 
-  int iTMax = (numberOfControlPoints - 1) - order + 2;
-  int iKnotVecMax = (numberOfControlPoints - 1) + order;  // Maximum number of knot vectors
+  const auto iTMax = (numberOfControlPoints - 1) - order + 2;
+  const auto iKnotVecMax = (numberOfControlPoints - 1) + order;  // Maximum number of knot vectors
 
   // Dynamic allocation sized to actual control point count.
   // Original used fixed 65×66 array which overflowed for > ~64 control points.
@@ -313,7 +313,7 @@ int EoDbSpline::GenPts(const std::int16_t order, const EoGePoint3dArray& control
     double H = 0.;
     double Z = 0.;
     double T, W1, W2;
-    double dStep = dKnot[iKnotVecMax] / (double)(iPts - 1);
+    const auto dStep = dKnot[iKnotVecMax] / static_cast<double>(iPts - 1);
     int iPts2 = 0;
     for (i4 = order - 1; i4 <= order + iTMax; i4++) {
       for (i = 0; i <= iKnotVecMax - 1; i++) {  // Calculate values for weighting value

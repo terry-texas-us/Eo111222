@@ -8,7 +8,7 @@
 #include "Resource.h"
 
 void AeSysView::OnModePrimitiveMend() {
-  EoGePoint3d cursorPosition = GetCursorPosition();
+  const EoGePoint3d cursorPosition = GetCursorPosition();
   EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
 
@@ -44,8 +44,8 @@ void AeSysView::OnModePrimitiveMend() {
 
 void AeSysView::PreviewMendPrimitive() {
   auto* document = GetDocument();
-  EoGePoint3d cursorPosition = GetCursorPosition();
-  EoGeVector3d Translate(m_MendPrimitiveBegin, cursorPosition);
+  const EoGePoint3d cursorPosition = GetCursorPosition();
+  const EoGeVector3d Translate(m_MendPrimitiveBegin, cursorPosition);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
   m_PrimitiveToMendCopy->TranslateUsingMask(Translate, m_MendPrimitiveVertexIndex);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, m_PrimitiveToMendCopy);

@@ -87,7 +87,7 @@ void EoGsVertexBuffer::DisplayDashPattern(
     EoGeVector3d lineAsVector(EoGePoint3d{pointsArray[i]}, EoGePoint3d{pointsArray[i + 1]});
     modelPoints[0] = EoGePoint3d{pointsArray[i]};
 
-    double lineLength = lineAsVector.Length();
+    const double lineLength = lineAsVector.Length();
     double remainingDistanceToEnd = lineLength;
 
     while (dashElementSize <= remainingDistanceToEnd + Eo::geometricTolerance) {
@@ -157,7 +157,7 @@ void EoGsVertexBuffer::End(
       view->ModelViewTransformPoints(m_points);
 
       if (AnyPointsInView(m_points)) {
-        auto totalPoints = static_cast<size_t>(m_isLoop ? size + 1 : size);
+        const auto totalPoints = static_cast<size_t>(m_isLoop ? size + 1 : size);
         std::vector<CPoint> clientPoints(totalPoints);
 
         for (INT_PTR i = 0; i < size; i++) {

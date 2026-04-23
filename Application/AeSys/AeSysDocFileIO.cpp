@@ -533,7 +533,7 @@ void AeSysDoc::WriteShadowFile(EoDb::PegFileVersion fileVersion) {
 
   CString shadowFilePath(app.ShadowFolderPath());
   shadowFilePath += GetTitle();
-  int dotPosition = shadowFilePath.Find('.');
+  const int dotPosition = shadowFilePath.Find('.');
   if (dotPosition <= 0) { return; }
 
   CFileStatus fileStatus;
@@ -592,11 +592,11 @@ void AeSysDoc::ResolveDynamicBlockReferences() {
   // Chain: INSERT.extensionDictionaryHandle → DICTIONARY → scan entries for
   // ACDB_BLOCKREPRESENTATION_DATA → group code 340 → anonymous block BLOCK_RECORD handle → block name.
   auto resolveInsert = [&](EoDbBlockReference* insert) -> bool {
-    auto extDictHandle = insert->ExtensionDictionaryHandle();
+    const auto extDictHandle = insert->ExtensionDictionaryHandle();
     if (extDictHandle == 0) { return false; }
 
     // Step A: Find the DICTIONARY object at extDictHandle.
-    auto dictIt = objectsByHandle.find(extDictHandle);
+    const auto dictIt = objectsByHandle.find(extDictHandle);
     if (dictIt == objectsByHandle.end()) { return false; }
     const auto* dictObject = dictIt->second;
     if (dictObject->m_objectType != L"DICTIONARY") { return false; }
@@ -651,11 +651,11 @@ void AeSysDoc::ResolveDynamicBlockReferences() {
       if (layer == nullptr) { continue; }
       auto groupPosition = layer->GetHeadPosition();
       while (groupPosition != nullptr) {
-        auto* group = layer->GetNext(groupPosition);
+        auto* const group = layer->GetNext(groupPosition);
         if (group == nullptr) { continue; }
         auto primPosition = group->GetHeadPosition();
         while (primPosition != nullptr) {
-          auto* primitive = group->GetNext(primPosition);
+          auto* const primitive = group->GetNext(primPosition);
           if (primitive == nullptr) { continue; }
           if (!primitive->Is(EoDb::kGroupReferencePrimitive)) { continue; }
           auto* insert = static_cast<EoDbBlockReference*>(primitive);

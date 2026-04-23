@@ -26,7 +26,7 @@ std::uint16_t previousDrawCommand{};
 void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); }
 
 void AeSysView::OnDrawModePoint() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   auto* group = new EoDbGroup(new EoDbPoint(Gs::renderState.Color(), Gs::renderState.PointStyle(), cursorPosition));
   auto* document = GetDocument();
@@ -70,7 +70,7 @@ void AeSysView::OnDrawModePolygon() {
 }
 
 void AeSysView::OnDrawModeQuad() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (previousDrawCommand != ID_OP4) {
     previousDrawCommand = ModeLineHighlightOp(ID_OP4);
@@ -82,7 +82,7 @@ void AeSysView::OnDrawModeQuad() {
 }
 
 void AeSysView::OnDrawModeArc() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (previousDrawCommand != ID_OP5) {
     previousDrawCommand = ModeLineHighlightOp(ID_OP5);
@@ -94,7 +94,7 @@ void AeSysView::OnDrawModeArc() {
 }
 
 void AeSysView::OnDrawModeBspline() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (previousDrawCommand != ID_OP6) {
     previousDrawCommand = ModeLineHighlightOp(ID_OP6);
@@ -107,7 +107,7 @@ void AeSysView::OnDrawModeBspline() {
 }
 
 void AeSysView::OnDrawModeCircle() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (previousDrawCommand != ID_OP7) {
     previousDrawCommand = ModeLineHighlightOp(ID_OP7);
@@ -121,7 +121,7 @@ void AeSysView::OnDrawModeCircle() {
 }
 
 void AeSysView::OnDrawModeEllipse() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (previousDrawCommand != ID_OP8) {
     previousDrawCommand = ModeLineHighlightOp(ID_OP8);
@@ -220,7 +220,7 @@ void AeSysView::OnDrawModeReturn() {
       break;
 
     case ID_OP7: {
-      double radius = EoGePoint3d::Distance(pts[0], cursorPosition);
+      const double radius = EoGePoint3d::Distance(pts[0], cursorPosition);
       if (radius < Eo::geometricTolerance) {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
@@ -238,13 +238,13 @@ void AeSysView::OnDrawModeReturn() {
         SetCursorPosition(pts[0]);
         return;
       }
-      EoGeVector3d majorAxis(pts[0], pts[1]);
-      EoGeVector3d minorAxis(pts[0], pts[2]);
+      const EoGeVector3d majorAxis(pts[0], pts[1]);
+      const EoGeVector3d minorAxis(pts[0], pts[2]);
 
       if (minorAxis.Length() < Eo::geometricTolerance) { break; }
       auto extrusion = CrossProduct(majorAxis, minorAxis);
       extrusion.Unitize();
-      double ratio = minorAxis.Length() / majorAxis.Length();
+      const double ratio = minorAxis.Length() / majorAxis.Length();
       auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
       ellipse->SetColor(Gs::renderState.Color());
       ellipse->SetLineTypeName(Gs::renderState.LineTypeName());
@@ -387,13 +387,13 @@ void AeSysView::DoDrawModeMouseMove() {
       if (numberOfPoints == 1) {
         m_PreviewGroup.AddTail(new EoDbPolyline(pts));
       } else {
-        EoGeVector3d majorAxis(pts[0], pts[1]);
-        EoGeVector3d minorAxis(pts[0], cursorPosition);
+        const EoGeVector3d majorAxis(pts[0], pts[1]);
+        const EoGeVector3d minorAxis(pts[0], cursorPosition);
 
         if (minorAxis.Length() < Eo::geometricTolerance) { break; }
         auto extrusion = CrossProduct(majorAxis, minorAxis);
         extrusion.Unitize();
-        double ratio = minorAxis.Length() / majorAxis.Length();
+        const double ratio = minorAxis.Length() / majorAxis.Length();
         auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
         ellipse->SetColor(Gs::renderState.Color());
         ellipse->SetLineTypeName(Gs::renderState.LineTypeName());

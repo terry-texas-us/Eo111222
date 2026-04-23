@@ -50,7 +50,7 @@ void AeSysView::DoEditGroupTransform(std::uint16_t operation) {
   if (m_SubModeEditGroup == nullptr) { return; }
   EoGeTransformMatrix transformMatrix;
 
-  EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
+  const EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
 
   transformMatrix.Translate(TranslateVector);
 

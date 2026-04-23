@@ -21,10 +21,10 @@ void EoDlgSetUnitsAndPrecision::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetUnitsAndPrecision::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  int CheckButtonId = std::min(IDC_ARCHITECTURAL + static_cast<int>(m_Units), IDC_METRIC);
+  const int CheckButtonId = std::min(IDC_ARCHITECTURAL + static_cast<int>(m_Units), IDC_METRIC);
   CheckRadioButton(IDC_ARCHITECTURAL, IDC_METRIC, CheckButtonId);
 
-  auto MetricUnits = App::LoadStringResource(IDS_METRIC_UNITS);
+  const auto MetricUnits = App::LoadStringResource(IDS_METRIC_UNITS);
   int Position = 0;
   while (Position < MetricUnits.GetLength()) {
     CString UnitsItem = MetricUnits.Tokenize(L"\n", Position);

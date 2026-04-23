@@ -50,7 +50,7 @@ BOOL EoDlgSetupLineType::OnInitDialog() {
 void EoDlgSetupLineType::OnOK() {
   auto position = m_LineTypesListControl.GetFirstSelectedItemPosition();
   if (position != nullptr) {
-    int Item = m_LineTypesListControl.GetNextSelectedItem(position);
+    const int Item = m_LineTypesListControl.GetNextSelectedItem(position);
     m_LineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);
   }
   CDialog::OnOK();
@@ -61,7 +61,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
     switch (drawItemStruct->itemAction) {
       case ODA_DRAWENTIRE: {
         CRect itemRectangle(drawItemStruct->rcItem);
-        COLORREF backgroundColor =
+        const COLORREF backgroundColor =
             ::GetSysColor((drawItemStruct->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW);
 
         CDC deviceContext;
@@ -70,18 +70,18 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
         deviceContext.FillRect(itemRectangle, &backgroundBrush);
 
         if (drawItemStruct->itemState & ODS_FOCUS) { deviceContext.DrawFocusRect(itemRectangle); }
-        int Item = static_cast<int>(drawItemStruct->itemID);
+        const int Item = static_cast<int>(drawItemStruct->itemID);
         if (Item != -1) {
-          COLORREF rgbText = (drawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
+          const COLORREF rgbText = (drawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
                                                                         : ::GetSysColor(COLOR_WINDOWTEXT);
           deviceContext.SetBkColor(backgroundColor);
           deviceContext.SetTextColor(rgbText);
 
-          EoDbLineType* lineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);
+          EoDbLineType* const lineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);
 
           CRect subItemRectangle;
           m_LineTypesListControl.GetSubItemRect(Item, Name, LVIR_LABEL, subItemRectangle);
-          CString name = lineType->Name();
+          const CString name = lineType->Name();
           deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
               name, static_cast<UINT>(name.GetLength()), nullptr);
 
@@ -97,21 +97,21 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           activeView->SetViewportSize(
               subItemRectangle.right + subItemRectangle.left, subItemRectangle.bottom + subItemRectangle.top);
 
-          double UExtent = static_cast<double>(subItemRectangle.right + subItemRectangle.left) /
+          const double UExtent = static_cast<double>(subItemRectangle.right + subItemRectangle.left) /
                            static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
-          double VExtent = static_cast<double>(subItemRectangle.bottom + subItemRectangle.top) /
+          const double VExtent = static_cast<double>(subItemRectangle.bottom + subItemRectangle.top) /
                            static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSY));
           activeView->ModelViewInitialize();
 
           activeView->SetViewWindow(0.0, 0.0, UExtent, VExtent);
           activeView->SetCameraTarget(EoGePoint3d::kOrigin);
           activeView->SetCameraPosition(EoGeVector3d::positiveUnitZ);
-          double UMin =
+          const double UMin =
               static_cast<double>(subItemRectangle.left) / static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
-          double UMax = static_cast<double>(subItemRectangle.right) /
+          const double UMax = static_cast<double>(subItemRectangle.right) /
                         static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
 
-          EoGeLine Line(EoGePoint3d(UMin, VExtent / 2.0, 0.0), EoGePoint3d(UMax, VExtent / 2.0, 0.0));
+          const EoGeLine Line(EoGePoint3d(UMin, VExtent / 2.0, 0.0), EoGePoint3d(UMax, VExtent / 2.0, 0.0));
           EoGsRenderDeviceGdi renderDevice(&deviceContext);
           Line.Display(activeView, &renderDevice);
 
@@ -119,7 +119,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           activeView->ViewportPopActive();
 
           m_LineTypesListControl.GetSubItemRect(Item, Description, LVIR_LABEL, subItemRectangle);
-          CString Description = lineType->Description();
+          const CString Description = lineType->Description();
           deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
               Description, static_cast<UINT>(Description.GetLength()), nullptr);
         }

@@ -61,7 +61,7 @@ void EoGeVector3d::RotateAboutArbitraryAxis(const EoGeVector3d& referenceAxis, d
   if (referenceAxis == positiveUnitZ) {
     *this = RotateVectorAboutZAxis(*this, angle);
   } else {
-    EoGeTransformMatrix transformMatrix(EoGePoint3d::kOrigin, referenceAxis, angle);
+    const EoGeTransformMatrix transformMatrix(EoGePoint3d::kOrigin, referenceAxis, angle);
 
     *this = transformMatrix * (*this);
   }
@@ -121,6 +121,6 @@ EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
 }
 
 constexpr EoGeVector3d CrossProduct(const EoGeVector3d& u, const EoGeVector3d& v) noexcept {
-  EoGeVector3d crossProduct(u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x);
+  const EoGeVector3d crossProduct(u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x);
   return crossProduct;
 }

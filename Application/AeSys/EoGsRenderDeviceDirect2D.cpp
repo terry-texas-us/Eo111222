@@ -83,7 +83,7 @@ void EoGsRenderDeviceDirect2D::MoveTo(int x, int y) {
 void EoGsRenderDeviceDirect2D::LineTo(int x, int y) {
   if (m_renderTarget == nullptr || m_penStyle == PS_NULL) { return; }
 
-  auto endPoint = PixelCenterPoint(x, y);
+  const auto endPoint = PixelCenterPoint(x, y);
   EnsureBrush(m_penColor);
   m_renderTarget->DrawLine(m_currentPosition, endPoint, m_brush.Get(), m_penWidth, m_strokeStyle.Get());
   m_currentPosition = endPoint;
@@ -96,8 +96,8 @@ void EoGsRenderDeviceDirect2D::Polyline(const POINT* points, int count) {
 
   // Two-point case: simple DrawLine (no joins needed — used by DisplayDashPattern)
   if (count == 2) {
-    auto p0 = PixelCenterPoint(points[0].x, points[0].y);
-    auto p1 = PixelCenterPoint(points[1].x, points[1].y);
+    const auto p0 = PixelCenterPoint(points[0].x, points[0].y);
+    const auto p1 = PixelCenterPoint(points[1].x, points[1].y);
     m_renderTarget->DrawLine(p0, p1, m_brush.Get(), m_penWidth, m_strokeStyle.Get());
     m_currentPosition = p1;
     return;
@@ -160,12 +160,12 @@ void EoGsRenderDeviceDirect2D::Polygon(const POINT* points, int count) {
 void EoGsRenderDeviceDirect2D::Ellipse(int left, int top, int right, int bottom) {
   if (m_renderTarget == nullptr) { return; }
 
-  auto centerX = (static_cast<float>(left) + static_cast<float>(right)) / 2.0f;
-  auto centerY = (static_cast<float>(top) + static_cast<float>(bottom)) / 2.0f;
-  auto radiusX = (static_cast<float>(right) - static_cast<float>(left)) / 2.0f;
-  auto radiusY = (static_cast<float>(bottom) - static_cast<float>(top)) / 2.0f;
+  const auto centerX = (static_cast<float>(left) + static_cast<float>(right)) / 2.0f;
+  const auto centerY = (static_cast<float>(top) + static_cast<float>(bottom)) / 2.0f;
+  const auto radiusX = (static_cast<float>(right) - static_cast<float>(left)) / 2.0f;
+  const auto radiusY = (static_cast<float>(bottom) - static_cast<float>(top)) / 2.0f;
 
-  D2D1_ELLIPSE ellipse = D2D1::Ellipse(D2D1::Point2F(centerX, centerY), radiusX, radiusY);
+  const D2D1_ELLIPSE ellipse = D2D1::Ellipse(D2D1::Point2F(centerX, centerY), radiusX, radiusY);
 
   if (!m_useNullBrush && m_fillBrush) { m_renderTarget->FillEllipse(ellipse, m_fillBrush.Get()); }
 
@@ -178,7 +178,7 @@ void EoGsRenderDeviceDirect2D::Ellipse(int left, int top, int right, int bottom)
 void EoGsRenderDeviceDirect2D::Rectangle(int left, int top, int right, int bottom) {
   if (m_renderTarget == nullptr) { return; }
 
-  auto rect =
+  const auto rect =
       D2D1::RectF(static_cast<float>(left), static_cast<float>(top), static_cast<float>(right), static_cast<float>(bottom));
 
   if (!m_useNullBrush && m_fillBrush) { m_renderTarget->FillRectangle(rect, m_fillBrush.Get()); }
@@ -194,9 +194,9 @@ void EoGsRenderDeviceDirect2D::Rectangle(int left, int top, int right, int botto
 void EoGsRenderDeviceDirect2D::SetPixel(int x, int y, COLORREF color) {
   if (m_renderTarget == nullptr) { return; }
 
-  auto d2dColor = ColorRefToD2D(color);
+  const auto d2dColor = ColorRefToD2D(color);
   EnsureBrush(d2dColor);
-  auto rect = D2D1::RectF(static_cast<float>(x), static_cast<float>(y), static_cast<float>(x + 1), static_cast<float>(y + 1));
+  const auto rect = D2D1::RectF(static_cast<float>(x), static_cast<float>(y), static_cast<float>(x + 1), static_cast<float>(y + 1));
   m_renderTarget->FillRectangle(rect, m_brush.Get());
 }
 
@@ -287,17 +287,17 @@ void EoGsRenderDeviceDirect2D::TextOut(int x, int y, const wchar_t* text, int le
   // Apply rotation transform for non-zero escapement (GDI lfEscapement is CCW in tenths of degrees;
   // D2D Rotation() is CW, so negate to match GDI visual behavior)
   D2D1::Matrix3x2F savedTransform;
-  bool hasRotation = (m_escapement != 0);
+  const bool hasRotation = (m_escapement != 0);
   if (hasRotation) {
     m_renderTarget->GetTransform(&savedTransform);
     float angleDegrees = -m_escapement / 10.0f;
-    auto rotation = D2D1::Matrix3x2F::Rotation(angleDegrees, D2D1::Point2F(static_cast<float>(x), static_cast<float>(y)));
+    const auto rotation = D2D1::Matrix3x2F::Rotation(angleDegrees, D2D1::Point2F(static_cast<float>(x), static_cast<float>(y)));
     m_renderTarget->SetTransform(rotation * savedTransform);
   }
 
   // Draw background rectangle for OPAQUE mode
   if (m_bkMode == OPAQUE) {
-    auto bgRect = D2D1::RectF(originX, originY, originX + metrics.width, originY + metrics.height);
+    const auto bgRect = D2D1::RectF(originX, originY, originX + metrics.width, originY + metrics.height);
     EnsureFillBrush(m_bkColor);
     m_renderTarget->FillRectangle(bgRect, m_fillBrush.Get());
   }
@@ -316,7 +316,7 @@ void EoGsRenderDeviceDirect2D::ExtTextOut(
   // Handle opaque background rectangle
   if ((options & ETO_OPAQUE) && rect != nullptr) {
     EnsureFillBrush(m_bkColor);
-    auto bgRect = D2D1::RectF(
+    const auto bgRect = D2D1::RectF(
         static_cast<float>(rect->left), static_cast<float>(rect->top),
         static_cast<float>(rect->right), static_cast<float>(rect->bottom));
     m_renderTarget->FillRectangle(bgRect, m_fillBrush.Get());
@@ -326,32 +326,32 @@ void EoGsRenderDeviceDirect2D::ExtTextOut(
 }
 
 COLORREF EoGsRenderDeviceDirect2D::SetTextColor(COLORREF color) {
-  auto previousR = static_cast<BYTE>(m_textColor.r * 255.0f);
-  auto previousG = static_cast<BYTE>(m_textColor.g * 255.0f);
-  auto previousB = static_cast<BYTE>(m_textColor.b * 255.0f);
-  COLORREF previous = RGB(previousR, previousG, previousB);
+  const auto previousR = static_cast<BYTE>(m_textColor.r * 255.0f);
+  const auto previousG = static_cast<BYTE>(m_textColor.g * 255.0f);
+  const auto previousB = static_cast<BYTE>(m_textColor.b * 255.0f);
+  const COLORREF previous = RGB(previousR, previousG, previousB);
 
   m_textColor = ColorRefToD2D(color);
   return previous;
 }
 
 UINT EoGsRenderDeviceDirect2D::SetTextAlign(UINT align) {
-  UINT previous = m_textAlign;
+  const UINT previous = m_textAlign;
   m_textAlign = align;
   return previous;
 }
 
 int EoGsRenderDeviceDirect2D::SetBkMode(int mode) {
-  int previous = m_bkMode;
+  const int previous = m_bkMode;
   m_bkMode = mode;
   return previous;
 }
 
 COLORREF EoGsRenderDeviceDirect2D::SetBkColor(COLORREF color) {
-  auto previousR = static_cast<BYTE>(m_bkColor.r * 255.0f);
-  auto previousG = static_cast<BYTE>(m_bkColor.g * 255.0f);
-  auto previousB = static_cast<BYTE>(m_bkColor.b * 255.0f);
-  COLORREF previous = RGB(previousR, previousG, previousB);
+  const auto previousR = static_cast<BYTE>(m_bkColor.r * 255.0f);
+  const auto previousG = static_cast<BYTE>(m_bkColor.g * 255.0f);
+  const auto previousB = static_cast<BYTE>(m_bkColor.b * 255.0f);
+  const COLORREF previous = RGB(previousR, previousG, previousB);
 
   m_bkColor = ColorRefToD2D(color);
   return previous;
@@ -379,8 +379,8 @@ void EoGsRenderDeviceDirect2D::SelectFont(const LOGFONT* logFont) {
   // The LOGFONT lfHeight in device units maps directly to DIPs for 96 DPI
   // For other DPIs, the render target's DPI scaling handles it
 
-  auto fontWeight = static_cast<DWRITE_FONT_WEIGHT>(logFont->lfWeight > 0 ? logFont->lfWeight : DWRITE_FONT_WEIGHT_NORMAL);
-  auto fontStyle = logFont->lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
+  const auto fontWeight = static_cast<DWRITE_FONT_WEIGHT>(logFont->lfWeight > 0 ? logFont->lfWeight : DWRITE_FONT_WEIGHT_NORMAL);
+  const auto fontStyle = logFont->lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
 
   m_textFormat.Reset();
   m_dwriteFactory->CreateTextFormat(logFont->lfFaceName, nullptr, fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL,
@@ -396,7 +396,7 @@ void EoGsRenderDeviceDirect2D::RestoreFont() {
 // ── Drawing Mode ────────────────────────────────────────────────────────
 
 int EoGsRenderDeviceDirect2D::SetROP2(int drawMode) {
-  int previous = m_rop2;
+  const int previous = m_rop2;
   m_rop2 = drawMode;
   // D2D has no ROP2 equivalent. R2_COPYPEN is the only mode that works naturally.
   // R2_XORPEN callers should be handled at a higher level (rubberband overlay, scene invalidation).
@@ -442,7 +442,7 @@ int EoGsRenderDeviceDirect2D::GetClipBox(RECT& rect) const {
 void EoGsRenderDeviceDirect2D::PushClipRect(int left, int top, int right, int bottom) {
   if (m_renderTarget == nullptr) { return; }
 
-  auto clipRect = D2D1::RectF(
+  const auto clipRect = D2D1::RectF(
       static_cast<float>(left), static_cast<float>(top), static_cast<float>(right), static_cast<float>(bottom));
 
   m_renderTarget->PushAxisAlignedClip(clipRect, D2D1_ANTIALIAS_MODE_ALIASED);

@@ -78,7 +78,7 @@ void AeSysDoc::CopyTrappedGroups(const EoGeVector3d& translate) {
     UpdateAllViews(nullptr, EoDb::kGroup, group);
     group->Translate(translate);
 
-    LPARAM hint = (app.IsTrapHighlighted()) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
+    const LPARAM hint = (app.IsTrapHighlighted()) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
     UpdateAllViews(nullptr, hint, group);
   }
 }
@@ -104,7 +104,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
         }
       }
     }
-    int allocationSize = strBuf.GetLength() + 1;
+    const int allocationSize = strBuf.GetLength() + 1;
     GLOBALHANDLE clipboardDataHandle = GlobalAlloc(GHND, static_cast<SIZE_T>(allocationSize));
     if (clipboardDataHandle != nullptr) {
       auto clipboardData = (LPTSTR)GlobalLock(clipboardDataHandle);
@@ -116,13 +116,13 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
   }
   if (app.IsClipboardDataImage()) {
     auto* originalContext = view->GetDC();
-    int savedRenderState = Gs::renderState.Save();
+    const int savedRenderState = Gs::renderState.Save();
 
-    auto enhancedMetafileContext = ::CreateEnhMetaFileW(nullptr, nullptr, nullptr, nullptr);
+    const auto enhancedMetafileContext = ::CreateEnhMetaFileW(nullptr, nullptr, nullptr, nullptr);
     CDC* emfDC = CDC::FromHandle(enhancedMetafileContext);
     EoGsRenderDeviceGdi renderDevice(emfDC);
     m_trappedGroups.Display(view, &renderDevice);
-    auto enhancedMetafileHandle = ::CloseEnhMetaFile(enhancedMetafileContext);
+    const auto enhancedMetafileHandle = ::CloseEnhMetaFile(enhancedMetafileContext);
     ::SetClipboardData(CF_ENHMETAFILE, enhancedMetafileHandle);
 
     Gs::renderState.Restore(originalContext, savedRenderState);
@@ -146,7 +146,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
 
     minPoint = view->ModelViewGetMatrixInverse() * minPoint;
 
-    auto memoryFileLength = memoryFile.GetLength();
+    const auto memoryFileLength = memoryFile.GetLength();
 
     memoryFile.SeekToBegin();
     memoryFile.Write(&memoryFileLength, sizeof(DWORD));
@@ -154,7 +154,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
 
     GLOBALHANDLE clipboardDataHandle = GlobalAlloc(GHND, SIZE_T(memoryFileLength));
     if (clipboardDataHandle != nullptr) {
-      auto clipboardData = (LPTSTR)GlobalLock(clipboardDataHandle);
+      const auto clipboardData = (LPTSTR)GlobalLock(clipboardDataHandle);
 
       memoryFile.SeekToBegin();
       memoryFile.Read(clipboardData, UINT(memoryFileLength));

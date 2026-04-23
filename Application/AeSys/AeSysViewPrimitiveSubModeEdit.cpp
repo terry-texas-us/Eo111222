@@ -53,7 +53,7 @@ void AeSysView::DoEditPrimitiveTransform(std::uint16_t operation) {
   auto* document = GetDocument();
   EoGeTransformMatrix transformMatrix;
 
-  EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
+  const EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
 
   transformMatrix.Translate(TranslateVector);
 

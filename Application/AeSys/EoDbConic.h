@@ -310,8 +310,8 @@ class EoDbConic : public EoDbPrimitive {
   enum class ConicType { Circle, RadialArc, Ellipse, EllipticalArc };
 
   [[nodiscard]] ConicType Subclass() const noexcept {
-    bool isCircular = std::abs(1.0 - m_ratio) <= Eo::numericEpsilon;
-    bool isFull = IsFullConic();
+    const bool isCircular = std::abs(1.0 - m_ratio) <= Eo::numericEpsilon;
+    const bool isFull = IsFullConic();
 
     if (isCircular && isFull) { return ConicType::Circle; }
     if (isCircular && !isFull) { return ConicType::RadialArc; }
@@ -327,7 +327,7 @@ class EoDbConic : public EoDbPrimitive {
    * @param file The file to write to.
    * @return true if the write was successful.
    */
-  bool WriteLegacyEllipse(CFile& file);
+  bool WriteLegacyEllipse(CFile& file) const;
 
   /// @brief Determines the bounding region. This is always a quad, but it may not be xy oriented.
   void GetBoundingBox(EoGePoint3dArray&);
@@ -381,10 +381,10 @@ class EoDbConic : public EoDbPrimitive {
   [[nodiscard]] double ArcLength() const noexcept {
     if (IsCircle() || IsRadialArc()) { return Radius() * SweepAngle(); }
     // Ramanujan's approximation for ellipse arc length
-    double a = MajorRadius();
-    double b = MinorRadius();
-    double h = pow((a - b) / (a + b), 2);
-    double circumference = Eo::Pi * (a + b) * (1 + (3 * h) / (10 + std::sqrt(4 - 3 * h)));
+    const double a = MajorRadius();
+    const double b = MinorRadius();
+    const double h = pow((a - b) / (a + b), 2);
+    const double circumference = Eo::Pi * (a + b) * (1 + (3 * h) / (10 + std::sqrt(4 - 3 * h)));
     return circumference * (SweepAngle() / Eo::TwoPi);
   }
 

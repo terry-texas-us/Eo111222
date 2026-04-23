@@ -159,9 +159,9 @@ void AeSysDoc::OnPrimBreak() {
       EoGePoint3dArray points;
       polyline->GetAllPoints(points);
 
-      auto color = primitive->Color();
+      const auto color = primitive->Color();
       const auto& lineTypeName = primitive->LineTypeName();
-      auto lineWeight = primitive->LineWeight();
+      const auto lineWeight = primitive->LineWeight();
 
       for (auto i = 0; i < points.GetSize() - 1; i++) {
         auto* line = EoDbLine::CreateLine(points[i], points[i + 1])->WithProperties(color, lineTypeName, lineWeight);
@@ -177,7 +177,7 @@ void AeSysDoc::OnPrimBreak() {
       delete primitive;
       ResetAllViews();
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
-      auto* blockReference = static_cast<EoDbBlockReference*>(primitive);
+      auto* const blockReference = static_cast<EoDbBlockReference*>(primitive);
 
       EoDbBlock* block{};
 
@@ -185,7 +185,7 @@ void AeSysDoc::OnPrimBreak() {
         group->FindAndRemovePrim(primitive);
         UnregisterHandle(primitive->Handle());
 
-        auto transformMatrix = blockReference->BuildTransformMatrix(block->BasePoint());
+        const auto transformMatrix = blockReference->BuildTransformMatrix(block->BasePoint());
 
         EoDbGroup* pSegT = new EoDbGroup(*block);
         pSegT->Transform(transformMatrix);
@@ -200,7 +200,7 @@ void AeSysDoc::OnPrimBreak() {
 }
 
 void AeSysDoc::OnEditSegToWork() {
-  auto cursorPosition = app.GetCursorPosition();
+  const auto cursorPosition = app.GetCursorPosition();
 
   auto* layer = LayersSelUsingPoint(cursorPosition);
   if (layer == nullptr) { return; }
@@ -217,7 +217,7 @@ void AeSysDoc::OnEditSegToWork() {
 }
 
 void AeSysDoc::OnFileQuery() {
-  auto cursorPosition = app.GetCursorPosition();
+  const auto cursorPosition = app.GetCursorPosition();
 
   auto* layer = LayersSelUsingPoint(cursorPosition);
 
@@ -227,9 +227,9 @@ void AeSysDoc::OnFileQuery() {
 
     m_IdentifiedLayerName = layer->Name();
 
-    int MenuResource = (layer->IsInternal()) ? IDR_LAYER : IDR_TRACING;
+    const int MenuResource = (layer->IsInternal()) ? IDR_LAYER : IDR_TRACING;
 
-    auto layerTracingMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(MenuResource));
+    auto* const layerTracingMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(MenuResource));
     auto* subMenu = CMenu::FromHandle(::GetSubMenu(layerTracingMenu, 0));
 
     subMenu->ModifyMenu(0, MF_BYPOSITION | MF_STRING, 0, m_IdentifiedLayerName);
@@ -458,7 +458,7 @@ void AeSysDoc::OnEditTrapPaste() {
         if (globalHandle != nullptr) {
           EoGePoint3d minPoint;
 
-          EoGePoint3d pivotPoint(app.GetCursorPosition());
+          const EoGePoint3d pivotPoint(app.GetCursorPosition());
           SetTrapPivotPoint(pivotPoint);
 
           LPCSTR buffer = (LPCSTR)GlobalLock(globalHandle);
@@ -478,7 +478,7 @@ void AeSysDoc::OnEditTrapPaste() {
           memoryFile.Seek(sizeof(DWORD), CFile::begin);
           minPoint.Read(memoryFile);
 
-          EoGeVector3d translateVector(minPoint, pivotPoint);
+          const EoGeVector3d translateVector(minPoint, pivotPoint);
 
           GlobalUnlock(globalHandle);
 
@@ -488,9 +488,9 @@ void AeSysDoc::OnEditTrapPaste() {
         }
       }
     } else if (IsClipboardFormatAvailable(CF_TEXT)) {
-      HGLOBAL clipboardDataHandle = GetClipboardData(CF_TEXT);
+      HGLOBAL const clipboardDataHandle = GetClipboardData(CF_TEXT);
 
-      LPWSTR clipboardText = new wchar_t[GlobalSize(clipboardDataHandle)];
+      LPWSTR const clipboardText = new wchar_t[GlobalSize(clipboardDataHandle)];
 
       LPCWSTR clipboardData = (LPCWSTR)GlobalLock(clipboardDataHandle);
       if (clipboardData != nullptr) {
@@ -534,7 +534,7 @@ void AeSysDoc::OnTrapCommandsExpand() {
 }
 
 void AeSysDoc::OnTrapCommandsInvert() {
-  int layerTableSize = GetLayerTableSize();
+  const int layerTableSize = GetLayerTableSize();
   for (int i = 0; i < layerTableSize; i++) {
     auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsWork() || layer->IsActive()) {
@@ -580,7 +580,7 @@ void AeSysDoc::OnTrapCommandsBlock() {
 
   auto position = GetFirstTrappedGroupPosition();
   while (position != nullptr) {
-    auto* group = GetNextTrappedGroup(position);
+    auto* const group = GetNextTrappedGroup(position);
 
     auto* newGroup = new EoDbGroup(*group);
 
@@ -763,7 +763,7 @@ void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
     auto* primitive = activeView->EngagedPrimitive();
 
     if (primitive->PivotOnControlPoint(activeView, ndcPoint)) {
-      EoGePoint3d ptEng = activeView->DetPt();
+      const EoGePoint3d ptEng = activeView->DetPt();
       primitive->AddReportToMessageList(ptEng);
       activeView->SetCursorPosition(ptEng);
       return;
@@ -772,7 +772,7 @@ void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
     if (primitive->IsPointOnControlPoint(activeView, ndcPoint)) { EoDbGroup::SetPrimitiveToIgnore(primitive); }
   }
   if (activeView->SelSegAndPrimAtCtrlPt(ndcPoint) != nullptr) {
-    EoGePoint3d ptEng = activeView->DetPt();
+    const EoGePoint3d ptEng = activeView->DetPt();
     activeView->EngagedPrimitive()->AddReportToMessageList(ptEng);
     activeView->SetCursorPosition(ptEng);
   }
@@ -782,20 +782,20 @@ void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
 void AeSysDoc::OnPrimGotoCenterPoint() {
   auto* activeView = AeSysView::GetActiveView();
   if (activeView->GroupIsEngaged()) {
-    EoGePoint3d pt = activeView->EngagedPrimitive()->GetControlPoint();
+    const EoGePoint3d pt = activeView->EngagedPrimitive()->GetControlPoint();
     activeView->SetCursorPosition(pt);
   }
 }
 
 void AeSysDoc::OnToolsPrimitiveDelete() {
-  EoGePoint3d pt = app.GetCursorPosition();
+  const EoGePoint3d pt = app.GetCursorPosition();
 
   auto* activeView = AeSysView::GetActiveView();
 
   auto* group = activeView->SelectGroupAndPrimitive(pt);
 
   if (group != nullptr) {
-    auto position = FindTrappedGroup(group);
+    const auto position = FindTrappedGroup(group);
 
     LPARAM lHint = (position != nullptr) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
     // erase entire group even if group has more than one primitive
@@ -823,7 +823,7 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
 void AeSysDoc::OnPrimModifyAttributes() {
   auto* activeView = AeSysView::GetActiveView();
 
-  auto cursorPosition = activeView->GetCursorPosition();
+  const auto cursorPosition = activeView->GetCursorPosition();
 
   auto* Group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
@@ -860,15 +860,15 @@ void AeSysDoc::OnFileManageLayers() {
 }
 
 void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {
-  int NumberOfEmptyNotes = RemoveEmptyNotesAndDelete();
-  int NumberOfEmptyGroups = RemoveEmptyGroups();
+  const int NumberOfEmptyNotes = RemoveEmptyNotesAndDelete();
+  const int NumberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
   str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", NumberOfEmptyNotes,
       NumberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
 void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
-  int NumberOfEmptyGroups = RemoveEmptyGroups();
+  const int NumberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
   str.Format(L"%d were removed.", NumberOfEmptyGroups);
   app.AddStringToMessageList(str);
@@ -876,9 +876,9 @@ void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
 void AeSysDoc::OnPensEditColors() { app.EditColorPalette(); }
 
 void AeSysDoc::OnPensLoadColors() {
-  auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_PENCOLORS);
-  auto title = App::LoadStringResource(IDS_OPENFILE_LOAD_PENCOLORS_TITLE);
-  auto initialDir = App::PathFromCommandLine();
+  const auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_PENCOLORS);
+  const auto title = App::LoadStringResource(IDS_OPENFILE_LOAD_PENCOLORS_TITLE);
+  const auto initialDir = App::PathFromCommandLine();
 
   CString file;
   file.GetBufferSetLength(MAX_PATH);

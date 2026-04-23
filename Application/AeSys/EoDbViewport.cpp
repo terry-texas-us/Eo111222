@@ -226,7 +226,7 @@ bool EoDbViewport::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
   const double halfHeight = m_height / 2.0;
 
   // 4 corners forming a closed rectangle
-  EoGePoint3d corners[4] = {
+  const EoGePoint3d corners[4] = {
       {m_centerPoint.x - halfWidth, m_centerPoint.y - halfHeight, m_centerPoint.z},
       {m_centerPoint.x + halfWidth, m_centerPoint.y - halfHeight, m_centerPoint.z},
       {m_centerPoint.x + halfWidth, m_centerPoint.y + halfHeight, m_centerPoint.z},
@@ -266,7 +266,7 @@ bool EoDbViewport::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoin
   const double halfHeight = m_height / 2.0;
 
   // 4 corners forming a closed rectangle
-  EoGePoint3d corners[4] = {
+  const EoGePoint3d corners[4] = {
       {m_centerPoint.x - halfWidth, m_centerPoint.y - halfHeight, m_centerPoint.z},
       {m_centerPoint.x + halfWidth, m_centerPoint.y - halfHeight, m_centerPoint.z},
       {m_centerPoint.x + halfWidth, m_centerPoint.y + halfHeight, m_centerPoint.z},
@@ -312,7 +312,7 @@ void EoDbViewport::TranslateUsingMask(EoGeVector3d translateVector, const DWORD 
 EoDbViewport* EoDbViewport::ReadFromPeg(CFile& file) {
   auto* viewport = new EoDbViewport();
   viewport->SetColor(EoDb::ReadInt16(file));
-  auto lineTypeIndex = EoDb::ReadInt16(file);
+  const auto lineTypeIndex = EoDb::ReadInt16(file);
   viewport->SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(lineTypeIndex));
   viewport->m_centerPoint = EoDb::ReadPoint3d(file);
   EoDb::Read(file, viewport->m_width);

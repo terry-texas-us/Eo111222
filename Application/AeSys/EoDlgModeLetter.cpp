@@ -32,7 +32,7 @@ BOOL EoDlgModeLetter::OnInitDialog() {
   return TRUE;
 }
 void EoDlgModeLetter::OnOK() {
-  auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
+  const auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
   EoGeReferenceSystem ReferenceSystem(m_Point, characterCellDefinition);
 
   const auto& fontDefinition = Gs::renderState.FontDefinition();

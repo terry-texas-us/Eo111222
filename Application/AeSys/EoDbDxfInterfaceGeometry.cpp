@@ -29,7 +29,7 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
     ATLTRACE2(traceGeneral, 3, L"Warning: Arc entity with non-positive radius (%f) skipped.\n", arc.m_radius);
     return;
   }
-  EoGePoint3d center(arc.m_centerPoint.x, arc.m_centerPoint.y, arc.m_centerPoint.z);
+  const EoGePoint3d center(arc.m_centerPoint.x, arc.m_centerPoint.y, arc.m_centerPoint.z);
 
   EoGeVector3d extrusion(arc.m_extrusionDirection.x, arc.m_extrusionDirection.y, arc.m_extrusionDirection.z);
   if (extrusion.IsNearNull()) {
@@ -39,8 +39,8 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
   }
   // OCS parametric angles pass through unchanged — ComputeArbitraryAxis in CreateRadialArc
   // encodes the OCS→WCS directional flip via the major axis direction.
-  double startAngle = EoDbConic::NormalizeTo2Pi(arc.m_startAngle);
-  double endAngle = EoDbConic::NormalizeTo2Pi(arc.m_endAngle);
+  const double startAngle = EoDbConic::NormalizeTo2Pi(arc.m_startAngle);
+  const double endAngle = EoDbConic::NormalizeTo2Pi(arc.m_endAngle);
 
   auto* radialArc = EoDbConic::CreateRadialArc(center, extrusion, arc.m_radius, startAngle, endAngle);
   if (radialArc == nullptr) {
@@ -58,7 +58,7 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
     ATLTRACE2(traceGeneral, 3, L"Warning: Circle entity with non-positive radius (%f) skipped.\n", circle.m_radius);
     return;
   }
-  EoGePoint3d center(circle.m_centerPoint.x, circle.m_centerPoint.y, circle.m_centerPoint.z);
+  const EoGePoint3d center(circle.m_centerPoint.x, circle.m_centerPoint.y, circle.m_centerPoint.z);
   EoGeVector3d extrusion(circle.m_extrusionDirection.x, circle.m_extrusionDirection.y, circle.m_extrusionDirection.z);
   if (extrusion.IsNearNull()) {
     extrusion = EoGeVector3d::positiveUnitZ;
@@ -107,7 +107,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
         traceGeneral, 1, L"Ellipse entity skipped: invalid ratio (%.6f) — must be in (0.0, 1.0]\n", ellipse.m_ratio);
     return;
   }
-  EoGeVector3d majorAxis(
+  const EoGeVector3d majorAxis(
       ellipse.m_endPointOfMajorAxis.x, ellipse.m_endPointOfMajorAxis.y, ellipse.m_endPointOfMajorAxis.z);
   if (majorAxis.IsNearNull()) {
     ATLTRACE2(traceGeneral, 1, L"Ellipse entity skipped: zero-length major axis\n");
@@ -120,7 +120,7 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   } else {
     extrusion.Unitize();
   }
-  auto center = EoGePoint3d(ellipse.m_centerPoint.x, ellipse.m_centerPoint.y, ellipse.m_centerPoint.z);
+  const EoGePoint3d center = EoGePoint3d(ellipse.m_centerPoint.x, ellipse.m_centerPoint.y, ellipse.m_centerPoint.z);
 
   ATLTRACE2(traceGeneral, 3, L"  center=(%.4f, %.4f, %.4f) majorAxis=(%.4f, %.4f, %.4f) majorLen=%.4f\n", center.x,
       center.y, center.z, majorAxis.x, majorAxis.y, majorAxis.z, majorAxis.Length());
@@ -282,7 +282,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
   }
   const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x) ||
       Eo::IsGeometricallyNonZero(extrusionDirection.y) || Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
-  EoGeOcsTransform transformOcs{extrusionDirection};
+  const EoGeOcsTransform transformOcs{extrusionDirection};
 
   for (std::uint16_t index = 0; index < numVerts; ++index) {
     const auto& vertex = polyline.m_vertices[index];

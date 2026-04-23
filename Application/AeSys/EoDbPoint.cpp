@@ -84,23 +84,23 @@ EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
 }
 
 void EoDbPoint::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  std::int16_t color = LogicalColor();
+  const std::int16_t color = LogicalColor();
 
-  COLORREF hotPenColor = app.PenColorsGetHot(color);
+  const COLORREF hotPenColor = app.PenColorsGetHot(color);
 
   EoGePoint4d ndcPoint(m_Point);
   view->ModelViewTransformPoint(ndcPoint);
 
   if (!ndcPoint.IsInView()) { return; }
 
-  auto clientPoint = view->ProjectToClient(ndcPoint);
+  const auto clientPoint = view->ProjectToClient(ndcPoint);
 
   // Compute pixel size for point
-  double pointSize = AeSysDoc::GetDoc()->GetPointSize();
+  const double pointSize = AeSysDoc::GetDoc()->GetPointSize();
 
   int pixelSize = 8;  // default used if markSize == 0.0
   if (pointSize > 0.0) {
-    auto dpi = static_cast<double>(GetDpiForSystem());
+    const auto dpi = static_cast<double>(GetDpiForSystem());
     pixelSize = static_cast<int>(std::max(2.0, (pointSize * dpi)) / 2.0);
   } else if (pointSize < 0.0) {
     // treat absolute pixels (common convention)
@@ -252,10 +252,10 @@ void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) { m_Point += v; }
 }
 EoDbPoint* EoDbPoint::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto pointStyle = EoDb::ReadInt16(file);
-  auto point(EoDb::ReadPoint3d(file));
-  auto numberOfDatums = EoDb::ReadUInt16(file);
+  const auto color = EoDb::ReadInt16(file);
+  const auto pointStyle = EoDb::ReadInt16(file);
+  const auto point(EoDb::ReadPoint3d(file));
+  const auto numberOfDatums = EoDb::ReadUInt16(file);
 
   double* data = (numberOfDatums == 0) ? nullptr : new double[numberOfDatums];
   for (std::uint16_t n = 0; n < numberOfDatums; n++) { EoDb::Read(file, data[n]); }
@@ -264,9 +264,9 @@ EoDbPoint* EoDbPoint::ReadFromPeg(CFile& file) {
 }
 
 EoDbPoint* EoDbPoint::ReadFromLegacyTagPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto pointStyle = EoDb::ReadInt16(file);
-  auto point(EoDb::ReadPoint3d(file));
+  const auto color = EoDb::ReadInt16(file);
+  const auto pointStyle = EoDb::ReadInt16(file);
+  const auto point(EoDb::ReadPoint3d(file));
 
   return new EoDbPoint(color, pointStyle, point);
 }

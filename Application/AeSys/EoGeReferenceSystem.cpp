@@ -11,8 +11,8 @@
 EoGeReferenceSystem::EoGeReferenceSystem(
     const EoGePoint3d& origin, const EoDbCharacterCellDefinition& characterCellDefinition)
     : m_origin{origin} {
-  auto* activeView = AeSysView::GetActiveView();
-  auto cameraDirection = activeView->CameraDirection();
+  auto* const activeView = AeSysView::GetActiveView();
+  const auto cameraDirection = activeView->CameraDirection();
 
   m_yDirection = activeView->ViewUp();
   m_yDirection.RotateAboutArbitraryAxis(cameraDirection, characterCellDefinition.RotationAngle());
@@ -39,7 +39,7 @@ EoGeTransformMatrix EoGeReferenceSystem::TransformMatrix() const {
 }
 
 void EoGeReferenceSystem::Rescale(const EoDbCharacterCellDefinition& characterCellDefinition) {
-  EoGeVector3d normal = UnitNormal();
+  const EoGeVector3d normal = UnitNormal();
   m_xDirection.Unitize();
   m_yDirection = m_xDirection;
   m_yDirection.RotateAboutArbitraryAxis(normal, Eo::HalfPi + characterCellDefinition.SlantAngle());

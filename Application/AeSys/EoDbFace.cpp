@@ -409,14 +409,14 @@ void EoDbFace::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 // ── PEG Serialization ────────────────────────────────────────────────────────
 
 EoDbFace* EoDbFace::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineTypeIndex = EoDb::ReadInt16(file);
-  auto sourceType = static_cast<SourceType>(EoDb::ReadInt8(file));
-  auto edgeFlags = static_cast<std::uint8_t>(EoDb::ReadInt8(file));
-  auto vertexCount = static_cast<std::uint8_t>(EoDb::ReadInt8(file));
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineTypeIndex = EoDb::ReadInt16(file);
+  const auto sourceType = static_cast<SourceType>(EoDb::ReadInt8(file));
+  const auto edgeFlags = static_cast<std::uint8_t>(EoDb::ReadInt8(file));
+  const auto vertexCount = static_cast<std::uint8_t>(EoDb::ReadInt8(file));
   (void)EoDb::ReadInt8(file);  // padding
 
-  auto extrusion = EoDb::ReadVector3d(file);
+  const auto extrusion = EoDb::ReadVector3d(file);
 
   auto* face = new EoDbFace();
   face->SetColor(color);
@@ -456,8 +456,8 @@ void EoDbFace::Write([[maybe_unused]] CFile& file, [[maybe_unused]] std::uint8_t
 // ── Face-Specific Methods ────────────────────────────────────────────────────
 
 EoGeVector3d EoDbFace::ComputeNormal() const {
-  auto edge1 = EoGeVector3d(m_vertices[0], m_vertices[1]);
-  auto edge2 = EoGeVector3d(m_vertices[0], m_vertices[2]);
+  const auto edge1 = EoGeVector3d(m_vertices[0], m_vertices[1]);
+  const auto edge2 = EoGeVector3d(m_vertices[0], m_vertices[2]);
   auto normal = CrossProduct(edge1, edge2);
   if (normal.IsNearNull()) { return EoGeVector3d(0.0, 0.0, 0.0); }
   normal.Unitize();
@@ -467,11 +467,11 @@ EoGeVector3d EoDbFace::ComputeNormal() const {
 bool EoDbFace::IsPlanar() const {
   if (m_vertexCount <= 3) { return true; }
 
-  auto normal = ComputeNormal();
+  const auto normal = ComputeNormal();
   if (normal.IsNearNull()) { return true; }  // Degenerate — consider planar
 
-  auto edge3 = EoGeVector3d(m_vertices[0], m_vertices[3]);
-  double deviation = std::abs(DotProduct(normal, edge3));
+  const auto edge3 = EoGeVector3d(m_vertices[0], m_vertices[3]);
+  const double deviation = std::abs(DotProduct(normal, edge3));
   return deviation < Eo::geometricTolerance;
 }
 
@@ -484,6 +484,6 @@ EoGePoint3d EoDbFace::Centroid() const noexcept {
     sumY += m_vertices[i].y;
     sumZ += m_vertices[i].z;
   }
-  double invCount = 1.0 / m_vertexCount;
+  const double invCount = 1.0 / m_vertexCount;
   return EoGePoint3d(sumX * invCount, sumY * invCount, sumZ * invCount);
 }

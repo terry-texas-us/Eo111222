@@ -381,8 +381,8 @@ void AeSysView::OnInitialUpdate() {
   // apply the tab bar editor state now that the view and tab bar are ready.
   if (auto* doc = GetDocument()) {
     if (doc->IsEditingTracing()) {
-      std::filesystem::path filePath(static_cast<LPCWSTR>(doc->EditingTracingPath()));
-      CString tracingName = filePath.stem().wstring().c_str();
+      const std::filesystem::path filePath(static_cast<LPCWSTR>(doc->EditingTracingPath()));
+      const CString tracingName = filePath.stem().wstring().c_str();
       LayoutTabBar().UpdateBlockEditState(true, tracingName, L"TRACING");
 
       // MFC's SetPathName overrides our SetTitle from EnterTracingEditMode,
@@ -425,14 +425,14 @@ void AeSysView::ApplyActiveViewport() {
     // by rotating +Y (or the appropriate perpendicular) by the twist angle around the view direction.
     auto n = viewDirection;
     n.Unitize();
-    auto arbitraryUp = (std::abs(n.z) < 0.99) ? EoGeVector3d::positiveUnitZ : EoGeVector3d::positiveUnitY;
+    const auto arbitraryUp = (std::abs(n.z) < 0.99) ? EoGeVector3d::positiveUnitZ : EoGeVector3d::positiveUnitY;
     auto u = CrossProduct(arbitraryUp, n);
     u.Unitize();
     auto v = CrossProduct(n, u);
     v.Unitize();
     // Rotate v by -twistAngle around n (DXF twist is CW when looking along the view direction)
-    auto cosT = std::cos(-activeVPort->m_viewTwistAngle);
-    auto sinT = std::sin(-activeVPort->m_viewTwistAngle);
+    const auto cosT = std::cos(-activeVPort->m_viewTwistAngle);
+    const auto sinT = std::sin(-activeVPort->m_viewTwistAngle);
     auto viewUp = EoGeVector3d(u.x * sinT + v.x * cosT, u.y * sinT + v.y * cosT, u.z * sinT + v.z * cosT);
     viewUp.Unitize();
     m_ViewTransform.SetViewUp(viewUp);
@@ -465,12 +465,12 @@ void AeSysView::ApplyActiveViewport() {
   // DXF viewHeight is the visible height in drawing units.
   // viewCenter (group 12/22) is the 2D offset from viewTargetPoint in DCS.
   // For a standard 2D top-down view, DCS X = WCS X, DCS Y = WCS Y.
-  double viewHeight = activeVPort->m_viewHeight;
-  double viewWidth = viewHeight * activeVPort->m_viewAspectRatio;
+  const double viewHeight = activeVPort->m_viewHeight;
+  const double viewWidth = viewHeight * activeVPort->m_viewAspectRatio;
 
   // DCS view center offset from target
-  double dcsOffsetX = activeVPort->m_viewCenter.x;
-  double dcsOffsetY = activeVPort->m_viewCenter.y;
+  const double dcsOffsetX = activeVPort->m_viewCenter.x;
+  const double dcsOffsetY = activeVPort->m_viewCenter.y;
 
   // Adjust for viewport device aspect ratio (the projection window may need
   // expansion to fill the device viewport without distortion)
@@ -567,7 +567,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
     targetDC = screenDC;
   }
 
-  auto backgroundColor = targetDC->GetBkColor();
+  const auto backgroundColor = targetDC->GetBkColor();
   const auto* updateDoc = GetDocument();
   const bool isPaperSpaceUpdate = updateDoc != nullptr && updateDoc->ActiveSpace() == EoDxf::Space::PaperSpace;
   targetDC->SetBkColor(Eo::ViewBackgroundColorForSpace(isPaperSpaceUpdate));
@@ -605,13 +605,13 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
   ViewportPushActive();
   PushViewTransform();
 
-  int HorizontalPixelWidth = deviceContext->GetDeviceCaps(HORZRES);
-  int VerticalPixelWidth = deviceContext->GetDeviceCaps(VERTRES);
+  const int HorizontalPixelWidth = deviceContext->GetDeviceCaps(HORZRES);
+  const int VerticalPixelWidth = deviceContext->GetDeviceCaps(VERTRES);
 
   SetViewportSize(HorizontalPixelWidth, VerticalPixelWidth);
 
-  double HorizontalSize = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE));
-  double VerticalSize = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE));
+  const double HorizontalSize = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE));
+  const double VerticalSize = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE));
 
   SetDeviceWidthInInches(HorizontalSize / Eo::MmPerInch);
   SetDeviceHeightInInches(VerticalSize / Eo::MmPerInch);
@@ -626,12 +626,11 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
       EoGeTransformMatrix transformMatrix;
       document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
-      double extentWidth = ptMax.x - ptMin.x;
-      double extentHeight = ptMax.y - ptMin.y;
+      const double extentWidth = ptMax.x - ptMin.x;
+      const double extentHeight = ptMax.y - ptMin.y;
 
-      double paperWidthInches = HorizontalSize / Eo::MmPerInch;
-      double paperHeightInches = VerticalSize / Eo::MmPerInch;
-
+      const double paperWidthInches = HorizontalSize / Eo::MmPerInch;
+      const double paperHeightInches = VerticalSize / Eo::MmPerInch;
       if (extentWidth > Eo::geometricTolerance && extentHeight > Eo::geometricTolerance
           && paperWidthInches > Eo::geometricTolerance && paperHeightInches > Eo::geometricTolerance) {
         m_PlotScaleFactor = std::min(paperWidthInches / extentWidth, paperHeightInches / extentHeight);
@@ -698,9 +697,9 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 
   if (deviceContext->IsPrinting()) {
     if (m_Plot) {
-      double HorizontalSizeInInches =
+      const double HorizontalSizeInInches =
           static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
-      double VerticalSizeInInches =
+      const double VerticalSizeInInches =
           static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
 
       m_ViewTransform.Initialize(m_Viewport);
@@ -711,8 +710,8 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 
       NumPages(deviceContext, m_PlotScaleFactor, nHorzPages, nVertPages);
 
-      double dX = ((pInfo->m_nCurPage - 1) % nHorzPages) * HorizontalSizeInInches;
-      double dY = ((pInfo->m_nCurPage - 1) / nHorzPages) * VerticalSizeInInches;
+      const double dX = ((pInfo->m_nCurPage - 1) % nHorzPages) * HorizontalSizeInInches;
+      const double dY = ((pInfo->m_nCurPage - 1) / nHorzPages) * VerticalSizeInInches;
 
       m_ViewTransform.SetTarget(EoGePoint3d(dX, dY, 0.0));
       m_ViewTransform.SetPosition(EoGeVector3d::positiveUnitZ);
@@ -769,12 +768,12 @@ void AeSysView::CreateD2DRenderTarget() {
   GetClientRect(&clientRect);
   if (clientRect.IsRectEmpty()) { return; }
 
-  D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(clientRect.Width()), static_cast<UINT32>(clientRect.Height()));
+  const D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(clientRect.Width()), static_cast<UINT32>(clientRect.Height()));
 
   D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties();
   rtProps.dpiX = 96.0f;
   rtProps.dpiY = 96.0f;
-  D2D1_HWND_RENDER_TARGET_PROPERTIES hwndProps = D2D1::HwndRenderTargetProperties(GetSafeHwnd(), size);
+  const D2D1_HWND_RENDER_TARGET_PROPERTIES hwndProps = D2D1::HwndRenderTargetProperties(GetSafeHwnd(), size);
 
   HRESULT hr = factory->CreateHwndRenderTarget(rtProps, hwndProps, &m_d2dRenderTarget);
   if (FAILED(hr)) {
@@ -803,21 +802,21 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
     int drawingHeight = cy - tabBarHeight;
     if (drawingHeight < 1) { drawingHeight = 1; }
 
-    double oldWidth = m_Viewport.Width();
-    double oldHeight = m_Viewport.Height();
+    const double oldWidth = m_Viewport.Width();
+    const double oldHeight = m_Viewport.Height();
 
     SetViewportSize(cx, drawingHeight);
 
     if (oldWidth > 0.0 && oldHeight > 0.0) {
       // Preserve current view center and zoom level — scale the window extents
       // proportionally to the viewport dimension change (world units per pixel stays constant)
-      double scaleX = static_cast<double>(cx) / oldWidth;
-      double scaleY = static_cast<double>(drawingHeight) / oldHeight;
+      const double scaleX = static_cast<double>(cx) / oldWidth;
+      const double scaleY = static_cast<double>(drawingHeight) / oldHeight;
 
-      double centerU = (m_ViewTransform.UMin() + m_ViewTransform.UMax()) / 2.0;
-      double centerV = (m_ViewTransform.VMin() + m_ViewTransform.VMax()) / 2.0;
-      double halfUExtent = m_ViewTransform.UExtent() / 2.0 * scaleX;
-      double halfVExtent = m_ViewTransform.VExtent() / 2.0 * scaleY;
+      const double centerU = (m_ViewTransform.UMin() + m_ViewTransform.UMax()) / 2.0;
+      const double centerV = (m_ViewTransform.VMin() + m_ViewTransform.VMax()) / 2.0;
+      const double halfUExtent = m_ViewTransform.UExtent() / 2.0 * scaleX;
+      const double halfVExtent = m_ViewTransform.VExtent() / 2.0 * scaleY;
 
       m_ViewTransform.SetWindow(
           centerU - halfUExtent, centerV - halfVExtent, centerU + halfUExtent, centerV + halfVExtent);
@@ -833,7 +832,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
         // Size the D2D render target to the full HWND client area (cx × cy) so that
         // D2D does not scale the output.  A clip rect in OnDraw constrains rendering
         // to the drawing area, leaving the tab-bar region untouched.
-        D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(cx), static_cast<UINT32>(cy));
+        const D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(cx), static_cast<UINT32>(cy));
         HRESULT hr = m_d2dRenderTarget->Resize(size);
         if (FAILED(hr)) { DiscardD2DResources(); }
         m_sceneInvalid = true;
@@ -857,8 +856,8 @@ void AeSysView::OnTimer(UINT_PTR nIDEvent) {
 void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   if (!m_viewBackgroundImage || (static_cast<HBITMAP>(m_backgroundImageBitmap) == nullptr)) { return; }
 
-  int iWidDst = int(m_Viewport.Width());
-  int iHgtDst = int(m_Viewport.Height());
+  const int iWidDst = static_cast<int>(m_Viewport.Width());
+  const int iHgtDst = static_cast<int>(m_Viewport.Height());
 
   BITMAP bm{};
   m_backgroundImageBitmap.GetBitmap(&bm);
@@ -868,10 +867,10 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   CPalette* pPalette = deviceContext->SelectPalette(&m_backgroundImagePalette, FALSE);
   deviceContext->RealizePalette();
 
-  auto Target = m_ViewTransform.Target();
-  auto ptTargetOver = m_OverviewViewTransform.Target();
-  double dU = Target.x - ptTargetOver.x;
-  double dV = Target.y - ptTargetOver.y;
+  const auto Target = m_ViewTransform.Target();
+  const auto ptTargetOver = m_OverviewViewTransform.Target();
+  const double dU = Target.x - ptTargetOver.x;
+  const double dV = Target.y - ptTargetOver.y;
 
   // Determine the region of the bitmap to tranfer to display
   CRect rcWnd;
@@ -884,8 +883,8 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   rcWnd.bottom = Eo::Round(
       (1.0 - (m_ViewTransform.VMin() - OverviewVMin() + dV) / OverviewVExt()) * static_cast<double>(bm.bmHeight));
 
-  int iWidSrc = rcWnd.Width();
-  int iHgtSrc = rcWnd.Height();
+  const int iWidSrc = rcWnd.Width();
+  const int iHgtSrc = rcWnd.Height();
 
   deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, (int)rcWnd.left, (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
 
@@ -908,12 +907,11 @@ void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d&
 }
 
 void AeSysView::DisplayOdometer() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   m_vRelPos = cursorPosition - GridOrign();
 
-  auto units = app.GetUnits();
-
+  const auto units = app.GetUnits();
   CString lengthText;
 
   app.FormatLength(lengthText, units, m_vRelPos.x);
@@ -924,10 +922,10 @@ void AeSysView::DisplayOdometer() {
   Position.Append(L", " + lengthText.TrimLeft());
 
   if (m_rubberbandType == Lines) {
-    EoGeLine line(m_rubberbandBegin, cursorPosition);
+    const EoGeLine line(m_rubberbandBegin, cursorPosition);
 
-    auto lineLength = line.Length();
-    auto angleInXYPlane = line.AngleFromXAxisXY();
+    const auto lineLength = line.Length();
+    const auto angleInXYPlane = line.AngleFromXAxisXY();
     app.FormatLength(lengthText, units, lineLength);
 
     CString angle;

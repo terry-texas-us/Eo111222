@@ -65,7 +65,7 @@ static bool RunConverter(std::wstring& commandLine) {
   // ODAFileConverter is a GUI application — do NOT use CREATE_NO_WINDOW
   // (that flag is for console subsystem processes and prevents GUI apps
   // from initializing their window system properly).
-  BOOL created = ::CreateProcessW(
+  const BOOL created = ::CreateProcessW(
       kOdaConverterPath, commandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo);
 
   if (!created) {
@@ -152,7 +152,7 @@ std::wstring ConvertDxfToDwg(const std::wstring& tempFolder, const std::wstring&
   if (!RunConverter(commandLine)) { return {}; }
 
   // The output .dwg has the same stem as the input .dxf
-  fs::path dxfStem = fs::path(dxfFileName).stem();
+  const fs::path dxfStem = fs::path(dxfFileName).stem();
   auto dwgPath = fs::path(dwgOutputFolder) / dxfStem;
   dwgPath.replace_extension(L".dwg");
 

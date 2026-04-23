@@ -51,15 +51,15 @@ void EoDlgSetupNote::OnOK() {
   GetDlgItemTextW(IDC_TEXT_SPACING, spacing);
   m_FontDefinition->SetCharacterSpacing(_wtof(spacing));
 
-  auto horizontalAlignment = static_cast<EoDb::HorizontalAlignment>(
+  const auto horizontalAlignment = static_cast<EoDb::HorizontalAlignment>(
       1 - IDC_TEXT_ALIGN_HOR_LEFT + GetCheckedRadioButton(IDC_TEXT_ALIGN_HOR_LEFT, IDC_TEXT_ALIGN_HOR_RIGHT));
   m_FontDefinition->SetHorizontalAlignment(horizontalAlignment);
 
-  auto verticalAlignment = static_cast<EoDb::VerticalAlignment>(
+  const auto verticalAlignment = static_cast<EoDb::VerticalAlignment>(
       4 + IDC_TEXT_ALIGN_VER_BOT - GetCheckedRadioButton(IDC_TEXT_ALIGN_VER_BOT, IDC_TEXT_ALIGN_VER_TOP));
   m_FontDefinition->SetVerticalAlignment(verticalAlignment);
 
-  auto path = static_cast<EoDb::Path>(GetCheckedRadioButton(IDC_PATH_RIGHT, IDC_PATH_DOWN) - IDC_PATH_RIGHT);
+  const auto path = static_cast<EoDb::Path>(GetCheckedRadioButton(IDC_PATH_RIGHT, IDC_PATH_DOWN) - IDC_PATH_RIGHT);
   m_FontDefinition->SetPath(path);
 
   int fontsIndex = m_MfcFontComboControl.GetCurSel();
@@ -67,7 +67,7 @@ void EoDlgSetupNote::OnOK() {
     CString fontsItemName;
     m_MfcFontComboControl.GetLBText(fontsIndex, fontsItemName);
     m_FontDefinition->SetFontName(fontsItemName);
-    auto precision = fontsItemName.CompareNoCase(Eo::defaultStrokeFont) != 0 ? EoDb::Precision::TrueType
+    const auto precision = fontsItemName.CompareNoCase(Eo::defaultStrokeFont) != 0 ? EoDb::Precision::TrueType
                                                                              : EoDb::Precision::StrokeType;
     m_FontDefinition->SetPrecision(precision);
   }

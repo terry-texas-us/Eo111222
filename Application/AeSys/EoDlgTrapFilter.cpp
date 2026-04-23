@@ -40,7 +40,7 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
   }
   m_FilterLineComboBoxControl.SetCurSel(0);
 
-  auto PrimitiveTypes = App::LoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
+  const auto PrimitiveTypes = App::LoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
 
   int TypesPosition = 0;
   while (TypesPosition < PrimitiveTypes.GetLength()) {
@@ -53,7 +53,7 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 
 void EoDlgTrapFilter::OnOK() {
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_PEN)) {
-    std::int16_t color = std::int16_t(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, nullptr, FALSE));
+    const auto color = static_cast<std::int16_t>(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, nullptr, FALSE));
     FilterByColor(color);
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_LINE)) {

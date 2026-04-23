@@ -31,7 +31,7 @@ void AeSysView::OnPowerModeCircuit() {
   auto* Group = SelectCircleUsingPoint(cursorPosition, 0.02, circle);
   if (Group != nullptr) {
     cursorPosition = circle->Center();
-    double CurrentRadius = circle->Radius();
+    const double currentRadius = circle->Radius();
 
     if (pts.IsEmpty()) {
       pts.Add(cursorPosition);
@@ -39,13 +39,13 @@ void AeSysView::OnPowerModeCircuit() {
     } else {
       Group = new EoDbGroup;
       document->AddWorkLayerGroup(Group);
-      EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-      EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], CurrentRadius);
+      const EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
+      const EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], currentRadius);
       Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(Gs::renderState));
       InvalidateScene();
       pts[0] = cursorPosition;
     }
-    m_PreviousRadius = CurrentRadius;
+    m_PreviousRadius = currentRadius;
   } else {
     if (pts.IsEmpty()) {
       pts.Add(cursorPosition);
@@ -54,8 +54,8 @@ void AeSysView::OnPowerModeCircuit() {
 
       Group = new EoDbGroup;
       document->AddWorkLayerGroup(Group);
-      EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-      EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
+      const EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
+      const EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
       Group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(Gs::renderState));
       InvalidateScene();
 
@@ -115,7 +115,7 @@ void AeSysView::OnPowerModeHome() {
 void AeSysView::DoPowerModeMouseMove() {
   const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
-  auto numberOfPoints = pts.GetSize();
+  const auto numberOfPoints = pts.GetSize();
 
   switch (m_PreviousOp) {
     case ID_OP2:
@@ -125,13 +125,13 @@ void AeSysView::DoPowerModeMouseMove() {
         EoDbConic* circle{};
         auto* group = SelectCircleUsingPoint(cursorPosition, 0.02, circle);
         if (group != nullptr) {
-          double radius = circle->Radius();
+          const double radius = circle->Radius();
           cursorPosition = circle->Center();
           cursorPosition = cursorPosition.ProjectToward(pts[0], radius);
         } else {
           cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
         }
-        auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
+        const auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
         m_PreviewGroup.AddTail(EoDbLine::CreateLine(pt1, cursorPosition)->WithProperties(Gs::renderState));
         InvalidateOverlay();
       }
@@ -158,7 +158,7 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
     if (group != nullptr) {
       cursorPosition = circuit->ProjectPointToLine(cursorPosition);
 
-      EoGePoint3d BeginPoint = circuit->Begin();
+      const EoGePoint3d BeginPoint = circuit->Begin();
       m_CircuitEndPoint = circuit->End();
 
       if (std::abs(m_CircuitEndPoint.x - BeginPoint.x) > 0.025) {
@@ -203,7 +203,7 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
 
   Points[0] = pointOnCircuit.ProjectToward(endPoint, 0.05);
 
-  EoGeLine Circuit(Points[0], endPoint);
+  const EoGeLine Circuit(Points[0], endPoint);
 
   Circuit.ProjPtFrom_xy(0.0, -0.075, &Points[0]);
   Points[1] = pointOnCircuit;
@@ -220,7 +220,7 @@ void AeSysView::GeneratePowerConductorSymbol(
   auto* document = GetDocument();
   EoGePoint3d Points[5]{};
 
-  EoGeLine Circuit(pointOnCircuit, endPoint);
+  const EoGeLine Circuit(pointOnCircuit, endPoint);
   auto* group = new EoDbGroup;
 
   switch (conductorType) {

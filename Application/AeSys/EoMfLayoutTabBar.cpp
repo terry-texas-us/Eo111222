@@ -208,7 +208,7 @@ void EoMfLayoutTabBar::PopulateFromDocument(AeSysDoc* document) {
   // Select the tab matching the current active space and layout handle
   int selectedIndex = 0;
   if (document->ActiveSpace() != EoDxf::Space::ModelSpace) {
-    auto activeHandle = document->ActiveLayoutHandle();
+    const auto activeHandle = document->ActiveLayoutHandle();
     for (int i = 1; i < static_cast<int>(m_blockRecordHandles.size()); ++i) {
       if (m_blockRecordHandles[i] == activeHandle) {
         selectedIndex = i;
@@ -220,7 +220,7 @@ void EoMfLayoutTabBar::PopulateFromDocument(AeSysDoc* document) {
 
   // Update the space label to reflect the current active space
   if (!m_isBlockEditing) {
-    bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
+    const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
     m_spaceLabel.SetWindowTextW(isPaperSpace ? L"PAPER" : L"MODEL");
   }
 
@@ -233,7 +233,7 @@ std::uint64_t EoMfLayoutTabBar::BlockRecordHandleAt(int tabIndex) const noexcept
 }
 
 int EoMfLayoutTabBar::PreferredHeight() const {
-  int tabsHeight = GetTabsHeight();
+  const int tabsHeight = GetTabsHeight();
   return (tabsHeight > 0) ? tabsHeight : 24;
 }
 
@@ -258,7 +258,7 @@ void EoMfLayoutTabBar::UpdateViewportState(const EoDbViewport* viewport, bool is
     m_lockButton.SetWindowTextW(viewport->IsDisplayLocked() ? L"\U0001F512" : L"\U0001F513");
     m_lockButton.ShowWindow(SW_SHOW);
 
-    double viewportScale = ComputeViewportScale(viewport);
+    const double viewportScale = ComputeViewportScale(viewport);
     PopulateScaleCombo(viewportScale);
     m_scaleCombo.ShowWindow(SW_SHOW);
 
@@ -315,7 +315,7 @@ void EoMfLayoutTabBar::RepositionControls() {
     CFont* oldTransferFont = transferDc.SelectObject(&m_controlFont);
     CString transferText;
     m_spaceTransferButton.GetWindowTextW(transferText);
-    CSize transferSize = transferDc.GetTextExtent(transferText);
+    const CSize transferSize = transferDc.GetTextExtent(transferText);
     transferDc.SelectObject(oldTransferFont);
     const int transferButtonWidth = transferSize.cx + 16;
     xPosition -= transferButtonWidth;
@@ -377,7 +377,7 @@ void EoMfLayoutTabBar::PopulateScaleCombo(double viewportScale) {
     // Current scale doesn't match any preset — add a "Custom" entry
     CString customLabel;
     customLabel.Format(L"Custom (1:%.2f)", 1.0 / viewportScale);
-    int customIndex = m_scaleCombo.AddString(customLabel);
+    const int customIndex = m_scaleCombo.AddString(customLabel);
     m_scaleCombo.SetCurSel(customIndex);
   } else {
     m_scaleCombo.SetCurSel(selectedIndex);
@@ -412,7 +412,7 @@ void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) 
   dc.FillSolidRect(rect, colors.toolbarBackground);
 
   // Hover state tracked by PreTranslateMessage; pressed state from itemState
-  bool isHovered = m_hoveredButton == drawItem->hwndItem;
+  const bool isHovered = m_hoveredButton == drawItem->hwndItem;
   bool isPressed = (drawItem->itemState & ODS_SELECTED) != 0;
 
   // Draw hover/press highlight matching toolbar style
@@ -444,8 +444,8 @@ void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) 
   if (bitmap != nullptr && bitmap->GetSafeHandle() != nullptr) {
     BITMAP bm{};
     bitmap->GetBitmap(&bm);
-    int x = rect.left + (rect.Width() - bm.bmWidth) / 2;
-    int y = rect.top + (rect.Height() - bm.bmHeight) / 2;
+    const int x = rect.left + (rect.Width() - bm.bmWidth) / 2;
+    const int y = rect.top + (rect.Height() - bm.bmHeight) / 2;
     CDC memDC;
     memDC.CreateCompatibleDC(&dc);
     CBitmap* oldBmp = memDC.SelectObject(bitmap);
@@ -468,9 +468,9 @@ void EoMfLayoutTabBar::OnSpaceLabelClicked() {
     document->OnViewModelSpace();
 
     // Sync the tab selection to the active layout
-    bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
+    const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
     if (isPaperSpace) {
-      auto activeHandle = document->ActiveLayoutHandle();
+      const auto activeHandle = document->ActiveLayoutHandle();
       for (int i = 1; i < static_cast<int>(m_blockRecordHandles.size()); ++i) {
         if (m_blockRecordHandles[i] == activeHandle) {
           m_populating = true;
@@ -517,15 +517,15 @@ void EoMfLayoutTabBar::OnSpaceLabelClicked() {
 void EoMfLayoutTabBar::OnScaleComboChanged() {
   if (m_currentViewport == nullptr) { return; }
 
-  int selectedIndex = m_scaleCombo.GetCurSel();
+  const int selectedIndex = m_scaleCombo.GetCurSel();
   if (selectedIndex < 0 || selectedIndex >= scalePresetCount) { return; }  // "Custom" entry — ignore
 
-  double targetScale = scalePresets[selectedIndex].scale;
-  double paperHeight = m_currentViewport->Height();
+  const double targetScale = scalePresets[selectedIndex].scale;
+  const double paperHeight = m_currentViewport->Height();
   if (paperHeight < 1e-10) { return; }
 
   // Compute the new viewHeight that achieves the target scale
-  double newViewHeight = paperHeight / targetScale;
+  const double newViewHeight = paperHeight / targetScale;
 
   // Apply to the viewport (const_cast is safe — the viewport is owned by the document,
   // and we hold a non-owning pointer for display purposes)
@@ -544,7 +544,7 @@ void EoMfLayoutTabBar::OnLockButtonClicked() {
   if (m_currentViewport == nullptr) { return; }
 
   auto* viewport = const_cast<EoDbViewport*>(m_currentViewport);
-  bool newLocked = !viewport->IsDisplayLocked();
+  const bool newLocked = !viewport->IsDisplayLocked();
   viewport->SetDisplayLocked(newLocked);
 
   m_lockButton.SetWindowTextW(newLocked ? L"\U0001F512" : L"\U0001F513");
@@ -561,13 +561,13 @@ void EoMfLayoutTabBar::UpdateSpaceTransferButton() {
     return;
   }
 
-  auto* parentView = static_cast<AeSysView*>(GetParent());
+  auto* const parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
 
-  bool showButton = !document->IsTrapEmpty();
-  bool isCurrentlyVisible = m_spaceTransferButton.IsWindowVisible() != 0;
+  const bool showButton = !document->IsTrapEmpty();
+  const bool isCurrentlyVisible = m_spaceTransferButton.IsWindowVisible() != 0;
 
   if (showButton) {
     // Determine the transfer direction label:
@@ -615,7 +615,7 @@ void EoMfLayoutTabBar::UpdateBlockEditState(bool isEditing, const CString& /*edi
 }
 
 void EoMfLayoutTabBar::OnBlockEditSaveClicked() {
-  auto* parentView = static_cast<AeSysView*>(GetParent());
+  auto* const parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }

@@ -24,7 +24,7 @@ void AeSysView::OnEditModeOptions() {
 void AeSysView::OnEditModePivot() {
   auto* document = GetDocument();
 
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   document->SetTrapPivotPoint(cursorPosition);
 }
 
@@ -33,7 +33,7 @@ void AeSysView::OnEditModeRotccw() {
 
   EoGeTransformMatrix Matrix;
   Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
-  EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
   EoGeTransformMatrix transformMatrix;
   transformMatrix.Translate(TranslateVector);
@@ -48,7 +48,7 @@ void AeSysView::OnEditModeRotcw() {
   EoGeTransformMatrix Matrix;
   Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
   Matrix.Inverse();
-  EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
   EoGeTransformMatrix transformMatrix;
   transformMatrix.Translate(TranslateVector);
@@ -60,7 +60,7 @@ void AeSysView::OnEditModeRotcw() {
 void AeSysView::OnEditModeMove() {
   auto* document = GetDocument();
 
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (m_PreviousOp != ID_OP4) {
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
     RubberBandingStartAtEnable(cursorPosition, Lines);
@@ -78,7 +78,7 @@ void AeSysView::OnEditModeMove() {
 
 void AeSysView::OnEditModeCopy() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (m_PreviousOp != ID_OP5) {
     m_PreviousOp = ModeLineHighlightOp(ID_OP5);
     RubberBandingStartAtEnable(cursorPosition, Lines);
@@ -94,7 +94,7 @@ void AeSysView::OnEditModeFlip() {
   auto* document = GetDocument();
 
   EoGeTransformMatrix transformMatrix;
-  EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
   transformMatrix.Translate(TranslateVector);
   transformMatrix.Scale(EditModeMirrorScale());
@@ -106,7 +106,7 @@ void AeSysView::OnEditModeReduce() {
   auto* document = GetDocument();
 
   EoGeTransformMatrix transformMatrix;
-  EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
   transformMatrix.Translate(TranslateVector);
   transformMatrix.Scale(EditModeInvertedScaleFactors());
@@ -118,7 +118,7 @@ void AeSysView::OnEditModeEnlarge() {
   auto* document = GetDocument();
 
   EoGeTransformMatrix transformMatrix;
-  EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
   transformMatrix.Translate(TranslateVector);
   transformMatrix.Scale(EditModeScaleFactors());

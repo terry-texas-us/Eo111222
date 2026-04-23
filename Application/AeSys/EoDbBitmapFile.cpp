@@ -18,7 +18,7 @@ EoDbBitmapFile::EoDbBitmapFile(const CString& fileName) {
  * @return true if the bitmap and palette were successfully loaded; false otherwise.
  */
 bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalette& loadedPalette) {
-  HBITMAP bitmap =
+  const HBITMAP bitmap =
       static_cast<HBITMAP>(LoadImageW(nullptr, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE));
   if (bitmap == nullptr) { return false; }
   loadedBitmap.Attach(bitmap);
@@ -47,7 +47,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
       return false;
     }
   } else {
-    std::unique_ptr<RGBQUAD[]> rgbQuad(new (std::nothrow) RGBQUAD[colors]);
+    const std::unique_ptr<RGBQUAD[]> rgbQuad(new (std::nothrow) RGBQUAD[colors]);
     if (!rgbQuad) {
       Close();
       return false;
@@ -72,8 +72,8 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
     }
     memoryContext.SelectObject(customBitmap);
 
-    size_t paletteSize = sizeof(LOGPALETTE) + (sizeof(PALETTEENTRY) * (colors - 1));
-    std::unique_ptr<BYTE[]> paletteBuffer(new (std::nothrow) BYTE[paletteSize]);
+    const size_t paletteSize = sizeof(LOGPALETTE) + (sizeof(PALETTEENTRY) * (colors - 1));
+    const std::unique_ptr<BYTE[]> paletteBuffer(new (std::nothrow) BYTE[paletteSize]);
     if (!paletteBuffer) {
       Close();
       return false;
