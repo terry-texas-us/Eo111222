@@ -1,4 +1,4 @@
-﻿//{{NO_DEPENDENCIES}}
+//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by AeSys.rc
 //
@@ -115,6 +115,7 @@
 #define IDR_LAYER_PROPERTIES            348
 #define IDD_EDIT_BLOCK_DEFINITION       349
 #define IDD_FILE_MANAGE_BLOCKS          351
+#define IDD_BLOCKS                      352
 #define IDC_ARCHITECTURAL               1000
 #define IDC_ENGINEERING                 1001
 #define IDC_FEET                        1002
@@ -363,8 +364,13 @@
 #define IDC_BLOCK_EDIT_SAVE_BUTTON      1500
 #define IDC_BLOCK_PREVIEW               1500
 #define IDC_BLOCK_EDIT_CLOSE_BUTTON     1501
+#define IDC_BASE_POINT_Z                1501
 #define IDC_BLOCK_EDIT_SAVEAS_BUTTON    1502
 #define IDC_BLOCKS_RENAME_EDIT          1503
+#define IDC_BASE_POINT_X                1504
+#define IDC_BASE_POINT_Y                1505
+#define IDC_EDIT_BLOCK                  1506
+#define IDC_PURGE_UNUSED                1507
 #define IDS_TOOLBAR_STANDARD            3781
 #define IDS_TOOLBAR_CUSTOMIZE           3782
 #define IDS_WINDOWS_MANAGER             3783
@@ -868,9 +874,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        353
+#define _APS_NEXT_RESOURCE_VALUE        354
 #define _APS_NEXT_COMMAND_VALUE         4918
-#define _APS_NEXT_CONTROL_VALUE         1501
+#define _APS_NEXT_CONTROL_VALUE         1502
 #define _APS_NEXT_SYMED_VALUE           500
 #endif
 #endif

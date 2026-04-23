@@ -150,8 +150,7 @@
     <ClCompile Include="EoDlgPlot.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoCtrlLayerComboBox.cpp" />
-    <ClCompile Include="EoDlgEditBlockDefinition.cpp" />
-    <ClCompile Include="EoDlgFileManageBlocks.cpp" />
+    <ClCompile Include="EoDlgBlocks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -282,8 +281,7 @@
     <ClInclude Include="EoDlgPlot.h" />
     <ClInclude Include="EoMfLayoutTabBar.h" />
     <ClInclude Include="EoCtrlLayerComboBox.h" />
-    <ClInclude Include="EoDlgEditBlockDefinition.h" />
-    <ClInclude Include="EoDlgFileManageBlocks.h" />
+    <ClInclude Include="EoDlgBlocks.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
@@ -338,6 +336,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />

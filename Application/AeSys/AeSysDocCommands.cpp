@@ -30,7 +30,7 @@
 #include "EoDbText.h"
 #include "EoDlgDrawOptions.h"
 #include "EoDlgEditTrapCommandsQuery.h"
-#include "EoDlgFileManageBlocks.h"
+#include "EoDlgBlocks.h"
 #include "EoDlgFileManageLayers.h"
 #include "EoDlgLineTypesSelection.h"
 #include "EoDlgSelectGotoHomePoint.h"
@@ -849,8 +849,8 @@ void AeSysDoc::OnSetupOptionsDraw() {
 }
 
 void AeSysDoc::OnFileManageBlocks() {
-  EoDlgFileManageBlocks dlg(this);
-  if (dlg.DoModal() == IDOK) {}
+  EoDlgBlocks dlg(this);
+  dlg.DoModal();
 }
 
 void AeSysDoc::OnFileManageLayers() {

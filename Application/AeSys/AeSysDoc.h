@@ -217,6 +217,9 @@ class AeSysDoc : public CDocument {
   /** @brief Removes all blocks which have no references. */
   void RemoveUnusedBlocks();
 
+  /** @brief Returns the count of block definitions that have no INSERT references. */
+  [[nodiscard]] int GetUnusedBlockCount();
+
   /** @brief Inserts a block into the block table.
    *
    * If a block with the same name already exists, it is replaced.

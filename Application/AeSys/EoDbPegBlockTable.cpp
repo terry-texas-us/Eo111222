@@ -63,6 +63,18 @@ void AeSysDoc::RemoveUnusedBlocks() {
   }
 }
 
+int AeSysDoc::GetUnusedBlockCount() {
+  CString name;
+  EoDbBlock* block{};
+  auto count{0};
+  auto position = m_BlocksTable.GetStartPosition();
+  while (position != nullptr) {
+    m_BlocksTable.GetNextAssoc(position, name, block);
+    if (GetBlockReferenceCount(name) == 0) { ++count; }
+  }
+  return count;
+}
+
 bool AeSysDoc::RenameBlock(const CString& oldName, const CString& newName) {
   if (newName.IsEmpty()) { return false; }
   if (newName[0] == L'*') { return false; }  // reserved system/anonymous prefix

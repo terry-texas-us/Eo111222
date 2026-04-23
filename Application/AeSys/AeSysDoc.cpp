@@ -17,7 +17,7 @@
 #include "EoDbText.h"
 #include "EoDbTracingFile.h"
 #include "EoDlgAttributePrompt.h"
-#include "EoDlgEditBlockDefinition.h"
+#include "EoDlgBlocks.h"
 #include "EoGeReferenceSystem.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
@@ -422,19 +422,8 @@ void AeSysDoc::ExitBlockEditMode(bool commit) {
 }
 
 void AeSysDoc::OnToolsEditBlockDefinition() {
-  if (IsInEditor()) {
-    app.AddStringToMessageList(L"Already in an editor session.");
-    return;
-  }
-  if (BlockTableIsEmpty()) {
-    app.AddStringToMessageList(L"No blocks defined in this document.");
-    return;
-  }
-  EoDlgEditBlockDefinition dialog(this);
-  if (dialog.DoModal() != IDOK || dialog.m_selectedBlockName.IsEmpty()) { return; }
-  if (!EnterBlockEditMode(dialog.m_selectedBlockName)) {
-    app.AddStringToMessageList(L"Failed to enter block edit mode.");
-  }
+  EoDlgBlocks dlg(this);
+  dlg.DoModal();
 }
 
 

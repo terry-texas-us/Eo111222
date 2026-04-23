@@ -1,5 +1,7 @@
-﻿// Microsoft Visual C++ generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
+#pragma code_page(65001)
+
 #include "Resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -20,7 +22,6 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -1023,7 +1024,7 @@ FONT 8, "MS Shell Dlg 2", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,71,5,12,9
     LTEXT           "AeSys, Version 11.0",IDC_STATIC,49,18,57,8,SS_NOPREFIX
-    CTEXT           "© Fanning, Fanning & Assoc.",IDC_STATIC,35,30,84,8
+    CTEXT           "Â© Fanning, Fanning & Assoc.",IDC_STATIC,35,30,84,8
     CONTROL         "OK",IDOK,"MfcButton",WS_TABSTOP,53,44,50,14
 END
 
@@ -1843,6 +1844,30 @@ BEGIN
     LTEXT           "",IDC_REFERENCES,58,131,32,8
 END
 
+IDD_BLOCKS DIALOGEX 0, 0, 380, 215
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Blocks"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "&Blocks",IDC_STATIC,3,4,168,206
+    LISTBOX         IDC_BLOCKS_LIST,7,19,160,183,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP,WS_EX_ACCEPTFILES
+    CONTROL         "",IDC_BLOCK_PREVIEW,"PreviewWindow",0x0,177,19,196,129
+    LTEXT           "Primitives:",IDC_STATIC,197,4,36,8
+    LTEXT           "0",IDC_GROUPS,238,4,24,8
+    LTEXT           "References:",IDC_STATIC,285,4,38,8
+    LTEXT           "0",IDC_REFERENCES,328,4,24,8
+    GROUPBOX        "Base Point",IDC_STATIC,177,157,196,36
+    LTEXT           "X:",IDC_STATIC,183,171,10,8
+    EDITTEXT        IDC_BASE_POINT_X,196,168,40,14,ES_AUTOHSCROLL
+    LTEXT           "Y:",IDC_STATIC,244,171,10,8
+    EDITTEXT        IDC_BASE_POINT_Y,257,168,40,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Edit Block...",IDC_EDIT_BLOCK,194,195,64,14
+    PUSHBUTTON      "Purge Unused",IDC_PURGE_UNUSED,264,195,54,14
+    PUSHBUTTON      "Close",IDCANCEL,323,195,50,14
+    LTEXT           "Z:",IDC_STATIC,308,171,8,8
+    EDITTEXT        IDC_BASE_POINT_Z,321,168,40,14,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1869,7 +1894,7 @@ BEGIN
             VALUE "CompanyName", "Fanning, Fanning & Associates"
             VALUE "FileVersion", "10.03.0.0"
             VALUE "InternalName", "AeSys.exe"
-            VALUE "LegalCopyright", "Copyright � 2002"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2002"
             VALUE "OriginalFilename", "AeSys.exe"
             VALUE "ProductName", "AeSys"
             VALUE "ProductVersion", "10.03.0.0"
@@ -2203,6 +2228,10 @@ BEGIN
         RIGHTMARGIN, 348
         TOPMARGIN, 7
         BOTTOMMARGIN, 169
+    END
+
+    IDD_BLOCKS, DIALOG
+    BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2870,6 +2899,11 @@ BEGIN
 END
 
 IDD_FILE_MANAGE_BLOCKS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_BLOCKS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
