@@ -106,7 +106,7 @@ void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
 
 void EoDbGroupList::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
   auto position = GetHeadPosition();
-  while (position != 0) { (GetNext(position))->PenTranslation(wCols, pColNew, pCol); }
+  while (position != nullptr) { (GetNext(position))->PenTranslation(wCols, pColNew, pCol); }
 }
 
 int EoDbGroupList::RemoveEmptyNotesAndDelete() {
@@ -150,7 +150,7 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
 
   EoGePoint3d ptEng;
 
-  EoDbGroup* pPicSeg = 0;
+  EoDbGroup* pPicSeg{};
 
   EoGePoint4d ptView(pt);
   activeView->ModelViewTransformPoint(ptView);
@@ -164,7 +164,7 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    if (group->SelPrimUsingPoint(activeView, ptView, dPicApert, ptEng) != 0) { pPicSeg = group; }
+    if (group->SelPrimUsingPoint(activeView, ptView, dPicApert, ptEng) != nullptr) { pPicSeg = group; }
   }
   return pPicSeg;
 }

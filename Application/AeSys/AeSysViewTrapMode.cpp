@@ -23,7 +23,7 @@ void AeSysView::OnTrapModePoint() {
   while (position != nullptr) {
     auto* Group = GetNextVisibleGroup(position);
 
-    if (document->FindTrappedGroup(Group) != 0) { continue; }
+    if (document->FindTrappedGroup(Group) != nullptr) { continue; }
 
     if (Group->SelectUsingPoint_(this, ptView)) { document->AddGroupToTrap(Group); }
   }
@@ -50,7 +50,7 @@ void AeSysView::OnTrapModeStitch() {
     while (position != nullptr) {
       auto* Group = GetNextVisibleGroup(position);
 
-      if (document->FindTrappedGroup(Group) != 0) { continue; }
+      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
 
       if (Group->SelectUsingLine(this, EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]})) {
         document->AddGroupToTrap(Group);
@@ -84,7 +84,7 @@ void AeSysView::OnTrapModeField() {
     while (position != nullptr) {
       auto* Group = GetNextVisibleGroup(position);
 
-      if (document->FindTrappedGroup(Group) != 0) { continue; }
+      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
 
       if (Group->SelectUsingRectangle(this, ptMin, ptMax)) { document->AddGroupToTrap(Group); }
     }
@@ -117,7 +117,7 @@ void AeSysView::OnTrapModeEngage() {
 
     auto* Group = document->GetNextWorkLayerGroup(position);
 
-    if (document->FindTrappedGroup(Group) == 0) {
+    if (document->FindTrappedGroup(Group) == nullptr) {
       document->AddGroupToTrap(Group);
       UpdateStateInformation(TrapCount);
     }
@@ -131,7 +131,7 @@ void AeSysView::OnTrapModeMenu() {
   ::GetCursorPos(&currentPosition);
   auto trapMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
   auto* subMenu = CMenu::FromHandle(GetSubMenu(trapMenu, 0));
-  subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), 0);
+  subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
   ::DestroyMenu(trapMenu);
 }
 
@@ -253,7 +253,7 @@ void AeSysView::OnTraprModeMenu() {
   ::GetCursorPos(&currentPosition);
   HMENU TrapMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
   CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(TrapMenu, 0));
-  SubMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), 0);
+  SubMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
   ::DestroyMenu(TrapMenu);
 }
 void AeSysView::OnTraprModeModify() {

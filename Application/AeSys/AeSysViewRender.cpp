@@ -855,7 +855,7 @@ void AeSysView::OnTimer(UINT_PTR nIDEvent) {
 }
 
 void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
-  if (!m_viewBackgroundImage || (static_cast<HBITMAP>(m_backgroundImageBitmap) == 0)) { return; }
+  if (!m_viewBackgroundImage || (static_cast<HBITMAP>(m_backgroundImageBitmap) == nullptr)) { return; }
 
   int iWidDst = int(m_Viewport.Width());
   int iHgtDst = int(m_Viewport.Height());

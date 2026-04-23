@@ -142,7 +142,7 @@ void AeSysView::OnNodalModeToLine() {
       auto* document = GetDocument();
 
       auto PointPosition = document->GetFirstUniquePointPosition();
-      while (PointPosition != 0) {
+      while (PointPosition != nullptr) {
         EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(PointPosition);
         auto* line = EoDbLine::CreateLine(UniquePoint->m_Point, UniquePoint->m_Point + Translate)
                          ->WithProperties(Gs::renderState);
@@ -257,7 +257,7 @@ void AeSysView::OnNodalModeReturn() {
         EoGeVector3d Translate(pts[0], cursorPosition);
 
         auto MaskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
-        while (MaskedPrimitivePosition != 0) {
+        while (MaskedPrimitivePosition != nullptr) {
           EoDbMaskedPrimitive* MaskedPrimitive = document->GetNextMaskedPrimitive(MaskedPrimitivePosition);
           auto* primitive = MaskedPrimitive->GetPrimitive();
           DWORD Mask = MaskedPrimitive->GetMask();
@@ -266,7 +266,7 @@ void AeSysView::OnNodalModeReturn() {
         EoGeUniquePoint* Point;
 
         auto UniquePointPosition = document->GetFirstUniquePointPosition();
-        while (UniquePointPosition != 0) {
+        while (UniquePointPosition != nullptr) {
           Point = document->GetNextUniquePoint(UniquePointPosition);
           Point->m_Point += Translate;
         }
@@ -336,7 +336,7 @@ void AeSysView::DoNodalModeMouseMove() {
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         auto MaskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
-        while (MaskedPrimitivePosition != 0) {
+        while (MaskedPrimitivePosition != nullptr) {
           EoDbMaskedPrimitive* MaskedPrimitive = document->GetNextMaskedPrimitive(MaskedPrimitivePosition);
           auto* primitive = MaskedPrimitive->GetPrimitive();
           DWORD Mask = MaskedPrimitive->GetMask();
@@ -344,7 +344,7 @@ void AeSysView::DoNodalModeMouseMove() {
           ((EoDbPrimitive*)m_PreviewGroup.GetTail())->TranslateUsingMask(Translate, Mask);
         }
         auto UniquePointPosition = document->GetFirstUniquePointPosition();
-        while (UniquePointPosition != 0) {
+        while (UniquePointPosition != nullptr) {
           EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(UniquePointPosition);
           EoGePoint3d Point = (UniquePoint->m_Point) + Translate;
           m_PreviewGroup.AddTail(new EoDbPoint(252, 8, Point));
@@ -377,13 +377,13 @@ void AeSysView::ConstructPreviewGroup() {
 
   auto* document = GetDocument();
   auto MaskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
-  while (MaskedPrimitivePosition != 0) {
+  while (MaskedPrimitivePosition != nullptr) {
     EoDbMaskedPrimitive* MaskedPrimitive = document->GetNextMaskedPrimitive(MaskedPrimitivePosition);
     auto* primitive = MaskedPrimitive->GetPrimitive();
     m_PreviewGroup.AddTail(primitive->Copy(primitive));
   }
   auto UniquePointPosition = document->GetFirstUniquePointPosition();
-  while (UniquePointPosition != 0) {
+  while (UniquePointPosition != nullptr) {
     EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(UniquePointPosition);
     m_PreviewGroup.AddTail(new EoDbPoint(252, 8, UniquePoint->m_Point));
   }
@@ -402,7 +402,7 @@ void AeSysView::ConstructPreviewGroupForNodalGroups() {
     }
   }
   auto UniquePointPosition = document->GetFirstUniquePointPosition();
-  while (UniquePointPosition != 0) {
+  while (UniquePointPosition != nullptr) {
     EoGeUniquePoint* UniquePoint = document->GetNextUniquePoint(UniquePointPosition);
     m_PreviewGroup.AddTail(new EoDbPoint(252, 8, UniquePoint->m_Point));
   }

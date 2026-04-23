@@ -34,7 +34,7 @@ BOOL EoDlgModeRevise::OnInitDialog() {
   CDialog::OnInitDialog();
 
   sm_TextPrimitive = AeSysView::GetActiveView()->SelectTextUsingPoint(app.GetCursorPosition());
-  if (sm_TextPrimitive != 0) {
+  if (sm_TextPrimitive != nullptr) {
     sm_TextPrimitive->GetFontDef(sm_FontDefinition);
     sm_TextPrimitive->GetRefSys(sm_ReferenceSystem);
     m_TextEditControl.SetWindowTextW(sm_TextPrimitive->Text());
@@ -47,7 +47,7 @@ void EoDlgModeRevise::OnOK() {
   CString Text;
   m_TextEditControl.GetWindowTextW(Text);
 
-  if (sm_TextPrimitive != 0) {
+  if (sm_TextPrimitive != nullptr) {
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, sm_TextPrimitive);
     sm_TextPrimitive->SetText(Text);
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, sm_TextPrimitive);
@@ -60,7 +60,7 @@ void EoDlgModeRevise::OnOK() {
   sm_ReferenceSystem.SetOrigin(text_GetNewLinePos(sm_FontDefinition, sm_ReferenceSystem, 1.0, 0));
 
   sm_TextPrimitive = AeSysView::GetActiveView()->SelectTextUsingPoint(sm_ReferenceSystem.Origin());
-  if (sm_TextPrimitive != 0) {
+  if (sm_TextPrimitive != nullptr) {
     sm_TextPrimitive->GetFontDef(sm_FontDefinition);
     sm_TextPrimitive->GetRefSys(sm_ReferenceSystem);
     m_TextEditControl.SetWindowTextW(sm_TextPrimitive->Text());

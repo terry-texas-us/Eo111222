@@ -53,7 +53,7 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 
 void EoDlgTrapFilter::OnOK() {
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_PEN)) {
-    std::int16_t color = std::int16_t(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, 0, FALSE));
+    std::int16_t color = std::int16_t(GetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, nullptr, FALSE));
     FilterByColor(color);
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_LINE)) {

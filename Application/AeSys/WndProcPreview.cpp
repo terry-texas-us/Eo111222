@@ -94,7 +94,7 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   Eo::GrayPalette[7] = savedGray7;
   Eo::GrayPalette[0] = savedGray0;
   memoryContext.SelectObject(Bitmap);
-  InvalidateRect(previewWindow, 0, TRUE);
+  InvalidateRect(previewWindow, nullptr, TRUE);
 }
 
 /** Window procedure for the preview window.

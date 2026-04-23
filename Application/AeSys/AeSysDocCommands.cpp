@@ -253,7 +253,7 @@ void AeSysDoc::OnFileQuery() {
       subMenu->CheckMenuItem(static_cast<UINT>(ID_TRACING_CLOAK),
           static_cast<UINT>(MF_BYCOMMAND | (layer->IsOff() ? MF_CHECKED : MF_UNCHECKED)));
     }
-    subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), 0);
+    subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
     ::DestroyMenu(layerTracingMenu);
   }
 }
@@ -380,7 +380,7 @@ void AeSysDoc::OnBlocksUnload() {
 void AeSysDoc::OnEditImageToClipboard() {
   auto* activeView = AeSysView::GetActiveView();
 
-  HDC hdcEMF = ::CreateEnhMetaFile(0, 0, 0, 0);
+  HDC hdcEMF = ::CreateEnhMetaFile(nullptr, nullptr, nullptr, nullptr);
   CDC* emfDC = CDC::FromHandle(hdcEMF);
   EoGsRenderDeviceGdi renderDevice(emfDC);
   DisplayAllLayers(activeView, &renderDevice);
@@ -403,7 +403,7 @@ void AeSysDoc::OnEditTrace() {
 
       if (wcscmp(sBuf, L"EoGroups") == 0) {
         HGLOBAL ClipboardDataHandle = GetClipboardData(ClipboardFormat);
-        if (ClipboardDataHandle != 0) {
+        if (ClipboardDataHandle != nullptr) {
           CMemFile MemFile;
           EoGeVector3d vTrns;
 
@@ -455,7 +455,7 @@ void AeSysDoc::OnEditTrapPaste() {
       EoDlgSetPastePosition dialog;
       if (dialog.DoModal() == IDOK) {
         HGLOBAL globalHandle = GetClipboardData(clipboardFormat);
-        if (globalHandle != 0) {
+        if (globalHandle != nullptr) {
           EoGePoint3d minPoint;
 
           EoGePoint3d pivotPoint(app.GetCursorPosition());
@@ -539,7 +539,7 @@ void AeSysDoc::OnTrapCommandsInvert() {
     auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsWork() || layer->IsActive()) {
       auto LayerPosition = layer->GetHeadPosition();
-      while (LayerPosition != 0) {
+      while (LayerPosition != nullptr) {
         auto* Group = layer->GetNext(LayerPosition);
         auto GroupPosition = FindTrappedGroup(Group);
         if (GroupPosition != nullptr) {
@@ -771,7 +771,7 @@ void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
     // Did not pivot on engaged primitive
     if (primitive->IsPointOnControlPoint(activeView, ndcPoint)) { EoDbGroup::SetPrimitiveToIgnore(primitive); }
   }
-  if (activeView->SelSegAndPrimAtCtrlPt(ndcPoint) != 0) {
+  if (activeView->SelSegAndPrimAtCtrlPt(ndcPoint) != nullptr) {
     EoGePoint3d ptEng = activeView->DetPt();
     activeView->EngagedPrimitive()->AddReportToMessageList(ptEng);
     activeView->SetCursorPosition(ptEng);
@@ -794,7 +794,7 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
 
   auto* group = activeView->SelectGroupAndPrimitive(pt);
 
-  if (group != 0) {
+  if (group != nullptr) {
     auto position = FindTrappedGroup(group);
 
     LPARAM lHint = (position != nullptr) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
@@ -813,7 +813,7 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
       AnyLayerRemove(group);
       RemoveGroupFromAllViews(group);
 
-      if (RemoveTrappedGroup(group) != 0) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
+      if (RemoveTrappedGroup(group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
     }
     DeletedGroupsAddTail(group);
     app.AddStringToMessageList(IDS_MSG_PRIM_ADDED_TO_DEL_GROUPS);
@@ -914,7 +914,7 @@ void AeSysDoc::OnPensTranslate() {
     wchar_t pBuf[128]{};
     std::uint16_t wCols{};
 
-    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) { wCols++; }
+    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != nullptr) { wCols++; }
 
     if (wCols > 0) {
       auto* pColNew = new std::int16_t[wCols];
@@ -925,10 +925,10 @@ void AeSysDoc::OnPensTranslate() {
       fl.SeekToBegin();
 
       LPWSTR NextToken;
-      while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0) {
+      while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != nullptr) {
         NextToken = nullptr;
         pCol[w] = std::int16_t(_wtoi(wcstok_s(pBuf, L",", &NextToken)));
-        pColNew[w++] = std::int16_t(_wtoi(wcstok_s(0, L"\n", &NextToken)));
+        pColNew[w++] = std::int16_t(_wtoi(wcstok_s(nullptr, L"\n", &NextToken)));
       }
       PenTranslation(wCols, pColNew, pCol);
 
@@ -944,7 +944,7 @@ void AeSysDoc::OnFile() {
 
   AfxGetApp()->GetMainWnd()->ClientToScreen(&Position);
   CMenu* FileSubMenu = CMenu::FromHandle(app.GetSubMenu(0));
-  FileSubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, Position.x, Position.y, AfxGetMainWnd(), 0);
+  FileSubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, Position.x, Position.y, AfxGetMainWnd(), nullptr);
 }
 
 void AeSysDoc::OnPrimExtractNum() {

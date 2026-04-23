@@ -155,7 +155,7 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
     m_PowerConductor = false;
     EoDbLine* circuit{};
     auto* group = SelectLineUsingPoint(cursorPosition, circuit);
-    if (group != 0) {
+    if (group != nullptr) {
       cursorPosition = circuit->ProjectPointToLine(cursorPosition);
 
       EoGePoint3d BeginPoint = circuit->Begin();

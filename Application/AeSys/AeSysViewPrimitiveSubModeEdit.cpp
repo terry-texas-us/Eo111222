@@ -84,7 +84,7 @@ void AeSysView::PreviewPrimitiveEdit() {
   m_SubModeEditEndPoint = GetCursorPosition();
   transformMatrix.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
 
-  if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != 0) {
+  if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != nullptr) {
     EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
   }
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_SubModeEditPrimitive);

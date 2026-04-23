@@ -22,7 +22,7 @@ void AeSysView::DeleteLastGroup() {
     auto* Group = m_VisibleGroupList.RemoveTail();
 
     document->AnyLayerRemove(Group);
-    if (document->RemoveTrappedGroup(Group) != 0) {  // Display it normal color so the erase xor will work
+    if (document->RemoveTrappedGroup(Group) != nullptr) {  // Display it normal color so the erase xor will work
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
       UpdateStateInformation(TrapCount);
     }

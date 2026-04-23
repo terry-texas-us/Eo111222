@@ -297,7 +297,7 @@ EoDbLayer* AeSysDoc::LayersSelUsingPoint(const EoGePoint3d& pt) {
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
 
-    if (layer->SelectGroupUsingPoint(pt) != 0) { return layer; }
+    if (layer->SelectGroupUsingPoint(pt) != nullptr) { return layer; }
   }
   return nullptr;
 }
@@ -431,7 +431,7 @@ EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
   // In editor mode the active edit layer is not in the registered layer arrays — check it first.
   if (IsInEditor()) {
     EoDbLayer* editLayer = IsEditingBlock() ? m_blockEditLayer : m_tracingEditLayer;
-    if (editLayer != nullptr && editLayer->Remove(group) != 0) {
+    if (editLayer != nullptr && editLayer->Remove(group) != nullptr) {
       AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
       if (IsEditingTracing()) { m_tracingEditDirty = true; }
       SetModifiedFlag(TRUE);
@@ -442,7 +442,7 @@ EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
     for (INT_PTR i = 0; i < layers.GetSize(); i++) {
       auto* layer = layers.GetAt(i);
       if (layer->IsWork() || layer->IsActive()) {
-        if (layer->Remove(group) != 0) {
+        if (layer->Remove(group) != nullptr) {
           AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
           SetModifiedFlag(TRUE);
           return layer;
@@ -483,7 +483,7 @@ void AeSysDoc::MoveTrappedGroupsToSpace(EoDxf::Space targetSpace) {
     auto removeFromLayers = [&](CLayers& layers) -> bool {
       for (INT_PTR i = 0; i < layers.GetSize(); i++) {
         auto* layer = layers.GetAt(i);
-        if (layer->Remove(group) != 0) { return true; }
+        if (layer->Remove(group) != nullptr) { return true; }
       }
       return false;
     };
@@ -619,7 +619,7 @@ bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
     }
   } else {
     CFile File(pathName, CFile::modeRead | CFile::shareDenyNone);
-    if (File != 0) {
+    if (File != nullptr) {
       EoDbJobFile JobFile;
       JobFile.ReadHeader(File);
       JobFile.ReadLayer(File, layer);

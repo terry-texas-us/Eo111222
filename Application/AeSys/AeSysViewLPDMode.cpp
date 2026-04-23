@@ -38,7 +38,7 @@ void AeSysView::OnLpdModeJoin() {
   auto cursorPosition = GetCursorPosition();
 
   m_EndCapGroup = SelectPointUsingPoint(cursorPosition, 0.01, 15, 8, m_EndCapPoint);
-  if (m_EndCapGroup != 0) {
+  if (m_EndCapGroup != nullptr) {
     m_PreviousPnt = m_EndCapPoint->GetPt();
     m_PreviousSection.SetWidth(m_EndCapPoint->GetDat(0));
     m_PreviousSection.SetDepth(m_EndCapPoint->GetDat(1));
@@ -203,7 +203,7 @@ void AeSysView::OnLpdModeEll() {
   if (m_PreviousOp == ID_OP2) {
     EoDbPoint* EndPointPrimitive{};
     EoDbGroup* ExistingGroup = SelectPointUsingPoint(cursorPosition, 0.01, 15, 8, EndPointPrimitive);
-    if (ExistingGroup == 0) {
+    if (ExistingGroup == nullptr) {
       app.AddStringToMessageList(IDS_MSG_LPD_NO_END_CAP_LOC);
       return;
     }
@@ -211,7 +211,7 @@ void AeSysView::OnLpdModeEll() {
     Section ExistingSection(EndPointPrimitive->GetDat(0), EndPointPrimitive->GetDat(1), Section::Rectangular);
 
     EoDbPoint* BeginPointPrimitive = ExistingGroup->GetFirstDifferentPoint(EndPointPrimitive);
-    if (BeginPointPrimitive != 0) {
+    if (BeginPointPrimitive != nullptr) {
       EoGeLine ExistingSectionReferenceLine(BeginPointPrimitive->GetPt(), cursorPosition);
 
       EoGePoint3d IntersectionPoint(ExistingSectionReferenceLine.ProjectPointToLine(m_PreviousPnt));
@@ -334,8 +334,8 @@ void AeSysView::OnLpdModeEscape() {
   ModeLineUnhighlightOp(m_PreviousOp);
   m_PreviousOp = 0;
   m_ContinueSection = false;
-  m_EndCapGroup = 0;
-  m_EndCapPoint = 0;
+  m_EndCapGroup = nullptr;
+  m_EndCapPoint = nullptr;
 }
 
 void AeSysView::DoDuctModeMouseMove() {
@@ -773,7 +773,7 @@ bool AeSysView::Find2LinesUsingLineEndpoints(
       }
       double LineAngle = fmod(Line.AngleFromXAxisXY(), Eo::Pi);
       if (std::abs(std::abs(TestLineAngle - LineAngle) - Eo::HalfPi) <= angularTolerance) {
-        if (LeftLinePrimitive == 0) {  // No qualifiers yet
+        if (LeftLinePrimitive == nullptr) {  // No qualifiers yet
           DirectedRelationship = testLine.DirRelOfPt(Line.begin);
           LeftLinePrimitive = LinePrimitive;
           leftLine = Line;

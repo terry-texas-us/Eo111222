@@ -277,7 +277,7 @@ void AeSysDoc::AddTextBlock(LPWSTR textBlock) {
       UpdateAllViews(nullptr, EoDb::kGroup, group);
     }
     ReferenceSystem.SetOrigin(text_GetNewLinePos(fontDefinition, ReferenceSystem, 1.0, 0));
-    text = wcstok_s(0, L"\r", &nextToken);
+    text = wcstok_s(nullptr, L"\r", &nextToken);
     if (text == nullptr) { break; }
     text++;
   }

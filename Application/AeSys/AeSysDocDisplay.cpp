@@ -621,35 +621,35 @@ void AeSysDoc::CreateDefaultPaperSpaceViewport(AeSysView* view) {
 
 void AeSysDoc::AddGroupToAllViews(EoDbGroup* group) {
   auto viewPosition = GetFirstViewPosition();
-  while (viewPosition != 0) {
+  while (viewPosition != nullptr) {
     auto* view = DYNAMIC_DOWNCAST(AeSysView, GetNextView(viewPosition));
     if (view != nullptr) { view->AddGroup(group); }
   }
 }
 void AeSysDoc::AddGroupsToAllViews(EoDbGroupList* groups) {
   auto viewPosition = GetFirstViewPosition();
-  while (viewPosition != 0) {
+  while (viewPosition != nullptr) {
     auto* view = DYNAMIC_DOWNCAST(AeSysView, GetNextView(viewPosition));
     if (view != nullptr) { view->AddGroups(groups); }
   }
 }
 void AeSysDoc::RemoveAllGroupsFromAllViews() {
   auto viewPosition = GetFirstViewPosition();
-  while (viewPosition != 0) {
+  while (viewPosition != nullptr) {
     auto* view = DYNAMIC_DOWNCAST(AeSysView, GetNextView(viewPosition));
     if (view != nullptr) { view->RemoveAllGroups(); }
   }
 }
 void AeSysDoc::RemoveGroupFromAllViews(EoDbGroup* group) {
   auto viewPosition = GetFirstViewPosition();
-  while (viewPosition != 0) {
+  while (viewPosition != nullptr) {
     auto* view = DYNAMIC_DOWNCAST(AeSysView, GetNextView(viewPosition));
     if (view != nullptr) { view->RemoveGroup(group); }
   }
 }
 void AeSysDoc::ResetAllViews() {
   auto viewPosition = GetFirstViewPosition();
-  while (viewPosition != 0) {
+  while (viewPosition != nullptr) {
     auto* view = DYNAMIC_DOWNCAST(AeSysView, GetNextView(viewPosition));
     if (view != nullptr) { view->ResetView(); }
   }

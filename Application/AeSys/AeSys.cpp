@@ -255,7 +255,7 @@ int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& strin
   CString message = formattedResourceString.Tokenize(L"\t", nextToken);
   CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
 
-  return (MessageBoxW(0, message, caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
+  return (MessageBoxW(nullptr, message, caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
 }
 void AeSys::AddStringToMessageList(const std::wstring& message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
@@ -306,7 +306,7 @@ void AeSys::WarningMessageBox(UINT stringResourceIdentifier) {
   CString message = resourceString.Tokenize(L"\t", nextToken);
   CString caption = resourceString.Tokenize(L"\n", nextToken);
 
-  MessageBoxW(0, message, caption, MB_ICONWARNING | MB_OK);
+  MessageBoxW(nullptr, message, caption, MB_ICONWARNING | MB_OK);
 }
 
 void AeSys::WarningMessageBox(UINT stringResourceIdentifier, const CString& string) {
@@ -319,7 +319,7 @@ void AeSys::WarningMessageBox(UINT stringResourceIdentifier, const CString& stri
   CString message = formattedResourceString.Tokenize(L"\t", nextToken);
   CString caption = formattedResourceString.Tokenize(L"\n", nextToken);
 
-  MessageBoxW(0, message, caption, MB_ICONWARNING | MB_OK);
+  MessageBoxW(nullptr, message, caption, MB_ICONWARNING | MB_OK);
 }
 
 void AeSys::UpdateMDITabs(BOOL resetMDIChild) { ((CMainFrame*)AfxGetMainWnd())->UpdateMDITabs(resetMDIChild); }
@@ -365,7 +365,7 @@ void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   constexpr size_t bufferSize{128};
   wchar_t inputLine[bufferSize];
 
-  while (file.ReadString(inputLine, bufferSize - 1) != 0) {
+  while (file.ReadString(inputLine, bufferSize - 1) != nullptr) {
     if (inputLine[0] == L'\0' || inputLine[0] == L'#' || inputLine[0] == L';') { continue; }
 
     wchar_t* context = nullptr;
@@ -421,7 +421,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   int iNmbHatLns{};
   int iTblId{1};  // Reserve position 0 as uninitialized sentinel for tableOffset
 
-  while (fl.ReadString(line, sizeof(line) / sizeof(wchar_t) - 1) != 0) {
+  while (fl.ReadString(line, sizeof(line) / sizeof(wchar_t) - 1) != nullptr) {
     if (*line == '!') {  // New Hatch index
       if (iHatId != 0) { hatch::tableValue[hatch::tableOffset[iHatId]] = float(iNmbHatLns); }
       ++iHatId;
@@ -438,7 +438,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
       dTotStrsLen = 0.;
       LPWSTR NextToken = nullptr;
       LPWSTR pTok = wcstok_s(line, szValDel, &NextToken);
-      while (pTok != 0) {
+      while (pTok != nullptr) {
         if (iTblId >= hatch::maxTableValues) {
           ATLTRACE(traceGeneral, 0, L"LoadHatchesFromFile: table value overflow at pattern %d\n", iHatId);
           break;
@@ -448,7 +448,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
         iNmbEnts++;
         if (iNmbEnts >= 6) { dTotStrsLen = dTotStrsLen + hatch::tableValue[iTblId]; }
         iTblId++;
-        pTok = wcstok_s(0, szValDel, &NextToken);
+        pTok = wcstok_s(nullptr, szValDel, &NextToken);
       }
       hatch::tableValue[iNmbStrsId++] = float(iNmbEnts - 5);
       hatch::tableValue[iNmbStrsId] = float(dTotStrsLen);
@@ -515,23 +515,23 @@ void AeSys::LoadPenColorsFromFile(const CString& fileName) {
   if (fl.Open(fileName, CFile::modeRead | CFile::typeText)) {
     wchar_t pBuf[128]{};
 
-    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0 && _tcsnicmp(pBuf, L"<Colors>", 8) != 0);
+    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != nullptr && _tcsnicmp(pBuf, L"<Colors>", 8) != 0);
 
-    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != 0 && *pBuf != '<') {
+    while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != nullptr && *pBuf != '<') {
       wchar_t* nextToken = nullptr;
       wchar_t* index = wcstok_s(pBuf, L"=", &nextToken);
       auto colorIndex = _wtoi(index);
 
       if (colorIndex < 0 || colorIndex >= static_cast<int>(std::size(Eo::ColorPalette))) { continue; }
-      wchar_t* redColorPalette = wcstok_s(0, L",", &nextToken);
-      wchar_t* greenColorPalette = wcstok_s(0, L",", &nextToken);
-      wchar_t* blueColorPalette = wcstok_s(0, L",", &nextToken);
+      wchar_t* redColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* greenColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* blueColorPalette = wcstok_s(nullptr, L",", &nextToken);
       Eo::ColorPalette[colorIndex] = RGB(_wtoi(redColorPalette), _wtoi(greenColorPalette), _wtoi(blueColorPalette));
 
       if (colorIndex >= static_cast<int>(std::size(Eo::GrayPalette))) { continue; }
-      wchar_t* redGrayPalette = wcstok_s(0, L",", &nextToken);
-      wchar_t* greenGrayPalette = wcstok_s(0, L",", &nextToken);
-      wchar_t* blueGrayPalette = wcstok_s(0, L"\n", &nextToken);
+      wchar_t* redGrayPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* greenGrayPalette = wcstok_s(nullptr, L",", &nextToken);
+      wchar_t* blueGrayPalette = wcstok_s(nullptr, L"\n", &nextToken);
       Eo::GrayPalette[colorIndex] = RGB(_wtoi(redGrayPalette), _wtoi(greenGrayPalette), _wtoi(blueGrayPalette));
     }
   }
@@ -560,12 +560,12 @@ void AeSys::LoadModeResources(int mode, AeSysView* targetView) {
 ///    224-entry advance width table at int32[226], stroke data at int32[450].
 /// </remarks>
 void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
-  HANDLE OpenHandle = CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+  HANDLE OpenHandle = CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (OpenHandle != INVALID_HANDLE_VALUE) {
-    if (SetFilePointer(OpenHandle, 0, 0, FILE_BEGIN) != (DWORD)-1) {
+    if (SetFilePointer(OpenHandle, 0, nullptr, FILE_BEGIN) != (DWORD)-1) {
       if (m_SimplexStrokeFont == nullptr) { m_SimplexStrokeFont = new char[Eo::strokeFontFileSizeInBytes]; }
       DWORD NumberOfBytesRead;
-      if (!ReadFile(OpenHandle, m_SimplexStrokeFont, Eo::strokeFontFileSizeInBytes, &NumberOfBytesRead, 0)) {
+      if (!ReadFile(OpenHandle, m_SimplexStrokeFont, Eo::strokeFontFileSizeInBytes, &NumberOfBytesRead, nullptr)) {
         ReleaseSimplexStrokeFont();
       }
     }
@@ -585,7 +585,7 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
   }
 }
 void AeSys::ReleaseSimplexStrokeFont() {
-  if (m_SimplexStrokeFont != 0) { delete[] m_SimplexStrokeFont; }
+  if (m_SimplexStrokeFont != nullptr) { delete[] m_SimplexStrokeFont; }
 }
 void AeSys::OnUpdateEditCfGroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataEoGroups); }
 void AeSys::OnUpdateEditCfImage(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataImage); }
@@ -954,7 +954,7 @@ double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
     return (length[0]);
 
   } catch (const wchar_t* errorMessage) {
-    ::MessageBoxW(0, errorMessage, 0, MB_ICONWARNING | MB_OK);
+    ::MessageBoxW(nullptr, errorMessage, nullptr, MB_ICONWARNING | MB_OK);
     return (0.0);
   }
 }

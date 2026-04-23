@@ -181,7 +181,7 @@ void AeSysView::OnAnnotateModeUnderline() {
     InvalidateOverlay();
   }
   EoDbText* pText = SelectTextUsingPoint(cursorPosition);
-  if (pText != 0) {
+  if (pText != nullptr) {
     pText->GetBoundingBox(pts, GapSpaceFactor());
 
     auto* Group = new EoDbGroup;
@@ -209,12 +209,12 @@ void AeSysView::OnAnnotateModeBox() {
     bool bG1Flg = false;
     bool bG2Flg = false;
     EoDbText* pText = SelectTextUsingPoint(pts[0]);
-    if (pText != 0) {
+    if (pText != nullptr) {
       pText->GetBoundingBox(ptsBox1, GapSpaceFactor());
       bG1Flg = true;
     }
     pText = SelectTextUsingPoint(cursorPosition);
-    if (pText != 0) {
+    if (pText != nullptr) {
       pText->GetBoundingBox(ptsBox2, GapSpaceFactor());
       bG2Flg = true;
     }

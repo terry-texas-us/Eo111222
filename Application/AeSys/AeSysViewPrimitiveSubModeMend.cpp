@@ -12,7 +12,7 @@ void AeSysView::OnModePrimitiveMend() {
   EoGePoint4d ptView(cursorPosition);
   ModelViewTransformPoint(ptView);
 
-  m_PrimitiveToMend = 0;
+  m_PrimitiveToMend = nullptr;
 
   if (GroupIsEngaged()) {  // Group is currently engaged, see if cursor is on a control point
     EoGePoint3d ptDet;
@@ -26,14 +26,14 @@ void AeSysView::OnModePrimitiveMend() {
       m_PrimitiveToMend = primitive;
     }
   }
-  if (m_PrimitiveToMend == 0) {  // No engaged group, or engaged primitive to far from cursor
-    if (SelectGroupAndPrimitive(m_MendPrimitiveBegin) != 0) {  // Group successfully engaged
+  if (m_PrimitiveToMend == nullptr) {  // No engaged group, or engaged primitive to far from cursor
+    if (SelectGroupAndPrimitive(m_MendPrimitiveBegin) != nullptr) {  // Group successfully engaged
       m_PrimitiveToMend = EngagedPrimitive();
     }
   }
   m_MendPrimitiveBegin = cursorPosition;
 
-  if (m_PrimitiveToMend != 0) {
+  if (m_PrimitiveToMend != nullptr) {
     m_PrimitiveToMend->Copy(m_PrimitiveToMendCopy);
     m_MendPrimitiveBegin = m_PrimitiveToMend->SelectAtControlPoint(this, ptView);
     m_MendPrimitiveVertexIndex = 1U << EoDbPrimitive::ControlPointIndex();

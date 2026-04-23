@@ -467,7 +467,7 @@ class AeSysView : public CView {
    */
   void DisplayPixel(CDC* deviceContext, COLORREF colorReference, const EoGePoint3d& point);
 
-  bool GroupIsEngaged() { return m_EngagedGroup != 0; }
+  bool GroupIsEngaged() { return m_EngagedGroup != nullptr; }
   [[nodiscard]] double& SelectApertureSize() { return m_SelectApertureSize; }
   void BreakAllPolylines();
 

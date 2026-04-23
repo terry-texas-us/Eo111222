@@ -369,7 +369,7 @@ void AeSysView::OnDimensionModeAngle() {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
 
-    if (SelectLineUsingPoint(cursorPosition) != 0) {
+    if (SelectLineUsingPoint(cursorPosition) != nullptr) {
       auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
 
       rProjPt[0] = DetPt();
@@ -380,7 +380,7 @@ void AeSysView::OnDimensionModeAngle() {
     }
   } else {
     if (iLns == 1) {
-      if (SelectLineUsingPoint(cursorPosition) != 0) {
+      if (SelectLineUsingPoint(cursorPosition) != nullptr) {
         auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
 
         rProjPt[1] = DetPt();

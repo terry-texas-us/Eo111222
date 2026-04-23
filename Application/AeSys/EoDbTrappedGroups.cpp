@@ -118,7 +118,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
     auto* originalContext = view->GetDC();
     int savedRenderState = Gs::renderState.Save();
 
-    auto enhancedMetafileContext = ::CreateEnhMetaFileW(0, 0, 0, 0);
+    auto enhancedMetafileContext = ::CreateEnhMetaFileW(nullptr, nullptr, nullptr, nullptr);
     CDC* emfDC = CDC::FromHandle(enhancedMetafileContext);
     EoGsRenderDeviceGdi renderDevice(emfDC);
     m_trappedGroups.Display(view, &renderDevice);
@@ -188,11 +188,11 @@ void AeSysDoc::ExpandTrappedGroups() {
     m_trappedGroups.RemoveAll();
 
     auto groupPosition = groups->GetHeadPosition();
-    while (groupPosition != 0) {
+    while (groupPosition != nullptr) {
       auto group = groups->GetNext(groupPosition);
 
       auto primitivePosition = group->GetHeadPosition();
-      while (primitivePosition != 0) {
+      while (primitivePosition != nullptr) {
         auto primitive = group->GetNext(primitivePosition);
         auto newGroup = new EoDbGroup(primitive);
         AddWorkLayerGroup(newGroup);

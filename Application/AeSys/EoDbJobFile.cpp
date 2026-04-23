@@ -163,7 +163,7 @@ void EoDbJobFile::ReadLayer(CFile& file, EoDbLayer* layer) {
 bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
   auto Position = file.GetPosition();
 
-  group = 0;
+  group = nullptr;
   try {
     EoDbPrimitive* primitive{};
     if (!GetNextPrimitive(file, primitive)) { return false; }
@@ -184,7 +184,7 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
   } catch (const std::runtime_error& ex) {
     if (Position >= 96) {
       std::wstring errorMessage(ex.what(), ex.what() + strlen(ex.what()));
-      if (::MessageBoxW(0, errorMessage.c_str(), 0, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) { return false; }
+      if (::MessageBoxW(nullptr, errorMessage.c_str(), nullptr, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) { return false; }
     }
     file.Seek(static_cast<LONGLONG>(Position + 32), CFile::begin);
   }
@@ -680,7 +680,7 @@ EoDbText::EoDbText(std::uint8_t* buffer, int version) {
     char* NextToken = nullptr;
     char* pChr = strtok_s((char*)&buffer[44], "\\", &NextToken);
 
-    if (pChr == 0) {
+    if (pChr == nullptr) {
       m_strText = L"EoDbJobFile.PrimText error: Missing string terminator.";
     } else if (strlen(pChr) > 132) {
       m_strText = L"EoDbJobFile.PrimText error: Text too long.";

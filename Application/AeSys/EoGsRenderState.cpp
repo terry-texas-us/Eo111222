@@ -13,12 +13,12 @@
 #include "Resource.h"
 
 // State list maintenance
-EoGsRenderState* psSav[] = {0, 0, 0, 0};
+EoGsRenderState* psSav[] = {nullptr, nullptr, nullptr, nullptr};
 
 void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
   if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
-  if (psSav[iSaveId] != 0) {
+  if (psSav[iSaveId] != nullptr) {
     SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
         psSav[iSaveId]->LineTypeName(), psSav[iSaveId]->LineWeight(), psSav[iSaveId]->LineTypeScale());
 
@@ -30,14 +30,14 @@ void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
     SetPolygonIntStyleId(psSav[iSaveId]->PolygonIntStyleId());
 
     delete psSav[iSaveId];
-    psSav[iSaveId] = 0;
+    psSav[iSaveId] = nullptr;
   }
 }
 
 void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int iSaveId) {
   if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
-  if (psSav[iSaveId] != 0) {
+  if (psSav[iSaveId] != nullptr) {
     SetPen(nullptr, renderDevice, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
         psSav[iSaveId]->LineTypeName(), psSav[iSaveId]->LineWeight(), psSav[iSaveId]->LineTypeScale());
 
@@ -49,14 +49,14 @@ void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int iSaveId) {
     SetPolygonIntStyleId(psSav[iSaveId]->PolygonIntStyleId());
 
     delete psSav[iSaveId];
-    psSav[iSaveId] = 0;
+    psSav[iSaveId] = nullptr;
   }
 }
 
 int EoGsRenderState::Save() {
   int iSaveId = sizeof(psSav) / sizeof(psSav[0]) - 1;
 
-  while (iSaveId >= 0 && psSav[iSaveId] != 0) { iSaveId--; }
+  while (iSaveId >= 0 && psSav[iSaveId] != nullptr) { iSaveId--; }
 
   if (iSaveId < 0) {
     app.WarningMessageBox(IDS_MSG_SAVE_STATE_LIST_ERROR);
@@ -172,7 +172,7 @@ void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, st
 void EoGsRenderState::ManagePenResources(
     CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
   static const int NumberOfPens = 8;
-  static HPEN hPen[NumberOfPens] = {0, 0, 0, 0, 0, 0, 0, 0};
+  static HPEN hPen[NumberOfPens] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   static COLORREF crColRef[NumberOfPens];
   static std::int16_t LineTypes[NumberOfPens];
   static int PenWidths[NumberOfPens];
@@ -211,7 +211,7 @@ void EoGsRenderState::ManagePenResources(
       if (deviceContext) { deviceContext->SelectObject(CPen::FromHandle(hPenCur)); }
       return;
     }
-    if (hPen[i] == 0) { iPen = i; }
+    if (hPen[i] == nullptr) { iPen = i; }
   }
   HPEN NewPenHandle = ::CreatePen(lineType, penWidth, pColTbl[penColor]);
 

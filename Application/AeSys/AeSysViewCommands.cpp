@@ -205,7 +205,7 @@ void AeSysView::OnViewWindow() {
   ::GetCursorPos(&CurrentPosition);
   HMENU WindowMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_WINDOW));
   CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(WindowMenu, 0));
-  SubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), 0);
+  SubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), nullptr);
   ::DestroyMenu(WindowMenu);
 }
 
@@ -552,7 +552,7 @@ void AeSysView::OnBackgroundImageLoad() {
 }
 
 void AeSysView::OnBackgroundImageRemove() {
-  if (static_cast<HBITMAP>(m_backgroundImageBitmap) != 0) {
+  if (static_cast<HBITMAP>(m_backgroundImageBitmap) != nullptr) {
     m_backgroundImageBitmap.DeleteObject();
     m_backgroundImagePalette.DeleteObject();
     m_viewBackgroundImage = false;
@@ -567,16 +567,16 @@ void AeSysView::OnViewBackgroundImage() {
 }
 
 void AeSysView::OnUpdateViewBackgroundImage(CCmdUI* pCmdUI) {
-  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != 0);
+  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != nullptr);
   pCmdUI->SetCheck(m_viewBackgroundImage);
 }
 
 void AeSysView::OnUpdateBackgroundimageLoad(CCmdUI* pCmdUI) {
-  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) == 0);
+  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) == nullptr);
 }
 
 void AeSysView::OnUpdateBackgroundimageRemove(CCmdUI* pCmdUI) {
-  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != 0);
+  pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != nullptr);
 }
 
 void AeSysView::OnUpdateViewPenwidths(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewPenWidths); }

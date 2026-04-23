@@ -19,7 +19,7 @@ EoDbBitmapFile::EoDbBitmapFile(const CString& fileName) {
  */
 bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalette& loadedPalette) {
   HBITMAP bitmap =
-      static_cast<HBITMAP>(LoadImageW(0, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE));
+      static_cast<HBITMAP>(LoadImageW(nullptr, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE));
   if (bitmap == nullptr) { return false; }
   loadedBitmap.Attach(bitmap);
 

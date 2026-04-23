@@ -105,7 +105,7 @@ void EoDlgActiveViewKeyplan::OnBnClickedSave() {
 void EoDlgActiveViewKeyplan::Refresh() {
   CDC dcMem;
   dcMem.CreateCompatibleDC(nullptr);
-  if (m_hbmKeyplan == 0) {
+  if (m_hbmKeyplan == nullptr) {
     CRect rcKey;
     GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&rcKey);
     CDC* DeviceContext = m_ActiveView->GetDC();
@@ -133,7 +133,7 @@ void EoDlgActiveViewKeyplan::Refresh() {
   AeSysDoc::GetDoc()->DisplayAllLayers(m_ActiveView, &renderDevice);
   EoDbPolygon::SetSpecialPolygonStyle(EoDb::PolygonStyle::Special);
 
-  GetDlgItem(IDC_KEYPLAN_AREA)->InvalidateRect(0, TRUE);
+  GetDlgItem(IDC_KEYPLAN_AREA)->InvalidateRect(nullptr, TRUE);
 
   m_ActiveView->PopViewTransform();
   m_ActiveView->ViewportPopActive();

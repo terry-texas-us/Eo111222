@@ -60,7 +60,7 @@ void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool id
 
         if (group->IsInView(view)) {
           if (LayerIsDetectable) { document->AddGroupToAllViews(group); }
-          if (identifyTrap && document->FindTrappedGroup(group) != 0) {
+          if (identifyTrap && document->FindTrappedGroup(group) != nullptr) {
             EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
             group->Display(view, renderDevice);
             EoDbPrimitive::SetSpecialColor(0);

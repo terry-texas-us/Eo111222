@@ -71,7 +71,7 @@ const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
 
     m_numberOfDatums = src.m_numberOfDatums;
 
-    m_Data = (m_numberOfDatums == 0) ? 0 : new double[m_numberOfDatums];
+    m_Data = (m_numberOfDatums == 0) ? nullptr : new double[m_numberOfDatums];
   }
   for (std::uint16_t n = 0; n < m_numberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
   return (*this);
@@ -236,7 +236,7 @@ void EoDbPoint::SetDat(std::uint16_t wDats, double* dDat) {
   if (m_numberOfDatums != wDats) {
     if (m_numberOfDatums != 0) { delete[] m_Data; }
     m_numberOfDatums = wDats;
-    m_Data = (m_numberOfDatums == 0) ? 0 : new double[m_numberOfDatums];
+    m_Data = (m_numberOfDatums == 0) ? nullptr : new double[m_numberOfDatums];
   }
   for (auto i = 0; i < m_numberOfDatums; i++) { m_Data[i] = dDat[i]; }
 }

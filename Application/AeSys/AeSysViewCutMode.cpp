@@ -147,13 +147,13 @@ void AeSysView::OnCutModeField() {
     EoDbGroupList* GroupsIn = new EoDbGroupList;
 
     POSITION posSeg, posSegPrv;
-    for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != 0;) {
+    for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != nullptr;) {
       group = GetNextVisibleGroup(posSeg);
 
       if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
       POSITION PrimitivePosition, posPrimPrv;
-      for (PrimitivePosition = group->GetHeadPosition(); (posPrimPrv = PrimitivePosition) != 0;) {
+      for (PrimitivePosition = group->GetHeadPosition(); (posPrimPrv = PrimitivePosition) != nullptr;) {
         primitive = group->GetNext(PrimitivePosition);
 
         if ((iInts = primitive->IsWithinArea(lowerLeft, upperRight, ptInt)) == 0) { continue; }
@@ -226,7 +226,7 @@ void AeSysView::OnCutModeClip() {
     POSITION posSeg;
     POSITION posSegPrv;
 
-    for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != 0;) {
+    for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != nullptr;) {
       auto* group = GetNextVisibleGroup(posSeg);
 
       if (document->FindTrappedGroup(group) != nullptr) { continue; }
@@ -234,7 +234,7 @@ void AeSysView::OnCutModeClip() {
       POSITION posPrim1;
       POSITION posPrim2;
 
-      for (posPrim1 = group->GetHeadPosition(); (posPrim2 = posPrim1) != 0;) {
+      for (posPrim1 = group->GetHeadPosition(); (posPrim2 = posPrim1) != nullptr;) {
         EoDbPrimitive* primitive = group->GetNext(posPrim1);
 
         if (!primitive->SelectUsingPoint(this, ptView[0], ptCut[0])) { continue; }
