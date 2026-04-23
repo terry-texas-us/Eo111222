@@ -245,12 +245,15 @@ class AeSysDoc : public CDocument {
   [[nodiscard]] const CString& EditingTracingPath() const noexcept { return m_editingTracingPath; }
   [[nodiscard]] bool IsTracingSession() const noexcept { return m_isTracingSession; }
   [[nodiscard]] bool IsClosing() const noexcept { return m_isClosing; }
+  [[nodiscard]] bool IsTracingEditDirty() const noexcept { return m_tracingEditDirty; }
+  void SetTracingEditDirty(bool dirty) noexcept { m_tracingEditDirty = dirty; }
   bool EnterTracingEditMode(const CString& pathName);
   bool EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer);
   void ExitTracingEditMode(bool commit);
   bool SaveTracingLayerToFile(const CString& filePath, EoDbLayer* layer);
   void OnToolsSaveTracingEdit();
   void OnToolsSaveAsTracingEdit();
+  void OnToolsExitTracingEdit();
   void OnToolsCancelTracingEdit();
   void InsertTracingLayer(const std::wstring& absolutePath);
   void ReloadTracingLayer(EoDbLayer* layer);
@@ -267,6 +270,7 @@ class AeSysDoc : public CDocument {
 
   // Tracing Editor state
   CString m_editingTracingPath;  ///< Full path of the .tra file being edited
+  bool m_tracingEditDirty{};  ///< True when unsaved edits exist in the current tracing editor session
   EoDbLayer* m_tracingEditLayer{};  ///< Temporary layer holding editable copies of tracing primitives (solo mode)
   EoDbLayer* m_embeddedTracingLayer{};  ///< The |name layer being edited in embedded mode (not a temp copy)
 

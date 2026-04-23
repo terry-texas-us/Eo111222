@@ -644,7 +644,7 @@ void EoMfLayoutTabBar::OnBlockEditCloseClicked() {
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
   if (document->IsEditingTracing()) {
-    document->OnToolsCancelTracingEdit();
+    document->OnToolsExitTracingEdit();
   } else {
     document->OnToolsCancelBlockEdit();
   }

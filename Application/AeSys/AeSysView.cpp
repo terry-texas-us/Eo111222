@@ -393,6 +393,14 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
   ActiveViewScaleProperty.SetValue(m_WorldScale);
   ActiveViewScaleProperty.Enable(activate);
 
+  if (activate) {
+    auto* document = GetDocument();
+    if (document != nullptr && !document->IsInEditor()) {
+      m_layoutTabBar.UpdateBlockEditState(false);
+      m_layoutTabBar.PopulateFromDocument(document);
+    }
+  }
+
   CView::OnActivateView(activate, activateView, deactiveView);
 }
 

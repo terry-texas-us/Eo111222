@@ -38,7 +38,7 @@ class EoDbLayer : public EoDbGroupList {
   std::int32_t m_color24{-1};  ///< DXF group code 420; -1 means not set (use ACI color)
   std::uint64_t m_handle{};
   std::uint64_t m_ownerHandle{};
-  std::wstring m_tracingFilePath;  ///< Absolute path to .tra file; non-empty only for |name tracing layers
+  std::wstring m_tracingFilePath;  // Absolute path to .tra file; non-empty only for |stem tracing layers
 
  public:
   enum class State : std::uint16_t {

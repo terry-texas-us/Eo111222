@@ -321,9 +321,15 @@ bool AeSysDoc::EnterBlockEditMode(const CString& blockName) {
   m_blockEditLayer->SetColorIndex(7);
   m_blockEditLayer->SetLineType(m_continuousLineType);
 
-  // Deep-copy block primitives into a new group on the temp layer
-  auto* editGroup = new EoDbGroup(*block);
-  m_blockEditLayer->AddTail(editGroup);
+  // Deep-copy block primitives into the temp layer — one group per primitive,
+  // matching the normal layer→group→primitive structure so selection works.
+  auto primPosition = block->GetHeadPosition();
+  while (primPosition != nullptr) {
+    EoDbPrimitive* copy = nullptr;
+    block->GetNext(primPosition)->Copy(copy);
+    auto* editGroup = new EoDbGroup(copy);
+    m_blockEditLayer->AddTail(editGroup);
+  }
 
   // Switch to model space and set the temp layer as work layer
   m_activeSpace = EoDxf::Space::ModelSpace;
@@ -500,6 +506,8 @@ bool AeSysDoc::EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer) {
   m_embeddedTracingLayer = tracingLayer;
   m_editingTracingPath = CString(tracingLayer->TracingFilePath().c_str());
 
+  m_tracingEditDirty = false;
+
   // Unlock and activate the tracing layer for editing
   tracingLayer->SetLocked(false);
   tracingLayer->SetStateWork();
@@ -560,6 +568,8 @@ bool AeSysDoc::EnterTracingEditMode(const CString& pathName) {
     // File doesn't exist yet or failed to load — start with empty layer for new tracing creation
     app.AddStringToMessageList(L"Starting new tracing file.");
   }
+
+  m_tracingEditDirty = false;
 
   // Switch to model space and set the temp layer as work layer
   m_activeSpace = EoDxf::Space::ModelSpace;
@@ -651,6 +661,13 @@ void AeSysDoc::ExitTracingEditMode(bool commit) {
 
   // If this was a standalone .tra session, close the document immediately
   if (m_isTracingSession) {
+    // Reset the layout tab bar before the window closes so it does not show
+    // a stale TRACING state if the tab bar is briefly repainted during teardown
+    // or inherited by the next activated document's view.
+    auto* closingView = AeSysView::GetActiveView();
+    if (closingView != nullptr) {
+      closingView->LayoutTabBar().UpdateBlockEditState(false);
+    }
     m_isTracingSession = false;
     m_workLayer = nullptr;  // Prevent dangling access during async close teardown
     SetModifiedFlag(FALSE);  // Prevent "Save changes?" prompt on close
@@ -707,6 +724,7 @@ void AeSysDoc::OnToolsSaveTracingEdit() {
   }
 
   if (SaveTracingLayerToFile(m_editingTracingPath, layerToSave)) {
+    m_tracingEditDirty = false;
     CString message;
     message.Format(L"Tracing saved: %s", m_editingTracingPath.GetString());
     app.AddStringToMessageList(message);
@@ -735,6 +753,7 @@ void AeSysDoc::OnToolsSaveAsTracingEdit() {
   const CString newPath = saveDialog.GetPathName();
 
   if (SaveTracingLayerToFile(newPath, layerToSave)) {
+    m_tracingEditDirty = false;
     CString message;
     message.Format(L"Tracing saved as: %s", newPath.GetString());
     app.AddStringToMessageList(message);
@@ -754,7 +773,24 @@ void AeSysDoc::OnToolsSaveAsTracingEdit() {
   ExitTracingEditMode(true);  // Solo mode — exit after Save As
 }
 
-void AeSysDoc::OnToolsCancelTracingEdit() { ExitTracingEditMode(false); }
+void AeSysDoc::OnToolsExitTracingEdit() { ExitTracingEditMode(true); }
+
+void AeSysDoc::OnToolsCancelTracingEdit() {
+  if (m_tracingEditDirty) {
+    std::filesystem::path filePath(static_cast<LPCWSTR>(m_editingTracingPath));
+    CString tracingName = filePath.stem().wstring().c_str();
+    CString prompt;
+    prompt.Format(L"Save changes to '%s'?", tracingName.GetString());
+    const int result = AfxMessageBox(prompt, MB_YESNOCANCEL | MB_ICONQUESTION);
+    if (result == IDCANCEL) { return; }
+    if (result == IDYES) {
+      OnToolsSaveTracingEdit();
+      if (m_tracingEditDirty) { return; }  // save failed — stay in editor
+    }
+    // IDNO falls through to discard
+  }
+  ExitTracingEditMode(false);
+}
 
 void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) {
   cmdUI->Enable(!IsInEditor() && !BlockTableIsEmpty());

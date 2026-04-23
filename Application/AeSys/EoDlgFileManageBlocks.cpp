@@ -37,8 +37,13 @@ BOOL EoDlgFileManageBlocks::OnInitDialog() {
   captionText += m_document->GetPathName();
   SetWindowTextW(captionText);
 
-  m_previewWindowHandle = GetDlgItem(IDC_BLOCK_PREVIEW)->GetSafeHwnd();
-
+  auto* previewWindow = GetDlgItem(IDC_BLOCK_PREVIEW);
+  m_previewWindowHandle = previewWindow ? previewWindow->GetSafeHwnd() : nullptr;
+  if (!m_previewWindowHandle) {
+    AfxMessageBox(L"Preview control (IDC_BLOCK_PREVIEW) is missing from the dialog resource.", MB_ICONERROR);
+    EndDialog(IDCANCEL);
+    return FALSE;
+  }
   m_blocksList.SetHorizontalExtent(512);
 
   CString blockName;
@@ -47,6 +52,7 @@ BOOL EoDlgFileManageBlocks::OnInitDialog() {
   auto position = m_document->GetFirstBlockPosition();
   while (position != nullptr) {
     m_document->GetNextBlock(position, blockName, block);
+    if (block == nullptr) { continue; }
     if (block->IsAnonymous() || block->IsSystemBlock(blockName)) { continue; }
     if (block->IsModelSpace(blockName.GetString()) || block->IsPaperSpace(blockName.GetString())) { continue; }
     auto itemIndex = m_blocksList.AddString(blockName);
@@ -64,6 +70,7 @@ BOOL EoDlgFileManageBlocks::OnInitDialog() {
 void EoDlgFileManageBlocks::OnLbnSelchangeBlocksList() {
   auto currentSelection = m_blocksList.GetCurSel();
   if (currentSelection == LB_ERR) { return; }
+  
   if (m_blocksList.GetTextLen(currentSelection) == LB_ERR) { return; }
   
   CString blockName;

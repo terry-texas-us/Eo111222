@@ -43,16 +43,24 @@ void AeSysDoc::GetExtents(
 }
 
 int AeSysDoc::NumberOfGroupsInWorkLayer() {
-  int count{};
+  // m_workLayer may be a temporary editor layer not registered in the layer table
+  // (e.g. *BlockEdit or *TracingEdit). Count it directly to avoid returning zero
+  // during an isolating editor session.
+  if (m_workLayer != nullptr) { return static_cast<int>(m_workLayer->GetCount()); }
 
+  int count{};
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsWork()) { count += static_cast<int>(layer->GetCount()); }
   }
-  return static_cast<int>(count);
+  return count;
 }
 
 int AeSysDoc::NumberOfGroupsInActiveLayers() {
+  // In an isolating editor session only the edit layer is visible/relevant;
+  // active model-space layers are hidden and must not inflate the work count.
+  if (IsInEditor()) { return 0; }
+
   int count{};
 
   for (auto i = 0; i < GetLayerTableSize(); i++) {
@@ -347,6 +355,7 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
   m_workLayer->AddTail(group);
   AddGroupToAllViews(group);
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
+  if (IsEditingTracing()) { m_tracingEditDirty = true; }
   SetModifiedFlag(TRUE);
 }
 
@@ -417,7 +426,18 @@ EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
 
 // Locates the layer containing a group and removes it.
 // The group itself is not deleted. Searches both model and all paper-space layout tables.
+// Also checks the active edit layer (tracing/block) which is not registered in the layer arrays.
 EoDbLayer* AeSysDoc::AnyLayerRemove(EoDbGroup* group) {
+  // In editor mode the active edit layer is not in the registered layer arrays — check it first.
+  if (IsInEditor()) {
+    EoDbLayer* editLayer = IsEditingBlock() ? m_blockEditLayer : m_tracingEditLayer;
+    if (editLayer != nullptr && editLayer->Remove(group) != 0) {
+      AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
+      if (IsEditingTracing()) { m_tracingEditDirty = true; }
+      SetModifiedFlag(TRUE);
+      return editLayer;
+    }
+  }
   auto searchLayers = [&](CLayers& layers) -> EoDbLayer* {
     for (INT_PTR i = 0; i < layers.GetSize(); i++) {
       auto* layer = layers.GetAt(i);
@@ -522,9 +542,8 @@ void AeSysDoc::TracingFuse(CString& nameAndLocation) {
     layer->SetName(baseName);
   }
 }
-/// Inserts a .tra file as a locked XREF-style tracing layer in the current document.
-/// The layer is named |stem (e.g. |walls for walls.tra), loaded with the file's primitives,
-/// set to locked state, and added to the model-space layer table.
+/// Inserts a .tra file as a locked XREF-style tracing layer in the current document. The layer is named `|stem` for
+/// `stem.tra`, loaded with the file's primitives, set to locked state, and added to the model-space layer table.
 void AeSysDoc::InsertTracingLayer(const std::wstring& absolutePath) {
   std::filesystem::path filePath(absolutePath);
   const CString layerName = CString(L"|") + filePath.stem().wstring().c_str();

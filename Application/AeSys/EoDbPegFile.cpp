@@ -68,9 +68,8 @@ void EoDbPegFile::Load(AeSysDoc* document) {
 
   auto& modelLayers = document->SpaceLayers(EoDxf::Space::ModelSpace);
 
-  // V1 tracing layer rename: convert legacy 'walls.tra' / 'walls.jb1' external layers
-  // (IsInternal()==false) to the current '|stem' naming convention so IsTracingLayer()
-  // detection works correctly everywhere in the application.
+  // V1 tracing layer rename: convert legacy 'stem.tra' / 'stem.jb1' external layers (IsInternal() == false) to the
+  // current '|stem' naming convention so IsTracingLayer() detection works correctly everywhere in the application.
   if (fileVersion == EoDb::PegFileVersion::AE2011) {
     CString pegDirectory = FileName();
     const int lastBackslash = pegDirectory.ReverseFind(L'\\');
@@ -758,8 +757,8 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
   for (INT_PTR n = 0; n < layers.GetSize(); n++) {
     EoDbLayer* layer = layers.GetAt(n);
     if (layer->IsResident()) {
-      // V1 save: revert '|stem' tracing layer names back to 'stem.tra' and clear
-      // isInternal so the V1 reader recognises them as external tracing references.
+      // V1 save: revert '|stem' tracing layer names back to 'stem.tra' and clear isInternal so the V1 reader 
+      // recognises them as external tracing references.
       CString nameToWrite = layer->Name();
       std::uint16_t stateToWrite = layer->GetState();
       if (fileVersion == EoDb::PegFileVersion::AE2011 && layer->IsTracingLayer()) {

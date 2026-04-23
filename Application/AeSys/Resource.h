@@ -6,7 +6,6 @@
 #define IDP_OLE_INIT_FAILED             100
 #define IDR_MAINFRAME                   101
 #define IDR_PEGTYPE                     103
-#define IDR_TRATYPE                     104
 #define IDR_LAYER                       106
 #define IDR_WINDOW                      107
 #define IDR_MAINFRAME_24                110
