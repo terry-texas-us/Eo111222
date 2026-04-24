@@ -89,7 +89,7 @@ enum Sentinels {
   kLayoutTable = 0x0205,
   kEndOfTable = 0x02ff
 };
-enum class PolygonStyle { Hollow, Solid, Pattern, Hatch, Special = -1 };
+enum class PolygonStyle { Special = -1, Hollow, Solid, Pattern, Hatch };
 enum class Path : std::uint16_t { Right, Left, Up, Down };
 enum class HorizontalAlignment : std::uint16_t { Left = 1, Center, Right };
 enum class VerticalAlignment : std::uint16_t { Top = 2, Middle, Bottom };

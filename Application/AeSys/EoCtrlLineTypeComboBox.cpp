@@ -306,7 +306,7 @@ void EoCtrlLineTypeComboBox::DrawDashPreview(
     while (x < xEnd) {
       for (const double len : dashElements) {
         double pixelLen = std::abs(len) * scale;
-        if (pixelLen < 1.0) { pixelLen = 1.0; }
+        pixelLen = std::max(pixelLen, 1.0);
         if (len > 0.0) {
           deviceContext->MoveTo(static_cast<int>(x), yCenter);
           x += pixelLen;
@@ -372,9 +372,7 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCT
 
       if (!isLoadEntry) {
         int previewRight = rectContent.left + 2 + previewWidth;
-        if (previewRight > rectContent.right - 40) {
-          previewRight = rectContent.right - 40;  // Leave room for text
-        }
+        previewRight = std::min<LONG>(previewRight, rectContent.right - 40);
         const CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
 
         // Determine the line type pointer — only dereference when a document is open
@@ -531,7 +529,7 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
 
   if (!isLoadEntry) {
     int previewRight = itemRect.left + 2 + previewWidth;
-    if (previewRight > itemRect.right - 40) { previewRight = itemRect.right - 40; }
+    previewRight = std::min<LONG>(previewRight, itemRect.right - 40);
     CRect previewRect(itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom);
 
     // Only dereference EoDbLineType* when a document is open and the pointer

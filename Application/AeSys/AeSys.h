@@ -114,7 +114,7 @@ class AeSys : public CWinAppEx {
   void AddStringToReportsList(const std::wstring& string);
   
   // Modifies the base accelerator table by defining the mode specific keys.
-  void BuildModifiedAcceleratorTable();
+  void BuildModifiedAcceleratorTable() const;
 
   // Accessors for mode management (needed by AeSysView)
   void SetModeResourceIdentifier(int resourceId) { m_ModeResourceIdentifier = resourceId; }

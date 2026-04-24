@@ -733,7 +733,7 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, Eo
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
-void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
+void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) const {
   auto* document = GetDocument();
   const EoGePoint3d begin = section->Begin();
   const EoGePoint3d end = section->End();

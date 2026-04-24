@@ -31,29 +31,27 @@ void AeSysView::OnEditModePivot() {
 void AeSysView::OnEditModeRotccw() {
   auto* document = GetDocument();
 
-  EoGeTransformMatrix Matrix;
-  Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
-  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const auto matrix = EoGeTransformMatrix::BuildRotationTransformMatrix(EditModeRotationAngles());
+  const EoGeVector3d translateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
   EoGeTransformMatrix transformMatrix;
-  transformMatrix.Translate(TranslateVector);
-  transformMatrix *= Matrix;
-  transformMatrix.Translate(-TranslateVector);
+  transformMatrix.Translate(translateVector);
+  transformMatrix *= matrix;
+  transformMatrix.Translate(-translateVector);
   document->TransformTrappedGroups(transformMatrix);
 }
 
 void AeSysView::OnEditModeRotcw() {
   auto* document = GetDocument();
 
-  EoGeTransformMatrix Matrix;
-  Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
-  Matrix.Inverse();
-  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  auto matrix = EoGeTransformMatrix::BuildRotationTransformMatrix(EditModeRotationAngles());
+  matrix.Inverse();
+  const EoGeVector3d translateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
 
   EoGeTransformMatrix transformMatrix;
-  transformMatrix.Translate(TranslateVector);
-  transformMatrix *= Matrix;
-  transformMatrix.Translate(-TranslateVector);
+  transformMatrix.Translate(translateVector);
+  transformMatrix *= matrix;
+  transformMatrix.Translate(-translateVector);
   document->TransformTrappedGroups(transformMatrix);
 }
 

@@ -1,5 +1,6 @@
 #include "Stdafx.h"
 
+#include <algorithm>
 #include <cassert>
 
 #include "AeSys.h"
@@ -23,7 +24,7 @@
 
 #include <winspool.h>
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
 #include "DrawModeState.h"
 #endif
@@ -171,8 +172,8 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
   horizontalPages = static_cast<UINT>(Eo::Round(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
   verticalPages = static_cast<UINT>(Eo::Round(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
 
-  if (horizontalPages < 1) { horizontalPages = 1; }
-  if (verticalPages < 1) { verticalPages = 1; }
+  horizontalPages = std::max<UINT>(horizontalPages, 1);
+  verticalPages = std::max<UINT>(verticalPages, 1);
 
   return horizontalPages * verticalPages;
 }
@@ -230,7 +231,7 @@ void AeSysView::OnViewDirect2D() {
     int tabBarHeight = 0;
     if (m_layoutTabBar.GetSafeHwnd() != nullptr) { tabBarHeight = m_layoutTabBar.PreferredHeight(); }
     int drawingHeight = clientRect.Height() - tabBarHeight;
-    if (drawingHeight < 1) { drawingHeight = 1; }
+    drawingHeight = std::max<int>(drawingHeight, 1);
     RecreateBackBuffer(clientRect.Width(), drawingHeight);
   }
   InvalidateScene();
@@ -752,7 +753,7 @@ void AeSysView::OnModeDraw() {
   app.SetModeResourceIdentifier(IDR_DRAW_MODE);
   app.SetPrimaryMode(ID_MODE_DRAW);
   app.LoadModeResources(ID_MODE_DRAW, this);
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
   PushState(std::make_unique<DrawModeState>());
 #endif
 }

@@ -887,18 +887,16 @@ bool EoDbConic::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
 
-void EoDbConic::Transform(const EoGeTransformMatrix& transformaMatrix) {
+void EoDbConic::Transform(const EoGeTransformMatrix& transformMatrix) {
   auto minorAxis = MinorAxis();
 
-  m_center = transformaMatrix * m_center;
-  m_majorAxis = transformaMatrix * m_majorAxis;
-  m_extrusion = transformaMatrix * m_extrusion;
-  minorAxis = transformaMatrix * minorAxis;
+  m_center = transformMatrix * m_center;
+  m_majorAxis = transformMatrix * m_majorAxis;
+  m_extrusion = transformMatrix * m_extrusion;
+  minorAxis = transformMatrix * minorAxis;
   double majorAxisLength = m_majorAxis.Length();
-  if (majorAxisLength < Eo::geometricTolerance) {
-    // Degenerate major axis, avoid division by zero and silently continue
-    majorAxisLength = Eo::geometricTolerance;
-  }
+  // Degenerate major axis, avoid division by zero and silently continue
+  majorAxisLength = std::max(majorAxisLength, Eo::geometricTolerance);
   m_ratio = minorAxis.Length() / majorAxisLength;
   if (m_ratio > 1.0) {
     // Minor axis is longer than major axis, swap them

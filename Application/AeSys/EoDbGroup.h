@@ -48,7 +48,7 @@ class EoDbGroup : public CObList {
   ~EoDbGroup() override {}
 
   EoDbGroup(const EoDbGroup& group);
-  EoDbGroup(const EoDbBlock& group);
+  EoDbGroup(const EoDbBlock& block);
 
   void AddPrimsToTreeViewControl(HWND tree, HTREEITEM parent);
   HTREEITEM AddToTreeViewControl(HWND tree, HTREEITEM parent);
@@ -98,7 +98,7 @@ class EoDbGroup : public CObList {
   void SortTextOnY();
   void Square(AeSysView* view);
   void Transform(const EoGeTransformMatrix& transformMatrix);
-  void Translate(EoGeVector3d translate);
+  void Translate(EoGeVector3d v);
   void Write(CFile& file);
 
   /** @brief Writes the group's primitives to a file, including additional handle information for AE2026 file version.

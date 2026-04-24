@@ -66,11 +66,11 @@ class EoDbPolyline : public EoDbPrimitive {
       std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides);
   EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& pts);
   EoDbPolyline(EoGePoint3dArray& pts);
-  EoDbPolyline(const EoDbPolyline& polyline);
+  EoDbPolyline(const EoDbPolyline& other);
 
   ~EoDbPolyline() override = default;
 
-  const EoDbPolyline& operator=(const EoDbPolyline& polyline);
+  const EoDbPolyline& operator=(const EoDbPolyline& other);
 
   void AddReportToMessageList(const EoGePoint3d&) override;
   void AddToTreeViewControl(HWND hTree, HTREEITEM hParent) override;

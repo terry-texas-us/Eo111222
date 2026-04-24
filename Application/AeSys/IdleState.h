@@ -1,5 +1,5 @@
 #pragma once
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
 
 class AeSysView;

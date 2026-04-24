@@ -118,7 +118,7 @@ END_MESSAGE_MAP()
 
 AeSysDoc::AeSysDoc() { EoDbPrimitive::SetHandleManager(&m_handleManager); }
 
-AeSysDoc::~AeSysDoc() {}
+AeSysDoc::~AeSysDoc() = default
 
 void AeSysDoc::RegisterHandle(EoDbPrimitive* primitive) {
   const auto handle = primitive->Handle();

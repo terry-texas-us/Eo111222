@@ -53,7 +53,7 @@ class EoDbLabeledLine : public EoDbPrimitive {
   [[nodiscard]] bool IsInView(AeSysView* view) override;
   [[nodiscard]] bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   [[nodiscard]] EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
-  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& ptInt) override;
+  bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
   void Transform(const EoGeTransformMatrix&) override;

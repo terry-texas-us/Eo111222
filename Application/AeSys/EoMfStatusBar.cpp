@@ -142,8 +142,8 @@ void EoMfStatusBar::CommitAngleEdit() {
   double newAngle = wcstod(editText.GetString(), &endPtr);
   if (endPtr == editText.GetString()) { return; }  // No valid conversion
 
-  if (newAngle < -360.0) { newAngle = -360.0; }
-  if (newAngle > 360.0) { newAngle = 360.0; }
+  newAngle = std::max(newAngle, -360.0);
+  newAngle = std::min(newAngle, 360.0);
   app.SetDimensionAngle(newAngle);
 
   auto* activeView = AeSysView::GetActiveView();

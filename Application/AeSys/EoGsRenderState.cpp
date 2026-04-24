@@ -15,41 +15,41 @@
 // State list maintenance
 EoGsRenderState* psSav[] = {nullptr, nullptr, nullptr, nullptr};
 
-void EoGsRenderState::Restore(CDC* deviceContext, int iSaveId) {
-  if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
+void EoGsRenderState::Restore(CDC* deviceContext, int saveIndex) {
+  if (saveIndex >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
-  if (psSav[iSaveId] != nullptr) {
-    SetPen(nullptr, deviceContext, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
-        psSav[iSaveId]->LineTypeName(), psSav[iSaveId]->LineWeight(), psSav[iSaveId]->LineTypeScale());
+  if (psSav[saveIndex] != nullptr) {
+    SetPen(nullptr, deviceContext, psSav[saveIndex]->Color(), psSav[saveIndex]->LineTypeIndex(),
+        psSav[saveIndex]->LineTypeName(), psSav[saveIndex]->LineWeight(), psSav[saveIndex]->LineTypeScale());
 
-    m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
+    m_fontDefinition = psSav[saveIndex]->m_fontDefinition;
 
     SetAlignment(deviceContext, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 
-    SetPolygonIntStyle(psSav[iSaveId]->PolygonIntStyle());
-    SetPolygonIntStyleId(psSav[iSaveId]->PolygonIntStyleId());
+    SetPolygonIntStyle(psSav[saveIndex]->PolygonIntStyle());
+    SetPolygonIntStyleId(psSav[saveIndex]->PolygonIntStyleId());
 
-    delete psSav[iSaveId];
-    psSav[iSaveId] = nullptr;
+    delete psSav[saveIndex];
+    psSav[saveIndex] = nullptr;
   }
 }
 
-void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int iSaveId) {
-  if (iSaveId >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
+void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int saveIndex) {
+  if (saveIndex >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
-  if (psSav[iSaveId] != nullptr) {
-    SetPen(nullptr, renderDevice, psSav[iSaveId]->Color(), psSav[iSaveId]->LineTypeIndex(),
-        psSav[iSaveId]->LineTypeName(), psSav[iSaveId]->LineWeight(), psSav[iSaveId]->LineTypeScale());
+  if (psSav[saveIndex] != nullptr) {
+    SetPen(nullptr, renderDevice, psSav[saveIndex]->Color(), psSav[saveIndex]->LineTypeIndex(),
+        psSav[saveIndex]->LineTypeName(), psSav[saveIndex]->LineWeight(), psSav[saveIndex]->LineTypeScale());
 
-    m_fontDefinition = psSav[iSaveId]->m_fontDefinition;
+    m_fontDefinition = psSav[saveIndex]->m_fontDefinition;
 
     SetAlignment(renderDevice, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 
-    SetPolygonIntStyle(psSav[iSaveId]->PolygonIntStyle());
-    SetPolygonIntStyleId(psSav[iSaveId]->PolygonIntStyleId());
+    SetPolygonIntStyle(psSav[saveIndex]->PolygonIntStyle());
+    SetPolygonIntStyleId(psSav[saveIndex]->PolygonIntStyleId());
 
-    delete psSav[iSaveId];
-    psSav[iSaveId] = nullptr;
+    delete psSav[saveIndex];
+    psSav[saveIndex] = nullptr;
   }
 }
 
@@ -324,12 +324,12 @@ void EoGsRenderState::SetAlignment(EoGsRenderDevice* renderDevice, EoDb::Horizon
   renderDevice->SetTextAlign(TA_LEFT | TA_BASELINE);
 }
 
-void EoGsRenderState::SetFontDefinition(CDC* deviceContext, const EoDbFontDefinition& fd) {
-  m_fontDefinition = fd;
+void EoGsRenderState::SetFontDefinition(CDC* deviceContext, const EoDbFontDefinition& fontDefinition) {
+  m_fontDefinition = fontDefinition;
   SetAlignment(deviceContext, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 }
 
-void EoGsRenderState::SetFontDefinition(EoGsRenderDevice* renderDevice, const EoDbFontDefinition& fd) {
-  m_fontDefinition = fd;
+void EoGsRenderState::SetFontDefinition(EoGsRenderDevice* renderDevice, const EoDbFontDefinition& fontDefinition) {
+  m_fontDefinition = fontDefinition;
   SetAlignment(renderDevice, m_fontDefinition.HorizontalAlignment(), m_fontDefinition.VerticalAlignment());
 }

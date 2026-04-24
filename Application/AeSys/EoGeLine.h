@@ -16,15 +16,15 @@ class EoGeLine {
 
   EoGeLine() {}
   EoGeLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
-  EoGeLine(const EoGeLine& line);
+  EoGeLine(const EoGeLine& other);
 
   ~EoGeLine() {};
 
   bool operator==(const EoGeLine& other) const;
   bool operator!=(const EoGeLine& other) const;
-  EoGeLine& operator=(const EoGeLine& line);
-  void operator+=(const EoGeVector3d& offset);
-  void operator-=(const EoGeVector3d& offset);
+  EoGeLine& operator=(const EoGeLine& other);
+  void operator+=(const EoGeVector3d& v);
+  void operator-=(const EoGeVector3d& v);
   EoGePoint3d& operator[](int index);
   const EoGePoint3d& operator[](int index) const;
   void operator()(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
@@ -69,7 +69,7 @@ class EoGeLine {
     d  = begx * (endy - y) - endx * (begy - y) + x * (begy - endy)
   @endcode
   */
-  int DirRelOfPt(EoGePoint3d point) const;
+  [[nodiscard]] int DirRelOfPt(const EoGePoint3d& point) const;
 
   void Display(AeSysView* view, EoGsRenderDevice* renderDevice) const;
 
@@ -125,7 +125,7 @@ class EoGeLine {
   rel = -[(Begx - Px)(Endx - Begx) + (Begy - Py)(Endy - Begy)] / [(Endx - Begx)² + (Endy - Begy)²]
     @endcode
   */
-  bool IsSelectedByPointXY(EoGePoint3d point, double aperture, EoGePoint3d& projectedPoint, double* relationship) const;
+  bool IsSelectedByPointXY(const EoGePoint3d& point, double aperture, EoGePoint3d& projectedPoint, double* relationship) const;
 
   [[nodiscard]] double Length() const;
 
@@ -248,10 +248,10 @@ class EoGeLine {
       const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
 
   /** @brief Computes the intersection point of two lines in the XY plane.
-   * @param ln1 The first line.
-   * @param ln2 The second line.
+   * @param firstLine The first line.
+   * @param secondLine The second line.
    * @param intersection Output parameter that receives the intersection point if one exists.
    * @return True if the lines intersect (are not parallel), false otherwise.
    */
-  [[nodiscard]] static bool Intersection_xy(EoGeLine ln1, EoGeLine ln2, EoGePoint3d& intersection);
+  [[nodiscard]] static bool Intersection_xy(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
 };

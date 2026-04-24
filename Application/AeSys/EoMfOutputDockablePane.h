@@ -14,7 +14,7 @@ class EoMfOutputListBox : public CListBox {
   void SetColors(COLORREF background, COLORREF text);
 
  protected:
-  afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+  afx_msg void OnContextMenu(CWnd* window, CPoint point);
   afx_msg void OnEditCopy();
   afx_msg void OnEditClear();
   afx_msg void OnViewOutput();

@@ -233,32 +233,32 @@ bool EoDbLine::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) 
  *		0 - line is completely outside area
  *		2 - line is completely or partially within area (clippedPoints contains clipped line)
  */
-int EoDbLine::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d* ptInt) {
+int EoDbLine::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d* clippedPoints) {
   int i;
   int iLoc[2]{};
 
-  ptInt[0] = m_line.begin;
-  ptInt[1] = m_line.end;
+  clippedPoints[0] = m_line.begin;
+  clippedPoints[1] = m_line.end;
 
-  for (i = 0; i < 2; i++) { iLoc[i] = ptInt[i].RelationshipToRectangle(lowerLeft, upperRight); }
+  for (i = 0; i < 2; i++) { iLoc[i] = clippedPoints[i].RelationshipToRectangle(lowerLeft, upperRight); }
   while (iLoc[0] != 0 || iLoc[1] != 0) {
     if ((iLoc[0] & iLoc[1]) != 0) { return 0; }
 
     i = (iLoc[0] != 0) ? 0 : 1;
     if ((iLoc[i] & 1) != 0) {  // Clip against top
-      ptInt[i].x = ptInt[i].x + (ptInt[1].x - ptInt[0].x) * (upperRight.y - ptInt[i].y) / (ptInt[1].y - ptInt[0].y);
-      ptInt[i].y = upperRight.y;
+      clippedPoints[i].x = clippedPoints[i].x + (clippedPoints[1].x - clippedPoints[0].x) * (upperRight.y - clippedPoints[i].y) / (clippedPoints[1].y - clippedPoints[0].y);
+      clippedPoints[i].y = upperRight.y;
     } else if ((iLoc[i] & 2) != 0) {  // Clip against bottom
-      ptInt[i].x = ptInt[i].x + (ptInt[1].x - ptInt[0].x) * (lowerLeft.y - ptInt[i].y) / (ptInt[1].y - ptInt[0].y);
-      ptInt[i].y = lowerLeft.y;
+      clippedPoints[i].x = clippedPoints[i].x + (clippedPoints[1].x - clippedPoints[0].x) * (lowerLeft.y - clippedPoints[i].y) / (clippedPoints[1].y - clippedPoints[0].y);
+      clippedPoints[i].y = lowerLeft.y;
     } else if ((iLoc[i] & 4) != 0) {  // Clip against right
-      ptInt[i].y = ptInt[i].y + (ptInt[1].y - ptInt[0].y) * (upperRight.x - ptInt[i].x) / (ptInt[1].x - ptInt[0].x);
-      ptInt[i].x = upperRight.x;
+      clippedPoints[i].y = clippedPoints[i].y + (clippedPoints[1].y - clippedPoints[0].y) * (upperRight.x - clippedPoints[i].x) / (clippedPoints[1].x - clippedPoints[0].x);
+      clippedPoints[i].x = upperRight.x;
     } else if ((iLoc[i] & 8) != 0) {  // Clip against left
-      ptInt[i].y = ptInt[i].y + (ptInt[1].y - ptInt[0].y) * (lowerLeft.x - ptInt[i].x) / (ptInt[1].x - ptInt[0].x);
-      ptInt[i].x = lowerLeft.x;
+      clippedPoints[i].y = clippedPoints[i].y + (clippedPoints[1].y - clippedPoints[0].y) * (lowerLeft.x - clippedPoints[i].x) / (clippedPoints[1].x - clippedPoints[0].x);
+      clippedPoints[i].x = lowerLeft.x;
     }
-    iLoc[i] = ptInt[i].RelationshipToRectangle(lowerLeft, upperRight);
+    iLoc[i] = clippedPoints[i].RelationshipToRectangle(lowerLeft, upperRight);
   }
   return (2);
 }

@@ -359,7 +359,7 @@ void EoMfVisualManager::OnDrawComboDropButton(CDC* deviceContext, CRect rect, BO
   const UINT dpi = ::GetDpiForSystem();
   const int arrowWidth = ::MulDiv(7, dpi, 96) | 1;  // Ensure odd for centered tip
   int arrowHeight = ::MulDiv(4, dpi, 96);
-  if (arrowHeight < 3) { arrowHeight = 3; }
+  arrowHeight = std::max(arrowHeight, 3);
 
   const int centerX = (rect.left + rect.right) / 2;
   const int centerY = (rect.top + rect.bottom) / 2;

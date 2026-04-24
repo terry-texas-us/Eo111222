@@ -29,7 +29,7 @@ class EoDbJobFile {
   void ReadLayer(CFile& file, EoDbLayer* layer);
 
   bool GetNextVisibleGroup(CFile& file, EoDbGroup*& group);
-  bool GetNextPrimitive(CFile& file, EoDbPrimitive*& primitve);
+  bool GetNextPrimitive(CFile& file, EoDbPrimitive*& primitive);
   bool ReadNextPrimitive(CFile& file, std::uint8_t* buffer, std::int16_t& primitiveType) const;
 
   int Version();

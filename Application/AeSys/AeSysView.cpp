@@ -12,7 +12,7 @@
 #include "Resource.h"
 #include "Section.h"
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
 #include "DrawModeState.h"
 #include "IdleState.h"
@@ -183,7 +183,7 @@ ON_UPDATE_COMMAND_UI(ID_VIEW_WIREFRAME, OnUpdateViewWireframe)
 ON_UPDATE_COMMAND_UI(ID_VIEW_DIRECT2D, OnUpdateViewDirect2D)
 ON_UPDATE_COMMAND_UI(ID_VIEW_ALIASED, OnUpdateViewAliased)
 ON_UPDATE_COMMAND_UI(ID_VIEW_BACKGROUND_TOGGLE, OnUpdateViewBackgroundToggle)
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN, &AeSysView::OnDrawCommand)
 #endif
 #pragma warning(pop)
@@ -340,7 +340,7 @@ AeSysView::AeSysView() {
 }
 
 AeSysView::~AeSysView() {}
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 void AeSysView::PushState(std::unique_ptr<AeSysState> newState) {
   if (!m_stateStack.empty()) { m_stateStack.top()->OnExit(this); }
   newState->OnEnter(this);

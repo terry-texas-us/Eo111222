@@ -26,7 +26,7 @@
 #include "EoMfLayoutTabBar.h"
 #include "Section.h"
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
 #endif
 class AeSysDoc;
@@ -64,7 +64,7 @@ class AeSysView : public CView {
   };
   enum ERubs { None, Lines, Rectangles };
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
  private:
   std::stack<std::unique_ptr<AeSysState>> m_stateStack;
 
@@ -359,7 +359,7 @@ class AeSysView : public CView {
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg BOOL OnEraseBkgnd(CDC* deviceContext);
   afx_msg void OnKillFocus(CWnd* newWindow);
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
   afx_msg BOOL PreTranslateMessage(MSG* pMsg);
 #endif
   afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
@@ -685,7 +685,7 @@ class AeSysView : public CView {
   afx_msg void OnInsertTracing();
   void DoDrawModeMouseMove();
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
   afx_msg void OnDrawCommand(UINT nID);
 #endif
   afx_msg void OnDrawModeOptions();
@@ -1037,7 +1037,7 @@ class AeSysView : public CView {
    * distance is greater than the length of the line segment).
    */
   bool GenerateTickMark(const EoGePoint3d& begin, const EoGePoint3d& end, double distance, EoDbGroup* group) const;
-  void DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
+  void DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) const;
   void DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
 
  public:

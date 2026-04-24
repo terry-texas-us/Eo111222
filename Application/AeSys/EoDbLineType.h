@@ -6,7 +6,7 @@
 class EoDbLineType : public CObject {
  public:
   EoDbLineType();
-  EoDbLineType(std::int16_t index, const CString& name, const CString& comment, std::uint16_t numberOfDashLengths,
+  EoDbLineType(std::int16_t index, const CString& name, const CString& description, std::uint16_t numberOfDashElements,
       double* dashLengths);
 
   EoDbLineType(const EoDbLineType& other);

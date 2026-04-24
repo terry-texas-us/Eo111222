@@ -56,8 +56,6 @@ class EoGsVertexBuffer {
   void End(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t lineType,
       const std::wstring& lineTypeName = {});
 
-  // ── Selection (operate on accumulated vertices) ─────────────────────
-
   /// @brief Tests polyline segments for intersection with a line.
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections);
 
@@ -65,9 +63,7 @@ class EoGsVertexBuffer {
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, double& dRel, EoGePoint3d& ptProj);
 
   /// @brief Tests if any polyline segment is contained within a rectangle.
-  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
-
-  // ── Accessors ───────────────────────────────────────────────────────
+  bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint);
 
   /// @brief Read-only access to the accumulated 4D points.
   [[nodiscard]] const EoGePoint4dArray& Points() const noexcept { return m_points; }

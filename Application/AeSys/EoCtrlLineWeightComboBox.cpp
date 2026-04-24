@@ -227,9 +227,7 @@ void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMF
       const auto lineWeight = static_cast<EoDxfLineWeights::LineWeight>(itemData);
 
       int previewRight = rectContent.left + 2 + previewWidth;
-      if (previewRight > rectContent.right - 40) {
-        previewRight = rectContent.right - 40;  // Leave room for text
-      }
+      previewRight = std::min<LONG>(previewRight, rectContent.right - 40);
       const CRect previewRect(rectContent.left + 2, rectContent.top, previewRight, rectContent.bottom);
       DrawWeightPreview(deviceContext, previewRect, lineWeight, schemeColors.menuText);
 
@@ -348,7 +346,7 @@ void EoCtrlLineWeightOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   const auto lineWeight = static_cast<EoDxfLineWeights::LineWeight>(itemData);
 
   int previewRight = itemRect.left + 2 + previewWidth;
-  if (previewRight > itemRect.right - 40) { previewRight = itemRect.right - 40; }
+  previewRight = std::min<LONG>(previewRight, itemRect.right - 40);
   const CRect previewRect(itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom);
   EoCtrlLineWeightComboBox::DrawWeightPreview(&dc, previewRect, lineWeight, textColor);
 

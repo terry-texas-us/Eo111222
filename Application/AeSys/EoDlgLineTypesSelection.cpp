@@ -266,7 +266,7 @@ void EoDlgLineTypesSelection::DrawLineTypePreview(
             while (x < xEnd) {
               for (const double len : dashElements) {
                 double pixelLen = std::abs(len) * scale;
-                if (pixelLen < 1.0) { pixelLen = 1.0; }
+                pixelLen = std::max(pixelLen, 1.0);
                 if (len > 0.0) {
                   controlContext.MoveTo(static_cast<int>(x), yCenter);
                   x += pixelLen;

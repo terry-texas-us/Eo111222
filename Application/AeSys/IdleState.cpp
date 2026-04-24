@@ -1,5 +1,5 @@
 #include "Stdafx.h"
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 #include "AeSysDoc.h"  // If needed for document access
 #include "AeSysView.h"
 #include "EoGePoint3d.h"

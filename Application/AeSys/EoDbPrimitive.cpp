@@ -92,8 +92,8 @@ bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return
 
 void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, [[maybe_unused]] AeSysDoc* document) {
   m_color = static_cast<std::int16_t>(entity->m_color);
-  m_lineType = entity->m_lineType.c_str();
-  m_layerName = entity->m_layer.c_str();
+  m_lineType = entity->m_lineType;
+  m_layerName = entity->m_layer;
 
   // Determine actual PenColor and LineType and where to do substitution
   // for PenColor ByLayer

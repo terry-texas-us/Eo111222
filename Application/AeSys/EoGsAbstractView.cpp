@@ -26,48 +26,48 @@ EoGsAbstractView::EoGsAbstractView() {
   m_NearClipDistance = 20.0;
   m_FarClipDistance = 100.0;
 }
-EoGsAbstractView::EoGsAbstractView(const EoGsAbstractView& src) {
-  m_ViewMode = src.m_ViewMode;
-  m_RenderMode = src.m_RenderMode;
+EoGsAbstractView::EoGsAbstractView(const EoGsAbstractView& other) {
+  m_ViewMode = other.m_ViewMode;
+  m_RenderMode = other.m_RenderMode;
 
-  m_UcsOrthoViewType = src.m_UcsOrthoViewType;
-  m_UCSOrigin = src.m_UCSOrigin;
-  m_UCSXAxis = src.m_UCSXAxis;
-  m_UCSYAxis = src.m_UCSYAxis;
-  m_Elevation = src.m_Elevation;
+  m_UcsOrthoViewType = other.m_UcsOrthoViewType;
+  m_UCSOrigin = other.m_UCSOrigin;
+  m_UCSXAxis = other.m_UCSXAxis;
+  m_UCSYAxis = other.m_UCSYAxis;
+  m_Elevation = other.m_Elevation;
 
-  mx_Position = src.mx_Position;
-  mx_Target = src.mx_Target;
-  mx_Direction = src.mx_Direction;
-  mx_ViewUp = src.mx_ViewUp;
-  m_TwistAngle = src.m_TwistAngle;
-  m_Height = src.m_Height;
-  m_Width = src.m_Width;
-  m_LensLength = src.m_LensLength;
-  m_NearClipDistance = src.m_NearClipDistance;
-  m_FarClipDistance = src.m_FarClipDistance;
+  mx_Position = other.mx_Position;
+  mx_Target = other.mx_Target;
+  mx_Direction = other.mx_Direction;
+  mx_ViewUp = other.mx_ViewUp;
+  m_TwistAngle = other.m_TwistAngle;
+  m_Height = other.m_Height;
+  m_Width = other.m_Width;
+  m_LensLength = other.m_LensLength;
+  m_NearClipDistance = other.m_NearClipDistance;
+  m_FarClipDistance = other.m_FarClipDistance;
 }
 
-EoGsAbstractView& EoGsAbstractView::operator=(const EoGsAbstractView& src) {
-  m_ViewMode = src.m_ViewMode;
-  m_RenderMode = src.m_RenderMode;
+EoGsAbstractView& EoGsAbstractView::operator=(const EoGsAbstractView& other) {
+  m_ViewMode = other.m_ViewMode;
+  m_RenderMode = other.m_RenderMode;
 
-  m_UcsOrthoViewType = src.m_UcsOrthoViewType;
-  m_UCSOrigin = src.m_UCSOrigin;
-  m_UCSXAxis = src.m_UCSXAxis;
-  m_UCSYAxis = src.m_UCSYAxis;
-  m_Elevation = src.m_Elevation;
+  m_UcsOrthoViewType = other.m_UcsOrthoViewType;
+  m_UCSOrigin = other.m_UCSOrigin;
+  m_UCSXAxis = other.m_UCSXAxis;
+  m_UCSYAxis = other.m_UCSYAxis;
+  m_Elevation = other.m_Elevation;
 
-  mx_Position = src.mx_Position;
-  mx_Target = src.mx_Target;
-  mx_Direction = src.mx_Direction;
-  mx_ViewUp = src.mx_ViewUp;
-  m_TwistAngle = src.m_TwistAngle;
-  m_Height = src.m_Height;
-  m_Width = src.m_Width;
-  m_LensLength = src.m_LensLength;
-  m_NearClipDistance = src.m_NearClipDistance;
-  m_FarClipDistance = src.m_FarClipDistance;
+  mx_Position = other.mx_Position;
+  mx_Target = other.mx_Target;
+  mx_Direction = other.mx_Direction;
+  mx_ViewUp = other.mx_ViewUp;
+  m_TwistAngle = other.m_TwistAngle;
+  m_Height = other.m_Height;
+  m_Width = other.m_Width;
+  m_LensLength = other.m_LensLength;
+  m_NearClipDistance = other.m_NearClipDistance;
+  m_FarClipDistance = other.m_FarClipDistance;
 
   return *this;
 }

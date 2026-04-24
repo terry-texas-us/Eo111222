@@ -62,11 +62,11 @@ class EoGsAbstractView {
 
  public:  // Constructors and destructor
   EoGsAbstractView();
-  EoGsAbstractView(const EoGsAbstractView& av);
+  EoGsAbstractView(const EoGsAbstractView& other);
   virtual ~EoGsAbstractView() {}
 
  public:  // Operators
-  EoGsAbstractView& operator=(const EoGsAbstractView& av);
+  EoGsAbstractView& operator=(const EoGsAbstractView& other);
 
  public:  // Methods
   [[nodiscard]] EoGeVector3d Direction() const;

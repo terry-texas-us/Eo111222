@@ -1,5 +1,6 @@
 #include "Stdafx.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <filesystem>
@@ -24,7 +25,7 @@
 #include "EoGsViewTransform.h"
 #include "MainFrm.h"
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
 #include "IdleState.h"
 #endif
@@ -263,7 +264,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         BackgroundImageDisplay(&m_backBufferDC);
         DisplayGrid(&m_backBufferDC);
         EoGsRenderDeviceGdi renderDevice(&m_backBufferDC);
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
         auto* state = GetCurrentState();
         if (state) {
           state->OnDraw(this, &m_backBufferDC);
@@ -372,7 +373,7 @@ void AeSysView::OnInitialUpdate() {
   // layout viewport so the plot pipeline can use the same paper-space rendering path.
   if (auto* document = GetDocument()) { document->CreateDefaultPaperSpaceViewport(this); }
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
   PushState(std::make_unique<IdleState>());
 #endif
   OnModeDraw();
@@ -577,7 +578,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
 
   EoGsRenderDeviceGdi renderDevice(targetDC);
   bool isHandledByState{};
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
   if (state) { isHandledByState = state->OnUpdate(this, sender, hint, hintObject); }
 #endif
@@ -800,7 +801,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
 
     // Drawing area excludes the tab bar
     int drawingHeight = cy - tabBarHeight;
-    if (drawingHeight < 1) { drawingHeight = 1; }
+    drawingHeight = std::max(drawingHeight, 1);
 
     const double oldWidth = m_Viewport.Width();
     const double oldHeight = m_Viewport.Height();

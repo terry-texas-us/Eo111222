@@ -53,23 +53,23 @@ POSITION EoDbGroupList::Remove(EoDbGroup* group) {
   return position;
 }
 
-int EoDbGroupList::GetBlockRefCount(const CString& strBlkNam) {
+int EoDbGroupList::GetBlockRefCount(const CString& name) {
   int count{};
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    count += group->GetBlockRefCount(strBlkNam);
+    count += group->GetBlockRefCount(name);
   }
   return count;
 }
 
 void EoDbGroupList::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
+    AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, const EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
-    group->GetExtents(view, ptMin, ptMax, transformMatrix);
+    group->GetExtents(view, minimum, maximum, transformMatrix);
   }
 }
 int EoDbGroupList::GetLineTypeRefCount(const std::wstring& lineTypeName) {

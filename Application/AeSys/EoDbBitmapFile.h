@@ -3,10 +3,10 @@
 class EoDbBitmapFile : public CFile {
  public:
   EoDbBitmapFile() {}
-  EoDbBitmapFile(const CString& strPathName);
+  EoDbBitmapFile(const CString& fileName);
   EoDbBitmapFile(const EoDbBitmapFile&) = delete;
   EoDbBitmapFile& operator=(const EoDbBitmapFile&) = delete;
 
   ~EoDbBitmapFile() {}
-  bool Load(const CString& strPathName, CBitmap& bm, CPalette& pal);
+  bool Load(const CString& fileName, CBitmap& loadedBitmap, CPalette& loadedPalette);
 };

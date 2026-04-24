@@ -49,17 +49,17 @@ namespace {
  */
 std::wstring MultiByteToWString(const char* multiByte) {
   if (!multiByte) { return {L""}; }
-  const int size = ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
+  const int size = MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, nullptr, 0);
   if (size == 0) { return {L""}; }
   std::wstring string;
   string.resize(static_cast<size_t>(size) - 1);
-  ::MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, &string[0], size - 1);
+  MultiByteToWideChar(CP_UTF8, 0, multiByte, -1, &string[0], size - 1);
   return string;
 }
 
 constexpr double defaultPenWidths[numberOfPenWidths] = {
     0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
-}  // namespace
+} // namespace
 
 static void ResetPenWidthsToDefault() {
   std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidths);
@@ -71,36 +71,36 @@ double dYAxRefVecScal;
 double dOffAng;
 int tableOffset[maxPatterns]{};
 float tableValue[maxTableValues]{};
-}  // namespace hatch
+} // namespace hatch
 
 auto* pColTbl = Eo::ColorPalette;
 
 EoGsRenderState Gs::renderState;
 
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
-ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
-// Standard file based document commands
-ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
-ON_COMMAND(ID_FILE_OPEN, &AeSys::OnFileOpen)
-ON_COMMAND(ID_FILE_SAVE_ALL, &AeSys::OnFileSaveAll)
+    ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
+    // Standard file based document commands
+    ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
+    ON_COMMAND(ID_FILE_OPEN, &AeSys::OnFileOpen)
+    ON_COMMAND(ID_FILE_SAVE_ALL, &AeSys::OnFileSaveAll)
 
-ON_COMMAND(ID_EDIT_CF_GROUPS, &AeSys::OnEditCfGroups)
-ON_COMMAND(ID_EDIT_CF_IMAGE, &AeSys::OnEditCfImage)
-ON_COMMAND(ID_EDIT_CF_TEXT, &AeSys::OnEditCfText)
-ON_COMMAND(ID_FILE_RUN, &AeSys::OnFileRun)
-ON_COMMAND(ID_HELP_CONTENTS, &AeSys::OnHelpContents)
+    ON_COMMAND(ID_EDIT_CF_GROUPS, &AeSys::OnEditCfGroups)
+    ON_COMMAND(ID_EDIT_CF_IMAGE, &AeSys::OnEditCfImage)
+    ON_COMMAND(ID_EDIT_CF_TEXT, &AeSys::OnEditCfText)
+    ON_COMMAND(ID_FILE_RUN, &AeSys::OnFileRun)
+    ON_COMMAND(ID_HELP_CONTENTS, &AeSys::OnHelpContents)
 
-ON_COMMAND(ID_MODE_LETTER, &AeSys::OnModeLetter)
-ON_COMMAND(ID_MODE_REVISE, &AeSys::OnModeRevise)
+    ON_COMMAND(ID_MODE_LETTER, &AeSys::OnModeLetter)
+    ON_COMMAND(ID_MODE_REVISE, &AeSys::OnModeRevise)
 
-ON_COMMAND(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnTrapCommandsHighlight)
+    ON_COMMAND(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnTrapCommandsHighlight)
 #pragma warning(push)
 #pragma warning(disable : 4191)
-ON_UPDATE_COMMAND_UI(ID_EDIT_CF_GROUPS, &AeSys::OnUpdateEditCfGroups)
-ON_UPDATE_COMMAND_UI(ID_EDIT_CF_IMAGE, &AeSys::OnUpdateEditCfImage)
-ON_UPDATE_COMMAND_UI(ID_EDIT_CF_TEXT, &AeSys::OnUpdateEditCfText)
-ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnUpdateTrapcommandsAddgroups)
-ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHighlight)
+    ON_UPDATE_COMMAND_UI(ID_EDIT_CF_GROUPS, &AeSys::OnUpdateEditCfGroups)
+    ON_UPDATE_COMMAND_UI(ID_EDIT_CF_IMAGE, &AeSys::OnUpdateEditCfImage)
+    ON_UPDATE_COMMAND_UI(ID_EDIT_CF_TEXT, &AeSys::OnUpdateEditCfText)
+    ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnUpdateTrapcommandsAddgroups)
+    ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHighlight)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -141,10 +141,8 @@ BOOL AeSys::InitInstance() {
       ID_TOOLS_ENTRY, ID_USER_TOOL1, ID_USER_TOOL10, RUNTIME_CLASS(CUserTool), IDR_MENU_ARGS, IDR_MENU_DIRS);
 
   // Initialize common controls required to enable visual styles.
-  INITCOMMONCONTROLSEX InitCtrls{};
-  InitCtrls.dwSize = sizeof(InitCtrls);
-  InitCtrls.dwICC = ICC_WIN95_CLASSES;
-  InitCommonControlsEx(&InitCtrls);
+  constexpr INITCOMMONCONTROLSEX initCommonControls{sizeof(INITCOMMONCONTROLSEX), ICC_WIN95_CLASSES};
+  InitCommonControlsEx(&initCommonControls);
 
   CMFCButton::EnableWindowsTheming();
 
@@ -160,12 +158,12 @@ BOOL AeSys::InitInstance() {
   AddDocTemplate(m_pegDocumentTemplate);
 
   // Create main MDI Frame window
-  CMainFrame* mainFrame = new CMainFrame;
+  auto mainFrame = new CMainFrame;
   if (!mainFrame || !mainFrame->LoadFrame(IDR_MAINFRAME)) {
     delete mainFrame;
     return FALSE;
   }
-  m_pMainWnd = mainFrame;  // Set CWinApp::m_pMainWnd to the main frame window.
+  m_pMainWnd = mainFrame; // Set CWinApp::m_pMainWnd to the main frame window.
   mainFrame->DragAcceptFiles();
 
   CDC* DeviceContext = mainFrame->GetDC();
@@ -190,8 +188,8 @@ BOOL AeSys::InitInstance() {
   mainFrame->EnsureToolbarsVisible();
   m_MainFrameMenuHandle = LoadMenuW(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME));
 
-  if (!RegisterKeyPlanWindowClass(AeSys::GetInstance())) { return FALSE; }
-  if (!RegisterPreviewWindowClass(AeSys::GetInstance())) { return FALSE; }
+  if (!RegisterKeyPlanWindowClass(GetInstance())) { return FALSE; }
+  if (!RegisterPreviewWindowClass(GetInstance())) { return FALSE; }
 
   if (SetShadowFolderPath(L"AeSys Shadow Folder") != 0) {
     AddStringToMessageList(L"Failed to set shadow folder path.");
@@ -237,6 +235,7 @@ int AeSys::ExitInstance() {
 
   return CWinAppEx::ExitInstance();
 }
+
 /// <remarks> Processing occurs immediately before the framework loads the application state from the registry.
 /// </remarks>
 void AeSys::PreLoadState() {
@@ -257,12 +256,14 @@ int AeSys::ConfirmMessageBox(UINT stringResourceIdentifier, const CString& strin
 
   return (MessageBoxW(nullptr, message, caption, MB_ICONINFORMATION | MB_YESNOCANCEL | MB_DEFBUTTON2));
 }
+
 void AeSys::AddStringToMessageList(const std::wstring& message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
   mainFrame->GetOutputPane().AddStringToMessageList(message);
   if (!mainFrame->GetOutputPane().IsWindowVisible()) { mainFrame->SetPaneText(0, message.c_str()); }
 }
+
 void AeSys::AddStringToMessageList(const wchar_t* message) {
   auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
@@ -321,12 +322,16 @@ void AeSys::WarningMessageBox(UINT stringResourceIdentifier, const CString& stri
   MessageBoxW(nullptr, message, caption, MB_ICONWARNING | MB_OK);
 }
 
-void AeSys::UpdateMDITabs(BOOL resetMDIChild) { ((CMainFrame*)AfxGetMainWnd())->UpdateMDITabs(resetMDIChild); }
+void AeSys::UpdateMDITabs(BOOL resetMDIChild) {
+  static_cast<CMainFrame*>(AfxGetMainWnd())->UpdateMDITabs(resetMDIChild);
+}
+
 void AeSys::OnTrapCommandsHighlight() {
   m_TrapHighlighted = !m_TrapHighlighted;
   // LPARAM lHint = m_TrapHighlighted ? EoDb::kGroupsSafeTrap : EoDb::kGroupsSafe;
   // UpdateAllViews(nullptr, lHint, &m_TrappedGroupList);
 }
+
 void AeSys::OnEditCfGroups() { m_ClipboardDataEoGroups = !m_ClipboardDataEoGroups; }
 void AeSys::OnEditCfImage() { m_ClipboardDataImage = !m_ClipboardDataImage; }
 void AeSys::OnEditCfText() { m_ClipboardDataText = !m_ClipboardDataText; }
@@ -389,7 +394,7 @@ void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
 int AeSys::SetShadowFolderPath(const CString& folder) {
   wchar_t path[MAX_PATH]{};
 
-  if (SHGetSpecialFolderPathW(AeSys::GetSafeHwnd(), path, CSIDL_PERSONAL, TRUE)) {
+  if (SHGetSpecialFolderPathW(GetSafeHwnd(), path, CSIDL_PERSONAL, TRUE)) {
     m_ShadowFolderPath = path;
   } else {
     m_ShadowFolderPath.Empty();
@@ -418,11 +423,12 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   wchar_t szValDel[] = L",\0";
   int iHatId{};
   int iNmbHatLns{};
-  int iTblId{1};  // Reserve position 0 as uninitialized sentinel for tableOffset
+  int iTblId{1}; // Reserve position 0 as uninitialized sentinel for tableOffset
 
   while (fl.ReadString(line, sizeof(line) / sizeof(wchar_t) - 1) != nullptr) {
-    if (*line == '!') {  // New Hatch index
-      if (iHatId != 0) { hatch::tableValue[hatch::tableOffset[iHatId]] = float(iNmbHatLns); }
+    if (*line == '!') {
+      // New Hatch index
+      if (iHatId != 0) { hatch::tableValue[hatch::tableOffset[iHatId]] = static_cast<float>(iNmbHatLns); }
       ++iHatId;
       if (iHatId >= hatch::maxPatterns) {
         ATLTRACE(traceGeneral, 0, L"LoadHatchesFromFile: pattern count exceeds maxPatterns (%d)\n", hatch::maxPatterns);
@@ -449,8 +455,8 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
         iTblId++;
         pTok = wcstok_s(nullptr, szValDel, &NextToken);
       }
-      hatch::tableValue[iNmbStrsId++] = float(iNmbEnts - 5);
-      hatch::tableValue[iNmbStrsId] = float(dTotStrsLen);
+      hatch::tableValue[iNmbStrsId++] = static_cast<float>(iNmbEnts - 5);
+      hatch::tableValue[iNmbStrsId] = static_cast<float>(dTotStrsLen);
       iNmbHatLns++;
     }
   }
@@ -460,6 +466,7 @@ EoGePoint3d AeSys::HomePointGet(int i) const {
   if (i >= 0 && i < 9) { return (m_HomePoints[i]); }
   return (EoGePoint3d::kOrigin);
 }
+
 void AeSys::HomePointSave(int i, const EoGePoint3d& pt) {
   if (i >= 0 && i < 9) { m_HomePoints[i] = pt; }
 }
@@ -491,6 +498,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   Gs::renderState.SetPen(nullptr, deviceContext, Eo::defaultColor, 1);
   Gs::renderState.SetPointStyle(0);
 }
+
 void AeSys::EditColorPalette() {
   CHOOSECOLOR cc{};
   cc.lStructSize = sizeof(CHOOSECOLOR);
@@ -549,6 +557,7 @@ void AeSys::LoadModeResources(int mode, AeSysView* targetView) {
     activeView->RubberBandingDisable();
   }
 }
+
 /// <remarks> Font stroke table encoded as follows:
 /// b0 - b11  relative y displacement
 /// b12 - b23 relative x displacement
@@ -559,9 +568,10 @@ void AeSys::LoadModeResources(int mode, AeSysView* targetView) {
 ///    224-entry advance width table at int32[226], stroke data at int32[450].
 /// </remarks>
 void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
-  HANDLE OpenHandle = CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  HANDLE OpenHandle = CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+      nullptr);
   if (OpenHandle != INVALID_HANDLE_VALUE) {
-    if (SetFilePointer(OpenHandle, 0, nullptr, FILE_BEGIN) != (DWORD)-1) {
+    if (SetFilePointer(OpenHandle, 0, nullptr, FILE_BEGIN) != static_cast<DWORD>(-1)) {
       if (m_SimplexStrokeFont == nullptr) { m_SimplexStrokeFont = new char[Eo::strokeFontFileSizeInBytes]; }
       DWORD NumberOfBytesRead;
       if (!ReadFile(OpenHandle, m_SimplexStrokeFont, Eo::strokeFontFileSizeInBytes, &NumberOfBytesRead, nullptr)) {
@@ -574,7 +584,7 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
     if (ResourceHandle != nullptr) {
       const rsize_t ResourceSize = SizeofResource(nullptr, ResourceHandle);
       m_SimplexStrokeFont = new char[ResourceSize];
-      LPVOID const Resource = LockResource(LoadResource(nullptr, ResourceHandle));
+      const LPVOID Resource = LockResource(LoadResource(nullptr, ResourceHandle));
       memcpy_s(m_SimplexStrokeFont, ResourceSize, Resource, ResourceSize);
     }
   }
@@ -583,9 +593,11 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
     m_StrokeFontVersion = (fontData[0] == Eo::strokeFontV2MagicNumber) ? 2 : 1;
   }
 }
+
 void AeSys::ReleaseSimplexStrokeFont() {
   if (m_SimplexStrokeFont != nullptr) { delete[] m_SimplexStrokeFont; }
 }
+
 void AeSys::OnUpdateEditCfGroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataEoGroups); }
 void AeSys::OnUpdateEditCfImage(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataImage); }
 void AeSys::OnUpdateEditCfText(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataText); }
@@ -593,30 +605,30 @@ void AeSys::OnUpdateTrapcommandsAddgroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_T
 void AeSys::OnUpdateTrapcommandsHighlight(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_TrapHighlighted); }
 
 // Modifies the base accelerator table by defining the mode specific keys.
-void AeSys::BuildModifiedAcceleratorTable() {
-  CMainFrame* MainFrame = (CMainFrame*)AfxGetMainWnd();
+void AeSys::BuildModifiedAcceleratorTable() const {
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
 
-  HACCEL AcceleratorTableHandle = MainFrame->m_hAccelTable;
-  ::DestroyAcceleratorTable(AcceleratorTableHandle);
+  HACCEL acceleratorTableHandle = mainFrame->m_hAccelTable;
+  DestroyAcceleratorTable(acceleratorTableHandle);
 
-  HACCEL const ModeAcceleratorTableHandle =
-      ::LoadAccelerators(AeSys::GetInstance(), MAKEINTRESOURCE(m_ModeResourceIdentifier));
-  int ModeAcceleratorTableEntries = CopyAcceleratorTableW(ModeAcceleratorTableHandle, nullptr, 0);
+  const HACCEL modeAcceleratorTableHandle =
+      ::LoadAccelerators(GetInstance(), MAKEINTRESOURCE(m_ModeResourceIdentifier));
+  const int modeAcceleratorTableEntries = CopyAcceleratorTableW(modeAcceleratorTableHandle, nullptr, 0);
 
-  AcceleratorTableHandle = ::LoadAccelerators(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
-  int const AcceleratorTableEntries = CopyAcceleratorTableW(AcceleratorTableHandle, nullptr, 0);
+  acceleratorTableHandle = ::LoadAccelerators(GetInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));
+  const int acceleratorTableEntries = CopyAcceleratorTableW(acceleratorTableHandle, nullptr, 0);
 
-  LPACCEL ModifiedAcceleratorTable =
-      new ACCEL[static_cast<size_t>(AcceleratorTableEntries + ModeAcceleratorTableEntries)];
+  const auto modifiedAcceleratorTable =
+      new ACCEL[static_cast<size_t>(acceleratorTableEntries + modeAcceleratorTableEntries)];
 
-  CopyAcceleratorTableW(ModeAcceleratorTableHandle, ModifiedAcceleratorTable, ModeAcceleratorTableEntries);
+  CopyAcceleratorTableW(modeAcceleratorTableHandle, modifiedAcceleratorTable, modeAcceleratorTableEntries);
   CopyAcceleratorTableW(
-      AcceleratorTableHandle, &ModifiedAcceleratorTable[ModeAcceleratorTableEntries], AcceleratorTableEntries);
+      acceleratorTableHandle, &modifiedAcceleratorTable[modeAcceleratorTableEntries], acceleratorTableEntries);
 
-  MainFrame->m_hAccelTable =
-      ::CreateAcceleratorTable(ModifiedAcceleratorTable, AcceleratorTableEntries + ModeAcceleratorTableEntries);
+  mainFrame->m_hAccelTable =
+      ::CreateAcceleratorTable(modifiedAcceleratorTable, acceleratorTableEntries + modeAcceleratorTableEntries);
 
-  delete[] ModifiedAcceleratorTable;
+  delete[] modifiedAcceleratorTable;
 }
 
 void AeSys::OnFileSaveAll() {
@@ -658,7 +670,7 @@ void AeSys::FormatAngle(CString& angleAsString, double angle, const int width, c
 
 void AeSys::FormatLength(
     CString& lengthAsString, Eo::Units units, double length, const int minWidth, const int precision) {
-  const size_t bufSize{32};
+  constexpr size_t bufSize{32};
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
 
   if (units == Eo::Units::Architectural || units == Eo::Units::ArchitecturalS) {
@@ -679,11 +691,11 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
   ScaledLength = std::abs(ScaledLength);
 
-  int Feet = int(ScaledLength / 12.0);
-  int Inches = abs(int(fmod(ScaledLength, 12.0)));
+  int Feet = static_cast<int>(ScaledLength / 12.0);
+  int Inches = abs(static_cast<int>(fmod(ScaledLength, 12.0)));
 
   int fractionPrecision = GetArchitecturalUnitsFractionPrecision();
-  int numerator = int(std::abs(fmod(ScaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
+  int numerator = static_cast<int>(std::abs(fmod(ScaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
 
   if (numerator == fractionPrecision) {
     if (Inches == 11) {
@@ -701,7 +713,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
   _itow_s(Inches, szBuf, 16, 10);
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
   if (numerator > 0) {
-    wcscat_s(lengthAsBuffer, static_cast<size_t>(bufSize), (units == Eo::Units::ArchitecturalS) ? L"\\S" : L"-");
+    wcscat_s(lengthAsBuffer, bufSize, (units == Eo::Units::ArchitecturalS) ? L"\\S" : L"-");
     const int iGrtComDivisor = std::gcd(numerator, fractionPrecision);
     numerator /= iGrtComDivisor;
     const int Denominator = fractionPrecision / iGrtComDivisor;
@@ -724,15 +736,15 @@ void AeSys::FormatLengthEngineering(
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
   ScaledLength = std::abs(ScaledLength);
 
-  int Precision = (ScaledLength >= 1.0) ? precision - int(log10(ScaledLength)) - 1 : precision;
+  int Precision = (ScaledLength >= 1.0) ? precision - static_cast<int>(log10(ScaledLength)) - 1 : precision;
 
   if (Precision >= 0) {
-    _itow_s(int(ScaledLength / 12.0), szBuf, 16, 10);
+    _itow_s(static_cast<int>(ScaledLength / 12.0), szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
     ScaledLength = fmod(ScaledLength, 12.0);
     wcscat_s(lengthAsBuffer, bufSize, L"'");
 
-    _itow_s(int(ScaledLength), szBuf, 16, 10);
+    _itow_s(static_cast<int>(ScaledLength), szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
 
     if (Precision > 0) {
@@ -748,6 +760,7 @@ void AeSys::FormatLengthEngineering(
     }
   }
 }
+
 void AeSys::FormatLengthSimple(
     LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length, const int width, const int precision) {
   const double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -789,7 +802,7 @@ void AeSys::FormatLengthSimple(
     case Eo::Units::Architectural:
     case Eo::Units::ArchitecturalS:
     case Eo::Units::Engineering:
-      [[fallthrough]];  // Handled by specialized implementations;
+      [[fallthrough]]; // Handled by specialized implementations;
     default:
       break;
   }
@@ -813,7 +826,8 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
   double totalLength = feetLength;
 
   // Check if end of feet portion is end of inputLine and investigate inches portion if not
-  if (end[1] != L'\0') {  // Parse inches portion
+  if (end[1] != L'\0') {
+    // Parse inches portion
     const double inches = wcstod(&end[1], &end);
     if (end == nullptr) { throw L"Invalid inches value in length string."; }
     // Add/subtract inches to totallength
@@ -824,7 +838,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
       if (*end == L'-') {
         wchar_t* fractionEnd{};
         const double numerator = wcstod(&end[1], &fractionEnd);
-        if (fractionEnd == &end[1]) { throw L"Invalid fraction in length string."; }  // allowing 0.0 numerator here
+        if (fractionEnd == &end[1]) { throw L"Invalid fraction in length string."; } // allowing 0.0 numerator here
         end = fractionEnd;
         const double denominator = wcstod(&end[1], &fractionEnd);
         if (fractionEnd == &end[1] || denominator == 0.0) { throw L"Invalid fraction denominator in length string."; }
@@ -836,7 +850,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
     }
   }
   if (*end == L'\"') {
-    end++;  // the inches component had the optional `"` character, skip it
+    end++; // the inches component had the optional `"` character, skip it
   }
   return totalLength;
 }
@@ -858,14 +872,14 @@ double AeSys::ParseLength(wchar_t* inputLine) {
     end = fractionEnd;
   }
 
-  switch (toupper(static_cast<int>(end[0]))) {
-    case '\'':  // Feet optional inches
+  switch (toupper(end[0])) {
+    case '\'': // Feet optional inches
       length *= 12.0;
       length = AddOptionalInches(inputLine, length, end);
       break;
 
     case 'M':
-      if (toupper(static_cast<int>(end[1])) == 'M') {
+      if (toupper(end[1]) == 'M') {
         length *= 0.03937007874015748;
       } else {
         length *= 39.37007874015748;
@@ -912,48 +926,46 @@ double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
     } catch (const wchar_t* errorMessage) { app.AddStringToMessageList(std::wstring(errorMessage)); }
 
     if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken ||
-        iTyp == lex::SimpleUnitsLengthToken) {
+      iTyp == lex::SimpleUnitsLengthToken) {
       return (length[0]);
-    } else {
-      lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);
-
-      switch (units) {
-        case Eo::Units::Architectural:
-        case Eo::Units::Engineering:
-        case Eo::Units::Feet:
-          length[0] *= 12.0;
-          break;
-
-        case Eo::Units::Meters:
-          length[0] *= 39.37007874015748;
-          break;
-
-        case Eo::Units::Millimeters:
-          length[0] *= 0.03937007874015748;
-          break;
-
-        case Eo::Units::Centimeters:
-          length[0] *= 0.3937007874015748;
-          break;
-
-        case Eo::Units::Decimeters:
-          length[0] *= 3.937007874015748;
-          break;
-
-        case Eo::Units::Kilometers:
-          length[0] *= 39370.07874015748;
-          break;
-
-        case Eo::Units::ArchitecturalS:
-        case Eo::Units::Inches:
-          break;
-      }
-      length[0] /= AeSysView::GetActiveView()->GetWorldScale();
     }
-    return (length[0]);
+    lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);
 
+    switch (units) {
+      case Eo::Units::Architectural:
+      case Eo::Units::Engineering:
+      case Eo::Units::Feet:
+        length[0] *= 12.0;
+        break;
+
+      case Eo::Units::Meters:
+        length[0] *= 39.37007874015748;
+        break;
+
+      case Eo::Units::Millimeters:
+        length[0] *= 0.03937007874015748;
+        break;
+
+      case Eo::Units::Centimeters:
+        length[0] *= 0.3937007874015748;
+        break;
+
+      case Eo::Units::Decimeters:
+        length[0] *= 3.937007874015748;
+        break;
+
+      case Eo::Units::Kilometers:
+        length[0] *= 39370.07874015748;
+        break;
+
+      case Eo::Units::ArchitecturalS:
+      case Eo::Units::Inches:
+        break;
+    }
+    length[0] /= AeSysView::GetActiveView()->GetWorldScale();
+    return (length[0]);
   } catch (const wchar_t* errorMessage) {
-    ::MessageBoxW(nullptr, errorMessage, nullptr, MB_ICONWARNING | MB_OK);
+    MessageBoxW(nullptr, errorMessage, nullptr, MB_ICONWARNING | MB_OK);
     return (0.0);
   }
 }
@@ -961,19 +973,21 @@ double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
 // EoDlgAbout dialog used for App About
 
 class EoDlgAbout : public CDialogEx {
- public:
+public:
   EoDlgAbout();
   EoDlgAbout(const EoDlgAbout&) = delete;
   EoDlgAbout& operator=(const EoDlgAbout&) = delete;
 
   enum { IDD = IDD_ABOUTBOX };
 
- protected:
-  virtual void DoDataExchange(CDataExchange* dataExchange);
-  virtual void OnOK();
+protected:
+  void DoDataExchange(CDataExchange* dataExchange) override;
+  void OnOK() override;
 };
 
-EoDlgAbout::EoDlgAbout() : CDialogEx(EoDlgAbout::IDD) {}
+EoDlgAbout::EoDlgAbout() : CDialogEx(IDD) {
+}
+
 void EoDlgAbout::DoDataExchange(CDataExchange* dataExchange) { CDialogEx::DoDataExchange(dataExchange); }
 void EoDlgAbout::OnOK() { CDialogEx::OnOK(); }
 
@@ -984,7 +998,7 @@ void AeSys::OnAppAbout() {
 
 namespace App {
 EoDb::FileTypes FileTypeFromPath(const CString& pathName) {
-  EoDb::FileTypes type(EoDb::FileTypes::Unknown);
+  auto type(EoDb::FileTypes::Unknown);
 
   int dotPosition = pathName.ReverseFind(L'.');
   if (dotPosition != -1 && dotPosition < pathName.GetLength() - 1) {
@@ -1009,7 +1023,7 @@ EoDb::FileTypes FileTypeFromPath(const CString& pathName) {
 }
 
 CString PathFromCommandLine() {
-  CString pathName = ::GetCommandLineW();
+  CString pathName = GetCommandLineW();
   const int lastPathDelimiter = pathName.ReverseFind(L'\\');
   pathName = pathName.Mid(1, lastPathDelimiter - 1);
 
@@ -1023,7 +1037,7 @@ CString LoadStringResource(UINT resourceIdentifier) {
 #ifdef _DEBUG
   assert(success == TRUE && "Failed to load string resource");
 #else
-  (void)success;  // Suppress unused variable warning in release
+  (void)success; // Suppress unused variable warning in release
 #endif
   return resourceString;
 }
@@ -1032,5 +1046,4 @@ CString ResourceFolderPath() {
   const auto applicationPath = PathFromCommandLine();
   return applicationPath + L"\\res\\";
 }
-
-}  // namespace App
+} // namespace App

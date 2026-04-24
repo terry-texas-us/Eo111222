@@ -6,14 +6,14 @@ class EoGeMatrixRow {
   double m_d[4];
 
  public:
-  EoGeMatrixRow& operator+=(const EoGeMatrixRow& v);
+  EoGeMatrixRow& operator+=(const EoGeMatrixRow& row);
   EoGeMatrixRow& operator-=(const EoGeMatrixRow& row);
   EoGeMatrixRow& operator*=(double d);
   EoGeMatrixRow& operator/=(double d);
 
   EoGeMatrixRow operator+(const EoGeMatrixRow& row) const;
   EoGeMatrixRow operator-(const EoGeMatrixRow& row);
-  EoGeMatrixRow operator*(double d) const;
+  EoGeMatrixRow operator*(double scaleFactor) const;
 
   double& operator[](int i);
   const double& operator[](int i) const;

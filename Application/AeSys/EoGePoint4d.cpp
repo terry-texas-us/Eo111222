@@ -98,8 +98,8 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
     PointsArrayOut.RemoveAll();
   }
 }
-void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoGePoint4d& ptQ,
-    EoGeVector3d& planeNormal, EoGePoint4dArray& pointsArrayOut) {
+void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoGePoint4d& pointOnClipPlane,
+    EoGeVector3d& clipPlaneNormal, EoGePoint4dArray& pointsArrayOut) {
   if (pointsArrayIn.IsEmpty()) { return; }
 
   EoGePoint4d pt;
@@ -107,7 +107,7 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   bool bEdgeVis[2]{};
 
   const bool bVisVer0 =
-      DotProduct(EoGeVector3d(EoGePoint3d{ptQ}, EoGePoint3d{pointsArrayIn[0]}), planeNormal) >= -Eo::geometricTolerance
+      DotProduct(EoGeVector3d(EoGePoint3d{pointOnClipPlane}, EoGePoint3d{pointsArrayIn[0]}), clipPlaneNormal) >= -Eo::geometricTolerance
           ? true
           : false;
 
@@ -119,12 +119,12 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   for (int i = 1; i < iPtsIn; i++) {
     ptEdge[1] = pointsArrayIn[i];
     bEdgeVis[1] =
-        DotProduct(EoGeVector3d(EoGePoint3d{ptQ}, EoGePoint3d{ptEdge[1]}), planeNormal) >= -Eo::geometricTolerance
+        DotProduct(EoGeVector3d(EoGePoint3d{pointOnClipPlane}, EoGePoint3d{ptEdge[1]}), clipPlaneNormal) >= -Eo::geometricTolerance
             ? true
             : false;
 
     if (bEdgeVis[0] != bEdgeVis[1]) {  // Vetices of edge on opposite sides of clip plane
-      pt = EoGeLine::IntersectionWithPlane(ptEdge[0], ptEdge[1], ptQ, planeNormal);
+      pt = EoGeLine::IntersectionWithPlane(ptEdge[0], ptEdge[1], pointOnClipPlane, clipPlaneNormal);
       pointsArrayOut.Add(pt);
     }
     if (bEdgeVis[1]) { pointsArrayOut.Add(pointsArrayIn[i]); }
@@ -133,7 +133,7 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   }
   if (pointsArrayOut.GetSize() != 0 &&
       bEdgeVis[0] != bVisVer0) {  // first and last vertices on opposite sides of clip plane
-    pt = EoGeLine::IntersectionWithPlane(ptEdge[0], pointsArrayIn[0], ptQ, planeNormal);
+    pt = EoGeLine::IntersectionWithPlane(ptEdge[0], pointsArrayIn[0], pointOnClipPlane, clipPlaneNormal);
     pointsArrayOut.Add(pt);
   }
 }

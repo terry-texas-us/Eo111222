@@ -34,7 +34,7 @@ class EoDlgFileManageLayers : public CDialog {
   int m_editItemForRepos{-1};
   HWND m_previewWindowHandle{};
 
-  void DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& rcItem);
+  void DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& itemRectangle);
 
   afx_msg void OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT drawItemStruct);
 

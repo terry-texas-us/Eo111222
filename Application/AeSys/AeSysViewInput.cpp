@@ -13,7 +13,7 @@
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
 #endif
 
@@ -30,7 +30,7 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
     }
   }
 }
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
   if (pMsg->message == WM_KEYDOWN) {
     auto* state = GetCurrentState();
@@ -43,7 +43,7 @@ BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
 #endif
 
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
   if (state) {
     state->OnLButtonDown(this, flags, point);
@@ -253,7 +253,7 @@ void AeSysView::OnMButtonUp([[maybe_unused]] UINT flags, [[maybe_unused]] CPoint
 
 void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
   if (state) { state->OnMouseMove(this, flags, point); }
 #endif

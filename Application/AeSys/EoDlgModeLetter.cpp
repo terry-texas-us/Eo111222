@@ -27,7 +27,7 @@ void EoDlgModeLetter::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgModeLetter::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  m_Point = app.GetCursorPosition();
+  m_Point = AeSys::GetCursorPosition();
 
   return TRUE;
 }

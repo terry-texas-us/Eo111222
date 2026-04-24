@@ -1,5 +1,6 @@
 #include "Stdafx.h"
 
+#include <algorithm>
 #include <format>
 
 #include "AeSysDoc.h"
@@ -131,7 +132,7 @@ void EoDlgTextStyleManager::CommitInPlaceEdit() {
   m_editingColumn = -1;
 
   if (editingColumn == kHeightColumn) {
-    if (newValue < 0.0) { newValue = 0.0; }
+    newValue = std::max(newValue, 0.0);
   } else if (editingColumn == kWidthFactorColumn) {
     if (newValue <= 0.0) { newValue = 1.0; }  // width factor must be positive
   }

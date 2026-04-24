@@ -184,9 +184,9 @@ void EoGsViewTransform::ZAxisRotation(double sinAngle, double cosAngle) {
   m_Matrix *= EoGeTransformMatrix::ZAxisRotation(sinAngle, cosAngle);
 }
 
-void EoGsViewTransform::Scale(EoGeVector3d v) {
+void EoGsViewTransform::Scale(EoGeVector3d scale) {
   EoGeTransformMatrix transformMatrix;
-  transformMatrix.Scale(v);
+  transformMatrix.Scale(scale);
   m_Matrix *= transformMatrix;
 }
 

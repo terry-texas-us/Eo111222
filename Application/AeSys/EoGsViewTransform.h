@@ -33,7 +33,7 @@ class EoGsViewTransform : public EoGsAbstractView {
   ~EoGsViewTransform() override {}
 
  public:  // Operators
-  EoGsViewTransform& operator=(const EoGsViewTransform& src);
+  EoGsViewTransform& operator=(const EoGsViewTransform& other);
 
  public:  // Methods
   void AdjustWindow(double aspectRatio);
@@ -43,7 +43,7 @@ class EoGsViewTransform : public EoGsAbstractView {
 
   void Initialize(const EoGsViewport& viewport);
   void LoadIdentity();
-  void ZAxisRotation(double dSinAng, double dCosAng);
+  void ZAxisRotation(double sinAngle, double cosAngle);
   void Scale(EoGeVector3d scale);
 
   /** Sets a window which is centered on the view target after adjusting for viewport aspect ratio

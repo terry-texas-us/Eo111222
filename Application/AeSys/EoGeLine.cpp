@@ -25,7 +25,7 @@ EoGeLine::EoGeLine(const EoGeLine& other) {
 
 bool EoGeLine::operator==(const EoGeLine& line) const { return (Identical(line, Eo::geometricTolerance)); }
 
-inline bool EoGeLine::operator!=(const EoGeLine& line) const { return (!Identical(line, Eo::geometricTolerance)); }
+inline bool EoGeLine::operator!=(const EoGeLine& other) const { return (!Identical(other, Eo::geometricTolerance)); }
 
 inline EoGeLine& EoGeLine::operator=(const EoGeLine& other) {
   begin = other.begin;
@@ -134,8 +134,8 @@ std::uint16_t EoGeLine::CutAtPoint(const EoGePoint3d& point, EoGeLine& line) {
   return result;
 }
 
-int EoGeLine::DirRelOfPt(EoGePoint3d pt) const {
-  double dDet = begin.x * (end.y - pt.y) - end.x * (begin.y - pt.y) + pt.x * (begin.y - end.y);
+int EoGeLine::DirRelOfPt(const EoGePoint3d& point) const {
+  double dDet = begin.x * (end.y - point.y) - end.x * (begin.y - point.y) + point.x * (begin.y - end.y);
 
   if (dDet > Eo::geometricTolerance) {
     return (1);
@@ -240,14 +240,14 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
   }
 }
 
-bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, double apert, EoGePoint3d& ptProj, double* rel) const {
-  if (pt.x < std::min(begin.x, end.x) - apert) { return false; }
-  if (pt.x > std::max(begin.x, end.x) + apert) { return false; }
-  if (pt.y < std::min(begin.y, end.y) - apert) { return false; }
-  if (pt.y > std::max(begin.y, end.y) + apert) { return false; }
+bool EoGeLine::IsSelectedByPointXY(const EoGePoint3d& point, double aperture, EoGePoint3d& projectedPoint, double* relationship) const {
+  if (point.x < std::min(begin.x, end.x) - aperture) { return false; }
+  if (point.x > std::max(begin.x, end.x) + aperture) { return false; }
+  if (point.y < std::min(begin.y, end.y) - aperture) { return false; }
+  if (point.y > std::max(begin.y, end.y) + aperture) { return false; }
 
-  const double dPBegX = begin.x - pt.x;
-  const double dPBegY = begin.y - pt.y;
+  const double dPBegX = begin.x - point.x;
+  const double dPBegY = begin.y - point.y;
 
   const double dBegEndX = end.x - begin.x;
   const double dBegEndY = end.y - begin.y;
@@ -255,19 +255,19 @@ bool EoGeLine::IsSelectedByPointXY(EoGePoint3d pt, double apert, EoGePoint3d& pt
   double distanceSquared{};
 
   if (dDivr < Eo::geometricTolerance) {
-    *rel = 0.;
+    *relationship = 0.;
     distanceSquared = dPBegX * dPBegX + dPBegY * dPBegY;
   } else {
-    *rel = -(dPBegX * dBegEndX + dPBegY * dBegEndY) / dDivr;
-    *rel = std::max(0.0, std::min(1.0, *rel));
-    const double dx = dPBegX + *rel * dBegEndX;
-    const double dy = dPBegY + *rel * dBegEndY;
+    *relationship = -(dPBegX * dBegEndX + dPBegY * dBegEndY) / dDivr;
+    *relationship = std::max(0.0, std::min(1.0, *relationship));
+    const double dx = dPBegX + *relationship * dBegEndX;
+    const double dy = dPBegY + *relationship * dBegEndY;
     distanceSquared = dx * dx + dy * dy;
   }
-  if (distanceSquared > apert * apert) { return false; }
+  if (distanceSquared > aperture * aperture) { return false; }
 
-  ptProj.x = begin.x + (*rel * dBegEndX);
-  ptProj.y = begin.y + (*rel * dBegEndY);
+  projectedPoint.x = begin.x + (*relationship * dBegEndX);
+  projectedPoint.y = begin.y + (*relationship * dBegEndY);
 
   return true;
 }
@@ -461,7 +461,7 @@ bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLin
   return false;
 }
 
-bool EoGeLine::Intersection_xy(EoGeLine firstLine, EoGeLine secondLine, EoGePoint3d& intersection) {
+bool EoGeLine::Intersection_xy(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection) {
   EoGeVector3d firstVector(firstLine.begin, firstLine.end);
   const EoGeVector3d secondVector(secondLine.begin, secondLine.end);
 

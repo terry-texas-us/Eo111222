@@ -21,10 +21,10 @@ class EoGsViewport {
 
  public:  // Constructors and destructors
   EoGsViewport() = default;
-  EoGsViewport(const EoGsViewport& src);
+  EoGsViewport(const EoGsViewport& other);
 
   ~EoGsViewport() = default;
-  EoGsViewport& operator=(const EoGsViewport& src);
+  EoGsViewport& operator=(const EoGsViewport& other);
 
   [[nodiscard]] CPoint ProjectToClient(const EoGePoint4d& ndcPoint) const;
 

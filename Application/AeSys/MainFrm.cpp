@@ -126,7 +126,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   }
   // SetSizes must be called AFTER LoadToolBar — LoadToolBar with bLocked=TRUE
   // recalculates m_sizeButton from resource dimensions, overriding any pre-set sizes.
-  m_standardToolBar.SetSizes(buttonSize, imageSize);
+  CMFCToolBar::SetSizes(buttonSize, imageSize);
   m_standardToolBar.SetWindowTextW(L"Standard");
 
   if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
@@ -136,7 +136,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   }
   // Match cell height to the standard toolbar so all toolbars on the same docking row
   // report identical height to the docking manager.
-  m_renderPropertiesToolBar.SetSizes(buttonSize, imageSize);
+  EoMfStatelessToolBar::SetSizes(buttonSize, imageSize);
   m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
 
   if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) || !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
@@ -144,7 +144,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
     return -1;
   }
   // Match cell height to the standard toolbar
-  m_stylesToolBar.SetSizes(buttonSize, imageSize);
+  EoMfStatelessToolBar::SetSizes(buttonSize, imageSize);
   m_stylesToolBar.SetWindowTextW(L"Styles");
 
   if (!m_layerPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
@@ -152,7 +152,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create layer properties toolbar\n");
     return -1;
   }
-  m_layerPropertiesToolBar.SetSizes(buttonSize, imageSize);
+  EoMfStatelessToolBar::SetSizes(buttonSize, imageSize);
   m_layerPropertiesToolBar.SetWindowTextW(L"Layers");
 
   InitUserToolbars(nullptr, firstUserToolBarId, lastUserToolBarId);
@@ -514,7 +514,7 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
         const CSize adjustedSize(std::max(32, targetHeight), targetHeight);
         ATLTRACE2(traceGeneral, 1, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n", comboRect.Height(),
             adjustedSize.cx, adjustedSize.cy);
-        m_standardToolBar.SetSizes(adjustedSize, kImageSize);
+        EoMfStatelessToolBar::SetSizes(adjustedSize, kImageSize);
         m_standardToolBar.SetLockedSizes(adjustedSize, kImageSize, TRUE);
         m_renderPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);
         m_layerPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);

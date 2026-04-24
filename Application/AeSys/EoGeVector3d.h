@@ -130,11 +130,11 @@ class EoGeVector3d {
 [[nodiscard]] EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle);
 
 /** @brief Computes the cross product of the two vectors
- * @param vector1 First vector
- * @param vector2 Second vector
+ * @param u First vector
+ * @param v Second vector
  * @return Cross product vector
  */
-[[nodiscard]] constexpr EoGeVector3d CrossProduct(const EoGeVector3d& vector1, const EoGeVector3d& vector2) noexcept;
+[[nodiscard]] constexpr EoGeVector3d CrossProduct(const EoGeVector3d& u, const EoGeVector3d& v) noexcept;
 
 /** @brief Computes the scalar product (= inner product) of the two vectors.
  * @param u First vector

@@ -38,7 +38,7 @@ class EoDbGroupList : public CObList {
   
   int GetBlockRefCount(const CString& name);
   /// @brief Determines the extent of all groups in list.
-  void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, EoGeTransformMatrix& transformMatrix);
+  void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, const EoGeTransformMatrix& transformMatrix);
   int GetLineTypeRefCount(const std::wstring& lineTypeName);
 
   /** Modifies the notes of all groups in the list using the specified font definition, character cell definition and
@@ -58,6 +58,6 @@ class EoDbGroupList : public CObList {
   POSITION Remove(EoDbGroup* group);
   EoDbGroup* SelectGroupUsingPoint(const EoGePoint3d& pt);
   void Transform(const EoGeTransformMatrix& transformMatrix);
-  void Translate(EoGeVector3d translate);
+  void Translate(EoGeVector3d v);
   void Write(CFile& file, std::uint8_t* buffer);
 };

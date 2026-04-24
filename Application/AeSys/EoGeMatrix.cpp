@@ -73,12 +73,13 @@ void EoGeMatrixRow::Exchange(EoGeMatrixRow& rowA, EoGeMatrixRow& rowB) {
 }
 
 EoGeMatrix::EoGeMatrix(
-    const EoGeMatrixRow& v0, const EoGeMatrixRow& v1, const EoGeMatrixRow& v2, const EoGeMatrixRow& v3) {
-  m_row[0] = v0;
-  m_row[1] = v1;
-  m_row[2] = v2;
-  m_row[3] = v3;
+    const EoGeMatrixRow& row0, const EoGeMatrixRow& row1, const EoGeMatrixRow& row2, const EoGeMatrixRow& row3) {
+  m_row[0] = row0;
+  m_row[1] = row1;
+  m_row[2] = row2;
+  m_row[3] = row3;
 }
+
 EoGeMatrix& EoGeMatrix::operator*=(double scaleFactor) {
   m_row[0] *= scaleFactor;
   m_row[1] *= scaleFactor;

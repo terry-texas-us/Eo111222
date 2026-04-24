@@ -49,8 +49,8 @@ class CMainFrame : public CMDIFrameWndEx {
 
  public:
   BOOL PreCreateWindow(CREATESTRUCT& cs) override;
-  BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
-      CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr) override;
+  BOOL LoadFrame(UINT resourceId, DWORD defaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
+      CWnd* parentWnd = nullptr, CCreateContext* createContext = nullptr) override;
 
  public:
   ~CMainFrame() override;
@@ -83,7 +83,7 @@ class CMainFrame : public CMDIFrameWndEx {
 
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
   afx_msg LRESULT OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam);
-  afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
+  afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM name);
 
   DECLARE_MESSAGE_MAP()
 

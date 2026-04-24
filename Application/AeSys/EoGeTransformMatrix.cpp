@@ -241,11 +241,11 @@ EoGeTransformMatrix EoGeTransformMatrix::ZAxisRotation(double sinAngle, double c
   return matrix;
 }
 
-void EoGeTransformMatrix::Scale(const EoGeVector3d& scaleVector) {
+void EoGeTransformMatrix::Scale(const EoGeVector3d& scaleFactors) {
   for (int i = 0; i < 4; i++) {
-    m_4X4[0][i] *= scaleVector.x;
-    m_4X4[1][i] *= scaleVector.y;
-    m_4X4[2][i] *= scaleVector.z;
+    m_4X4[0][i] *= scaleFactors.x;
+    m_4X4[1][i] *= scaleFactors.y;
+    m_4X4[2][i] *= scaleFactors.z;
   }
 }
 

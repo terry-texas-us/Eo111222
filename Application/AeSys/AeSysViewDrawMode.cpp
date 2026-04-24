@@ -283,7 +283,7 @@ void AeSysView::OnDrawModeShiftReturn() {
   previousDrawCommand = 0;
   pts.RemoveAll();
 }
-#if defined(USING_STATE_PATTERN)
+#ifdef USING_STATE_PATTERN
 void AeSysView::OnDrawCommand(UINT command) {
   auto* state = GetCurrentState();
   if (state) {
