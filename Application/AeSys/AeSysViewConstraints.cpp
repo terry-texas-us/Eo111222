@@ -3,8 +3,8 @@
 #include "AeSys.h"
 #include "AeSysView.h"
 #include "Eo.h"
-#include "EoGsRenderState.h"
 #include "EoGsRenderDeviceGdi.h"
+#include "EoGsRenderState.h"
 
 void AeSysView::InitializeConstraints() {
   m_AxisConstraintInfluenceAngle = 5.0;
