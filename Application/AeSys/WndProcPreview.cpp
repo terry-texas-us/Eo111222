@@ -182,18 +182,13 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
  * @return The atom identifying the registered class.
  */
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance) {
-  WNDCLASS previewWindowClass{};
+  WNDCLASS windowClass{};
+  windowClass.style = CS_HREDRAW | CS_VREDRAW;
+  windowClass.lpfnWndProc = WndProcPreview;
+  windowClass.hInstance = instance;
+  windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+  windowClass.hbrBackground = static_cast<HBRUSH>(::GetStockObject(DKGRAY_BRUSH));
+  windowClass.lpszClassName = L"PreviewWindow";
 
-  previewWindowClass.style = CS_HREDRAW | CS_VREDRAW;
-  previewWindowClass.lpfnWndProc = WndProcPreview;
-  previewWindowClass.cbClsExtra = 0;
-  previewWindowClass.cbWndExtra = 0;
-  previewWindowClass.hInstance = instance;
-  previewWindowClass.hIcon = nullptr;
-  previewWindowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
-  previewWindowClass.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
-  previewWindowClass.lpszMenuName = nullptr;
-  previewWindowClass.lpszClassName = L"PreviewWindow";
-
-  return ::RegisterClass(&previewWindowClass);
+  return ::RegisterClassW(&windowClass);
 }

@@ -196,8 +196,8 @@ ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance) {
   windowClass.lpfnWndProc = WndProcKeyPlan;
   windowClass.hInstance = instance;
   windowClass.hCursor = static_cast<HCURSOR>(LoadImageW(nullptr, IDC_CROSS, IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
-  windowClass.hbrBackground = static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
+  windowClass.hbrBackground = static_cast<HBRUSH>(::GetStockObject(DKGRAY_BRUSH));
   windowClass.lpszClassName = L"KeyPlanWindow";
 
-  return ::RegisterClass(&windowClass);
+  return ::RegisterClassW(&windowClass);
 }
