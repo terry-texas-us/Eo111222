@@ -26,37 +26,37 @@ void EoDlgSelectGotoHomePoint::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSelectGotoHomePoint::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  const auto Names = App::LoadStringResource(IDS_HOME_POINT_GO_NAMES);
+  const auto names = App::LoadStringResource(IDS_HOME_POINT_GO_NAMES);
   m_HomePointNames.ResetContent();
-  int Position = 0;
-  while (Position < Names.GetLength()) {
-    CString NamesItem = Names.Tokenize(L"\n", Position);
-    m_HomePointNames.AddString(NamesItem);
+  int position = 0;
+  while (position < names.GetLength()) {
+    CString namesItem = names.Tokenize(L"\n", position);
+    m_HomePointNames.AddString(namesItem);
   }
   m_HomePointNames.SetCurSel(9);
 
-  const auto Origin = m_ActiveView->GridOrign();
+  const auto origin = m_ActiveView->GridOrign();
 
-  CString Length;
+  CString length;
 
-  app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), Origin.x);
-  SetDlgItemTextW(IDC_X, Length);
-  app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), Origin.y);
-  SetDlgItemTextW(IDC_Y, Length);
-  app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), Origin.z);
-  SetDlgItemTextW(IDC_Z, Length);
+  app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), origin.x);
+  SetDlgItemTextW(IDC_X, length);
+  app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), origin.y);
+  SetDlgItemTextW(IDC_Y, length);
+  app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), origin.z);
+  SetDlgItemTextW(IDC_Z, length);
 
   return TRUE;
 }
 void EoDlgSelectGotoHomePoint::OnOK() { CDialog::OnOK(); }
 void EoDlgSelectGotoHomePoint::OnCbnEditupdateList() {
-  CString NamesItem;
-  m_HomePointNames.GetWindowTextW(NamesItem);
+  CString namesItem;
+  m_HomePointNames.GetWindowTextW(namesItem);
 
-  int NamesItemIndex = m_HomePointNames.FindString(-1, NamesItem);
+  int namesItemIndex = m_HomePointNames.FindString(-1, namesItem);
 
-  if (NamesItemIndex != CB_ERR) {
-    switch (NamesItemIndex) {
+  if (namesItemIndex != CB_ERR) {
+    switch (namesItemIndex) {
       case 9:
         m_ActiveView->SetCursorPosition(m_ActiveView->GridOrign());
         break;
@@ -70,7 +70,7 @@ void EoDlgSelectGotoHomePoint::OnCbnEditupdateList() {
         m_ActiveView->SetCursorPosition(EoGePoint3d::kOrigin);
         break;
       default:
-        m_ActiveView->SetCursorPosition(app.HomePointGet(NamesItemIndex));
+        m_ActiveView->SetCursorPosition(app.HomePointGet(namesItemIndex));
     }
     CDialog::OnOK();
   }

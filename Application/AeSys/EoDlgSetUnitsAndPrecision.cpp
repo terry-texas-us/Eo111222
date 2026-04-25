@@ -21,16 +21,16 @@ void EoDlgSetUnitsAndPrecision::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetUnitsAndPrecision::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  const int CheckButtonId = std::min(IDC_ARCHITECTURAL + static_cast<int>(m_Units), IDC_METRIC);
-  CheckRadioButton(IDC_ARCHITECTURAL, IDC_METRIC, CheckButtonId);
+  const int checkButtonId = std::min(IDC_ARCHITECTURAL + static_cast<int>(m_Units), IDC_METRIC);
+  CheckRadioButton(IDC_ARCHITECTURAL, IDC_METRIC, checkButtonId);
 
-  const auto MetricUnits = App::LoadStringResource(IDS_METRIC_UNITS);
-  int Position = 0;
-  while (Position < MetricUnits.GetLength()) {
-    CString UnitsItem = MetricUnits.Tokenize(L"\n", Position);
-    m_MetricUnitsListBoxControl.AddString(UnitsItem);
+  const auto metricUnits = App::LoadStringResource(IDS_METRIC_UNITS);
+  int position{};
+  while (position < metricUnits.GetLength()) {
+    CString unitsItem = metricUnits.Tokenize(L"\n", position);
+    m_MetricUnitsListBoxControl.AddString(unitsItem);
   }
-  if (CheckButtonId == IDC_METRIC) {
+  if (checkButtonId == IDC_METRIC) {
     m_MetricUnitsListBoxControl.SetCurSel(static_cast<int>(m_Units) - static_cast<int>(Eo::Units::Meters));
   }
   return TRUE;

@@ -50,8 +50,8 @@ BOOL EoDlgSetupLineType::OnInitDialog() {
 void EoDlgSetupLineType::OnOK() {
   auto position = m_LineTypesListControl.GetFirstSelectedItemPosition();
   if (position != nullptr) {
-    const int Item = m_LineTypesListControl.GetNextSelectedItem(position);
-    m_LineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);
+    const int item = m_LineTypesListControl.GetNextSelectedItem(position);
+    m_LineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(item);
   }
   CDialog::OnOK();
 }
@@ -70,22 +70,22 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
         deviceContext.FillRect(itemRectangle, &backgroundBrush);
 
         if (drawItemStruct->itemState & ODS_FOCUS) { deviceContext.DrawFocusRect(itemRectangle); }
-        const int Item = static_cast<int>(drawItemStruct->itemID);
-        if (Item != -1) {
+        const int item = static_cast<int>(drawItemStruct->itemID);
+        if (item != -1) {
           const COLORREF rgbText = (drawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
                                                                         : ::GetSysColor(COLOR_WINDOWTEXT);
           deviceContext.SetBkColor(backgroundColor);
           deviceContext.SetTextColor(rgbText);
 
-          EoDbLineType* const lineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(Item);
+          auto* const lineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(item);
 
           CRect subItemRectangle;
-          m_LineTypesListControl.GetSubItemRect(Item, Name, LVIR_LABEL, subItemRectangle);
+          m_LineTypesListControl.GetSubItemRect(item, Name, LVIR_LABEL, subItemRectangle);
           const CString name = lineType->Name();
           deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
               name, static_cast<UINT>(name.GetLength()), nullptr);
 
-          m_LineTypesListControl.GetSubItemRect(Item, Appearance, LVIR_LABEL, subItemRectangle);
+          m_LineTypesListControl.GetSubItemRect(item, Appearance, LVIR_LABEL, subItemRectangle);
 
           Gs::renderState.SetPen(nullptr, &deviceContext, 0, static_cast<std::int16_t>(lineType->Index()));
 
@@ -97,31 +97,31 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           activeView->SetViewportSize(
               subItemRectangle.right + subItemRectangle.left, subItemRectangle.bottom + subItemRectangle.top);
 
-          const double UExtent = static_cast<double>(subItemRectangle.right + subItemRectangle.left) /
-                           static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
-          const double VExtent = static_cast<double>(subItemRectangle.bottom + subItemRectangle.top) /
-                           static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSY));
+          const double uExtent = static_cast<double>(subItemRectangle.right + subItemRectangle.left) /
+              static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
+          const double vExtent = static_cast<double>(subItemRectangle.bottom + subItemRectangle.top) /
+              static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSY));
           activeView->ModelViewInitialize();
 
-          activeView->SetViewWindow(0.0, 0.0, UExtent, VExtent);
+          activeView->SetViewWindow(0.0, 0.0, uExtent, vExtent);
           activeView->SetCameraTarget(EoGePoint3d::kOrigin);
           activeView->SetCameraPosition(EoGeVector3d::positiveUnitZ);
-          const double UMin =
+          const double uMin =
               static_cast<double>(subItemRectangle.left) / static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
-          const double UMax = static_cast<double>(subItemRectangle.right) /
-                        static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
+          const double uMax = static_cast<double>(subItemRectangle.right) /
+              static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
 
-          const EoGeLine Line(EoGePoint3d(UMin, VExtent / 2.0, 0.0), EoGePoint3d(UMax, VExtent / 2.0, 0.0));
+          const EoGeLine line(EoGePoint3d(uMin, vExtent / 2.0, 0.0), EoGePoint3d(uMax, vExtent / 2.0, 0.0));
           EoGsRenderDeviceGdi renderDevice(&deviceContext);
-          Line.Display(activeView, &renderDevice);
+          line.Display(activeView, &renderDevice);
 
           activeView->PopViewTransform();
           activeView->ViewportPopActive();
 
-          m_LineTypesListControl.GetSubItemRect(Item, Description, LVIR_LABEL, subItemRectangle);
-          const CString Description = lineType->Description();
+          m_LineTypesListControl.GetSubItemRect(item, Description, LVIR_LABEL, subItemRectangle);
+          const CString description = lineType->Description();
           deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
-              Description, static_cast<UINT>(Description.GetLength()), nullptr);
+              description, static_cast<UINT>(description.GetLength()), nullptr);
         }
         deviceContext.Detach();
       } break;

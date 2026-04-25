@@ -29,24 +29,24 @@ void EoDlgSetHomePoint::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgSetHomePoint::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  const auto Names = App::LoadStringResource(IDS_HOME_POINT_SET_NAMES);
+  const auto names = App::LoadStringResource(IDS_HOME_POINT_SET_NAMES);
   m_HomePointNames.ResetContent();
-  int Position = 0;
-  while (Position < Names.GetLength()) {
-    CString NamesItem = Names.Tokenize(L"\n", Position);
-    m_HomePointNames.AddString(NamesItem);
+  int position{};
+  while (position < names.GetLength()) {
+    CString namesItem = names.Tokenize(L"\n", position);
+    m_HomePointNames.AddString(namesItem);
   }
   m_HomePointNames.SetCurSel(9);
 
   m_CursorPosition = app.GetCursorPosition();
 
-  CString Length;
-  app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), m_CursorPosition.x);
-  SetDlgItemTextW(IDC_X, Length);
-  app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), m_CursorPosition.y);
-  SetDlgItemTextW(IDC_Y, Length);
-  app.FormatLength(Length, std::max(app.GetUnits(), Eo::Units::Engineering), m_CursorPosition.z);
-  SetDlgItemTextW(IDC_Z, Length);
+  CString length;
+  app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), m_CursorPosition.x);
+  SetDlgItemTextW(IDC_X, length);
+  app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), m_CursorPosition.y);
+  SetDlgItemTextW(IDC_Y, length);
+  app.FormatLength(length, std::max(app.GetUnits(), Eo::Units::Engineering), m_CursorPosition.z);
+  SetDlgItemTextW(IDC_Z, length);
 
   return TRUE;
 }
@@ -62,10 +62,10 @@ void EoDlgSetHomePoint::OnOK() {
   m_Z.GetWindowTextW(itemText, 32);
   m_CursorPosition.z = app.ParseLength(currentUnits, itemText);
 
-  int NamesItemIndex = m_HomePointNames.GetCurSel();
+  int namesItemIndex = m_HomePointNames.GetCurSel();
 
-  if (NamesItemIndex != CB_ERR) {
-    switch (NamesItemIndex) {
+  if (namesItemIndex != CB_ERR) {
+    switch (namesItemIndex) {
       case 9:
         m_ActiveView->GridOrign(m_CursorPosition);
         break;
@@ -76,18 +76,18 @@ void EoDlgSetHomePoint::OnOK() {
         m_ActiveView->SetCameraTarget(m_CursorPosition);
         break;
       default:
-        app.HomePointSave(NamesItemIndex, m_CursorPosition);
+        app.HomePointSave(namesItemIndex, m_CursorPosition);
     }
     CDialog::OnOK();
   }
 }
 void EoDlgSetHomePoint::OnCbnEditupdateList() {
-  CString NamesItem;
-  m_HomePointNames.GetWindowTextW(NamesItem);
-  int NamesItemIndex = m_HomePointNames.FindString(-1, NamesItem);
+  CString namesItem;
+  m_HomePointNames.GetWindowTextW(namesItem);
+  int namesItemIndex = m_HomePointNames.FindString(-1, namesItem);
 
-  if (NamesItemIndex != CB_ERR) {
-    switch (NamesItemIndex) {
+  if (namesItemIndex != CB_ERR) {
+    switch (namesItemIndex) {
       case 9:
         m_ActiveView->GridOrign(m_CursorPosition);
         break;
@@ -98,7 +98,7 @@ void EoDlgSetHomePoint::OnCbnEditupdateList() {
         m_ActiveView->SetCameraTarget(m_CursorPosition);
         break;
       default:
-        app.HomePointSave(NamesItemIndex, m_CursorPosition);
+        app.HomePointSave(namesItemIndex, m_CursorPosition);
     }
     CDialog::OnOK();
   }

@@ -37,9 +37,9 @@ void EoDlgTrapModify::ModifyPolygons() {
   while (position != nullptr) {
     auto* group = m_Document->GetNextTrappedGroup(position);
 
-    auto PrimitivePosition = group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      auto* primitive = group->GetNext(PrimitivePosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
 
       if (primitive->Is(EoDb::kPolygonPrimitive)) {
         auto* polygon = static_cast<EoDbPolygon*>(primitive);

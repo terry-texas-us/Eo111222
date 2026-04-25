@@ -179,15 +179,15 @@ void EoDlgBlockInsert::OnOK() {
   auto currentSelection = m_blocksListBoxControl.GetCurSel();
 
   if (currentSelection != LB_ERR) {
-    CString BlockName;
-    m_blocksListBoxControl.GetText(currentSelection, BlockName);
+    CString blockName;
+    m_blocksListBoxControl.GetText(currentSelection, blockName);
 
-    auto* blockReference = new EoDbBlockReference(BlockName, InsertionPoint);
+    auto* blockReference = new EoDbBlockReference(blockName, InsertionPoint);
     auto* group = new EoDbGroup(blockReference);
 
     // Check if block has attribute definitions — prompt user for values
     EoDbBlock* block{};
-    if (m_document->LookupBlock(BlockName, block) && !block->AttributeDefinitions().empty()) {
+    if (m_document->LookupBlock(blockName, block) && !block->AttributeDefinitions().empty()) {
       const auto basePoint = block->BasePoint();
       const auto transformMatrix = blockReference->BuildTransformMatrix(basePoint);
 
@@ -204,7 +204,7 @@ void EoDlgBlockInsert::OnOK() {
           attributeValue = attdef.m_defaultValue;
         } else {
           EoDlgAttributePrompt promptDlg(this);
-          promptDlg.m_blockName = BlockName;
+          promptDlg.m_blockName = blockName;
           promptDlg.m_tagName = attdef.m_tagString.c_str();
           promptDlg.m_promptString = attdef.m_promptString.c_str();
           promptDlg.m_defaultValue = attdef.m_defaultValue.c_str();
@@ -232,17 +232,17 @@ void EoDlgBlockInsert::OnOK() {
 }
 
 void EoDlgBlockInsert::OnLbnSelchangeBlocksList() {
-  int CurrentSelection = m_blocksListBoxControl.GetCurSel();
+  int currentSelection = m_blocksListBoxControl.GetCurSel();
 
-  if (CurrentSelection != LB_ERR) {
-    CString BlockName;
-    m_blocksListBoxControl.GetText(CurrentSelection, BlockName);
+  if (currentSelection != LB_ERR) {
+    CString blockName;
+    m_blocksListBoxControl.GetText(currentSelection, blockName);
 
-    EoDbBlock* Block{};
-    m_document->LookupBlock(BlockName, Block);
-    SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(Block->GetCount()), FALSE);
-    SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_document->GetBlockReferenceCount(BlockName)), FALSE);
-    WndProcPreviewUpdateBlock(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), Block);
+    EoDbBlock* block{};
+    m_document->LookupBlock(blockName, block);
+    SetDlgItemInt(IDC_GROUPS, static_cast<UINT>(block->GetCount()), FALSE);
+    SetDlgItemInt(IDC_REFERENCES, static_cast<UINT>(m_document->GetBlockReferenceCount(blockName)), FALSE);
+    WndProcPreviewUpdateBlock(GetDlgItem(IDC_LAYER_PREVIEW)->GetSafeHwnd(), block);
   }
 }
 void EoDlgBlockInsert::OnBnClickedPurge() {

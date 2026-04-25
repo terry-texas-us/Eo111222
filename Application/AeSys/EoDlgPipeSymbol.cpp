@@ -14,11 +14,11 @@ void EoDlgPipeSymbol::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgPipeSymbol::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  const auto Names = App::LoadStringResource(IDS_PIPE_SYMBOL_NAMES);
-  int Position = 0;
-  while (Position < Names.GetLength()) {
-    CString NamesItem = Names.Tokenize(L"\n", Position);
-    m_PipeSymbolsListBoxControl.AddString(NamesItem);
+  const auto names = App::LoadStringResource(IDS_PIPE_SYMBOL_NAMES);
+  int position = 0;
+  while (position < names.GetLength()) {
+    CString namesItem = names.Tokenize(L"\n", position);
+    m_PipeSymbolsListBoxControl.AddString(namesItem);
   }
   m_PipeSymbolsListBoxControl.SetCurSel(m_CurrentPipeSymbolIndex);
 

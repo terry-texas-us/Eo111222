@@ -261,9 +261,9 @@ void EoDlgFileManageLayers::DrawItem(CDC& deviceContext, int itemID, int labelIn
       }
     } break;
     case LineType: {
-      const CString LineTypeName = layer->LineTypeName();
+      const CString lineTypeName = layer->LineTypeName();
       deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 4, ETO_CLIPPED, &itemRectangle,
-          LineTypeName, static_cast<UINT>(LineTypeName.GetLength()), nullptr);
+          lineTypeName, static_cast<UINT>(lineTypeName.GetLength()), nullptr);
     } break;
     case LineWeight: {
       CString lineWeight;
@@ -280,26 +280,26 @@ void EoDlgFileManageLayers::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT l
       case ODA_DRAWENTIRE: {
         // clear item
         CRect rcItem(lpDrawItemStruct->rcItem);
-        CDC DeviceContext;
+        CDC deviceContext;
         const COLORREF rgbBkgnd =
             ::GetSysColor((lpDrawItemStruct->itemState & ODS_SELECTED) ? COLOR_HIGHLIGHT : COLOR_WINDOW);
-        DeviceContext.Attach(lpDrawItemStruct->hDC);
+        deviceContext.Attach(lpDrawItemStruct->hDC);
         CBrush br(rgbBkgnd);
-        DeviceContext.FillRect(rcItem, &br);
-        if (lpDrawItemStruct->itemState & ODS_FOCUS) { DeviceContext.DrawFocusRect(rcItem); }
+        deviceContext.FillRect(rcItem, &br);
+        if (lpDrawItemStruct->itemState & ODS_FOCUS) { deviceContext.DrawFocusRect(rcItem); }
         int itemID = static_cast<int>(lpDrawItemStruct->itemID);
         if (itemID != -1) {
           // The text color is stored as the item data.
           const COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
                                                                           : ::GetSysColor(COLOR_WINDOWTEXT);
-          DeviceContext.SetBkColor(rgbBkgnd);
-          DeviceContext.SetTextColor(rgbText);
+          deviceContext.SetBkColor(rgbBkgnd);
+          deviceContext.SetTextColor(rgbText);
           for (int labelIndex = 0; labelIndex < m_numberOfColumns; ++labelIndex) {
             m_layersListControl.GetSubItemRect(itemID, labelIndex, LVIR_LABEL, rcItem);
-            DrawItem(DeviceContext, itemID, labelIndex, rcItem);
+            DrawItem(deviceContext, itemID, labelIndex, rcItem);
           }
         }
-        DeviceContext.Detach();
+        deviceContext.Detach();
       } break;
 
       case ODA_SELECT:
@@ -482,14 +482,14 @@ void EoDlgFileManageLayers::OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* 
 }
 
 void EoDlgFileManageLayers::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESULT* result) {
-  const auto ListViewNotificationMessage = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
+  const auto listViewNotificationMessage = reinterpret_cast<LPNMLISTVIEW>(pNMHDR);
 
-  const auto item = ListViewNotificationMessage->iItem;
+  const auto item = listViewNotificationMessage->iItem;
 
   // Track which item is selected so the Name-column single-click guard works correctly
-  if (ListViewNotificationMessage->uNewState & LVIS_SELECTED) {
+  if (listViewNotificationMessage->uNewState & LVIS_SELECTED) {
     m_selectedItemForEdit = item;
-  } else if (ListViewNotificationMessage->uOldState & LVIS_SELECTED) {
+  } else if (listViewNotificationMessage->uOldState & LVIS_SELECTED) {
     if (m_selectedItemForEdit == item) { m_selectedItemForEdit = -1; }
   }
 
@@ -508,7 +508,7 @@ void EoDlgFileManageLayers::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESUL
 }
 
 void EoDlgFileManageLayers::OnLvnBeginLabelEdit(NMHDR* pNMHDR, LRESULT* pResult) {
-  NMLVDISPINFOW* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
+  auto* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
   auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(dispInfo->item.iItem));
 
   // Disallow in-place edit for layer "0" and tracing layers
@@ -524,7 +524,7 @@ void EoDlgFileManageLayers::OnLvnBeginLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 }
 
 void EoDlgFileManageLayers::OnLvnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult) {
-  NMLVDISPINFOW* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
+  auto* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
   *pResult = FALSE;
 
   if (dispInfo->item.pszText == nullptr) { return; }  // user cancelled

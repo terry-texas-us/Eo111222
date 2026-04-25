@@ -29,22 +29,22 @@ BOOL EoDlgTrapFilter::OnInitDialog() {
 
   SetDlgItemInt(IDC_TRAP_FILTER_PEN_ID, 1, FALSE);
 
-  EoDbLineTypeTable* LineTypeTable = m_Document->LineTypeTable();
+  EoDbLineTypeTable* lineTypeTable = m_Document->LineTypeTable();
 
-  CString Name;
-  EoDbLineType* LineType;
-  auto position = LineTypeTable->GetStartPosition();
+  CString name;
+  EoDbLineType* lineType;
+  auto position = lineTypeTable->GetStartPosition();
   while (position) {
-    LineTypeTable->GetNextAssoc(position, Name, LineType);
-    m_FilterLineComboBoxControl.AddString(Name);
+    lineTypeTable->GetNextAssoc(position, name, lineType);
+    m_FilterLineComboBoxControl.AddString(name);
   }
   m_FilterLineComboBoxControl.SetCurSel(0);
 
-  const auto PrimitiveTypes = App::LoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
+  const auto primitiveTypes = App::LoadStringResource(IDS_PRIMITIVE_FILTER_LIST);
 
-  int TypesPosition = 0;
-  while (TypesPosition < PrimitiveTypes.GetLength()) {
-    m_FilterPrimitiveTypeListBoxControl.AddString(PrimitiveTypes.Tokenize(L"\n", TypesPosition));
+  int typesPosition = 0;
+  while (typesPosition < primitiveTypes.GetLength()) {
+    m_FilterPrimitiveTypeListBoxControl.AddString(primitiveTypes.Tokenize(L"\n", typesPosition));
   }
   m_FilterPrimitiveTypeListBoxControl.SetCurSel(0);
 
@@ -60,9 +60,9 @@ void EoDlgTrapFilter::OnOK() {
     wchar_t szBuf[32]{};
 
     if (GetDlgItemTextW(IDC_TRAP_FILTER_LINE_LIST, (LPTSTR)szBuf, sizeof(szBuf) / sizeof(wchar_t))) {
-      EoDbLineTypeTable* LineTypeTable = m_Document->LineTypeTable();
-      EoDbLineType* LineType;
-      if (LineTypeTable->Lookup(szBuf, LineType)) { FilterByLineType(std::wstring(szBuf)); }
+      EoDbLineTypeTable* lineTypeTable = m_Document->LineTypeTable();
+      EoDbLineType* lineType;
+      if (lineTypeTable->Lookup(szBuf, lineType)) { FilterByLineType(std::wstring(szBuf)); }
     }
   }
   if (IsDlgButtonChecked(IDC_TRAP_FILTER_ELEMENT)) {
@@ -93,13 +93,13 @@ void EoDlgTrapFilter::OnOK() {
 }
 
 void EoDlgTrapFilter::FilterByColor(std::int16_t colorIndex) {
-  auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* group = m_Document->GetNextTrappedGroup(GroupPosition);
+  auto groupPosition = m_Document->GetFirstTrappedGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = m_Document->GetNextTrappedGroup(groupPosition);
 
-    auto PrimitivePosition = group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      auto* primitive = group->GetNext(PrimitivePosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
       if (primitive->Color() == colorIndex) {
         m_Document->RemoveTrappedGroup(group);
         m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -111,13 +111,13 @@ void EoDlgTrapFilter::FilterByColor(std::int16_t colorIndex) {
 }
 
 void EoDlgTrapFilter::FilterByLineType(const std::wstring& lineTypeName) {
-  auto GroupPosition = m_Document->GetFirstTrappedGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* group = m_Document->GetNextTrappedGroup(GroupPosition);
+  auto groupPosition = m_Document->GetFirstTrappedGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = m_Document->GetNextTrappedGroup(groupPosition);
 
-    auto PrimitivePosition = group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      auto* primitive = group->GetNext(PrimitivePosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
       if (_wcsicmp(primitive->LineTypeName().c_str(), lineTypeName.c_str()) == 0) {
         m_Document->RemoveTrappedGroup(group);
         m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);

@@ -28,11 +28,11 @@ BOOL EoDlgLowPressureDuctOptions::OnInitDialog() {
 
   const Eo::Units units = std::max(app.GetUnits(), Eo::Units::Inches);
 
-  CString Length;
-  app.FormatLength(Length, units, m_Width, 0, 2);
-  SetDlgItemTextW(IDC_WIDTH, Length);
-  app.FormatLength(Length, units, m_Depth, 0, 2);
-  SetDlgItemTextW(IDC_DEPTH, Length);
+  CString length;
+  app.FormatLength(length, units, m_Width, 0, 2);
+  SetDlgItemTextW(IDC_WIDTH, length);
+  app.FormatLength(length, units, m_Depth, 0, 2);
+  SetDlgItemTextW(IDC_DEPTH, length);
   CheckRadioButton(IDC_LEFT, IDC_RIGHT, IDC_CENTER + m_Justification);
   CheckDlgButton(IDC_GEN_VANES, m_GenerateVanes ? 1U : 0U);
   CheckDlgButton(IDC_BEGINWITHTRANSITION, m_BeginWithTransition ? 1U : 0U);

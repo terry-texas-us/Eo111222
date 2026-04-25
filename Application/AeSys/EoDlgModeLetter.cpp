@@ -33,21 +33,21 @@ BOOL EoDlgModeLetter::OnInitDialog() {
 }
 void EoDlgModeLetter::OnOK() {
   const auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
-  EoGeReferenceSystem ReferenceSystem(m_Point, characterCellDefinition);
+  EoGeReferenceSystem referenceSystem(m_Point, characterCellDefinition);
 
   const auto& fontDefinition = Gs::renderState.FontDefinition();
 
   if (m_TextEditControl.GetWindowTextLengthW() != 0) {
-    CString Text;
-    m_TextEditControl.GetWindowTextW(Text);
+    CString text;
+    m_TextEditControl.GetWindowTextW(text);
     m_TextEditControl.SetWindowTextW(L"");
 
-    EoDbText* TextPrimitive = new EoDbText(fontDefinition, ReferenceSystem, Text);
-    auto* Group = new EoDbGroup(TextPrimitive);
-    AeSysDoc::GetDoc()->AddWorkLayerGroup(Group);
-    AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+    auto* textPrimitive = new EoDbText(fontDefinition, referenceSystem, text);
+    auto* group = new EoDbGroup(textPrimitive);
+    AeSysDoc::GetDoc()->AddWorkLayerGroup(group);
+    AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
   }
-  m_Point = text_GetNewLinePos(fontDefinition, ReferenceSystem, 1.0, 0);
+  m_Point = text_GetNewLinePos(fontDefinition, referenceSystem, 1.0, 0);
   m_TextEditControl.SetFocus();
 
   CDialog::OnOK();

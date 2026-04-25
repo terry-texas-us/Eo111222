@@ -95,13 +95,13 @@ void EoDlgSetupColor::OnBnClickedBylayerButton() {
   CDialog::OnOK();
 }
 void EoDlgSetupColor::OnChangeColorEdit() {
-  const auto Index = std::uint16_t(GetDlgItemInt(IDC_COLOR_EDIT));
-  DrawSelectionInformation(Index);
+  const auto index = std::uint16_t(GetDlgItemInt(IDC_COLOR_EDIT));
+  DrawSelectionInformation(index);
 }
 BOOL EoDlgSetupColor::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) {
-  NMHDR* NotifyStructure = (NMHDR*)lParam;
-  CWnd* ColorsButton = CWnd::FromHandle(NotifyStructure->hwndFrom);
-  DrawSelectionInformation(((EoCtrlColorsButton*)ColorsButton)->m_subItem);
+  auto* notifyStructure = (NMHDR*)lParam;
+  CWnd* colorsButton = CWnd::FromHandle(notifyStructure->hwndFrom);
+  DrawSelectionInformation(((EoCtrlColorsButton*)colorsButton)->m_subItem);
   return CDialog::OnNotify(wParam, lParam, pResult);
 }
 void EoDlgSetupColor::DrawSelectionInformation(std::uint16_t index) {
@@ -110,8 +110,8 @@ void EoDlgSetupColor::DrawSelectionInformation(std::uint16_t index) {
   m_SelectionButton.SetSequenceRange(index, index);
   m_SelectionButton.Invalidate();
 
-  CString ColorRGBDescription;
-  ColorRGBDescription.Format(L"(%i,%i,%i)", GetRValue(Eo::ColorPalette[index]), GetGValue(Eo::ColorPalette[index]),
+  CString colorRgbDescription;
+  colorRgbDescription.Format(L"(%i,%i,%i)", GetRValue(Eo::ColorPalette[index]), GetGValue(Eo::ColorPalette[index]),
       GetBValue(Eo::ColorPalette[index]));
-  SetDlgItemTextW(IDC_RGBNUMBERS, ColorRGBDescription);
+  SetDlgItemTextW(IDC_RGBNUMBERS, colorRgbDescription);
 }

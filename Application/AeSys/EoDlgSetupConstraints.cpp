@@ -37,43 +37,43 @@ BOOL EoDlgSetupConstraints::OnInitDialog() {
 
   m_ActiveView->GetGridSnapSpacing(x, y, z);
 
-  CString Length;
-  app.FormatLength(Length, currentUnits, x);
-  m_GridXSnapSpacing.SetWindowTextW(Length);
-  app.FormatLength(Length, currentUnits, y);
-  m_GridYSnapSpacing.SetWindowTextW(Length);
-  app.FormatLength(Length, currentUnits, z);
-  m_GridZSnapSpacing.SetWindowTextW(Length);
+  CString length;
+  app.FormatLength(length, currentUnits, x);
+  m_GridXSnapSpacing.SetWindowTextW(length);
+  app.FormatLength(length, currentUnits, y);
+  m_GridYSnapSpacing.SetWindowTextW(length);
+  app.FormatLength(length, currentUnits, z);
+  m_GridZSnapSpacing.SetWindowTextW(length);
 
   m_ActiveView->GetGridPointSpacing(x, y, z);
 
-  app.FormatLength(Length, currentUnits, x);
-  m_GridXPointSpacing.SetWindowTextW(Length);
-  app.FormatLength(Length, currentUnits, y);
-  m_GridYPointSpacing.SetWindowTextW(Length);
-  app.FormatLength(Length, currentUnits, z);
-  m_GridZPointSpacing.SetWindowTextW(Length);
+  app.FormatLength(length, currentUnits, x);
+  m_GridXPointSpacing.SetWindowTextW(length);
+  app.FormatLength(length, currentUnits, y);
+  m_GridYPointSpacing.SetWindowTextW(length);
+  app.FormatLength(length, currentUnits, z);
+  m_GridZPointSpacing.SetWindowTextW(length);
 
   m_ActiveView->GetGridLineSpacing(x, y, z);
 
-  app.FormatLength(Length, currentUnits, x);
-  m_GridXLineSpacing.SetWindowTextW(Length);
-  app.FormatLength(Length, currentUnits, y);
-  m_GridYLineSpacing.SetWindowTextW(Length);
-  app.FormatLength(Length, currentUnits, z);
-  m_GridZLineSpacing.SetWindowTextW(Length);
+  app.FormatLength(length, currentUnits, x);
+  m_GridXLineSpacing.SetWindowTextW(length);
+  app.FormatLength(length, currentUnits, y);
+  m_GridYLineSpacing.SetWindowTextW(length);
+  app.FormatLength(length, currentUnits, z);
+  m_GridZLineSpacing.SetWindowTextW(length);
 
   m_GridSnapEnableCheckBox.SetCheck(m_ActiveView->GridSnap() ? BST_CHECKED : BST_UNCHECKED);
   m_GridDisplayCheckBox.SetCheck(m_ActiveView->DisplayGridWithPoints() ? BST_CHECKED : BST_UNCHECKED);
   m_GridLineDisplayCheckBox.SetCheck(m_ActiveView->DisplayGridWithLines() ? BST_CHECKED : BST_UNCHECKED);
 
-  CString Text;
+  CString text;
 
-  Text.Format(L"%f", m_ActiveView->AxisConstraintInfluenceAngle());
-  m_AxisInfluenceAngle.SetWindowTextW(Text);
+  text.Format(L"%f", m_ActiveView->AxisConstraintInfluenceAngle());
+  m_AxisInfluenceAngle.SetWindowTextW(text);
 
-  Text.Format(L"%f", m_ActiveView->AxisConstraintOffsetAngle());
-  m_AxisZOffsetAngle.SetWindowTextW(Text);
+  text.Format(L"%f", m_ActiveView->AxisConstraintOffsetAngle());
+  m_AxisZOffsetAngle.SetWindowTextW(text);
 
   return TRUE;
 }

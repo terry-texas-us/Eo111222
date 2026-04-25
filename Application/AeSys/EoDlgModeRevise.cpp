@@ -44,18 +44,18 @@ BOOL EoDlgModeRevise::OnInitDialog() {
   return TRUE;
 }
 void EoDlgModeRevise::OnOK() {
-  CString Text;
-  m_TextEditControl.GetWindowTextW(Text);
+  CString text;
+  m_TextEditControl.GetWindowTextW(text);
 
   if (sm_TextPrimitive != nullptr) {
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, sm_TextPrimitive);
-    sm_TextPrimitive->SetText(Text);
+    sm_TextPrimitive->SetText(text);
     AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, sm_TextPrimitive);
   } else {
-    EoDbText* TextPrimitive = new EoDbText(sm_FontDefinition, sm_ReferenceSystem, Text);
-    auto* Group = new EoDbGroup(TextPrimitive);
-    AeSysDoc::GetDoc()->AddWorkLayerGroup(Group);
-    AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+    auto* textPrimitive = new EoDbText(sm_FontDefinition, sm_ReferenceSystem, text);
+    auto* group = new EoDbGroup(textPrimitive);
+    AeSysDoc::GetDoc()->AddWorkLayerGroup(group);
+    AeSysDoc::GetDoc()->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
   }
   sm_ReferenceSystem.SetOrigin(text_GetNewLinePos(sm_FontDefinition, sm_ReferenceSystem, 1.0, 0));
 
