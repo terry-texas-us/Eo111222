@@ -81,42 +81,42 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
     EoGePoint3d pt;
 
     if (Eo::IsGeometricallyNonZero(m_YGridPointSpacing) && Eo::IsGeometricallyNonZero(m_ZGridPointSpacing)) {
-      const COLORREF Color = app.PenColorsGetHot(1);
+      const auto color = app.PenColorsGetHot(1);
 
       pt.x = m_GridOrigin.x;
       pt.z = m_GridOrigin.z - dHalfPts * m_ZGridPointSpacing;
       for (int i = 0; i < m_MaximumDotsPerLine; i++) {
         pt.y = m_GridOrigin.y - dHalfPts * m_YGridPointSpacing;
         for (int i2 = 0; i2 < m_MaximumDotsPerLine; i2++) {
-          DisplayPixel(deviceContext, Color, pt);
+          DisplayPixel(deviceContext, color, pt);
           pt.y += m_YGridPointSpacing;
         }
         pt.z += m_ZGridPointSpacing;
       }
     }
     if (Eo::IsGeometricallyNonZero(m_XGridPointSpacing) && Eo::IsGeometricallyNonZero(m_ZGridPointSpacing)) {
-      const COLORREF Color = app.PenColorsGetHot(2);
+      const auto color = app.PenColorsGetHot(2);
 
       pt.x = m_GridOrigin.x - dHalfPts * m_XGridPointSpacing;
       pt.y = m_GridOrigin.y;
       for (int i = 0; i < m_MaximumDotsPerLine; i++) {
         pt.z = m_GridOrigin.z - dHalfPts * m_ZGridPointSpacing;
         for (int i2 = 0; i2 < m_MaximumDotsPerLine; i2++) {
-          DisplayPixel(deviceContext, Color, pt);
+          DisplayPixel(deviceContext, color, pt);
           pt.z += m_ZGridPointSpacing;
         }
         pt.x += m_XGridPointSpacing;
       }
     }
     if (Eo::IsGeometricallyNonZero(m_XGridPointSpacing) && Eo::IsGeometricallyNonZero(m_YGridPointSpacing)) {
-      const COLORREF Color = app.PenColorsGetHot(3);
+      const auto color = app.PenColorsGetHot(3);
 
       pt.y = m_GridOrigin.y - dHalfPts * m_YGridPointSpacing;
       pt.z = m_GridOrigin.z;
       for (int i = 0; i < m_MaximumDotsPerLine; i++) {
         pt.x = m_GridOrigin.x - dHalfPts * m_XGridPointSpacing;
         for (int i2 = 0; i2 < m_MaximumDotsPerLine; i2++) {
-          DisplayPixel(deviceContext, Color, pt);
+          DisplayPixel(deviceContext, color, pt);
           pt.x += m_XGridPointSpacing;
         }
         pt.y += m_YGridPointSpacing;
@@ -125,32 +125,32 @@ void AeSysView::DisplayGrid(CDC* deviceContext) {
   }
   if (DisplayGridWithLines()) {
     if (Eo::IsGeometricallyNonZero(m_XGridLineSpacing) && Eo::IsGeometricallyNonZero(m_YGridLineSpacing)) {
-      EoGeLine ln;
+      EoGeLine line;
       EoGsRenderDeviceGdi renderDevice(deviceContext);
 
       int i;
-      const std::int16_t color = Gs::renderState.Color();
-      const std::int16_t LineType = Gs::renderState.LineTypeIndex();
+      const auto color = Gs::renderState.Color();
+      const auto lineType = Gs::renderState.LineTypeIndex();
       Gs::renderState.SetPen(this, deviceContext, 250, 1);
 
-      ln.begin.x = m_GridOrigin.x - dHalfPts * m_XGridLineSpacing;
-      ln.end.x = m_GridOrigin.x + dHalfPts * m_XGridLineSpacing;
-      ln.begin.y = m_GridOrigin.y - dHalfPts * m_YGridLineSpacing;
-      ln.begin.z = m_GridOrigin.z;
-      ln.end.z = m_GridOrigin.z;
+      line.begin.x = m_GridOrigin.x - dHalfPts * m_XGridLineSpacing;
+      line.end.x = m_GridOrigin.x + dHalfPts * m_XGridLineSpacing;
+      line.begin.y = m_GridOrigin.y - dHalfPts * m_YGridLineSpacing;
+      line.begin.z = m_GridOrigin.z;
+      line.end.z = m_GridOrigin.z;
       for (i = 0; i < m_MaximumDotsPerLine; i++) {
-        ln.end.y = ln.begin.y;
-        ln.Display(this, &renderDevice);
-        ln.begin.y += m_YGridLineSpacing;
+        line.end.y = line.begin.y;
+        line.Display(this, &renderDevice);
+        line.begin.y += m_YGridLineSpacing;
       }
-      ln.begin.y = m_GridOrigin.y - dHalfPts * m_YGridLineSpacing;
-      ln.end.y = m_GridOrigin.y + dHalfPts * m_YGridLineSpacing;
+      line.begin.y = m_GridOrigin.y - dHalfPts * m_YGridLineSpacing;
+      line.end.y = m_GridOrigin.y + dHalfPts * m_YGridLineSpacing;
       for (i = 0; i < m_MaximumDotsPerLine; i++) {
-        ln.end.x = ln.begin.x;
-        ln.Display(this, &renderDevice);
-        ln.begin.x += m_XGridLineSpacing;
+        line.end.x = line.begin.x;
+        line.Display(this, &renderDevice);
+        line.begin.x += m_XGridLineSpacing;
       }
-      Gs::renderState.SetPen(this, deviceContext, color, LineType);
+      Gs::renderState.SetPen(this, deviceContext, color, lineType);
     }
   }
 }

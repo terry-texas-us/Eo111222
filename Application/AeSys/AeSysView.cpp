@@ -7,10 +7,8 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
-#include "EoGeVector3d.h"
 #include "MainFrm.h"
 #include "Resource.h"
-#include "Section.h"
 
 #ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
@@ -379,19 +377,17 @@ void AeSysView::OnActivateView(BOOL activate, CView* activateView, CView* deacti
   ATLTRACE2(
       traceGeneral, 3, L"AeSysView<%p>::OnActivateView(%i, %p, %p))\n", this, activate, activateView, deactiveView);
 
-  CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
   if (activate) {
-    if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) ==
-        0) {  // Accelerator table was destroyed when keyboard focus was killed - reload resource
-      app.BuildModifiedAcceleratorTable();
-    }
+    // Check if accelerator table was destroyed when keyboard focus was killed - reload resource
+    if (CopyAcceleratorTableW(mainFrame->m_hAccelTable, nullptr, 0) == 0) { app.BuildModifiedAcceleratorTable(); }
     // D2D HWND render targets retain their last frame, but the window content may have been
     // obscured by MFC tab/MDI child switching. Force a full re-render so the view repaints.
     if (m_useD2D) { InvalidateScene(); }
   }
-  CMFCPropertyGridProperty& ActiveViewScaleProperty = MainFrame->GetPropertiesPane().GetActiveViewScaleProperty();
-  ActiveViewScaleProperty.SetValue(m_WorldScale);
-  ActiveViewScaleProperty.Enable(activate);
+  CMFCPropertyGridProperty& activeViewScaleProperty = mainFrame->GetPropertiesPane().GetActiveViewScaleProperty();
+  activeViewScaleProperty.SetValue(m_WorldScale);
+  activeViewScaleProperty.Enable(activate);
 
   if (activate) {
     auto* document = GetDocument();
@@ -474,9 +470,7 @@ LRESULT AeSysView::OnLayoutTabChange(WPARAM wParam, LPARAM lParam) {
   // Switch work layer to "0" in the newly active space (mirrors OnViewModelSpace behavior).
   // Fall back to the first available layer if "0" doesn't exist in the target space.
   auto* layer0 = document->GetLayerTableLayer(L"0");
-  if (layer0 == nullptr && document->GetLayerTableSize() > 0) {
-    layer0 = document->GetLayerTableLayerAt(0);
-  }
+  if (layer0 == nullptr && document->GetLayerTableSize() > 0) { layer0 = document->GetLayerTableLayerAt(0); }
   if (layer0 != nullptr) { document->SetWorkLayer(layer0); }
 
   document->UpdateAllViews(nullptr, 0L, nullptr);
@@ -493,8 +487,8 @@ LRESULT AeSysView::OnLayoutTabChange(WPARAM wParam, LPARAM lParam) {
 void AeSysView::OnSetFocus(CWnd* oldWindow) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnSetFocus(%08.8lx)\n", this, oldWindow);
 
-  CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
-  if (CopyAcceleratorTableW(MainFrame->m_hAccelTable, nullptr, 0) == 0) {
+  auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+  if (CopyAcceleratorTableW(mainFrame->m_hAccelTable, nullptr, 0) == 0) {
     // Accelerator table was destroyed when keyboard focus was killed - reload resource
     app.BuildModifiedAcceleratorTable();
   }
@@ -504,9 +498,9 @@ void AeSysView::OnSetFocus(CWnd* oldWindow) {
 void AeSysView::OnKillFocus(CWnd* newWindow) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnKillFocus(%08.8lx)\n", this, newWindow);
 
-  const HACCEL AcceleratorTableHandle = ((CMainFrame*)AfxGetMainWnd())->m_hAccelTable;
+  const auto acceleratorTableHandle = ((CMainFrame*)AfxGetMainWnd())->m_hAccelTable;
 
-  ::DestroyAcceleratorTable(AcceleratorTableHandle);
+  ::DestroyAcceleratorTable(acceleratorTableHandle);
 
   CView::OnKillFocus(newWindow);
 }
@@ -515,4 +509,3 @@ void AeSysView::OnPaint() {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnPaint()\n", this);
   CView::OnPaint();
 }
-

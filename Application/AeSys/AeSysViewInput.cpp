@@ -4,13 +4,9 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
-#include "EoDbLine.h"
-#include "EoDbPolygon.h"
 #include "EoDbViewport.h"
-#include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
-#include "EoGsRenderState.h"
 #include "Resource.h"
 
 #ifdef USING_STATE_PATTERN
@@ -18,15 +14,15 @@
 #endif
 
 void AeSysView::DoCustomMouseClick(const CString& characters) {
-  int Position = 0;
+  int position{};
 
-  while (Position < characters.GetLength()) {
-    if (characters.Find(L'{', Position) == Position) {
-      Position++;
-      CString VirtualKey = characters.Tokenize(L"}", Position);
-      PostMessageW(WM_KEYDOWN, static_cast<WPARAM>(_wtoi(VirtualKey)), 0L);
+  while (position < characters.GetLength()) {
+    if (characters.Find(L'{', position) == position) {
+      position++;
+      CString virtualKey = characters.Tokenize(L"}", position);
+      PostMessageW(WM_KEYDOWN, static_cast<WPARAM>(_wtoi(virtualKey)), 0L);
     } else {
-      PostMessageW(WM_CHAR, characters[Position++], 0L);
+      PostMessageW(WM_CHAR, characters[position++], 0L);
     }
   }
 }
@@ -204,8 +200,8 @@ bool AeSysView::ConfigureViewportTransform(const EoDbViewport* viewport) {
   ModelViewGetViewport(deviceViewport);
   const double deviceWidth = deviceViewport.Width();
   const double deviceHeight = deviceViewport.Height();
-  const double clipWidth = static_cast<double>(clipRight - clipLeft);
-  const double clipHeight = static_cast<double>(clipBottom - clipTop);
+  const auto clipWidth = static_cast<double>(clipRight - clipLeft);
+  const auto clipHeight = static_cast<double>(clipBottom - clipTop);
   const double clipCenterX = (clipLeft + clipRight) / 2.0;
   const double clipCenterY = (clipTop + clipBottom) / 2.0;
 

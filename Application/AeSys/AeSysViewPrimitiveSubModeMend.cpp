@@ -44,10 +44,10 @@ void AeSysView::OnModePrimitiveMend() {
 
 void AeSysView::PreviewMendPrimitive() {
   auto* document = GetDocument();
-  const EoGePoint3d cursorPosition = GetCursorPosition();
-  const EoGeVector3d Translate(m_MendPrimitiveBegin, cursorPosition);
+  const auto cursorPosition = GetCursorPosition();
+  const EoGeVector3d translate{m_MendPrimitiveBegin, cursorPosition};
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, m_PrimitiveToMendCopy);
-  m_PrimitiveToMendCopy->TranslateUsingMask(Translate, m_MendPrimitiveVertexIndex);
+  m_PrimitiveToMendCopy->TranslateUsingMask(translate, m_MendPrimitiveVertexIndex);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, m_PrimitiveToMendCopy);
   m_MendPrimitiveBegin = cursorPosition;
 }

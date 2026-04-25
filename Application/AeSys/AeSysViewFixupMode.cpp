@@ -107,12 +107,12 @@ EoGeLine currentLine{};
 }  // namespace
 
 void AeSysView::OnFixupModeOptions() {
-  EoDlgFixupOptions Dialog;
-  Dialog.m_FixupAxisTolerance = m_FixupModeAxisTolerance;
-  Dialog.m_FixupModeCornerSize = m_FixupModeCornerSize;
-  if (Dialog.DoModal() == IDOK) {
-    m_FixupModeCornerSize = std::max(0.0, Dialog.m_FixupModeCornerSize);
-    m_FixupModeAxisTolerance = std::max(0.0, Dialog.m_FixupAxisTolerance);
+  EoDlgFixupOptions dialog;
+  dialog.m_FixupAxisTolerance = m_FixupModeAxisTolerance;
+  dialog.m_FixupModeCornerSize = m_FixupModeCornerSize;
+  if (dialog.DoModal() == IDOK) {
+    m_FixupModeCornerSize = std::max(0.0, dialog.m_FixupModeCornerSize);
+    m_FixupModeAxisTolerance = std::max(0.0, dialog.m_FixupAxisTolerance);
     SetAxisConstraintInfluenceAngle(m_FixupModeAxisTolerance);
   }
 }
@@ -338,7 +338,7 @@ void AeSysView::OnFixupModeChamfer() {
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
   currentPrimitive = EngagedPrimitive();
-  EoDbLine* linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
+  auto* linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
   currentLine = linePrimitive->Line();
 
   if (previousCommand == 0) {
@@ -405,7 +405,7 @@ void AeSysView::OnFixupModeFillet() {
 
   currentGroup = SelectGroupAndPrimitive(cursorPosition);
   currentPrimitive = EngagedPrimitive();
-  EoDbLine* linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
+  auto* linePrimitive = static_cast<EoDbLine*>(currentPrimitive);
   currentLine = linePrimitive->Line();
 
   if (previousCommand == 0) {

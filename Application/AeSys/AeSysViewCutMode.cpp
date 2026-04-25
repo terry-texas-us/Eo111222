@@ -72,7 +72,7 @@ void AeSysView::OnCutModeSlice() {
 
     auto* document = GetDocument();
 
-    EoDbGroupList* groups = new EoDbGroupList;
+    auto* groups = new EoDbGroupList;
 
     EoGeLine ln;
     EoGePoint3dArray intersections;
@@ -82,27 +82,27 @@ void AeSysView::OnCutModeSlice() {
 
     const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
-    auto GroupPosition = GetFirstVisibleGroupPosition();
-    while (GroupPosition != nullptr) {
-      auto* group = GetNextVisibleGroup(GroupPosition);
+    auto groupPosition = GetFirstVisibleGroupPosition();
+    while (groupPosition != nullptr) {
+      auto* group = GetNextVisibleGroup(groupPosition);
 
       if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
-      auto PrimitivePosition = group->GetHeadPosition();
-      while (PrimitivePosition != nullptr) {
-        auto* primitive = group->GetNext(PrimitivePosition);
+      auto primitivePosition = group->GetHeadPosition();
+      while (primitivePosition != nullptr) {
+        auto* primitive = group->GetNext(primitivePosition);
 
         ln = EoGeLine(EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]});
         primitive->SelectUsingLine(this, ln, intersections);
         for (auto i = 0; i < intersections.GetSize(); i++) {
-          EoDbGroup* NewGroup = new EoDbGroup;
+          auto* newGroup = new EoDbGroup;
 
           intersections[i] = transformMatrix * intersections[i];
 
           document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, primitive);
-          primitive->CutAtPoint(intersections[i], NewGroup);
+          primitive->CutAtPoint(intersections[i], newGroup);
           document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, primitive);
-          groups->AddTail(NewGroup);
+          groups->AddTail(newGroup);
         }
       }
     }
@@ -143,8 +143,8 @@ void AeSysView::OnCutModeField() {
     const auto color = Gs::renderState.Color();
     const auto lineType = Gs::renderState.LineTypeIndex();
 
-    EoDbGroupList* GroupsOut = new EoDbGroupList;
-    EoDbGroupList* GroupsIn = new EoDbGroupList;
+    auto* groupsOut = new EoDbGroupList;
+    auto* groupsIn = new EoDbGroupList;
 
     POSITION posSeg, posSegPrv;
     for (posSeg = GetFirstVisibleGroupPosition(); (posSegPrv = posSeg) != nullptr;) {
@@ -152,17 +152,18 @@ void AeSysView::OnCutModeField() {
 
       if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
-      POSITION PrimitivePosition, posPrimPrv;
-      for (PrimitivePosition = group->GetHeadPosition(); (posPrimPrv = PrimitivePosition) != nullptr;) {
-        primitive = group->GetNext(PrimitivePosition);
+      POSITION primitivePosition;
+      POSITION previousPrimitivePosition;
+      for (primitivePosition = group->GetHeadPosition(); (previousPrimitivePosition = primitivePosition) != nullptr;) {
+        primitive = group->GetNext(primitivePosition);
 
         if ((iInts = primitive->IsWithinArea(lowerLeft, upperRight, ptInt)) == 0) { continue; }
 
-        group->RemoveAt(posPrimPrv);
+        group->RemoveAt(previousPrimitivePosition);
 
         for (int i = 0; i < iInts; i += 2) {
-          if (i != 0) { GroupsOut->RemoveTail(); }
-          primitive->CutAt2Points(ptInt[i], ptInt[i + 1], GroupsOut, GroupsIn);
+          if (i != 0) { groupsOut->RemoveTail(); }
+          primitive->CutAt2Points(ptInt[i], ptInt[i + 1], groupsOut, groupsIn);
         }
       }
       if (group->IsEmpty()) {  // seg was emptied remove from lists
@@ -173,16 +174,16 @@ void AeSysView::OnCutModeField() {
       }
     }
 
-    if (GroupsOut->GetCount() > 0) {
-      document->AddWorkLayerGroups(GroupsOut);
-      document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
+    if (groupsOut->GetCount() > 0) {
+      document->AddWorkLayerGroups(groupsOut);
+      document->UpdateAllViews(nullptr, EoDb::kGroups, groupsOut);
     }
-    if (GroupsIn->GetCount() > 0) {
-      document->AddWorkLayerGroups(GroupsIn);
-      document->AddGroupsToTrap(GroupsIn);
+    if (groupsIn->GetCount() > 0) {
+      document->AddWorkLayerGroups(groupsIn);
+      document->AddGroupsToTrap(groupsIn);
     }
-    delete GroupsIn;
-    delete GroupsOut;
+    delete groupsIn;
+    delete groupsOut;
 
     auto* deviceContext = GetDC();
     if (!deviceContext) { return; }
@@ -209,8 +210,8 @@ void AeSysView::OnCutModeClip() {
     double dRel[2]{};
     EoGePoint3d ptCut[2]{};
 
-    const std::int16_t color = Gs::renderState.Color();
-    const std::int16_t LineType = Gs::renderState.LineTypeIndex();
+    const auto color = Gs::renderState.Color();
+    const auto lineType = Gs::renderState.LineTypeIndex();
 
     auto* document = GetDocument();
 
@@ -220,8 +221,8 @@ void AeSysView::OnCutModeClip() {
 
     ModelViewTransformPoints(2, ptView);
 
-    EoDbGroupList* GroupsOut = new EoDbGroupList;
-    EoDbGroupList* GroupsIn = new EoDbGroupList;
+    auto* groupsOut = new EoDbGroupList;
+    auto* groupsIn = new EoDbGroupList;
 
     POSITION posSeg;
     POSITION posSegPrv;
@@ -251,7 +252,7 @@ void AeSysView::OnCutModeClip() {
         }
         group->RemoveAt(posPrim2);
 
-        primitive->CutAt2Points(ptCut[0], ptCut[1], GroupsOut, GroupsIn);
+        primitive->CutAt2Points(ptCut[0], ptCut[1], groupsOut, groupsIn);
       }
       if (group->IsEmpty()) {  // seg was emptied remove from lists
         document->AnyLayerRemove(group);
@@ -260,21 +261,21 @@ void AeSysView::OnCutModeClip() {
         delete group;
       }
     }
-    if (GroupsOut->GetCount() > 0) {
-      document->AddWorkLayerGroups(GroupsOut);
-      document->UpdateAllViews(nullptr, EoDb::kGroups, GroupsOut);
+    if (groupsOut->GetCount() > 0) {
+      document->AddWorkLayerGroups(groupsOut);
+      document->UpdateAllViews(nullptr, EoDb::kGroups, groupsOut);
     }
-    if (GroupsIn->GetCount() > 0) {
-      document->AddWorkLayerGroups(GroupsIn);
-      document->AddGroupsToTrap(GroupsIn);
-      document->UpdateAllViews(nullptr, EoDb::kGroupsTrap, GroupsIn);
+    if (groupsIn->GetCount() > 0) {
+      document->AddWorkLayerGroups(groupsIn);
+      document->AddGroupsToTrap(groupsIn);
+      document->UpdateAllViews(nullptr, EoDb::kGroupsTrap, groupsIn);
     }
-    delete GroupsIn;
-    delete GroupsOut;
+    delete groupsIn;
+    delete groupsOut;
 
     auto* deviceContext = GetDC();
     if (!deviceContext) { return; }
-    Gs::renderState.SetPen(this, deviceContext, color, LineType);
+    Gs::renderState.SetPen(this, deviceContext, color, lineType);
     ReleaseDC(deviceContext);
 
     UpdateStateInformation(BothCounts);

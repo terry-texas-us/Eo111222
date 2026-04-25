@@ -1,6 +1,5 @@
 #include "Stdafx.h"
 
-#include <cmath>
 #include <cstdint>
 
 #include "AeSys.h"

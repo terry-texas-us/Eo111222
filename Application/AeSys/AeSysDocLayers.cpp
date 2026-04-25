@@ -16,7 +16,6 @@
 #include "EoDbGroupList.h"
 #include "EoDbJobFile.h"
 #include "EoDbLayer.h"
-#include "EoDbLineType.h"
 #include "EoDbTracingFile.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
@@ -226,12 +225,12 @@ bool AeSysDoc::LayerMelt(CString& strName) {
 
   bool bRetVal{};
 
-  const auto Filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
+  const auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_TRACINGS);
 
   OPENFILENAME of{};
   of.lStructSize = sizeof(OPENFILENAME);
   of.hInstance = AeSys::GetInstance();
-  of.lpstrFilter = Filter;
+  of.lpstrFilter = filter;
   of.lpstrFile = new wchar_t[MAX_PATH];
   wcscpy_s(of.lpstrFile, MAX_PATH, strName);
   of.nMaxFile = MAX_PATH;
@@ -242,18 +241,18 @@ bool AeSysDoc::LayerMelt(CString& strName) {
   if (GetSaveFileNameW(&of)) {
     strName = of.lpstrFile;
 
-    EoDb::FileTypes FileType = App::FileTypeFromPath(strName);
-    if (FileType == EoDb::FileTypes::Tracing || FileType == EoDb::FileTypes::Job) {
-      CFile File(strName, CFile::modeWrite | CFile::modeCreate);
-      if (File != CFile::hFileNull) {
-        if (FileType == EoDb::FileTypes::Job) {
-          EoDbJobFile JobFile;
-          JobFile.WriteHeader(File);
-          JobFile.WriteLayer(File, layer);
+    EoDb::FileTypes fileType = App::FileTypeFromPath(strName);
+    if (fileType == EoDb::FileTypes::Tracing || fileType == EoDb::FileTypes::Job) {
+      CFile file(strName, CFile::modeWrite | CFile::modeCreate);
+      if (file != CFile::hFileNull) {
+        if (fileType == EoDb::FileTypes::Job) {
+          EoDbJobFile jobFile;
+          jobFile.WriteHeader(file);
+          jobFile.WriteLayer(file, layer);
         } else {
-          EoDbTracingFile TracingFile;
-          TracingFile.WriteHeader(File);
-          TracingFile.WriteLayer(File, layer);
+          EoDbTracingFile tracingFile;
+          tracingFile.WriteHeader(file);
+          tracingFile.WriteLayer(file, layer);
         }
         layer->ClearStateFlag();
         layer->MakeResident();
@@ -312,11 +311,11 @@ int AeSysDoc::RemoveEmptyNotesAndDelete() {
 
   // Note: remove empty notes from blocks
 
-  CString Key;
-  EoDbBlock* Block{};
+  CString key;
+  EoDbBlock* block{};
 
   auto position = m_BlocksTable.GetStartPosition();
-  while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
+  while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, key, block); }
   return count;
 }
 int AeSysDoc::RemoveEmptyGroups() {
@@ -329,11 +328,11 @@ int AeSysDoc::RemoveEmptyGroups() {
 
   // Note: remove empty groups from blocks
 
-  CString Key;
-  EoDbBlock* Block{};
+  CString key;
+  EoDbBlock* block{};
 
   auto position = m_BlocksTable.GetStartPosition();
-  while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, Key, Block); }
+  while (position != nullptr) { m_BlocksTable.GetNextAssoc(position, key, block); }
   return count;
 }
 
@@ -602,27 +601,27 @@ void AeSysDoc::ReloadTracingLayer(EoDbLayer* layer) {
 }
 
 bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
-  const EoDb::FileTypes FileType = App::FileTypeFromPath(pathName);
-  if (FileType != EoDb::FileTypes::Tracing && FileType != EoDb::FileTypes::Job) { return false; }
+  const EoDb::FileTypes fileType = App::FileTypeFromPath(pathName);
+  if (fileType != EoDb::FileTypes::Tracing && fileType != EoDb::FileTypes::Job) { return false; }
   if (layer == nullptr) { return false; }
 
   const bool bFileOpen{};
 
-  if (FileType == EoDb::FileTypes::Tracing) {
+  if (fileType == EoDb::FileTypes::Tracing) {
     CFileException e;
-    CFile File(pathName, CFile::modeRead | CFile::shareDenyNone);
-    if (File != CFile::hFileNull) {
-      EoDbTracingFile TracingFile;
-      TracingFile.ReadHeader(File);
-      TracingFile.ReadLayer(File, layer);
+    CFile file(pathName, CFile::modeRead | CFile::shareDenyNone);
+    if (file != CFile::hFileNull) {
+      EoDbTracingFile tracingFile;
+      tracingFile.ReadHeader(file);
+      tracingFile.ReadLayer(file, layer);
       return true;
     }
   } else {
-    CFile File(pathName, CFile::modeRead | CFile::shareDenyNone);
-    if (File != nullptr) {
-      EoDbJobFile JobFile;
-      JobFile.ReadHeader(File);
-      JobFile.ReadLayer(File, layer);
+    CFile file(pathName, CFile::modeRead | CFile::shareDenyNone);
+    if (file != nullptr) {
+      EoDbJobFile jobFile;
+      jobFile.ReadHeader(file);
+      jobFile.ReadLayer(file, layer);
       return true;
     }
     app.WarningMessageBox(IDS_MSG_TRACING_OPEN_FAILURE, pathName);

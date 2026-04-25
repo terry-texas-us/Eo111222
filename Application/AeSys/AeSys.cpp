@@ -59,7 +59,7 @@ std::wstring MultiByteToWString(const char* multiByte) {
 
 constexpr double defaultPenWidths[numberOfPenWidths] = {
     0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
-} // namespace
+}  // namespace
 
 static void ResetPenWidthsToDefault() {
   std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidths);
@@ -71,36 +71,36 @@ double dYAxRefVecScal;
 double dOffAng;
 int tableOffset[maxPatterns]{};
 float tableValue[maxTableValues]{};
-} // namespace hatch
+}  // namespace hatch
 
 auto* pColTbl = Eo::ColorPalette;
 
 EoGsRenderState Gs::renderState;
 
 BEGIN_MESSAGE_MAP(AeSys, CWinAppEx)
-    ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
-    // Standard file based document commands
-    ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
-    ON_COMMAND(ID_FILE_OPEN, &AeSys::OnFileOpen)
-    ON_COMMAND(ID_FILE_SAVE_ALL, &AeSys::OnFileSaveAll)
+ON_COMMAND(ID_APP_ABOUT, &AeSys::OnAppAbout)
+// Standard file based document commands
+ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
+ON_COMMAND(ID_FILE_OPEN, &AeSys::OnFileOpen)
+ON_COMMAND(ID_FILE_SAVE_ALL, &AeSys::OnFileSaveAll)
 
-    ON_COMMAND(ID_EDIT_CF_GROUPS, &AeSys::OnEditCfGroups)
-    ON_COMMAND(ID_EDIT_CF_IMAGE, &AeSys::OnEditCfImage)
-    ON_COMMAND(ID_EDIT_CF_TEXT, &AeSys::OnEditCfText)
-    ON_COMMAND(ID_FILE_RUN, &AeSys::OnFileRun)
-    ON_COMMAND(ID_HELP_CONTENTS, &AeSys::OnHelpContents)
+ON_COMMAND(ID_EDIT_CF_GROUPS, &AeSys::OnEditCfGroups)
+ON_COMMAND(ID_EDIT_CF_IMAGE, &AeSys::OnEditCfImage)
+ON_COMMAND(ID_EDIT_CF_TEXT, &AeSys::OnEditCfText)
+ON_COMMAND(ID_FILE_RUN, &AeSys::OnFileRun)
+ON_COMMAND(ID_HELP_CONTENTS, &AeSys::OnHelpContents)
 
-    ON_COMMAND(ID_MODE_LETTER, &AeSys::OnModeLetter)
-    ON_COMMAND(ID_MODE_REVISE, &AeSys::OnModeRevise)
+ON_COMMAND(ID_MODE_LETTER, &AeSys::OnModeLetter)
+ON_COMMAND(ID_MODE_REVISE, &AeSys::OnModeRevise)
 
-    ON_COMMAND(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnTrapCommandsHighlight)
+ON_COMMAND(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnTrapCommandsHighlight)
 #pragma warning(push)
 #pragma warning(disable : 4191)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CF_GROUPS, &AeSys::OnUpdateEditCfGroups)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CF_IMAGE, &AeSys::OnUpdateEditCfImage)
-    ON_UPDATE_COMMAND_UI(ID_EDIT_CF_TEXT, &AeSys::OnUpdateEditCfText)
-    ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnUpdateTrapcommandsAddgroups)
-    ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHighlight)
+ON_UPDATE_COMMAND_UI(ID_EDIT_CF_GROUPS, &AeSys::OnUpdateEditCfGroups)
+ON_UPDATE_COMMAND_UI(ID_EDIT_CF_IMAGE, &AeSys::OnUpdateEditCfImage)
+ON_UPDATE_COMMAND_UI(ID_EDIT_CF_TEXT, &AeSys::OnUpdateEditCfText)
+ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_ADDGROUPS, &AeSys::OnUpdateTrapcommandsAddgroups)
+ON_UPDATE_COMMAND_UI(ID_TRAPCOMMANDS_HIGHLIGHT, &AeSys::OnUpdateTrapcommandsHighlight)
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
@@ -163,16 +163,16 @@ BOOL AeSys::InitInstance() {
     delete mainFrame;
     return FALSE;
   }
-  m_pMainWnd = mainFrame; // Set CWinApp::m_pMainWnd to the main frame window.
+  m_pMainWnd = mainFrame;  // Set CWinApp::m_pMainWnd to the main frame window.
   mainFrame->DragAcceptFiles();
 
-  CDC* DeviceContext = mainFrame->GetDC();
-  m_DeviceWidthInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(HORZRES));
-  m_DeviceHeightInPixels = static_cast<double>(DeviceContext->GetDeviceCaps(VERTRES));
-  m_DeviceWidthInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(HORZSIZE));
-  m_DeviceHeightInMillimeters = static_cast<double>(DeviceContext->GetDeviceCaps(VERTSIZE));
-  InitGbls(DeviceContext);
-  mainFrame->ReleaseDC(DeviceContext);
+  CDC* deviceContext = mainFrame->GetDC();
+  m_DeviceWidthInPixels = static_cast<double>(deviceContext->GetDeviceCaps(HORZRES));
+  m_DeviceHeightInPixels = static_cast<double>(deviceContext->GetDeviceCaps(VERTRES));
+  m_DeviceWidthInMillimeters = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE));
+  m_DeviceHeightInMillimeters = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE));
+  InitGbls(deviceContext);
+  mainFrame->ReleaseDC(deviceContext);
 
   // Parse command line and process shell commands
   CCommandLineInfo commandLineInfo;
@@ -337,13 +337,13 @@ void AeSys::OnEditCfImage() { m_ClipboardDataImage = !m_ClipboardDataImage; }
 void AeSys::OnEditCfText() { m_ClipboardDataText = !m_ClipboardDataText; }
 
 void AeSys::OnModeLetter() {
-  EoDlgModeLetter Dialog;
-  Dialog.DoModal();
+  EoDlgModeLetter dialog;
+  dialog.DoModal();
 }
 
 void AeSys::OnModeRevise() {
-  EoDlgModeRevise Dialog;
-  Dialog.DoModal();
+  EoDlgModeRevise dialog;
+  dialog.DoModal();
 }
 
 void AeSys::OnFileRun() {
@@ -423,7 +423,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   wchar_t szValDel[] = L",\0";
   int iHatId{};
   int iNmbHatLns{};
-  int iTblId{1}; // Reserve position 0 as uninitialized sentinel for tableOffset
+  int iTblId{1};  // Reserve position 0 as uninitialized sentinel for tableOffset
 
   while (fl.ReadString(line, sizeof(line) / sizeof(wchar_t) - 1) != nullptr) {
     if (*line == '!') {
@@ -441,8 +441,8 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
       iTblId += 2;
       iNmbEnts = 0;
       dTotStrsLen = 0.;
-      LPWSTR NextToken = nullptr;
-      LPWSTR pTok = wcstok_s(line, szValDel, &NextToken);
+      LPWSTR nextToken = nullptr;
+      LPWSTR pTok = wcstok_s(line, szValDel, &nextToken);
       while (pTok != nullptr) {
         if (iTblId >= hatch::maxTableValues) {
           ATLTRACE(traceGeneral, 0, L"LoadHatchesFromFile: table value overflow at pattern %d\n", iHatId);
@@ -453,7 +453,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
         iNmbEnts++;
         if (iNmbEnts >= 6) { dTotStrsLen = dTotStrsLen + hatch::tableValue[iTblId]; }
         iTblId++;
-        pTok = wcstok_s(nullptr, szValDel, &NextToken);
+        pTok = wcstok_s(nullptr, szValDel, &nextToken);
       }
       hatch::tableValue[iNmbStrsId++] = static_cast<float>(iNmbEnts - 5);
       hatch::tableValue[iNmbStrsId] = static_cast<float>(dTotStrsLen);
@@ -568,24 +568,24 @@ void AeSys::LoadModeResources(int mode, AeSysView* targetView) {
 ///    224-entry advance width table at int32[226], stroke data at int32[450].
 /// </remarks>
 void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
-  HANDLE OpenHandle = CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
-      nullptr);
-  if (OpenHandle != INVALID_HANDLE_VALUE) {
-    if (SetFilePointer(OpenHandle, 0, nullptr, FILE_BEGIN) != static_cast<DWORD>(-1)) {
+  HANDLE openHandle =
+      CreateFile(pathName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (openHandle != INVALID_HANDLE_VALUE) {
+    if (SetFilePointer(openHandle, 0, nullptr, FILE_BEGIN) != static_cast<DWORD>(-1)) {
       if (m_SimplexStrokeFont == nullptr) { m_SimplexStrokeFont = new char[Eo::strokeFontFileSizeInBytes]; }
-      DWORD NumberOfBytesRead;
-      if (!ReadFile(OpenHandle, m_SimplexStrokeFont, Eo::strokeFontFileSizeInBytes, &NumberOfBytesRead, nullptr)) {
+      DWORD numberOfBytesRead;
+      if (!ReadFile(openHandle, m_SimplexStrokeFont, Eo::strokeFontFileSizeInBytes, &numberOfBytesRead, nullptr)) {
         ReleaseSimplexStrokeFont();
       }
     }
-    CloseHandle(OpenHandle);
+    CloseHandle(openHandle);
   } else {
-    HRSRC ResourceHandle = FindResourceW(nullptr, MAKEINTRESOURCE(IDR_PEGSTROKEFONT), L"STROKEFONT");
-    if (ResourceHandle != nullptr) {
-      const rsize_t ResourceSize = SizeofResource(nullptr, ResourceHandle);
-      m_SimplexStrokeFont = new char[ResourceSize];
-      const LPVOID Resource = LockResource(LoadResource(nullptr, ResourceHandle));
-      memcpy_s(m_SimplexStrokeFont, ResourceSize, Resource, ResourceSize);
+    HRSRC resourceHandle = FindResourceW(nullptr, MAKEINTRESOURCE(IDR_PEGSTROKEFONT), L"STROKEFONT");
+    if (resourceHandle != nullptr) {
+      const rsize_t resourceSize = SizeofResource(nullptr, resourceHandle);
+      m_SimplexStrokeFont = new char[resourceSize];
+      const LPVOID resource = LockResource(LoadResource(nullptr, resourceHandle));
+      memcpy_s(m_SimplexStrokeFont, resourceSize, resource, resourceSize);
     }
   }
   if (m_SimplexStrokeFont != nullptr) {
@@ -663,9 +663,9 @@ void AeSys::OnFileOpen() {
 }
 
 void AeSys::FormatAngle(CString& angleAsString, double angle, const int width, const int precision) {
-  CString FormatSpecification;
-  FormatSpecification.Format(L"%%%i.%if\u00B0", width, precision);
-  angleAsString.Format(FormatSpecification, Eo::RadianToDegree(angle));
+  CString formatSpecification;
+  formatSpecification.Format(L"%%%i.%if\u00B0", width, precision);
+  angleAsString.Format(formatSpecification, Eo::RadianToDegree(angle));
 }
 
 void AeSys::FormatLength(
@@ -686,41 +686,40 @@ void AeSys::FormatLength(
 void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) {
   wchar_t szBuf[16]{};
 
-  double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
+  double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
-  ScaledLength = std::abs(ScaledLength);
+  scaledLength = std::abs(scaledLength);
 
-  int Feet = static_cast<int>(ScaledLength / 12.0);
-  int Inches = abs(static_cast<int>(fmod(ScaledLength, 12.0)));
+  int feet = static_cast<int>(scaledLength / 12.0);
+  int inches = abs(static_cast<int>(fmod(scaledLength, 12.0)));
 
   int fractionPrecision = GetArchitecturalUnitsFractionPrecision();
-  int numerator = static_cast<int>(std::abs(fmod(ScaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
-
+  int numerator = static_cast<int>(std::abs(fmod(scaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
   if (numerator == fractionPrecision) {
-    if (Inches == 11) {
-      Feet++;
-      Inches = 0;
+    if (inches == 11) {
+      feet++;
+      inches = 0;
     } else {
-      Inches++;
+      inches++;
     }
     numerator = 0;
   }
-  _itow_s(Feet, szBuf, 16, 10);
+  _itow_s(feet, szBuf, 16, 10);
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
   wcscat_s(lengthAsBuffer, bufSize, L"'");
 
-  _itow_s(Inches, szBuf, 16, 10);
+  _itow_s(inches, szBuf, 16, 10);
   wcscat_s(lengthAsBuffer, bufSize, szBuf);
   if (numerator > 0) {
     wcscat_s(lengthAsBuffer, bufSize, (units == Eo::Units::ArchitecturalS) ? L"\\S" : L"-");
     const int iGrtComDivisor = std::gcd(numerator, fractionPrecision);
     numerator /= iGrtComDivisor;
-    const int Denominator = fractionPrecision / iGrtComDivisor;
+    const int denominator = fractionPrecision / iGrtComDivisor;
     _itow_s(numerator, szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
     wcscat_s(lengthAsBuffer, bufSize, L"/");
-    _itow_s(Denominator, szBuf, 16, 10);
+    _itow_s(denominator, szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
     if (units == Eo::Units::ArchitecturalS) { wcscat_s(lengthAsBuffer, bufSize, L";"); }
   }
@@ -731,39 +730,39 @@ void AeSys::FormatLengthEngineering(
     LPWSTR lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision) {
   wchar_t szBuf[16]{};
 
-  double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
+  double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
-  ScaledLength = std::abs(ScaledLength);
+  scaledLength = std::abs(scaledLength);
 
-  int Precision = (ScaledLength >= 1.0) ? precision - static_cast<int>(log10(ScaledLength)) - 1 : precision;
+  int adjustedPrecision = (scaledLength >= 1.0) ? precision - static_cast<int>(log10(scaledLength)) - 1 : precision;
 
-  if (Precision >= 0) {
-    _itow_s(static_cast<int>(ScaledLength / 12.0), szBuf, 16, 10);
+  if (adjustedPrecision >= 0) {
+    _itow_s(static_cast<int>(scaledLength / 12.0), szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
-    ScaledLength = fmod(ScaledLength, 12.0);
+    scaledLength = fmod(scaledLength, 12.0);
     wcscat_s(lengthAsBuffer, bufSize, L"'");
 
-    _itow_s(static_cast<int>(ScaledLength), szBuf, 16, 10);
+    _itow_s(static_cast<int>(scaledLength), szBuf, 16, 10);
     wcscat_s(lengthAsBuffer, bufSize, szBuf);
 
-    if (Precision > 0) {
-      CString FormatSpecification;
-      FormatSpecification.Format(L"%%%i.%if", width, Precision);
+    if (adjustedPrecision > 0) {
+      CString formatSpecification;
+      formatSpecification.Format(L"%%%i.%if", width, adjustedPrecision);
 
-      CString FractionalInches;
-      FractionalInches.Format(FormatSpecification, ScaledLength);
-      const int DecimalPointPosition = FractionalInches.Find('.');
-      FractionalInches = FractionalInches.Mid(DecimalPointPosition) + L"\"";
+      CString fractionalInches;
+      fractionalInches.Format(formatSpecification, scaledLength);
+      const int decimalPointPosition = fractionalInches.Find('.');
+      fractionalInches = fractionalInches.Mid(decimalPointPosition) + L"\"";
 
-      wcscat_s(lengthAsBuffer, bufSize, FractionalInches);
+      wcscat_s(lengthAsBuffer, bufSize, fractionalInches);
     }
   }
 }
 
 void AeSys::FormatLengthSimple(
     LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length, const int width, const int precision) {
-  const double ScaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
+  const double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   CString formatSpecification;
   formatSpecification.Format(L"%%%i.%if", width, precision);
@@ -772,37 +771,37 @@ void AeSys::FormatLengthSimple(
   switch (units) {
     case Eo::Units::Feet:
       formatSpecification.Append(L"'");
-      formatted.Format(formatSpecification, ScaledLength / 12.0);
+      formatted.Format(formatSpecification, scaledLength / 12.0);
       break;
     case Eo::Units::Inches:
       formatSpecification.Append(L"\"");
-      formatted.Format(formatSpecification, ScaledLength);
+      formatted.Format(formatSpecification, scaledLength);
       break;
     case Eo::Units::Meters:
       formatSpecification.Append(L"m");
-      formatted.Format(formatSpecification, ScaledLength * 0.0254);
+      formatted.Format(formatSpecification, scaledLength * 0.0254);
       break;
     case Eo::Units::Millimeters:
       formatSpecification.Append(L"mm");
-      formatted.Format(formatSpecification, ScaledLength * 25.4);
+      formatted.Format(formatSpecification, scaledLength * 25.4);
       break;
     case Eo::Units::Centimeters:
       formatSpecification.Append(L"cm");
-      formatted.Format(formatSpecification, ScaledLength * 2.54);
+      formatted.Format(formatSpecification, scaledLength * 2.54);
       break;
     case Eo::Units::Decimeters:
       formatSpecification.Append(L"dm");
-      formatted.Format(formatSpecification, ScaledLength * 0.254);
+      formatted.Format(formatSpecification, scaledLength * 0.254);
       break;
     case Eo::Units::Kilometers:
       formatSpecification.Append(L"km");
-      formatted.Format(formatSpecification, ScaledLength * 0.0000254);
+      formatted.Format(formatSpecification, scaledLength * 0.0000254);
       break;
 
     case Eo::Units::Architectural:
     case Eo::Units::ArchitecturalS:
     case Eo::Units::Engineering:
-      [[fallthrough]]; // Handled by specialized implementations;
+      [[fallthrough]];  // Handled by specialized implementations;
     default:
       break;
   }
@@ -838,7 +837,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
       if (*end == L'-') {
         wchar_t* fractionEnd{};
         const double numerator = wcstod(&end[1], &fractionEnd);
-        if (fractionEnd == &end[1]) { throw L"Invalid fraction in length string."; } // allowing 0.0 numerator here
+        if (fractionEnd == &end[1]) { throw L"Invalid fraction in length string."; }  // allowing 0.0 numerator here
         end = fractionEnd;
         const double denominator = wcstod(&end[1], &fractionEnd);
         if (fractionEnd == &end[1] || denominator == 0.0) { throw L"Invalid fraction denominator in length string."; }
@@ -850,7 +849,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
     }
   }
   if (*end == L'\"') {
-    end++; // the inches component had the optional `"` character, skip it
+    end++;  // the inches component had the optional `"` character, skip it
   }
   return totalLength;
 }
@@ -873,7 +872,7 @@ double AeSys::ParseLength(wchar_t* inputLine) {
   }
 
   switch (toupper(end[0])) {
-    case '\'': // Feet optional inches
+    case '\'':  // Feet optional inches
       length *= 12.0;
       length = AddOptionalInches(inputLine, length, end);
       break;
@@ -926,7 +925,7 @@ double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
     } catch (const wchar_t* errorMessage) { app.AddStringToMessageList(std::wstring(errorMessage)); }
 
     if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken ||
-      iTyp == lex::SimpleUnitsLengthToken) {
+        iTyp == lex::SimpleUnitsLengthToken) {
       return (length[0]);
     }
     lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);
@@ -973,20 +972,19 @@ double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
 // EoDlgAbout dialog used for App About
 
 class EoDlgAbout : public CDialogEx {
-public:
+ public:
   EoDlgAbout();
   EoDlgAbout(const EoDlgAbout&) = delete;
   EoDlgAbout& operator=(const EoDlgAbout&) = delete;
 
   enum { IDD = IDD_ABOUTBOX };
 
-protected:
+ protected:
   void DoDataExchange(CDataExchange* dataExchange) override;
   void OnOK() override;
 };
 
-EoDlgAbout::EoDlgAbout() : CDialogEx(IDD) {
-}
+EoDlgAbout::EoDlgAbout() : CDialogEx(IDD) {}
 
 void EoDlgAbout::DoDataExchange(CDataExchange* dataExchange) { CDialogEx::DoDataExchange(dataExchange); }
 void EoDlgAbout::OnOK() { CDialogEx::OnOK(); }
@@ -1037,7 +1035,7 @@ CString LoadStringResource(UINT resourceIdentifier) {
 #ifdef _DEBUG
   assert(success == TRUE && "Failed to load string resource");
 #else
-  (void)success; // Suppress unused variable warning in release
+  (void)success;  // Suppress unused variable warning in release
 #endif
   return resourceString;
 }
@@ -1046,4 +1044,4 @@ CString ResourceFolderPath() {
   const auto applicationPath = PathFromCommandLine();
   return applicationPath + L"\\res\\";
 }
-} // namespace App
+}  // namespace App

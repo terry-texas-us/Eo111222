@@ -53,12 +53,12 @@ void CreateGateValve(EoDbGroup* group, const EoGeLine& beginSection, const EoGeL
 }  // namespace
 
 void AeSysView::OnPipeModeOptions() {
-  EoDlgPipeOptions Dialog;
-  Dialog.m_PipeTicSize = m_PipeTicSize;
-  Dialog.m_PipeRiseDropRadius = m_PipeRiseDropRadius;
-  if (Dialog.DoModal() == IDOK) {
-    m_PipeTicSize = Dialog.m_PipeTicSize;
-    m_PipeRiseDropRadius = Dialog.m_PipeRiseDropRadius;
+  EoDlgPipeOptions dialog;
+  dialog.m_PipeTicSize = m_PipeTicSize;
+  dialog.m_PipeRiseDropRadius = m_PipeRiseDropRadius;
+  if (dialog.DoModal() == IDOK) {
+    m_PipeTicSize = dialog.m_PipeTicSize;
+    m_PipeRiseDropRadius = dialog.m_PipeRiseDropRadius;
   }
 }
 
@@ -119,10 +119,10 @@ void AeSysView::OnPipeModeFitting() {
       OnPipeModeEscape();
     }
   } else {
-    EoDbConic* VerticalSection{};
-    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, VerticalSection);
+    EoDbConic* verticalSection{};
+    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, verticalSection);
     if (group != nullptr) {
-      cursorPosition = VerticalSection->Center();
+      cursorPosition = verticalSection->Center();
 
       if (pts.IsEmpty()) {
         pts.Add(cursorPosition);
@@ -176,10 +176,10 @@ void AeSysView::OnPipeModeRise() {
     }
     m_PreviousOp = ModeLineHighlightOp(ID_OP5);
   } else {
-    EoDbConic* VerticalSection{};
-    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, VerticalSection);
+    EoDbConic* verticalSection{};
+    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, verticalSection);
     if (group != nullptr) {  // On an existing vertical pipe section
-      cursorPosition = VerticalSection->Center();
+      cursorPosition = verticalSection->Center();
       if (pts.IsEmpty()) {
         pts.Add(cursorPosition);
         m_PreviousOp = ModeLineHighlightOp(ID_OP4);
@@ -238,10 +238,10 @@ void AeSysView::OnPipeModeDrop() {
     }
     m_PreviousOp = ModeLineHighlightOp(ID_OP4);
   } else {
-    EoDbConic* VerticalSection{};
-    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, VerticalSection);
+    EoDbConic* verticalSection{};
+    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, verticalSection);
     if (group != nullptr) {  // On an existing vertical pipe section
-      cursorPosition = VerticalSection->Center();
+      cursorPosition = verticalSection->Center();
       if (pts.IsEmpty()) {
         pts.Add(cursorPosition);
         m_PreviousOp = ModeLineHighlightOp(ID_OP5);
@@ -294,250 +294,250 @@ void AeSysView::OnPipeModeSymbol() {
   auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
   if (group == nullptr) { return; }
 
-  EoDlgPipeSymbol Dialog;
-  Dialog.m_CurrentPipeSymbolIndex = m_CurrentPipeSymbolIndex;
-  if (Dialog.DoModal() == IDOK) { m_CurrentPipeSymbolIndex = Dialog.m_CurrentPipeSymbolIndex; }
+  EoDlgPipeSymbol dialog;
+  dialog.m_CurrentPipeSymbolIndex = m_CurrentPipeSymbolIndex;
+  if (dialog.DoModal() == IDOK) { m_CurrentPipeSymbolIndex = dialog.m_CurrentPipeSymbolIndex; }
   EoGePoint3d begin = horizontalSection->Begin();
   EoGePoint3d end = horizontalSection->End();
-  EoGePoint3d PointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
+  EoGePoint3d pointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
 
-  EoGeLine BeginSection(PointOnSection, begin);
-  EoGeLine EndSection(PointOnSection, end);
+  EoGeLine beginSection(pointOnSection, begin);
+  EoGeLine endSection(pointOnSection, end);
 
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, horizontalSection);
 
-  EoGePoint3d SymbolBeginPoint = PointOnSection.ProjectToward(begin, symbolSize[m_CurrentPipeSymbolIndex]);
-  EoGePoint3d SymbolEndPoint = PointOnSection.ProjectToward(end, symbolSize[m_CurrentPipeSymbolIndex]);
-  double TicSize = m_PipeTicSize;
+  EoGePoint3d symbolBeginPoint = pointOnSection.ProjectToward(begin, symbolSize[m_CurrentPipeSymbolIndex]);
+  EoGePoint3d symbolEndPoint = pointOnSection.ProjectToward(end, symbolSize[m_CurrentPipeSymbolIndex]);
+  double ticSize = m_PipeTicSize;
 
-  horizontalSection->SetEndPoint(SymbolBeginPoint);
+  horizontalSection->SetEndPoint(symbolBeginPoint);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, horizontalSection);
-  group = new EoDbGroup(EoDbLine::CreateLine(SymbolEndPoint, end)
+  group = new EoDbGroup(EoDbLine::CreateLine(symbolEndPoint, end)
           ->WithProperties(
               horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
   group = new EoDbGroup;
-  GenerateTickMark(PointOnSection, begin, tickDistance[m_CurrentPipeSymbolIndex], group);
-  GenerateTickMark(PointOnSection, end, tickDistance[m_CurrentPipeSymbolIndex], group);
+  GenerateTickMark(pointOnSection, begin, tickDistance[m_CurrentPipeSymbolIndex], group);
+  GenerateTickMark(pointOnSection, end, tickDistance[m_CurrentPipeSymbolIndex], group);
 
   switch (m_CurrentPipeSymbolIndex) {
     case 0: {  // flow switch
-      double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      AddCircleToGroup(group, PointOnSection, radius);
-      EndSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 1.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 2.0, &pts[1]);
-      BeginSection.ProjPtFrom_xy(symbolSize[0], symbolSize[0] * 1.5, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[0], symbolSize[0] * 2.0, &SymbolEndPoint);
-      AddLineToGroup(group, pts[1], SymbolEndPoint);
-      AddLineToGroup(group, SymbolEndPoint, SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
+      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      AddCircleToGroup(group, pointOnSection, radius);
+      endSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 1.5, &pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 2.0, &pts[1]);
+      beginSection.ProjPtFrom_xy(symbolSize[0], symbolSize[0] * 1.5, &symbolBeginPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[0], symbolSize[0] * 2.0, &symbolEndPoint);
+      AddLineToGroup(group, pts[1], symbolEndPoint);
+      AddLineToGroup(group, symbolEndPoint, symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, pts[0]);
       AddLineToGroup(group, pts[0], pts[1]);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
     } break;
 
     case 1: {  // float and thermostatic trap
-      double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      AddCircleToGroup(group, PointOnSection, radius);
-      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::QuarterPi);
-      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
+      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      AddCircleToGroup(group, pointOnSection, radius);
+      pts[0] = symbolBeginPoint.RotateAboutAxis(pointOnSection, EoGeVector3d::positiveUnitZ, Eo::QuarterPi);
+      pts[1] = pts[0].RotateAboutAxis(pointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
       AddLineToGroup(group, pts[0], pts[1]);
-      pts[0] = SymbolBeginPoint.RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::ThreeQuartersPi);
-      pts[1] = pts[0].RotateAboutAxis(PointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
+      pts[0] = symbolBeginPoint.RotateAboutAxis(pointOnSection, EoGeVector3d::positiveUnitZ, Eo::ThreeQuartersPi);
+      pts[1] = pts[0].RotateAboutAxis(pointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
       AddLineToGroup(group, pts[0], pts[1]);
     } break;
 
     case 2: {  // ball valve
-      double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      AddCircleToGroup(group, PointOnSection, radius);
-      EndSection.ProjPtFrom_xy(symbolSize[2], symbolSize[2] * 1.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[2] * 1.5, &pts[1]);
+      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      AddCircleToGroup(group, pointOnSection, radius);
+      endSection.ProjPtFrom_xy(symbolSize[2], symbolSize[2] * 1.5, &pts[0]);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[2] * 1.5, &pts[1]);
       AddLineToGroup(group, pts[0], pts[1]);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[2], &SymbolBeginPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[2], &symbolBeginPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
     } break;
 
     case 3: {  // butterfly
-      double radius = EoGePoint3d::Distance(PointOnSection, SymbolBeginPoint);
-      AddCircleToGroup(group, PointOnSection, radius);
-      EndSection.ProjPtFrom_xy(symbolSize[3], symbolSize[3] * 1.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[3] * 1.5, &pts[1]);
+      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      AddCircleToGroup(group, pointOnSection, radius);
+      endSection.ProjPtFrom_xy(symbolSize[3], symbolSize[3] * 1.5, &pts[0]);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[3] * 1.5, &pts[1]);
       AddLineToGroup(group, pts[0], pts[1]);
-      BeginSection.ProjPtFrom_xy(0.0, symbolSize[3], &SymbolBeginPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      beginSection.ProjPtFrom_xy(0.0, symbolSize[3], &symbolBeginPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
     } break;
 
     case 4: {  // check valve
-      EndSection.ProjPtFrom_xy(symbolSize[4], symbolSize[4] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.5, &pts[1]);
+      endSection.ProjPtFrom_xy(symbolSize[4], symbolSize[4] * 0.5, &pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.5, &pts[1]);
       AddLineToGroup(group, pts[0], pts[1]);
-      BeginSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.5, &SymbolBeginPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[4], symbolSize[4] * 0.5, &SymbolEndPoint);
-      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.3, &pts[0]);
-      double radius = EoGePoint3d::Distance(SymbolBeginPoint, pts[0]);
-      AddCircleToGroup(group, SymbolBeginPoint, radius);
+      beginSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.5, &symbolBeginPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[4], symbolSize[4] * 0.5, &symbolEndPoint);
+      AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.3, &pts[0]);
+      double radius = EoGePoint3d::Distance(symbolBeginPoint, pts[0]);
+      AddCircleToGroup(group, symbolBeginPoint, radius);
     } break;
 
     case 5: {  // non-slam check valve
-      EndSection.ProjPtFrom_xy(symbolSize[5], symbolSize[5] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.5, &pts[1]);
+      endSection.ProjPtFrom_xy(symbolSize[5], symbolSize[5] * 0.5, &pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.5, &pts[1]);
       AddLineToGroup(group, pts[0], pts[1]);
-      BeginSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.5, &SymbolBeginPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[5], symbolSize[5] * 0.5, &SymbolEndPoint);
-      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.3, &pts[0]);
-      double radius = EoGePoint3d::Distance(SymbolBeginPoint, pts[0]);
-      AddCircleToGroup(group, SymbolBeginPoint, radius);
-      AddLineToGroup(group, SymbolEndPoint, PointOnSection);
+      beginSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.5, &symbolBeginPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[5], symbolSize[5] * 0.5, &symbolEndPoint);
+      AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.3, &pts[0]);
+      double radius = EoGePoint3d::Distance(symbolBeginPoint, pts[0]);
+      AddCircleToGroup(group, symbolBeginPoint, radius);
+      AddLineToGroup(group, symbolEndPoint, pointOnSection);
     } break;
 
     case 6:  // gate valve
-      CreateGateValve(group, BeginSection, EndSection, symbolSize[6]);
+      CreateGateValve(group, beginSection, endSection, symbolSize[6]);
       break;
 
     case 7: {  // globe valve
-      CreateGateValve(group, BeginSection, EndSection, symbolSize[7]);
-      pts[0] = PointOnSection.ProjectToward(end, symbolSize[7] * 0.25);
-      double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
-      AddCircleToGroup(group, PointOnSection, radius);
+      CreateGateValve(group, beginSection, endSection, symbolSize[7]);
+      pts[0] = pointOnSection.ProjectToward(end, symbolSize[7] * 0.25);
+      double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
+      AddCircleToGroup(group, pointOnSection, radius);
     } break;
 
     case 8: {  // OS&Y gate valve
-      CreateGateValve(group, BeginSection, EndSection, symbolSize[8]);
-      pts[0] = PointOnSection.ProjectToward(end, symbolSize[8] * 0.25);
-      double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
-      AddCircleToGroup(group, PointOnSection, radius);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[8], &pts[0]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
+      CreateGateValve(group, beginSection, endSection, symbolSize[8]);
+      pts[0] = pointOnSection.ProjectToward(end, symbolSize[8] * 0.25);
+      double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
+      AddCircleToGroup(group, pointOnSection, radius);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[8], &pts[0]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
       m_PipeTicSize = symbolSize[8] * 0.25;
-      GenerateTickMark(PointOnSection, pts[0], symbolSize[8] * 0.75, group);
+      GenerateTickMark(pointOnSection, pts[0], symbolSize[8] * 0.75, group);
     } break;
 
     case 9: {  // pressure reducing valve
-      CreateGateValve(group, BeginSection, EndSection, symbolSize[9]);
-      pts[0] = PointOnSection.ProjectToward(end, symbolSize[9] * 0.25);
-      double radius = EoGePoint3d::Distance(PointOnSection, pts[0]);
-      AddCircleToGroup(group, PointOnSection, radius);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[9], &pts[0]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[9] * 0.5, symbolSize[9] * 0.75, &pts[1]);
+      CreateGateValve(group, beginSection, endSection, symbolSize[9]);
+      pts[0] = pointOnSection.ProjectToward(end, symbolSize[9] * 0.25);
+      double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
+      AddCircleToGroup(group, pointOnSection, radius);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[9], &pts[0]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[9] * 0.5, symbolSize[9] * 0.75, &pts[1]);
       AddLineToGroup(group, pts[0], pts[1]);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[9] * 0.5, &SymbolBeginPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[9] * 0.5, &symbolBeginPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
     } break;
 
     case 10:  // auto 2-way valve
-      CreateGateValve(group, BeginSection, EndSection, symbolSize[10]);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[10] * 0.5, &pts[0]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
+      CreateGateValve(group, beginSection, endSection, symbolSize[10]);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[10] * 0.5, &pts[0]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
 
-      EndSection.ProjPtFrom_xy(symbolSize[10] * 0.25, symbolSize[10] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[10] * 0.25, symbolSize[10] * 0.75, &pts[1]);
-      BeginSection.ProjPtFrom_xy(symbolSize[10] * 0.25, -symbolSize[10] * 0.75, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[10] * 0.25, -symbolSize[10] * 0.5, &SymbolEndPoint);
+      endSection.ProjPtFrom_xy(symbolSize[10] * 0.25, symbolSize[10] * 0.5, &pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[10] * 0.25, symbolSize[10] * 0.75, &pts[1]);
+      beginSection.ProjPtFrom_xy(symbolSize[10] * 0.25, -symbolSize[10] * 0.75, &symbolBeginPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[10] * 0.25, -symbolSize[10] * 0.5, &symbolEndPoint);
       AddLineToGroup(group, pts[0], pts[1]);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
-      AddLineToGroup(group, SymbolEndPoint, pts[0]);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
+      AddLineToGroup(group, symbolEndPoint, pts[0]);
       break;
 
     case 11:  // auto 3-way valve
-      CreateGateValve(group, BeginSection, EndSection, symbolSize[11]);
+      CreateGateValve(group, beginSection, endSection, symbolSize[11]);
 
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[11] * 0.5, &pts[0]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[11] * 0.25, symbolSize[11] * 0.5, &pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[11] * 0.25, symbolSize[11] * 0.75, &pts[1]);
-      BeginSection.ProjPtFrom_xy(symbolSize[11] * 0.25, -symbolSize[11] * 0.75, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[11] * 0.25, -symbolSize[11] * 0.5, &SymbolEndPoint);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[11] * 0.5, &pts[0]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[11] * 0.25, symbolSize[11] * 0.5, &pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[11] * 0.25, symbolSize[11] * 0.75, &pts[1]);
+      beginSection.ProjPtFrom_xy(symbolSize[11] * 0.25, -symbolSize[11] * 0.75, &symbolBeginPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[11] * 0.25, -symbolSize[11] * 0.5, &symbolEndPoint);
       AddLineToGroup(group, pts[0], pts[1]);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
-      AddLineToGroup(group, SymbolEndPoint, pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[11] * 0.5, -symbolSize[11], &pts[0]);
-      BeginSection.ProjPtFrom_xy(symbolSize[11] * 0.5, symbolSize[11], &pts[1]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
+      AddLineToGroup(group, symbolEndPoint, pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[11] * 0.5, -symbolSize[11], &pts[0]);
+      beginSection.ProjPtFrom_xy(symbolSize[11] * 0.5, symbolSize[11], &pts[1]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
       AddLineToGroup(group, pts[0], pts[1]);
-      AddLineToGroup(group, pts[1], PointOnSection);
+      AddLineToGroup(group, pts[1], pointOnSection);
       break;
 
     case 12:  // self operated valve
-      CreateGateValve(group, BeginSection, EndSection, symbolSize[12]);
+      CreateGateValve(group, beginSection, endSection, symbolSize[12]);
 
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[12] * 0.5, &pts[0]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
-      EndSection.ProjPtFrom_xy(symbolSize[12] * 0.25, symbolSize[12] * 0.5, &pts[1]);
-      BeginSection.ProjPtFrom_xy(symbolSize[12] * 0.25, -symbolSize[12] * 0.5, &SymbolBeginPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[12] * 0.5, &pts[0]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
+      endSection.ProjPtFrom_xy(symbolSize[12] * 0.25, symbolSize[12] * 0.5, &pts[1]);
+      beginSection.ProjPtFrom_xy(symbolSize[12] * 0.25, -symbolSize[12] * 0.5, &symbolBeginPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
       // add a half circle here i think
-      BeginSection.ProjPtFrom_xy(symbolSize[12] * 1.25, -symbolSize[12] * 0.5, &pts[0]);
-      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
-      BeginSection.ProjPtFrom_xy(symbolSize[12] * 1.25, -symbolSize[12] * 0.75, &pts[1]);
-      BeginSection.ProjPtFrom_xy(symbolSize[12] * 2.0, -symbolSize[12] * 0.75, &SymbolBeginPoint);
-      BeginSection.ProjPtFrom_xy(symbolSize[12] * 2.0, -symbolSize[12] * 0.5, &SymbolEndPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[12] * 1.25, -symbolSize[12] * 0.5, &pts[0]);
+      AddLineToGroup(group, symbolBeginPoint, pts[0]);
+      beginSection.ProjPtFrom_xy(symbolSize[12] * 1.25, -symbolSize[12] * 0.75, &pts[1]);
+      beginSection.ProjPtFrom_xy(symbolSize[12] * 2.0, -symbolSize[12] * 0.75, &symbolBeginPoint);
+      beginSection.ProjPtFrom_xy(symbolSize[12] * 2.0, -symbolSize[12] * 0.5, &symbolEndPoint);
       AddLineToGroup(group, pts[0], pts[1]);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
-      AddLineToGroup(group, SymbolEndPoint, pts[0]);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
+      AddLineToGroup(group, symbolEndPoint, pts[0]);
       break;
 
     case 13:  // plug valve
-      EndSection.ProjPtFrom_xy(0.0, -symbolSize[13], &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[13], &pts[1]);
-      AddLineToGroup(group, SymbolEndPoint, pts[1]);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
-      AddLineToGroup(group, pts[0], SymbolEndPoint);
+      endSection.ProjPtFrom_xy(0.0, -symbolSize[13], &pts[0]);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[13], &pts[1]);
+      AddLineToGroup(group, symbolEndPoint, pts[1]);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, pts[0]);
+      AddLineToGroup(group, pts[0], symbolEndPoint);
       break;
 
     case 14:  // balancing cock
-      EndSection.ProjPtFrom_xy(0.0, -symbolSize[14], &pts[0]);
-      EndSection.ProjPtFrom_xy(0.0, symbolSize[14], &pts[1]);
-      AddLineToGroup(group, SymbolEndPoint, pts[1]);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, pts[0]);
-      AddLineToGroup(group, pts[0], SymbolEndPoint);
+      endSection.ProjPtFrom_xy(0.0, -symbolSize[14], &pts[0]);
+      endSection.ProjPtFrom_xy(0.0, symbolSize[14], &pts[1]);
+      AddLineToGroup(group, symbolEndPoint, pts[1]);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, pts[0]);
+      AddLineToGroup(group, pts[0], symbolEndPoint);
       AddLineToGroup(group, pts[0], pts[1]);
       break;
 
     case 15:  // gauge cock
-      EndSection.ProjPtFrom_xy(0.0, -0.250, &pts[0]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
-      GenerateTickMark(PointOnSection, pts[0], tickDistance[15], group);
-      BeginSection.ProjPtFrom_xy(0.0625, 0.1875, &pts[1]);
-      EndSection.ProjPtFrom_xy(0.0625, -0.1875, &SymbolBeginPoint);
-      EndSection.ProjPtFrom_xy(0.0625, -0.125, &SymbolEndPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
+      endSection.ProjPtFrom_xy(0.0, -0.250, &pts[0]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
+      GenerateTickMark(pointOnSection, pts[0], tickDistance[15], group);
+      beginSection.ProjPtFrom_xy(0.0625, 0.1875, &pts[1]);
+      endSection.ProjPtFrom_xy(0.0625, -0.1875, &symbolBeginPoint);
+      endSection.ProjPtFrom_xy(0.0625, -0.125, &symbolEndPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
       break;
 
     case 16: {  // gauge cock with gauge
-      EndSection.ProjPtFrom_xy(0.0, -0.250, &pts[0]);
-      AddLineToGroup(group, PointOnSection, pts[0]);
-      GenerateTickMark(PointOnSection, pts[0], tickDistance[16], group);
-      BeginSection.ProjPtFrom_xy(0.0625, 0.1875, &pts[1]);
-      EndSection.ProjPtFrom_xy(0.0625, -0.1875, &SymbolBeginPoint);
-      EndSection.ProjPtFrom_xy(0.0625, -0.125, &SymbolEndPoint);
-      AddLineToGroup(group, pts[1], SymbolBeginPoint);
-      AddLineToGroup(group, SymbolBeginPoint, SymbolEndPoint);
-      pts[1] = PointOnSection.ProjectToward(pts[0], 0.28125);
+      endSection.ProjPtFrom_xy(0.0, -0.250, &pts[0]);
+      AddLineToGroup(group, pointOnSection, pts[0]);
+      GenerateTickMark(pointOnSection, pts[0], tickDistance[16], group);
+      beginSection.ProjPtFrom_xy(0.0625, 0.1875, &pts[1]);
+      endSection.ProjPtFrom_xy(0.0625, -0.1875, &symbolBeginPoint);
+      endSection.ProjPtFrom_xy(0.0625, -0.125, &symbolEndPoint);
+      AddLineToGroup(group, pts[1], symbolBeginPoint);
+      AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
+      pts[1] = pointOnSection.ProjectToward(pts[0], 0.28125);
       double radius = EoGePoint3d::Distance(pts[1], pts[0]);
       AddCircleToGroup(group, pts[1], radius);
     } break;
 
     case 17:  // union
       m_PipeTicSize = symbolSize[17];
-      GenerateTickMark(PointOnSection, begin, symbolSize[17], group);
-      GenerateTickMark(PointOnSection, end, symbolSize[17], group);
+      GenerateTickMark(pointOnSection, begin, symbolSize[17], group);
+      GenerateTickMark(pointOnSection, end, symbolSize[17], group);
       m_PipeTicSize = m_PipeTicSize * 2.0;
-      GenerateTickMark(PointOnSection, begin, 0.0, group);
+      GenerateTickMark(pointOnSection, begin, 0.0, group);
       break;
   }
-  m_PipeTicSize = TicSize;
+  m_PipeTicSize = ticSize;
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
@@ -554,66 +554,66 @@ void AeSysView::OnPipeModeWye() {
   EoDbLine* horizontalSection{};
   auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
   if (group == nullptr) { return; }
-  EoGePoint3d PointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
-  EoGePoint3d BeginPointProjectedToSection = horizontalSection->ProjectPointToLine(pts[0]);
-  double DistanceToSection = EoGeVector3d(pts[0], BeginPointProjectedToSection).Length();
+  EoGePoint3d pointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
+  EoGePoint3d beginPointProjectedToSection = horizontalSection->ProjectPointToLine(pts[0]);
+  double distanceToSection = EoGeVector3d(pts[0], beginPointProjectedToSection).Length();
 
-  if (DistanceToSection >= 0.25) {
+  if (distanceToSection >= 0.25) {
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
     InvalidateOverlay();
     const EoGePoint3d begin = horizontalSection->Begin();
-    const EoGePoint3d EndPoint = horizontalSection->End();
+    const EoGePoint3d endPoint = horizontalSection->End();
 
-    double DistanceBetweenSectionPoints = EoGeVector3d(BeginPointProjectedToSection, PointOnSection).Length();
+    double distanceBetweenSectionPoints = EoGeVector3d(beginPointProjectedToSection, pointOnSection).Length();
 
-    if (std::abs(DistanceBetweenSectionPoints - DistanceToSection) <= 0.25) {
+    if (std::abs(distanceBetweenSectionPoints - distanceToSection) <= 0.25) {
       // Just need to shift point on section and do a single 45 degree line
-      PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, DistanceToSection);
-      horizontalSection->SetEndPoint(PointOnSection);
-      group = new EoDbGroup(EoDbLine::CreateLine(PointOnSection, EndPoint)
+      pointOnSection = beginPointProjectedToSection.ProjectToward(pointOnSection, distanceToSection);
+      horizontalSection->SetEndPoint(pointOnSection);
+      group = new EoDbGroup(EoDbLine::CreateLine(pointOnSection, endPoint)
               ->WithProperties(
                   horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
       document->AddWorkLayerGroup(group);
 
       group = new EoDbGroup;
-      GenerateTickMark(PointOnSection, begin, m_PipeRiseDropRadius, group);
-      GenerateTickMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, group);
+      GenerateTickMark(pointOnSection, begin, m_PipeRiseDropRadius, group);
+      GenerateTickMark(pointOnSection, endPoint, m_PipeRiseDropRadius, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
       group = new EoDbGroup;
-      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointOnSection, group);
+      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, pointOnSection, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     } else {
-      EoGePoint3d PointAtBend;
+      EoGePoint3d pointAtBend;
 
-      if (DistanceBetweenSectionPoints - 0.25 <= DistanceToSection) {
-        const double d3 = (DistanceBetweenSectionPoints > 0.25) ? DistanceBetweenSectionPoints : 0.125;
-        PointAtBend = BeginPointProjectedToSection.ProjectToward(pts[0], d3);
-        PointOnSection = BeginPointProjectedToSection.ProjectToward(PointOnSection, d3);
+      if (distanceBetweenSectionPoints - 0.25 <= distanceToSection) {
+        const double d3 = (distanceBetweenSectionPoints > 0.25) ? distanceBetweenSectionPoints : 0.125;
+        pointAtBend = beginPointProjectedToSection.ProjectToward(pts[0], d3);
+        pointOnSection = beginPointProjectedToSection.ProjectToward(pointOnSection, d3);
       } else {
-        PointAtBend = BeginPointProjectedToSection.ProjectToward(
-            PointOnSection, DistanceBetweenSectionPoints - DistanceToSection);
-        PointAtBend = pts[0] + EoGeVector3d(BeginPointProjectedToSection, PointAtBend);
+        pointAtBend = beginPointProjectedToSection.ProjectToward(
+            pointOnSection, distanceBetweenSectionPoints - distanceToSection);
+        pointAtBend = pts[0] + EoGeVector3d(beginPointProjectedToSection, pointAtBend);
       }
-      horizontalSection->SetEndPoint(PointOnSection);
+      horizontalSection->SetEndPoint(pointOnSection);
 
       group = new EoDbGroup;
-      GenerateTickMark(PointOnSection, begin, m_PipeRiseDropRadius, group);
-      GenerateTickMark(PointOnSection, EndPoint, m_PipeRiseDropRadius, group);
+      GenerateTickMark(pointOnSection, begin, m_PipeRiseDropRadius, group);
+      GenerateTickMark(pointOnSection, endPoint, m_PipeRiseDropRadius, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
-      group = new EoDbGroup(EoDbLine::CreateLine(PointOnSection, EndPoint)
+      group = new EoDbGroup(EoDbLine::CreateLine(pointOnSection, endPoint)
               ->WithProperties(
                   horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
       document->AddWorkLayerGroup(group);
       group = new EoDbGroup;
-      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, PointAtBend, group);
+      GenerateLineWithFittings(m_PreviousOp, pts[0], ID_OP3, pointAtBend, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       group = new EoDbGroup;
-      GenerateLineWithFittings(ID_OP3, PointAtBend, ID_OP3, PointOnSection, group);
+      GenerateLineWithFittings(ID_OP3, pointAtBend, ID_OP3, pointOnSection, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     }
@@ -757,18 +757,18 @@ bool AeSysView::GenerateTickMark(
     const EoGePoint3d& begin, const EoGePoint3d& end, double distance, EoDbGroup* group) const {
   const auto pointOnLine = begin.ProjectToward(end, distance);
 
-  EoGeVector3d Projection(pointOnLine, end);
+  EoGeVector3d projection(pointOnLine, end);
 
-  const double DistanceToEndPoint = Projection.Length();
-  const bool markGenerated = DistanceToEndPoint > Eo::geometricTolerance;
+  const double distanceToEndPoint = projection.Length();
+  const bool markGenerated = distanceToEndPoint > Eo::geometricTolerance;
   if (markGenerated) {
-    Projection *= m_PipeTicSize / DistanceToEndPoint;
+    projection *= m_PipeTicSize / distanceToEndPoint;
 
     EoGePoint3d pt1(pointOnLine);
-    pt1 += EoGeVector3d(Projection.y, -Projection.x, 0.0);
+    pt1 += EoGeVector3d(projection.y, -projection.x, 0.0);
 
     EoGePoint3d pt2(pointOnLine);
-    pt2 += EoGeVector3d(-Projection.y, Projection.x, 0.0);
+    pt2 += EoGeVector3d(-projection.y, projection.x, 0.0);
     group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(1, L"CONTINUOUS"));
   }
   return markGenerated;

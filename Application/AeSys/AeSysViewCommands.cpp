@@ -166,11 +166,11 @@ UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizonta
     return 1;
   }
 
-  const double HorizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
-  const double VerticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
+  const auto horizontalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch;
+  const auto verticalSizeInInches = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch;
 
-  horizontalPages = static_cast<UINT>(Eo::Round(((ptMax.x - ptMin.x) * scaleFactor / HorizontalSizeInInches) + 0.5f));
-  verticalPages = static_cast<UINT>(Eo::Round(((ptMax.y - ptMin.y) * scaleFactor / VerticalSizeInInches) + 0.5f));
+  horizontalPages = static_cast<UINT>(Eo::Round(((ptMax.x - ptMin.x) * scaleFactor / horizontalSizeInInches) + 0.5));
+  verticalPages = static_cast<UINT>(Eo::Round(((ptMax.y - ptMin.y) * scaleFactor / verticalSizeInInches) + 0.5));
 
   horizontalPages = std::max<UINT>(horizontalPages, 1);
   verticalPages = std::max<UINT>(verticalPages, 1);
@@ -202,12 +202,12 @@ void AeSysView::OnViewPenWidths() {
 void AeSysView::OnViewSolid() {}
 
 void AeSysView::OnViewWindow() {
-  CPoint CurrentPosition;
-  ::GetCursorPos(&CurrentPosition);
-  const HMENU WindowMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_WINDOW));
-  CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(WindowMenu, 0));
-  SubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, CurrentPosition.x, CurrentPosition.y, AfxGetMainWnd(), nullptr);
-  ::DestroyMenu(WindowMenu);
+  CPoint currentPosition;
+  ::GetCursorPos(&currentPosition);
+  const auto windowMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_WINDOW));
+  auto* subMenu = CMenu::FromHandle(::GetSubMenu(windowMenu, 0));
+  subMenu->TrackPopupMenuEx(TPM_LEFTALIGN, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
+  ::DestroyMenu(windowMenu);
 }
 
 void AeSysView::OnViewWireframe() {
@@ -314,20 +314,20 @@ void AeSysView::OnSetupDimAngle() {
 }
 
 void AeSysView::OnSetupUnits() {
-  EoDlgSetUnitsAndPrecision Dialog;
-  Dialog.m_Units = app.GetUnits();
-  Dialog.m_Precision = app.GetArchitecturalUnitsFractionPrecision();
+  EoDlgSetUnitsAndPrecision dialog;
+  dialog.m_Units = app.GetUnits();
+  dialog.m_Precision = app.GetArchitecturalUnitsFractionPrecision();
 
-  if (Dialog.DoModal() == IDOK) {
-    app.SetUnits(Dialog.m_Units);
-    app.SetArchitecturalUnitsFractionPrecision(Dialog.m_Precision);
+  if (dialog.DoModal() == IDOK) {
+    app.SetUnits(dialog.m_Units);
+    app.SetArchitecturalUnitsFractionPrecision(dialog.m_Precision);
   }
 }
 
 void AeSysView::OnSetupConstraints() {
-  EoDlgSetupConstraints Dialog(this);
+  EoDlgSetupConstraints dialog(this);
 
-  if (Dialog.DoModal() == IDOK) { UpdateStateInformation(All); }
+  if (dialog.DoModal() == IDOK) { UpdateStateInformation(All); }
 }
 
 void AeSysView::OnSetupMouseButtons() {
@@ -540,13 +540,12 @@ AeSysView* AeSysView::GetActiveView() {
 void AeSysView::OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewTrueTypeFonts); }
 
 void AeSysView::OnBackgroundImageLoad() {
-  CFileDialog dlg(TRUE, L"bmp", L"*.bmp");
-  dlg.m_ofn.lpstrTitle = L"Load Background Image";
+  CFileDialog dialog(TRUE, L"bmp", L"*.bmp");
+  dialog.m_ofn.lpstrTitle = L"Load Background Image";
 
-  if (dlg.DoModal() == IDOK) {
-    EoDbBitmapFile BitmapFile(dlg.GetPathName());
-
-    BitmapFile.Load(dlg.GetPathName(), m_backgroundImageBitmap, m_backgroundImagePalette);
+  if (dialog.DoModal() == IDOK) {
+    EoDbBitmapFile bitmapFile(dialog.GetPathName());
+    bitmapFile.Load(dialog.GetPathName(), m_backgroundImageBitmap, m_backgroundImagePalette);
     m_viewBackgroundImage = true;
     InvalidateScene();
   }
@@ -722,8 +721,8 @@ void AeSysView::SetWorldScale(double scale) {
     m_WorldScale = scale;
     UpdateStateInformation(Scale);
 
-    CMainFrame* MainFrame = (CMainFrame*)(AfxGetMainWnd());
-    MainFrame->GetPropertiesPane().GetActiveViewScaleProperty().SetValue(m_WorldScale);
+    auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
+    mainFrame->GetPropertiesPane().GetActiveViewScaleProperty().SetValue(m_WorldScale);
 
 #ifdef USING_DDE
     dde::PostAdvise(dde::ScaleInfo);

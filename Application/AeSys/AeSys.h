@@ -165,13 +165,15 @@ class AeSys : public CWinAppEx {
    */
   void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length);
 
-  /** @brief Formats a length value in engineering units (feet and inches) and stores it in a buffer.
-   * @param lengthAsBuffer Output buffer to receive the formatted length string.
-   * @param bufSize The size of the output buffer in characters.
-   * @param length The length value to format, in internal units.
-   * @param width The minimum field width for formatting the fractional part.
-   * @param precision The number of significant digits to display in the formatted output.
-   */
+ /** @brief Formats a length in engineering units (feet and inches) with optional fractional inches.
+  * @param lengthAsBuffer Buffer to receive the formatted length string.
+  * @param bufSize Size of the buffer in characters.
+  * @param length The length to format, in internal units.
+  * @param width Minimum field width for the formatted string.
+  * @param precision Number of decimal places for the fractional inches, if included.
+  * @remarks The formatted string will include feet and inches, with optional fractional inches based on the specified
+  * precision. The function handles negative lengths and scales the input length by the active view's world scale.
+  */
   void FormatLengthEngineering(
       LPWSTR lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision);
 

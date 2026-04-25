@@ -2,7 +2,6 @@
 
 #include <stdexcept>
 
-#include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
@@ -37,29 +36,29 @@ void AeSysView::PopViewTransform() {
 void AeSysView::PushViewTransform() { m_ViewTransforms.AddTail(m_ViewTransform); }
 
 void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio) {
-  const double AspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
+  const auto aspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
 
-  const double UExtent = std::abs(static_cast<double>(uMax - uMin));
-  const double VExtent = std::abs(static_cast<double>(vMax - vMin));
+  const auto uExtent = std::abs(uMax - uMin);
+  const auto vExtent = std::abs(vMax - vMin);
 
-  double XAdjustment = 0.0;
-  double YAdjustment = 0.0;
+  double xAdjustment{};
+  double yAdjustment{};
 
-  double Scale = 1.0 - (m_Viewport.WidthInInches() / UExtent) / ratio;
+  double scale = 1.0 - (m_Viewport.WidthInInches() / uExtent) / ratio;
 
-  if (Eo::IsGeometricallyNonZero(Scale)) {
-    XAdjustment = Scale * UExtent;
-    YAdjustment = Scale * VExtent;
+  if (Eo::IsGeometricallyNonZero(scale)) {
+    xAdjustment = scale * uExtent;
+    yAdjustment = scale * vExtent;
   }
-  if (UExtent < Eo::geometricTolerance || VExtent / UExtent > AspectRatio) {
-    XAdjustment += (VExtent / AspectRatio - UExtent) * 0.5;
+  if (uExtent < Eo::geometricTolerance || vExtent / uExtent > aspectRatio) {
+    xAdjustment += (vExtent / aspectRatio - uExtent) * 0.5;
   } else {
-    YAdjustment += (UExtent * AspectRatio - VExtent) * 0.5f;
+    yAdjustment += (uExtent * aspectRatio - vExtent) * 0.5;
   }
-  uMin -= XAdjustment;
-  uMax += XAdjustment;
-  vMin -= YAdjustment;
-  vMax += YAdjustment;
+  uMin -= xAdjustment;
+  uMax += xAdjustment;
+  vMin -= yAdjustment;
+  vMax += yAdjustment;
 }
 
 void AeSysView::PushModelTransform() { m_ModelTransform.Push(); }
@@ -112,10 +111,10 @@ void AeSysView::DoCameraRotate(int rotationDirection) {
 void AeSysView::DoWindowPan(double ratio) {
   ratio = std::min(std::max(ratio, minimumWindowRatio), maximumWindowRatio);
 
-  const double UExtent = m_Viewport.WidthInInches() / ratio;
-  const double VExtent = m_Viewport.HeightInInches() / ratio;
+  const double uExtent = m_Viewport.WidthInInches() / ratio;
+  const double vExtent = m_Viewport.HeightInInches() / ratio;
 
-  m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
+  m_ViewTransform.SetCenteredWindow(m_Viewport, uExtent, vExtent);
 
   auto cursorPosition = GetCursorPosition();
 
@@ -188,31 +187,30 @@ void AeSysView::On3dViewsBack() {
 }
 
 void AeSysView::On3dViewsIsometric() {
-  static int iLeftRight = 0;
-  static int iFrontBack = 0;
-  static int iAboveUnder = 0;
+  static int iLeftRight{};
+  static int iFrontBack{};
+  static int iAboveUnder{};
 
-  EoDlgSelectIsometricView Dialog;
-  Dialog.m_LeftRight = iLeftRight;
-  Dialog.m_FrontBack = iFrontBack;
-  Dialog.m_AboveUnder = iAboveUnder;
-  if (Dialog.DoModal()) {
-    iLeftRight = Dialog.m_LeftRight;
-    iFrontBack = Dialog.m_FrontBack;
-    iAboveUnder = Dialog.m_AboveUnder;
+  EoDlgSelectIsometricView dialog;
+  dialog.m_LeftRight = iLeftRight;
+  dialog.m_FrontBack = iFrontBack;
+  dialog.m_AboveUnder = iAboveUnder;
+  if (dialog.DoModal()) {
+    iLeftRight = dialog.m_LeftRight;
+    iFrontBack = dialog.m_FrontBack;
+    iAboveUnder = dialog.m_AboveUnder;
 
-    EoGeVector3d Direction;
+    EoGeVector3d direction;
 
-    Direction.x = iLeftRight == 0 ? 0.5773503 : -0.5773503;
-    Direction.y = iFrontBack == 0 ? 0.5773503 : -0.5773503;
-    Direction.z = iAboveUnder == 0 ? -0.5773503 : 0.5773503;
-
-    m_ViewTransform.SetPosition(-Direction);
-    m_ViewTransform.SetDirection(-Direction);
+    direction.x = iLeftRight == 0 ? 0.5773503 : -0.5773503;
+    direction.y = iFrontBack == 0 ? 0.5773503 : -0.5773503;
+    direction.z = iAboveUnder == 0 ? -0.5773503 : 0.5773503;
+    m_ViewTransform.SetPosition(-direction);
+    m_ViewTransform.SetDirection(-direction);
     m_ViewTransform.EnablePerspective(false);
 
-    auto viewUp = CrossProduct(Direction, EoGeVector3d::positiveUnitZ);
-    viewUp = CrossProduct(viewUp, Direction);
+    auto viewUp = CrossProduct(direction, EoGeVector3d::positiveUnitZ);
+    viewUp = CrossProduct(viewUp, direction);
     viewUp.Unitize();
 
     m_ViewTransform.SetViewUp(viewUp);
@@ -230,14 +228,14 @@ void AeSysView::OnCameraRotateUp() { DoCameraRotate(ID_CAMERA_ROTATEUP); }
 void AeSysView::OnCameraRotateDown() { DoCameraRotate(ID_CAMERA_ROTATEDOWN); }
 
 void AeSysView::OnViewParameters() {
-  EoDlgViewParameters Dialog;
+  EoDlgViewParameters dialog;
 
-  EoGsViewTransform ModelView(m_ViewTransform);
+  EoGsViewTransform modelView{m_ViewTransform};
 
-  Dialog.m_ModelView = reinterpret_cast<uintptr_t>(&ModelView);
-  Dialog.m_PerspectiveProjection = m_ViewTransform.IsPerspectiveOn();
+  dialog.m_ModelView = reinterpret_cast<uintptr_t>(&modelView);
+  dialog.m_PerspectiveProjection = m_ViewTransform.IsPerspectiveOn();
 
-  if (Dialog.DoModal() == IDOK) { m_ViewTransform.EnablePerspective(Dialog.m_PerspectiveProjection == TRUE); }
+  if (dialog.DoModal() == IDOK) { m_ViewTransform.EnablePerspective(dialog.m_PerspectiveProjection == TRUE); }
 }
 
 void AeSysView::OnViewLighting() {}
@@ -257,23 +255,23 @@ void AeSysView::OnWindowBest() {
   if (ptMin.x < ptMax.x) {
     m_PreviousViewTransform = m_ViewTransform;
 
-    const double UExtent = m_ViewTransform.UExtent() * (ptMax.x - ptMin.x) / 2.0;
-    const double VExtent = m_ViewTransform.VExtent() * (ptMax.y - ptMin.y) / 2.0;
+    const auto uExtent = m_ViewTransform.UExtent() * (ptMax.x - ptMin.x) / 2.0;
+    const auto vExtent = m_ViewTransform.VExtent() * (ptMax.y - ptMin.y) / 2.0;
 
-    m_ViewTransform.SetCenteredWindow(m_Viewport, UExtent, VExtent);
+    m_ViewTransform.SetCenteredWindow(m_Viewport, uExtent, vExtent);
 
     EoGeTransformMatrix transformMatrix;
     document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
-    const EoGePoint3d Target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
+    const auto target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
 
-    m_ViewTransform.SetTarget(Target);
+    m_ViewTransform.SetTarget(target);
     m_ViewTransform.SetPosition(m_ViewTransform.Direction());
     m_ViewTransform.BuildTransformMatrix();
 
     ViewZoomExtents();
 
-    SetCursorPosition(Target);
+    SetCursorPosition(target);
     InvalidateScene();
   }
 }
@@ -444,11 +442,11 @@ void AeSysView::OnWindowPan() {
 }
 
 void AeSysView::OnWindowPanLeft() {
-  auto Target = m_ViewTransform.Target();
+  auto target = m_ViewTransform.Target();
 
-  Target.x -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  target.x -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
-  m_ViewTransform.SetTarget(Target);
+  m_ViewTransform.SetTarget(target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
@@ -456,11 +454,11 @@ void AeSysView::OnWindowPanLeft() {
 }
 
 void AeSysView::OnWindowPanRight() {
-  auto Target = m_ViewTransform.Target();
+  auto target = m_ViewTransform.Target();
 
-  Target.x += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  target.x += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
-  m_ViewTransform.SetTarget(Target);
+  m_ViewTransform.SetTarget(target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
@@ -468,11 +466,11 @@ void AeSysView::OnWindowPanRight() {
 }
 
 void AeSysView::OnWindowPanUp() {
-  auto Target = m_ViewTransform.Target();
+  auto target = m_ViewTransform.Target();
 
-  Target.y += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  target.y += 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
-  m_ViewTransform.SetTarget(Target);
+  m_ViewTransform.SetTarget(target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 
@@ -480,11 +478,11 @@ void AeSysView::OnWindowPanUp() {
 }
 
 void AeSysView::OnWindowPanDown() {
-  auto Target = m_ViewTransform.Target();
+  auto target = m_ViewTransform.Target();
 
-  Target.y -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
+  target.y -= 1.0 / (m_Viewport.WidthInInches() / m_ViewTransform.UExtent());
 
-  m_ViewTransform.SetTarget(Target);
+  m_ViewTransform.SetTarget(target);
   m_ViewTransform.SetPosition(m_ViewTransform.Direction());
   m_ViewTransform.BuildTransformMatrix();
 

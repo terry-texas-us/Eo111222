@@ -50,9 +50,9 @@ void AeSysView::DoEditGroupTransform(std::uint16_t operation) {
   if (m_SubModeEditGroup == nullptr) { return; }
   EoGeTransformMatrix transformMatrix;
 
-  const EoGeVector3d TranslateVector(m_SubModeEditBeginPoint, EoGePoint3d::kOrigin);
+  const EoGeVector3d translateVector{m_SubModeEditBeginPoint, EoGePoint3d::kOrigin};
 
-  transformMatrix.Translate(TranslateVector);
+  transformMatrix.Translate(translateVector);
 
   if (operation == ID_OP2) {
     transformMatrix *= EditModeRotationTMat();
@@ -65,7 +65,7 @@ void AeSysView::DoEditGroupTransform(std::uint16_t operation) {
   } else if (operation == ID_OP8) {
     transformMatrix.Scale(EditModeScaleFactors());
   }
-  transformMatrix.Translate(-TranslateVector);
+  transformMatrix.Translate(-translateVector);
 
   document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
   m_SubModeEditGroup->Transform(transformMatrix);

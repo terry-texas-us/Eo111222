@@ -92,11 +92,11 @@ void AeSysView::OnEditModeFlip() {
   auto* document = GetDocument();
 
   EoGeTransformMatrix transformMatrix;
-  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d translateVector{document->GetTrapPivotPoint(), EoGePoint3d::kOrigin};
 
-  transformMatrix.Translate(TranslateVector);
+  transformMatrix.Translate(translateVector);
   transformMatrix.Scale(EditModeMirrorScale());
-  transformMatrix.Translate(-TranslateVector);
+  transformMatrix.Translate(-translateVector);
   document->TransformTrappedGroups(transformMatrix);
 }
 
@@ -104,11 +104,11 @@ void AeSysView::OnEditModeReduce() {
   auto* document = GetDocument();
 
   EoGeTransformMatrix transformMatrix;
-  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d translateVector{document->GetTrapPivotPoint(), EoGePoint3d::kOrigin};
 
-  transformMatrix.Translate(TranslateVector);
+  transformMatrix.Translate(translateVector);
   transformMatrix.Scale(EditModeInvertedScaleFactors());
-  transformMatrix.Translate(-TranslateVector);
+  transformMatrix.Translate(-translateVector);
   document->TransformTrappedGroups(transformMatrix);
 }
 
@@ -116,17 +116,15 @@ void AeSysView::OnEditModeEnlarge() {
   auto* document = GetDocument();
 
   EoGeTransformMatrix transformMatrix;
-  const EoGeVector3d TranslateVector(document->GetTrapPivotPoint(), EoGePoint3d::kOrigin);
+  const EoGeVector3d translateVector{document->GetTrapPivotPoint(), EoGePoint3d::kOrigin};
 
-  transformMatrix.Translate(TranslateVector);
+  transformMatrix.Translate(translateVector);
   transformMatrix.Scale(EditModeScaleFactors());
-  transformMatrix.Translate(-TranslateVector);
+  transformMatrix.Translate(-translateVector);
   document->TransformTrappedGroups(transformMatrix);
 }
 
-void AeSysView::OnEditModeReturn() {
-  // TODO: Add your command handler code here
-}
+void AeSysView::OnEditModeReturn() {}
 
 void AeSysView::OnEditModeEscape() {
   if (m_PreviousOp == ID_OP4 || m_PreviousOp == ID_OP5) {

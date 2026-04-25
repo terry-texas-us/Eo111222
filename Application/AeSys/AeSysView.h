@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cmath>
 #include <cstdint>
-#include <memory>
-#include <stack>
 
 #include <d2d1.h>
 #include <wrl/client.h>
@@ -807,25 +804,25 @@ class AeSysView : public CView {
 
   [[nodiscard]] EoGeVector3d EditModeRotationAngles() const { return m_editModeRotationAngles; }
   EoGeTransformMatrix EditModeInvertedRotationTMat() const {
-    EoGeTransformMatrix Matrix;
-    Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
-    Matrix.Inverse();
-    return Matrix;
+    EoGeTransformMatrix matrix;
+    matrix = matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
+    matrix.Inverse();
+    return matrix;
   }
   EoGeTransformMatrix EditModeRotationTMat() const {
-    EoGeTransformMatrix Matrix;
-    Matrix = Matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
-    return Matrix;
+    EoGeTransformMatrix matrix;
+    matrix = matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
+    return matrix;
   }
   [[nodiscard]] EoGeVector3d EditModeInvertedScaleFactors() const {
-    EoGeVector3d InvertedScaleFactors;
+    EoGeVector3d invertedScaleFactors;
 
-    InvertedScaleFactors.x = Eo::IsGeometricallyNonZero(m_EditModeScale.x) ? 1.0 / m_EditModeScale.x : 1.0;
-    InvertedScaleFactors.y = Eo::IsGeometricallyNonZero(m_EditModeScale.y) ? 1.0 / m_EditModeScale.y : 1.0;
-    InvertedScaleFactors.z = Eo::IsGeometricallyNonZero(m_EditModeScale.z) ? 1.0 / m_EditModeScale.z : 1.0;
-
-    return InvertedScaleFactors;
+    invertedScaleFactors.x = Eo::IsGeometricallyNonZero(m_EditModeScale.x) ? 1.0 / m_EditModeScale.x : 1.0;
+    invertedScaleFactors.y = Eo::IsGeometricallyNonZero(m_EditModeScale.y) ? 1.0 / m_EditModeScale.y : 1.0;
+    invertedScaleFactors.z = Eo::IsGeometricallyNonZero(m_EditModeScale.z) ? 1.0 / m_EditModeScale.z : 1.0;
+    return invertedScaleFactors;
   }
+
   [[nodiscard]] EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
   void SetEditModeScaleFactors(double x, double y, double z) { m_EditModeScale.Set(x, y, z); }
   void SetEditModeRotationAngles(double x, double y, double z) { m_editModeRotationAngles.Set(x, y, z); }
@@ -1110,6 +1107,11 @@ class AeSysView : public CView {
   afx_msg void On3dViewsBack();
   afx_msg void On3dViewsBottom();
   afx_msg void On3dViewsFront();
+
+  /** @brief Sets the view to an isometric view based on user-selected left/right, front/back, and above/under
+   * options. This function displays a dialog for the user to select the isometric view orientation, calculates the
+   * corresponding direction vector, and updates the view transform accordingly.
+   */
   afx_msg void On3dViewsIsometric();
   afx_msg void On3dViewsLeft();
   afx_msg void On3dViewsRight();

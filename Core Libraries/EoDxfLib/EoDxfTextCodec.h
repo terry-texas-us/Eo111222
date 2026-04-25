@@ -80,8 +80,8 @@ class EoTcConverter {
   EoTcConverter(const int* table, int length) : m_table{table}, m_codePageLength{length} {}
   virtual ~EoTcConverter() = default;
 
-  virtual [[nodiscard]] std::string EncodeText(std::wstring_view text) const = 0;
-  virtual [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const = 0;
+  [[nodiscard]] virtual std::string EncodeText(std::wstring_view text) const = 0;
+  [[nodiscard]] virtual std::wstring DecodeText(std::string_view encodedText) const = 0;
 
  protected:
   const int* m_table;

@@ -118,7 +118,7 @@ void AeSysView::OnDraw2ModeWall() {
     if (m_endSectionLinePrimitive == nullptr) { return; }
 
     const EoGePoint3d begin = m_endSectionLinePrimitive->Begin();
-    EoDbLine* linePrimitive = new EoDbLine(*m_endSectionLinePrimitive);
+    auto* linePrimitive = new EoDbLine(*m_endSectionLinePrimitive);
     if (EoGeLine(m_PreviousPnt, cursorPosition).DirRelOfPt(begin) < 0.0) {
       m_endSectionLinePrimitive->SetEndPoint(m_currentRightLine.end);
       linePrimitive->SetBeginPoint(m_currentLeftLine.end);
