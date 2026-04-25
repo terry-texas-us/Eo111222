@@ -39,7 +39,7 @@ void RegisterAeSysTopics();
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
 
-double penWidths[numberOfPenWidths] = {
+double penWidthsTable[numberOfPenWidths] = {
     0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 
 namespace {
@@ -62,7 +62,7 @@ constexpr double defaultPenWidths[numberOfPenWidths] = {
 }  // namespace
 
 static void ResetPenWidthsToDefault() {
-  std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidths);
+  std::copy(std::begin(defaultPenWidths), std::end(defaultPenWidths), penWidthsTable);
 }
 
 namespace hatch {
@@ -387,7 +387,7 @@ void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
     const double penWidth = std::wcstod(penWidthText, &penValueEnd);
     if (penValueEnd == penWidthText) { continue; }
 
-    if (static_cast<size_t>(penIndex) < numberOfPenWidths) { penWidths[penIndex] = penWidth; }
+    if (static_cast<size_t>(penIndex) < numberOfPenWidths) { penWidthsTable[penIndex] = penWidth; }
   }
 }
 

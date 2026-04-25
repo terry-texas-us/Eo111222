@@ -16,7 +16,7 @@ class AeSysView;
 extern COLORREF* pColTbl;
 
 inline constexpr size_t numberOfPenWidths{16};
-extern double penWidths[numberOfPenWidths];
+extern double penWidthsTable[numberOfPenWidths];
 
 namespace App {
 /** @brief Determines the file type based on the file extension of the provided path name.
@@ -234,7 +234,7 @@ class AeSys : public CWinAppEx {
    */
   void LoadPenColorsFromFile(const CString& pathName);
 
-  [[nodiscard]] double LineWeight(std::int16_t penIndex) { return (penWidths[penIndex]); }
+  [[nodiscard]] double LineWeight(std::int16_t penIndex) { return (penWidthsTable[penIndex]); }
 
   /** Loads the pen widths from a file.
    * The file is expected to have lines in the format:

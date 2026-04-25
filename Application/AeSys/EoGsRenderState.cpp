@@ -206,7 +206,7 @@ void EoGsRenderState::ManagePenResources(
 
   int iPen = 0;
   for (int i = 0; i < numberOfPens; i++) {
-    if (hPen[i] && lineTypes[i] == lineType && penWidths[i] == penWidth && crColRef[i] == pColTbl[penColor]) {
+    if (hPen[i] && lineTypes[i] == lineType && penWidthsTable[i] == penWidth && crColRef[i] == pColTbl[penColor]) {
       hPenCur = hPen[i];
       if (deviceContext) { deviceContext->SelectObject(CPen::FromHandle(hPenCur)); }
       return;

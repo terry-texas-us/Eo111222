@@ -92,9 +92,9 @@ void EoGsAbstractView::EnableFarClipping(bool enabled) {
     m_ViewMode &= ~AV_FARCLIPPING;
   }
 }
-void EoGsAbstractView::SetDirection(const EoGeVector3d& direction) {
-  if (direction.Length() > Eo::geometricTolerance) {
-    EoGeVector3d direction(direction);
+void EoGsAbstractView::SetDirection(const EoGeVector3d& direction_) {
+  if (direction_.Length() > Eo::geometricTolerance) {
+    EoGeVector3d direction(direction_);
     direction.Unitize();
     mx_Direction.x = static_cast<float>(direction.x);
     mx_Direction.y = static_cast<float>(direction.y);
