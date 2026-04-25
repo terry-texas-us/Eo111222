@@ -41,19 +41,21 @@ bool EoGePoint4d::IsEqualTo(const EoGePoint4d& p, double tolerance) const noexce
 }
 
 bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
-  const double BoundaryCodeA[] = {ptA.w + ptA.x, ptA.w - ptA.x, ptA.w + ptA.y, ptA.w - ptA.y, ptA.w + ptA.z, ptA.w - ptA.z};
-  const double BoundaryCodeB[] = {ptB.w + ptB.x, ptB.w - ptB.x, ptB.w + ptB.y, ptB.w - ptB.y, ptB.w + ptB.z, ptB.w - ptB.z};
+  const double boundaryCodeA[] = {
+      ptA.w + ptA.x, ptA.w - ptA.x, ptA.w + ptA.y, ptA.w - ptA.y, ptA.w + ptA.z, ptA.w - ptA.z};
+  const double boundaryCodeB[] = {
+      ptB.w + ptB.x, ptB.w - ptB.x, ptB.w + ptB.y, ptB.w - ptB.y, ptB.w + ptB.z, ptB.w - ptB.z};
 
-  int OutCodeA = 0;
-  int OutCodeB = 0;
+  int outCodeA = 0;
+  int outCodeB = 0;
 
   for (int iBC = 0; iBC < 6; iBC++) {
-    if (BoundaryCodeA[iBC] <= 0.0) { OutCodeA |= (1 << iBC); }
-    if (BoundaryCodeB[iBC] <= 0.0) { OutCodeB |= (1 << iBC); }
+    if (boundaryCodeA[iBC] <= 0.0) { outCodeA |= (1 << iBC); }
+    if (boundaryCodeB[iBC] <= 0.0) { outCodeB |= (1 << iBC); }
   }
 
-  if ((OutCodeA & OutCodeB) != 0) { return false; }
-  if ((OutCodeA | OutCodeB) == 0) { return true; }
+  if ((outCodeA & outCodeB) != 0) { return false; }
+  if ((outCodeA | outCodeB) == 0) { return true; }
 
   double dTIn{};
   double dTOut{1.0};
@@ -61,19 +63,19 @@ bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
   double dTHit;
 
   for (int i = 0; i < 6; i++) {
-    if (BoundaryCodeB[i] < 0.0) {
-      dTHit = BoundaryCodeA[i] / (BoundaryCodeA[i] - BoundaryCodeB[i]);
+    if (boundaryCodeB[i] < 0.0) {
+      dTHit = boundaryCodeA[i] / (boundaryCodeA[i] - boundaryCodeB[i]);
       dTOut = std::min(dTOut, dTHit);
-    } else if (BoundaryCodeA[i] < 0.0) {
-      dTHit = BoundaryCodeA[i] / (BoundaryCodeA[i] - BoundaryCodeB[i]);
+    } else if (boundaryCodeA[i] < 0.0) {
+      dTHit = boundaryCodeA[i] / (boundaryCodeA[i] - boundaryCodeB[i]);
       dTIn = std::max(dTIn, dTHit);
     }
     if (dTIn > dTOut) { return false; }
   }
   const EoGePoint4d pt(ptA);
 
-  if (OutCodeA != 0) { ptA = pt + (ptB - pt) * dTIn; }
-  if (OutCodeB != 0) { ptB = pt + (ptB - pt) * dTOut; }
+  if (outCodeA != 0) { ptA = pt + (ptB - pt) * dTIn; }
+  if (outCodeB != 0) { ptB = pt + (ptB - pt) * dTOut; }
   return true;
 }
 void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
@@ -84,7 +86,7 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
   static EoGeVector3d vPln[] = {EoGeVector3d(1.0, 0.0, 0.0), EoGeVector3d(-1.0, 0.0, 0.0), EoGeVector3d(0.0, 1.0, 0.0),
       EoGeVector3d(0.0, -1.0, 0.0), EoGeVector3d(0.0, 0.0, 1.0), EoGeVector3d(0.0, 0.0, -1.0)};
 
-  EoGePoint4dArray PointsArrayOut;
+  EoGePoint4dArray pointsArrayOut;
 
   for (int iPln = 0; iPln < 6; iPln++) {
     IntersectionWithPln(pointsArray, ptPln[iPln], vPln[iPln], PointsArrayOut);
@@ -95,7 +97,7 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
     if (iPtsOut == 0) { break; }
 
     pointsArray.Copy(PointsArrayOut);
-    PointsArrayOut.RemoveAll();
+    pointsArrayOut.RemoveAll();
   }
 }
 void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoGePoint4d& pointOnClipPlane,

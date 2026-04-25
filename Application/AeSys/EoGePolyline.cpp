@@ -56,8 +56,8 @@ bool SelectUsingRectangle(
     EoGePoint4d end(pts[w]);
     view->ModelViewTransformPoint(end);
 
-    EoGeLine LineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
-    if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
+    EoGeLine lineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
+    if (lineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
 
     begin = end;
   }
@@ -71,16 +71,16 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
   transformMatrix.Inverse();
 
   // Determine the parameter (angular increment)
-  const double AngleIncrement = Eo::TwoPi / double(numberOfPoints);
-  const double CosIncrement = std::cos(AngleIncrement);
-  const double SinIncrement = std::sin(AngleIncrement);
+  const double angleIncrement = Eo::TwoPi / double(numberOfPoints);
+  const double cosIncrement = std::cos(angleIncrement);
+  const double sinIncrement = std::sin(angleIncrement);
   pts.SetSize(numberOfPoints);
 
   pts[0].Set(1.0, 0.0, 0.0);
 
   for (int i = 0; i < numberOfPoints - 1; i++) {
     pts[i + 1].Set(
-        pts[i].x * CosIncrement - pts[i].y * SinIncrement, pts[i].y * CosIncrement + pts[i].x * SinIncrement, 0.0);
+        pts[i].x * cosIncrement - pts[i].y * sinIncrement, pts[i].y * cosIncrement + pts[i].x * sinIncrement, 0.0);
   }
   for (int i = 0; i < numberOfPoints; i++) { pts[i] = transformMatrix * pts[i]; }
 }

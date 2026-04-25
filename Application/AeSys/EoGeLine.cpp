@@ -194,11 +194,11 @@ bool EoGeLine::GetParallels(
   double lengthOfLines = Length();
 
   if (lengthOfLines > Eo::geometricTolerance) {
-    const double X = (end.y - begin.y) * distanceBetweenLines / lengthOfLines;
-    const double Y = (end.x - begin.x) * distanceBetweenLines / lengthOfLines;
+    const double x = (end.y - begin.y) * distanceBetweenLines / lengthOfLines;
+    const double y = (end.x - begin.x) * distanceBetweenLines / lengthOfLines;
 
-    leftLine += EoGeVector3d(-X * eccentricity, Y * eccentricity, 0.0);
-    rightLine += EoGeVector3d(X * (1.0 - eccentricity), -Y * (1.0 - eccentricity), 0.0);
+    leftLine += EoGeVector3d(-x * eccentricity, y * eccentricity, 0.0);
+    rightLine += EoGeVector3d(x * (1.0 - eccentricity), -y * (1.0 - eccentricity), 0.0);
 
     return true;
   }

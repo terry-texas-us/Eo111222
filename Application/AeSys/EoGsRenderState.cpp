@@ -171,11 +171,11 @@ void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, st
 
 void EoGsRenderState::ManagePenResources(
     CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
-  static const int NumberOfPens = 8;
-  static HPEN hPen[NumberOfPens] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-  static COLORREF crColRef[NumberOfPens];
-  static std::int16_t LineTypes[NumberOfPens];
-  static int PenWidths[NumberOfPens];
+  static const int numberOfPens = 8;
+  static HPEN hPen[numberOfPens] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+  static COLORREF crColRef[numberOfPens];
+  static std::int16_t lineTypes[numberOfPens];
+  static int penWidths[numberOfPens];
   static HPEN hPenCur;
 
   switch (lineType) {
@@ -205,23 +205,23 @@ void EoGsRenderState::ManagePenResources(
   if (deviceContext) { deviceContext->SetTextColor(pColTbl[penColor]); }
 
   int iPen = 0;
-  for (int i = 0; i < NumberOfPens; i++) {
-    if (hPen[i] && LineTypes[i] == lineType && PenWidths[i] == penWidth && crColRef[i] == pColTbl[penColor]) {
+  for (int i = 0; i < numberOfPens; i++) {
+    if (hPen[i] && lineTypes[i] == lineType && penWidths[i] == penWidth && crColRef[i] == pColTbl[penColor]) {
       hPenCur = hPen[i];
       if (deviceContext) { deviceContext->SelectObject(CPen::FromHandle(hPenCur)); }
       return;
     }
     if (hPen[i] == nullptr) { iPen = i; }
   }
-  HPEN NewPenHandle = ::CreatePen(lineType, penWidth, pColTbl[penColor]);
+  HPEN newPenHandle = ::CreatePen(lineType, penWidth, pColTbl[penColor]);
 
-  if (NewPenHandle) {
-    hPenCur = NewPenHandle;
-    if (deviceContext) { deviceContext->SelectObject(CPen::FromHandle(NewPenHandle)); }
+  if (newPenHandle) {
+    hPenCur = newPenHandle;
+    if (deviceContext) { deviceContext->SelectObject(CPen::FromHandle(newPenHandle)); }
     if (hPen[iPen]) { ::DeleteObject(hPen[iPen]); }
-    hPen[iPen] = NewPenHandle;
-    LineTypes[iPen] = lineType;
-    PenWidths[iPen] = penWidth;
+    hPen[iPen] = newPenHandle;
+    lineTypes[iPen] = lineType;
+    penWidths[iPen] = penWidth;
     crColRef[iPen] = pColTbl[penColor];
   }
 }

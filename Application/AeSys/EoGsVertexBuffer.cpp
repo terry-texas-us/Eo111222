@@ -78,7 +78,7 @@ void EoGsVertexBuffer::DisplayDashPattern(
     for (auto& element : dashElements) { element *= lineTypeScale; }
   }
 
-  const double dpi = static_cast<double>(std::max(defaultDpi, GetDpiForSystem()));
+  const auto dpi = static_cast<double>(std::max(defaultDpi, GetDpiForSystem()));
   const double pixelSize = 1.0 / dpi;  // Used for dots where dash element length is 0.0
 
   double dashElementSize = std::max(pixelSize, std::abs(dashElements[dashElementIndex]));
@@ -233,8 +233,8 @@ bool EoGsVertexBuffer::SelectUsingPoint(AeSysView* view, EoGePoint4d point, doub
   for (int i = 1; i < (int)m_points.GetSize(); i++) {
     EoGePoint4d end = EoGePoint4d(m_points[i]);
     view->ModelViewTransformPoint(end);
-    EoGeLine LineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
-    if (LineSegment.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &dRel)) {
+    EoGeLine lineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
+    if (lineSegment.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &dRel)) {
       ptProj.z = begin.z + dRel * (end.z - begin.z);
       result = true;
       break;
@@ -252,8 +252,8 @@ bool EoGsVertexBuffer::SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLe
     EoGePoint4d end(m_points[w]);
     view->ModelViewTransformPoint(end);
 
-    EoGeLine LineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
-    if (LineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
+    EoGeLine lineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
+    if (lineSegment.IsContainedXY(lowerLeftPoint, upperRightPoint)) { return true; }
 
     begin = end;
   }

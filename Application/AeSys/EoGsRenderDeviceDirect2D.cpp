@@ -372,7 +372,7 @@ void EoGsRenderDeviceDirect2D::SelectFont(const LOGFONT* logFont) {
   m_escapement = logFont->lfEscapement;
 
   // Convert LOGFONT height to points — LOGFONT lfHeight is in device units (negative = character height)
-  float fontSize = static_cast<float>(abs(logFont->lfHeight));
+  auto fontSize = static_cast<float>(abs(logFont->lfHeight));
   if (fontSize < 1.0f) { fontSize = 12.0f; }
 
   // Convert device units to DIPs (Direct2D works in DIPs which are 1/96 inch)

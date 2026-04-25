@@ -94,11 +94,11 @@ void EoGsAbstractView::EnableFarClipping(bool enabled) {
 }
 void EoGsAbstractView::SetDirection(const EoGeVector3d& direction) {
   if (direction.Length() > Eo::geometricTolerance) {
-    EoGeVector3d Direction(direction);
-    Direction.Unitize();
-    mx_Direction.x = static_cast<float>(Direction.x);
-    mx_Direction.y = static_cast<float>(Direction.y);
-    mx_Direction.z = static_cast<float>(Direction.z);
+    EoGeVector3d direction(direction);
+    direction.Unitize();
+    mx_Direction.x = static_cast<float>(direction.x);
+    mx_Direction.y = static_cast<float>(direction.y);
+    mx_Direction.z = static_cast<float>(direction.z);
   }
 }
 void EoGsAbstractView::SetNearClipDistance(double distance) { m_NearClipDistance = distance; }

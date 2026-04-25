@@ -90,66 +90,66 @@ void EoGsViewTransform::BuildTransformMatrix() {
   m_Matrix[3][2] = 0.0;
   m_Matrix[3][3] = 1.0;
 
-  const auto XMPosition = DirectX::XMLoadFloat3(&mx_Position);
-  const auto XMTarget = DirectX::XMLoadFloat3(&mx_Target);
-  const auto XMViewUp = DirectX::XMLoadFloat3(&mx_ViewUp);
-  DirectX::XMMATRIX XViewMatrix = DirectX::XMMatrixLookAtRH(XMPosition, XMTarget, XMViewUp);
+  const auto xmPosition = DirectX::XMLoadFloat3(&mx_Position);
+  const auto xmTarget = DirectX::XMLoadFloat3(&mx_Target);
+  const auto xmViewUp = DirectX::XMLoadFloat3(&mx_ViewUp);
+  DirectX::XMMATRIX xViewMatrix = DirectX::XMMatrixLookAtRH(xmPosition, xmTarget, xmViewUp);
 
-  XViewMatrix = DirectX::XMMatrixTranspose(XViewMatrix);
+  xViewMatrix = DirectX::XMMatrixTranspose(xViewMatrix);
 
   // Projection space refers to the space after applying projection transformation from view space.
   // In this space, visible content has X and Y coordinates ranging from -1 to 1, and Z coordinate ranging from 0 to 1.
 
   m_ProjectionMatrix.Identity();
 
-  const double UExtent = m_UMax - m_UMin;
-  const double VExtent = m_VMax - m_VMin;
-  const double NExtent = m_FarClipDistance - m_NearClipDistance;
+  const double uExtent = m_UMax - m_UMin;
+  const double vExtent = m_VMax - m_VMin;
+  const double nExtent = m_FarClipDistance - m_NearClipDistance;
 
   if (IsPerspectiveOn()) {
-    m_ProjectionMatrix[0][0] = 2.0f * m_NearClipDistance / UExtent;
+    m_ProjectionMatrix[0][0] = 2.0f * m_NearClipDistance / uExtent;
     m_ProjectionMatrix[0][1] = 0.0f;
-    m_ProjectionMatrix[0][2] = (m_UMax + m_UMin) / UExtent;
+    m_ProjectionMatrix[0][2] = (m_UMax + m_UMin) / uExtent;
     m_ProjectionMatrix[0][3] = 0.0f;
 
     m_ProjectionMatrix[1][0] = 0.0f;
-    m_ProjectionMatrix[1][1] = (2.0f * m_NearClipDistance) / VExtent;
-    m_ProjectionMatrix[1][2] = (m_VMax + m_VMin) / VExtent;
+    m_ProjectionMatrix[1][1] = (2.0f * m_NearClipDistance) / vExtent;
+    m_ProjectionMatrix[1][2] = (m_VMax + m_VMin) / vExtent;
     m_ProjectionMatrix[1][3] = 0.0f;
 
     m_ProjectionMatrix[2][0] = 0.0f;
     m_ProjectionMatrix[2][1] = 0.0f;
-    m_ProjectionMatrix[2][2] = -(m_FarClipDistance + m_NearClipDistance) / NExtent;
-    m_ProjectionMatrix[2][3] = -2.0f * m_FarClipDistance * m_NearClipDistance / NExtent;
+    m_ProjectionMatrix[2][2] = -(m_FarClipDistance + m_NearClipDistance) / nExtent;
+    m_ProjectionMatrix[2][3] = -2.0f * m_FarClipDistance * m_NearClipDistance / nExtent;
 
     m_ProjectionMatrix[3][0] = 0.0f;
     m_ProjectionMatrix[3][1] = 0.0f;
     m_ProjectionMatrix[3][2] = -1.0f;
     m_ProjectionMatrix[3][3] = 0.0f;
   } else {
-    m_ProjectionMatrix[0][0] = 2.0f / UExtent;
+    m_ProjectionMatrix[0][0] = 2.0f / uExtent;
     m_ProjectionMatrix[0][1] = 0.0f;
     m_ProjectionMatrix[0][2] = 0.0f;
-    m_ProjectionMatrix[0][3] = -(m_UMax + m_UMin) / UExtent;
+    m_ProjectionMatrix[0][3] = -(m_UMax + m_UMin) / uExtent;
 
     m_ProjectionMatrix[1][0] = 0.0f;
-    m_ProjectionMatrix[1][1] = 2.0f / VExtent;
+    m_ProjectionMatrix[1][1] = 2.0f / vExtent;
     m_ProjectionMatrix[1][2] = 0.0f;
-    m_ProjectionMatrix[1][3] = -(m_VMax + m_VMin) / VExtent;
+    m_ProjectionMatrix[1][3] = -(m_VMax + m_VMin) / vExtent;
 
     m_ProjectionMatrix[2][0] = 0.0f;
     m_ProjectionMatrix[2][1] = 0.0f;
-    m_ProjectionMatrix[2][2] = -2.0f / NExtent;
-    m_ProjectionMatrix[2][3] = -(m_FarClipDistance + m_NearClipDistance) / NExtent;
+    m_ProjectionMatrix[2][2] = -2.0f / nExtent;
+    m_ProjectionMatrix[2][3] = -(m_FarClipDistance + m_NearClipDistance) / nExtent;
 
     m_ProjectionMatrix[3][0] = 0.0f;
     m_ProjectionMatrix[3][1] = 0.0f;
     m_ProjectionMatrix[3][2] = 0.0f;
     m_ProjectionMatrix[3][3] = 1.0f;
 
-    DirectX::XMMATRIX XProjectionMatrix = DirectX::XMMatrixOrthographicRH(static_cast<float>(UExtent),
-        static_cast<float>(VExtent), static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
-    XProjectionMatrix = XMMatrixTranspose(XProjectionMatrix);
+    DirectX::XMMATRIX xProjectionMatrix = DirectX::XMMatrixOrthographicRH(static_cast<float>(uExtent),
+        static_cast<float>(vExtent), static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
+    xProjectionMatrix = XMMatrixTranspose(xProjectionMatrix);
   }
   m_Matrix *= m_ProjectionMatrix;
 
