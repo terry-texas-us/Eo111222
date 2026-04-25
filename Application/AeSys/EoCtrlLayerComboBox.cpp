@@ -1,6 +1,5 @@
 #include "Stdafx.h"
 
-#include <uxtheme.h>
 #include <windowsx.h>
 
 #include "AeSysDoc.h"
@@ -147,7 +146,6 @@ CComboBox* EoCtrlLayerComboBox::CreateCombo(CWnd* parentWindow, const CRect& rec
   combo->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
   combo->ModifyStyle(WS_BORDER, 0);
   combo->SetWindowPos(nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-  ::SetWindowTheme(combo->m_hWnd, L"", L"");
   combo->m_ownerButton = this;
   return combo;
 }

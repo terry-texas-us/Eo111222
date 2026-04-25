@@ -18,21 +18,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 
-/** @brief Converts a DXF 3DFACE entity to an AeSys EoDbFace primitive.
- *
- *  A 3DFACE is a three- or four-sided planar surface defined by corner points in WCS (no OCS
- *  transform needed — 3DFACE has no extrusion direction). When the fourth corner coincides with
- *  the third, the face is a triangle; otherwise it is a quadrilateral.
- *
- *  ## Mapping Strategy
- *  - Corners are stored directly in WCS — no OCS→WCS transform is required.
- *  - The face is represented as an `EoDbFace` with `SourceType::Face3d`.
- *  - Per-edge invisible flags (group code 70) are preserved via `EoDbFace::EdgeFlags`.
- *
- *  @param _3dFace The parsed DXF 3DFACE entity.
- *  @param document The AeSys document receiving the created primitive.
- */
-void EoDbDxfInterface::Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document) {
+void EoDbDxfInterface::Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"3DFACE entity conversion\n");
 
   const auto& firstCorner = _3dFace.m_firstCorner;
@@ -67,24 +53,12 @@ void EoDbDxfInterface::Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc*
 
   AddToDocument(facePrimitive, document, _3dFace.m_space, _3dFace.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 3, L"  3DFACE \u2192 EoDbFace (%d vertices, edgeFlags=0x%02X)\n",
-      isTriangle ? 3 : 4, edgeFlags);
+  ATLTRACE2(
+      traceGeneral, 3, L"  3DFACE \u2192 EoDbFace (%d vertices, edgeFlags=0x%02X)\n", isTriangle ? 3 : 4, edgeFlags);
 }
 
-/** @brief Converts a DXF SOLID entity to an AeSys EoDbFace primitive.
- *
- *  A SOLID is a filled four-sided planar surface defined by corner points in OCS with bowtie
- *  vertex order. The DXF parser's ApplyExtrusion() has already transformed OCS→WCS by the time
- *  this function is called. The bowtie vertex order (DXF codes 10,11,12,13 → vertices 0,1,3,2)
- *  is reordered to sequential CCW (0,1,2,3) for internal storage.
- *
- *  When the third and fourth corners coincide, the SOLID is a triangle.
- *
- *  @param solid The parsed DXF SOLID entity (coordinates already in WCS after ApplyExtrusion).
- *  @param document The AeSys document receiving the created primitive.
- */
-void EoDbDxfInterface::ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"SOLID entity conversion\n");
+void EoDbDxfInterface::ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* document) const {
+  ATLTRACE2(traceGeneral, 3, L"SOLID entity conversion\n");
 
   // DXF bowtie order: codes 10,11,12,13 → corners 0,1,3,2
   // Reorder to sequential: 10→v0, 11→v1, 13→v2, 12→v3
@@ -93,7 +67,8 @@ void EoDbDxfInterface::ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* doc
   const EoGePoint3d v2{solid.m_fourthCorner.x, solid.m_fourthCorner.y, solid.m_fourthCorner.z};
   const EoGePoint3d v3{solid.m_thirdCorner.x, solid.m_thirdCorner.y, solid.m_thirdCorner.z};
 
-  const EoGeVector3d extrusion{solid.m_extrusionDirection.x, solid.m_extrusionDirection.y, solid.m_extrusionDirection.z};
+  const EoGeVector3d extrusion{
+      solid.m_extrusionDirection.x, solid.m_extrusionDirection.y, solid.m_extrusionDirection.z};
 
   const bool isTriangle = solid.m_thirdCorner.IsEqualTo(solid.m_fourthCorner);
 
@@ -119,8 +94,8 @@ void EoDbDxfInterface::ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* doc
  *  @param trace The parsed DXF TRACE entity (coordinates already in WCS after ApplyExtrusion).
  *  @param document The AeSys document receiving the created primitive.
  */
-void EoDbDxfInterface::ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"TRACE entity conversion\n");
+void EoDbDxfInterface::ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* document) const {
+  ATLTRACE2(traceGeneral, 3, L"TRACE entity conversion\n");
 
   // DXF bowtie order: codes 10,11,12,13 → corners 0,1,3,2
   // Reorder to sequential: 10→v0, 11→v1, 13→v2, 12→v3
@@ -129,7 +104,8 @@ void EoDbDxfInterface::ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* doc
   const EoGePoint3d v2{trace.m_fourthCorner.x, trace.m_fourthCorner.y, trace.m_fourthCorner.z};
   const EoGePoint3d v3{trace.m_thirdCorner.x, trace.m_thirdCorner.y, trace.m_thirdCorner.z};
 
-  const EoGeVector3d extrusion{trace.m_extrusionDirection.x, trace.m_extrusionDirection.y, trace.m_extrusionDirection.z};
+  const EoGeVector3d extrusion{
+      trace.m_extrusionDirection.x, trace.m_extrusionDirection.y, trace.m_extrusionDirection.z};
 
   auto* facePrimitive = EoDbFace::CreateFromTrace(v0, v1, v2, v3, extrusion);
   facePrimitive->SetBaseProperties(&trace, document);
@@ -139,45 +115,7 @@ void EoDbDxfInterface::ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* doc
   ATLTRACE2(traceGeneral, 3, L"  TRACE \u2192 EoDbFace\n");
 }
 
-/** @brief Parses an AcGi proxy graphics metafile stream and creates AeSys primitives.
- *
- *  The proxy entity's graphics data (code 92 + code 310 hex chunks) contains a binary recording of
- *  AcGiWorldDraw geometry calls made by the original custom entity's worldDraw() implementation.
- *  This function decodes the binary stream and converts recognized drawing operations into
- *  EoDbLine, EoDbPolyline, and EoDbConic primitives for pseudo-rendering.
- *
- *  ## AcGi Proxy Graphics Metafile Format (ODA Reversed, R2000+ DWG/DXF)
- *
- *  All multi-byte values are little-endian. The stream is a sequence of records, each starting
- *  with an int32 (RL) type code:
- *
- *  | Type  | Operation       | Payload                                            | Status  |
- *  |-------|-----------------|----------------------------------------------------|---------|
- *  | 1     | Extents         | 6 × double (48 bytes): minX,minY,minZ,maxX,maxY,maxZ | Skip  |
- *  | 2     | Circle          | Point3d center, double radius, Vector3d normal (56 bytes) | Render |
- *  | 3     | Circle (3pt)    | Point3d pt1, Point3d pt2, Point3d pt3 (72 bytes)   | Skip    |
- *  | 4     | CircularArc     | Point3d center, double radius, Vector3d normal,    | Render  |
- *  |       |                 | Vector3d startVector, double sweepAngle, int32 type (92 bytes) |  |
- *  | 5     | CircularArc(3pt)| Point3d start, Point3d point, Point3d end (72 bytes) | Skip   |
- *  | 6     | Polyline        | int32 numVertices, Point3d[numVertices]             | Render  |
- *  | 7     | Polygon         | int32 numVertices, Point3d[numVertices]             | Render  |
- *  | 8     | Mesh            | int32 rows, int32 cols, Point3d[rows×cols]          | Skip    |
- *  | 9     | Shell           | int32 numVerts, Point3d[numVerts], int32 numFaces, int32[numFaces] | Skip |
- *  | 10/11 | Text            | Point3d pos, Vector3d normal, Vector3d dir, string  | Skip    |
- *  | 12    | Xline           | Point3d basePoint, Vector3d direction (48 bytes)    | Skip    |
- *  | 13    | Ray             | Point3d basePoint, Vector3d direction (48 bytes)    | Skip    |
- *  | 14–26 | SUBENT mods     | Per-entity attribute overrides (color, layer, etc.) | Skip    |
- *  | 27/28 | Clip Boundary   | Push/Pop (no payload)                               | Skip    |
- *  | 29    | Model Transform | 4×3 matrix (96 bytes)                               | Skip    |
- *  | 33    | LwPolyline      | int32 numPts, int32 flags, Point3d[numPts]          | Skip    |
- *
- *  Point3d = 3 consecutive doubles (24 bytes): x, y, z.
- *  Unknown type codes cause parsing to abort (record lengths are type-dependent).
- *
- *  @param proxyEntity The parsed DXF proxy entity with hex-encoded graphics data.
- *  @param document    The AeSys document receiving the created primitives.
- */
-void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"ACAD_PROXY_ENTITY conversion (classId=%d, appClassId=%d)\n",
       proxyEntity.m_proxyEntityClassId, proxyEntity.m_applicationEntityClassId);
 

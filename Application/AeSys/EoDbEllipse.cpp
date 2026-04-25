@@ -114,43 +114,19 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color,
   m_sweepAngle = Eo::TwoPi;
 }
 
-/**
- * @brief Constructs a circle (as ellipse) primitive defined by a center point, plane normal, and radius.
- *
- * This constructor initializes a circle primitive using the specified center point, plane normal, and radius.
- * The major and minor axes are calculated based on the provided normal vector.
- * The pen color and line type are set based on the provided parameters.
- *
- * @param color The pen color for the ellipse.
- * @param lineType The line type index for the ellipse.
- * @param center The center point of the circle.
- * @param normal The normal vector defining the plane of the circle.
- * @param radius The radius of the circle.
- */
 EoDbEllipse::EoDbEllipse(
     EoGePoint3d& center, EoGeVector3d& normal, double radius, std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
-  EoGeVector3d PlaneNormal(normal);
-  PlaneNormal.Unitize();
-  m_majorAxis = ComputeArbitraryAxis(PlaneNormal);
+  EoGeVector3d planeNormal(normal);
+  planeNormal.Unitize();
+  m_majorAxis = ComputeArbitraryAxis(planeNormal);
   m_majorAxis.Unitize();
   m_majorAxis *= radius;
   m_minorAxis = m_majorAxis;
-  const EoGeTransformMatrix transformMatrix(center, PlaneNormal, Eo::HalfPi);
+  const EoGeTransformMatrix transformMatrix(center, planeNormal, Eo::HalfPi);
   m_minorAxis = transformMatrix * m_minorAxis;
   m_sweepAngle = Eo::TwoPi;
 }
-
-/**
- * @brief Constructs a circle (as ellipse) primitive defined by a center point and a start point in the current view.
- *
- * This constructor initializes a circle primitive using the specified center point and a start point that defines the
- * radius. The major and minor axes are calculated based on the view's camera direction. The pen color and line type are
- * set based on the current primitive state.
- *
- * @param center The center point of the circle.
- * @param start The start point that defines the radius of the circle.
- */
 
 EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
   auto* activeView = AeSysView::GetActiveView();
@@ -405,30 +381,24 @@ void EoDbEllipse::CutAt2Points(
 }
 
 void EoDbEllipse::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
-  if (Eo::IsGeometricallyZero(m_sweepAngle - Eo::TwoPi)) {
-    // Do not fragment a circle
-    return;
-  }
+  // Do not fragment a circle
+  if (Eo::IsGeometricallyZero(m_sweepAngle - Eo::TwoPi)) { return; }
 
-  const double dRel = SweepAngleToPoint(point) / m_sweepAngle;
+  const double relationship = SweepAngleToPoint(point) / m_sweepAngle;
 
-  if (dRel < Eo::geometricTolerance || dRel >= 1.0 - Eo::geometricTolerance) {
-    // Nothing to cut
-    return;
-  }
+  if (relationship < Eo::geometricTolerance || relationship >= 1.0 - Eo::geometricTolerance) { return; }
 
-  const double dSwpAng = m_sweepAngle * dRel;
+  const double sweepAngle = m_sweepAngle * relationship;
+  auto* arc = new EoDbEllipse(*this);
+  arc->SetSweepAngle(sweepAngle);
+  group->AddTail(arc);
 
-  EoDbEllipse* pArc = new EoDbEllipse(*this);
-  pArc->SetSweepAngle(dSwpAng);
-  group->AddTail(pArc);
+  auto planeNormal = CrossProduct(m_majorAxis, m_minorAxis);
+  planeNormal.Unitize();
 
-  auto vPlnNorm = CrossProduct(m_majorAxis, m_minorAxis);
-  vPlnNorm.Unitize();
-
-  m_majorAxis.RotateAboutArbitraryAxis(vPlnNorm, dSwpAng);
-  m_minorAxis.RotateAboutArbitraryAxis(vPlnNorm, dSwpAng);
-  m_sweepAngle -= dSwpAng;
+  m_majorAxis.RotateAboutArbitraryAxis(planeNormal, sweepAngle);
+  m_minorAxis.RotateAboutArbitraryAxis(planeNormal, sweepAngle);
+  m_sweepAngle -= sweepAngle;
 }
 
 void EoDbEllipse::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
@@ -527,19 +497,19 @@ void EoDbEllipse::FormatExtra(CString& str) {
 
 EoGePoint3d EoDbEllipse::PointAtStartAngle() { return (m_center + m_majorAxis); }
 
-EoGePoint3d EoDbEllipse::PointAtEndAngle() {
+EoGePoint3d EoDbEllipse::PointAtEndAngle() const {
   EoGeTransformMatrix transformMatrix(m_center, m_majorAxis, m_minorAxis);
   transformMatrix.Inverse();
 
-  EoGePoint3d pt(std::cos(m_sweepAngle), std::sin(m_sweepAngle), 0.0);
+  EoGePoint3d point(std::cos(m_sweepAngle), std::sin(m_sweepAngle), 0.0);
 
-  pt = transformMatrix * pt;
-  return pt;
+  point = transformMatrix * point;
+  return point;
 }
 
 void EoDbEllipse::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* arMin, EoGePoint3d* arMax) const {
-  const double dx = double(m_center.x - arBeg.x);
-  const double dy = double(m_center.y - arBeg.y);
+  const auto dx = double(m_center.x - arBeg.x);
+  const auto dy = double(m_center.y - arBeg.y);
 
   const double dRad = std::sqrt(dx * dx + dy * dy);
 
@@ -903,7 +873,7 @@ bool EoDbEllipse::Write(CFile& file) {
   return true;
 }
 
-void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) {
+void EoDbEllipse::GetBoundingBox(EoGePoint3dArray& ptsBox) const {
   ptsBox.SetSize(4);
   ptsBox[0] = EoGePoint3d(-1.0, -1.0, 0.0);
   ptsBox[1] = EoGePoint3d(1.0, -1.0, 0.0);

@@ -69,11 +69,6 @@ EoDbLineTypeTable& EoDbLineTypeTable::operator=(const EoDbLineTypeTable& other) 
   return *this;
 }
 
-/**
- * Fills a list control with the line types in the line type table.
- * @param listControl The list control to fill.
- * @return The number of line types added to the list control.
- */
 int EoDbLineTypeTable::FillListControl(CListCtrl& listControl) {
   listControl.SetRedraw(FALSE);
   listControl.DeleteAllItems();
@@ -157,10 +152,10 @@ int EoDbLineTypeTable::ReferenceCount(const std::wstring& lineTypeName) {
   CString key;
   EoDbBlock* block{};
 
-  EoDbBlocks* BlocksTable = document->BlocksTable();
-  auto position = BlocksTable->GetStartPosition();
+  EoDbBlocks* blocksTable = document->BlocksTable();
+  auto position = blocksTable->GetStartPosition();
   while (position != nullptr) {
-    BlocksTable->GetNextAssoc(position, key, block);
+    blocksTable->GetNextAssoc(position, key, block);
     count += block->GetLineTypeRefCount(lineTypeName);
   }
   return count;

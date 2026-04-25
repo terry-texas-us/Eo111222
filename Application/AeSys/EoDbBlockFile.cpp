@@ -6,14 +6,6 @@
 #include "EoDbPrimitive.h"
 #include "EoGePoint3d.h"
 
-// EoDb::kHeaderSection sentinel				std::uint16_t 0x0101
-//		{0 or more key-value pairs}
-// EoDb::kEndOfSection sentinel					std::uint16_t 0x01ff
-// EoDb::kBlocksSection sentinel				std::uint16_t 0x0103
-//		Number of blocks						std::uint16_t
-//		{0 or more block definitions}
-// EoDb::kEndOfSection sentinel					std::uint16_t 0x01ff
-
 EoDbBlockFile::EoDbBlockFile(const CString& pathName) { CFile::Open(pathName, modeReadWrite | shareDenyNone); }
 
 void EoDbBlockFile::ReadBlocks(EoDbBlocks& blocks) {
@@ -25,13 +17,13 @@ void EoDbBlockFile::ReadBlocks(EoDbBlocks& blocks) {
   EoDbPrimitive* primitive{};
 
   const auto blockTableSize = EoDb::ReadUInt16(*this);
-  for (int BlockTableIndex = 0; BlockTableIndex < blockTableSize; BlockTableIndex++) {
+  for (int blockTableIndex = 0; blockTableIndex < blockTableSize; blockTableIndex++) {
     const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
     EoDb::Read(*this, strName);
-    const auto wBlkTypFlgs = EoDb::ReadUInt16(*this);
-
-    auto* block = new EoDbBlock(wBlkTypFlgs, EoGePoint3d::kOrigin);
+    
+    const auto blockTypeFlags = EoDb::ReadUInt16(*this);
+    auto* block = new EoDbBlock(blockTypeFlags, EoGePoint3d::kOrigin);
 
     for (auto i = 0; i < numberOfPrimitives; i++) {
       EoDb::Read(*this, primitive);
@@ -74,9 +66,9 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
   EoDb::Write(*this, strName);
   EoDb::WriteUInt16(*this, block->BlockTypeFlags());
 
-  auto BlockPosition = block->GetHeadPosition();
-  while (BlockPosition != nullptr) {
-    auto* primitive = block->GetNext(BlockPosition);
+  auto blockPosition = block->GetHeadPosition();
+  while (blockPosition != nullptr) {
+    auto* primitive = block->GetNext(blockPosition);
     if (primitive->Write(*this)) { wPrims++; }
   }
   const auto dwPosition = GetPosition();
@@ -89,16 +81,17 @@ void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kBlocksSection));
   EoDb::WriteUInt16(*this, std::uint16_t(blocks.GetSize()));
 
-  CString Key;
-  EoDbBlock* Block{};
+  CString key;
+  EoDbBlock* block{};
 
   auto position = blocks.GetStartPosition();
   while (position != nullptr) {
-    blocks.GetNextAssoc(position, Key, Block);
-    WriteBlock(Key, Block);
+    blocks.GetNextAssoc(position, key, block);
+    WriteBlock(key, block);
   }
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
+
 void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
   CFileException e;
 
@@ -107,6 +100,7 @@ void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
   WriteHeader();
   WriteBlocks(blocks);
 }
+
 void EoDbBlockFile::WriteHeader() {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kHeaderSection));
 

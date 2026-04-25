@@ -109,11 +109,11 @@ void EoDbLabeledLine::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
   EoGeLine line;
 
   if (m_line.CutAtPoint(point, line) != 0) {
-    EoDbLabeledLine* DimensionPrimitive = new EoDbLabeledLine(*this);
+    auto* labeledLinePrimitive = new EoDbLabeledLine(*this);
 
-    DimensionPrimitive->m_line = line;
-    DimensionPrimitive->SetDefaultNote();
-    group->AddTail(DimensionPrimitive);
+    labeledLinePrimitive->m_line = line;
+    labeledLinePrimitive->SetDefaultNote();
+    group->AddTail(labeledLinePrimitive);
   }
   SetDefaultNote();
 }

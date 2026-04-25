@@ -46,19 +46,19 @@ void AeSysDoc::RemoveAllBlocks() {
 }
 
 void AeSysDoc::RemoveUnusedBlocks() {
-  CString Name;
-  EoDbBlock* Block{};
+  CString name;
+  EoDbBlock* block{};
 
-  auto BlockPosition = m_BlocksTable.GetStartPosition();
-  while (BlockPosition != nullptr) {
-    m_BlocksTable.GetNextAssoc(BlockPosition, Name, Block);
-    if (GetBlockReferenceCount(Name) == 0) {
+  auto blockPosition = m_BlocksTable.GetStartPosition();
+  while (blockPosition != nullptr) {
+    m_BlocksTable.GetNextAssoc(blockPosition, name, block);
+    if (GetBlockReferenceCount(name) == 0) {
       // Note: Deletion by key may cause loop problems
-      m_BlocksTable.RemoveKey(Name);
-      UnregisterHandle(Block->Handle());
-      UnregisterGroupHandles(Block);
-      Block->DeletePrimitivesAndRemoveAll();
-      delete Block;
+      m_BlocksTable.RemoveKey(name);
+      UnregisterHandle(block->Handle());
+      UnregisterGroupHandles(block);
+      block->DeletePrimitivesAndRemoveAll();
+      delete block;
     }
   }
 }

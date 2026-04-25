@@ -9,7 +9,6 @@
 #include "AeSysDoc.h"
 #include "Eo.h"
 #include "EoDbBlock.h"
-#include "EoDbBlockReference.h"
 #include "EoDbDxfInterface.h"
 #include "EoDbGroup.h"
 #include "EoDbHeaderSection.h"

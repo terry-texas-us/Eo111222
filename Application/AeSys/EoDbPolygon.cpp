@@ -488,14 +488,14 @@ void EoDbPolygon::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
     EoGeTransformMatrix transformMatrix(m_hatchOrigin, m_positiveX, m_positiveY);
     DisplayFilAreaHatch(view, renderDevice, transformMatrix, 1, &iPtLstsId, m_vertices);
   } else {  // Fill area interior style is hollow, solid or pattern
-    EoGePoint4dArray PointsArray;
+    EoGePoint4dArray vertices;
 
-    PointsArray.SetSize(m_numberOfVertices);
+    vertices.SetSize(m_numberOfVertices);
 
-    for (auto i = 0; i < m_numberOfVertices; i++) { PointsArray[i] = EoGePoint4d(m_vertices[i]); }
-    view->ModelViewTransformPoints(PointsArray);
-    EoGePoint4d::ClipPolygon(PointsArray);
-    Polygon_Display(view, renderDevice, PointsArray);
+    for (auto i = 0; i < m_numberOfVertices; i++) { vertices[i] = EoGePoint4d(m_vertices[i]); }
+    view->ModelViewTransformPoints(vertices);
+    EoGePoint4d::ClipPolygon(vertices);
+    Polygon_Display(view, renderDevice, vertices);
   }
 }
 
@@ -563,7 +563,7 @@ void EoDbPolygon::ExportToDxf(EoDxfInterface* writer) const {
 }
 
 void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
-  CString Message(L"<Polygon Edge> ");
+  CString message(L"<Polygon Edge> ");
 
   if (sm_Edge > 0 && sm_Edge <= m_numberOfVertices) {
     EoGePoint3d* pBegPt = &m_vertices[sm_Edge - 1];
@@ -582,13 +582,13 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
       dAng = EoGeLine(*pBegPt, *pEndPt).AngleFromXAxisXY();
     }
 
-    CString FormattedLength;
-    app.FormatLength(FormattedLength, app.GetUnits(), dLen);
-    Message.Append(FormattedLength.TrimLeft());
+    CString formattedLength;
+    app.FormatLength(formattedLength, app.GetUnits(), dLen);
+    message.Append(formattedLength.TrimLeft());
     wchar_t szBuf[24]{};
     swprintf_s(szBuf, 24, L" @ %6.2f degrees", Eo::RadianToDegree(dAng));
-    Message.Append(szBuf);
-    app.AddStringToMessageList(Message);
+    message.Append(szBuf);
+    app.AddStringToMessageList(message);
     EoDbPrimitive::AddReportToMessageList(point);
 
     app.SetEngagedLength(dLen);
@@ -632,7 +632,7 @@ EoGePoint3d EoDbPolygon::GetControlPoint() {
 EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
   if (sm_pivotVertex >= m_numberOfVertices) {  // have not yet rocked to a vertex
     const auto wBeg = static_cast<std::uint16_t>(sm_Edge - 1);
-    std::uint16_t wEnd = std::uint16_t(sm_Edge % m_numberOfVertices);
+    auto wEnd = std::uint16_t(sm_Edge % m_numberOfVertices);
 
     if (m_vertices[wEnd].x > m_vertices[wBeg].x) {
       sm_pivotVertex = wBeg;
@@ -678,8 +678,8 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
     view->ModelViewTransformPoint(ptBeg);
     view->ModelViewTransformPoint(ptEnd);
 
-    EoGeLine Edge(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
-    if (Edge.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+    EoGeLine edge(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+    if (edge.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
       ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
       return true;
     }
@@ -691,8 +691,8 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
       EoGePoint4d ptEnd(m_vertices[w % m_numberOfVertices]);
       view->ModelViewTransformPoint(ptEnd);
 
-      EoGeLine Edge(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
-      if (Edge.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
+      EoGeLine edge(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd});
+      if (edge.IsSelectedByPointXY(EoGePoint3d{point}, view->SelectApertureSize(), ptProj, &sm_RelationshipOfPoint)) {
         ptProj.z = ptBeg.z + sm_RelationshipOfPoint * (ptEnd.z - ptBeg.z);
         sm_Edge = w;
         sm_pivotVertex = m_numberOfVertices;

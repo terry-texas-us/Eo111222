@@ -83,7 +83,7 @@ void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {
   PopulateDxfBaseProperties(&spline);
 
   const std::int16_t degree = m_degree;
-  const std::int16_t order = static_cast<std::int16_t>(degree + 1);
+  const auto order = static_cast<std::int16_t>(degree + 1);
   spline.m_degreeOfTheSplineCurve = degree;
   spline.m_splineFlag = m_flags != 0 ? m_flags : static_cast<std::int16_t>(0x08);  // preserve flags; default planar
   spline.m_numberOfControlPoints = numberOfControlPoints;
@@ -93,7 +93,7 @@ void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {
     spline.m_knotValues = m_knots;
     spline.m_numberOfKnots = static_cast<std::int16_t>(m_knots.size());
   } else {
-    const std::int16_t numberOfKnots = static_cast<std::int16_t>(numberOfControlPoints + order);
+    const auto numberOfKnots = static_cast<std::int16_t>(numberOfControlPoints + order);
     spline.m_numberOfKnots = numberOfKnots;
     spline.m_knotValues.reserve(static_cast<size_t>(numberOfKnots));
     for (std::int16_t i = 0; i < numberOfKnots; ++i) {
@@ -309,10 +309,12 @@ int EoDbSpline::GenPts(const std::int16_t order, const EoGePoint3dArray& control
     }
   }
   if (dKnot[iKnotVecMax] != 0.0) {
-    double G = 0.;
-    double H = 0.;
-    double Z = 0.;
-    double T, W1, W2;
+    double g{};
+    double h{};
+    double z{};
+    double t{};
+    double w1{};
+    double w2{};
     const auto dStep = dKnot[iKnotVecMax] / static_cast<double>(iPts - 1);
     int iPts2 = 0;
     for (i4 = order - 1; i4 <= order + iTMax; i4++) {
@@ -323,36 +325,36 @@ int EoDbSpline::GenPts(const std::int16_t order, const EoGePoint3dArray& control
           dWght[stride * i + 1] = 1.;
         }
       }
-      for (T = dKnot[i4]; T <= dKnot[i4 + 1] - dStep; T += dStep) {
+      for (t = dKnot[i4]; t <= dKnot[i4 + 1] - dStep; t += dStep) {
         iPts2++;
         for (i2 = 2; i2 <= order; i2++) {
           for (i = 0; i <= numberOfControlPoints - 1; i++) {  // Determine first term of weighting function equation
             if (dWght[stride * i + i2 - 1] == 0.0) {
-              W1 = 0.;
+              w1 = 0.;
             } else {
-              W1 = ((T - dKnot[i]) * dWght[stride * i + i2 - 1]) / (dKnot[i + i2 - 1] - dKnot[i]);
+              w1 = ((t - dKnot[i]) * dWght[stride * i + i2 - 1]) / (dKnot[i + i2 - 1] - dKnot[i]);
             }
 
             if (dWght[stride * (i + 1) + i2 - 1] == 0.0) {  // Determine second term of weighting function equation
-              W2 = 0.;
+              w2 = 0.;
             } else {
-              W2 = ((dKnot[i + i2] - T) * dWght[stride * (i + 1) + i2 - 1]) / (dKnot[i + i2] - dKnot[i + 1]);
+              w2 = ((dKnot[i + i2] - t) * dWght[stride * (i + 1) + i2 - 1]) / (dKnot[i + i2] - dKnot[i + 1]);
             }
 
-            dWght[stride * i + i2] = W1 + W2;
-            G = controlPoints[i].x * dWght[stride * i + i2] + G;
-            H = controlPoints[i].y * dWght[stride * i + i2] + H;
-            Z = controlPoints[i].z * dWght[stride * i + i2] + Z;
+            dWght[stride * i + i2] = w1 + w2;
+            g = controlPoints[i].x * dWght[stride * i + i2] + g;
+            h = controlPoints[i].y * dWght[stride * i + i2] + h;
+            z = controlPoints[i].z * dWght[stride * i + i2] + z;
           }
           if (i2 == order) { break; }
-          G = 0.;
-          H = 0.;
-          Z = 0.;
+          g = 0.;
+          h = 0.;
+          z = 0.;
         }
-        polyline::SetVertex(EoGePoint3d(G, H, Z));
-        G = 0.;
-        H = 0.;
-        Z = 0.;
+        polyline::SetVertex(EoGePoint3d(g, h, z));
+        g = 0.;
+        h = 0.;
+        z = 0.;
       }
     }
     iPts = iPts2 + 1;

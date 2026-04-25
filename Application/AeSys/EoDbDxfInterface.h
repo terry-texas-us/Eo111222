@@ -847,27 +847,114 @@ class EoDbDxfInterface : public EoDxfInterface {
 
   EoDbGroup* AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle = EoDxf::NoHandle) const;
 
-  void Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document);
-  void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document);
-  void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document);
+  /** @brief Converts a DXF 3DFACE entity to an AeSys EoDbFace primitive.
+   *
+   *  A 3DFACE is a three- or four-sided planar surface defined by corner points in WCS (no OCS
+   *  transform needed — 3DFACE has no extrusion direction). When the fourth corner coincides with
+   *  the third, the face is a triangle; otherwise it is a quadrilateral.
+   *
+   *  ## Mapping Strategy
+   *  - Corners are stored directly in WCS — no OCS→WCS transform is required.
+   *  - The face is represented as an `EoDbFace` with `SourceType::Face3d`.
+   *  - Per-edge invisible flags (group code 70) are preserved via `EoDbFace::EdgeFlags`.
+   *
+   *  @param _3dFace The parsed DXF 3DFACE entity.
+   *  @param document The AeSys document receiving the created primitive.
+   */
+  void Convert3dFaceEntity(const EoDxf3dFace& _3dFace, AeSysDoc* document) const;
+
+  /** @brief Parses an AcGi proxy graphics metafile stream and creates AeSys primitives.
+   *
+   *  The proxy entity's graphics data (code 92 + code 310 hex chunks) contains a binary recording of
+   *  AcGiWorldDraw geometry calls made by the original custom entity's worldDraw() implementation.
+   *  This function decodes the binary stream and converts recognized drawing operations into
+   *  EoDbLine, EoDbPolyline, and EoDbConic primitives for pseudo-rendering.
+   *
+   *  ## AcGi Proxy Graphics Metafile Format (ODA Reversed, R2000+ DWG/DXF)
+   *
+   *  All multi-byte values are little-endian. The stream is a sequence of records, each starting
+   *  with an int32 (RL) type code:
+   *
+   *  | Type  | Operation       | Payload                                            | Status  |
+   *  |-------|-----------------|----------------------------------------------------|---------|
+   *  | 1     | Extents         | 6 × double (48 bytes): minX,minY,minZ,maxX,maxY,maxZ | Skip  |
+   *  | 2     | Circle          | Point3d center, double radius, Vector3d normal (56 bytes) | Render |
+   *  | 3     | Circle (3pt)    | Point3d pt1, Point3d pt2, Point3d pt3 (72 bytes)   | Skip    |
+   *  | 4     | CircularArc     | Point3d center, double radius, Vector3d normal,    | Render  |
+   *  |       |                 | Vector3d startVector, double sweepAngle, int32 type (92 bytes) |  |
+   *  | 5     | CircularArc(3pt)| Point3d start, Point3d point, Point3d end (72 bytes) | Skip   |
+   *  | 6     | Polyline        | int32 numVertices, Point3d[numVertices]             | Render  |
+   *  | 7     | Polygon         | int32 numVertices, Point3d[numVertices]             | Render  |
+   *  | 8     | Mesh            | int32 rows, int32 cols, Point3d[rows×cols]          | Skip    |
+   *  | 9     | Shell           | int32 numVerts, Point3d[numVerts], int32 numFaces, int32[numFaces] | Skip |
+   *  | 10/11 | Text            | Point3d pos, Vector3d normal, Vector3d dir, string  | Skip    |
+   *  | 12    | Xline           | Point3d basePoint, Vector3d direction (48 bytes)    | Skip    |
+   *  | 13    | Ray             | Point3d basePoint, Vector3d direction (48 bytes)    | Skip    |
+   *  | 14–26 | SUBENT mods     | Per-entity attribute overrides (color, layer, etc.) | Skip    |
+   *  | 27/28 | Clip Boundary   | Push/Pop (no payload)                               | Skip    |
+   *  | 29    | Model Transform | 4×3 matrix (96 bytes)                               | Skip    |
+   *  | 33    | LwPolyline      | int32 numPts, int32 flags, Point3d[numPts]          | Skip    |
+   *
+   *  Point3d = 3 consecutive doubles (24 bytes): x, y, z.
+   *  Unknown type codes cause parsing to abort (record lengths are type-dependent).
+   *
+   *  @param proxyEntity The parsed DXF proxy entity with hex-encoded graphics data.
+   *  @param document    The AeSys document receiving the created primitives.
+   */
+  void ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document) const;
+  void ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document) const;
   void ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_unused]] AeSysDoc* document);
   EoDbAttrib* ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document);
-  void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document);
-  void ConvertDimLinearEntity(const EoDxfDimLinear& dimension, AeSysDoc* document);
-  void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document);
-  void ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document);
+  void ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) const;
+  void ConvertDimLinearEntity(const EoDxfDimLinear& dimension, AeSysDoc* document) const;
+  void ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) const;
+
+  /** @brief Converts a DXF HATCH entity to one or more EoDbPolygon primitives.
+   *
+   * Each hatch boundary loop becomes a separate EoDbPolygon. Polyline boundaries
+   * are tessellated (bulge arcs expanded); edge-type boundaries chain line, arc,
+   * and ellipse edges into a closed vertex array. Spline edges are logged and skipped.
+   *
+   * Solid-fill hatches map to PolygonStyle::Solid. Pattern hatches map to
+   * PolygonStyle::Hatch with reference vectors derived from the DXF pattern angle
+   * and scale. Hollow hatches (solidFillFlag == 0 with pattern name "SOLID" absent)
+   * map to PolygonStyle::Hollow.
+   *
+   * Boundary points are in OCS; when the extrusion normal differs from positive Z,
+   * the OCS-to-WCS transform is applied to all points and reference vectors.
+   *
+   * Island loops (neither external nor outermost) are rendered as Hollow polygons
+   * when the outer hatch is solid-filled, creating the visual "hole" effect.
+   *
+   * @param hatch  The parsed DXF HATCH entity.
+   * @param document  The AeSysDoc receiving the converted primitives.
+   */
+  void ConvertHatchEntity(const EoDxfHatch& hatch, [[maybe_unused]] AeSysDoc* document) const;
   EoDbBlockReference* ConvertInsertEntity(const EoDxfInsert& insert, AeSysDoc* document);
-  void ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document);
-  void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document);
-  void ConvertMTextEntity(const EoDxfMText& mText, [[maybe_unused]] AeSysDoc* document);
-  void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document);
-  void ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document);
-  void ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document);
-  void ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* document);
-  void ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document);
-  void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document);
-  void ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* document);
-  void ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document);
+  void ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) const;
+  void ConvertLWPolylineEntity(const EoDxfLwPolyline& lwPolyline, AeSysDoc* document) const;
+  void ConvertMTextEntity(const EoDxfMText& mText, [[maybe_unused]] AeSysDoc* document) const;
+  void ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) const;
+  void ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) const;
+  void ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) const;
+
+  /** @brief Converts a DXF SOLID entity to an AeSys EoDbFace primitive.
+   *
+   *  A SOLID is a filled four-sided planar surface defined by corner points in OCS with bowtie
+   *  vertex order. The DXF parser's ApplyExtrusion() has already transformed OCS→WCS by the time
+   *  this function is called. The bowtie vertex order (DXF codes 10,11,12,13 → vertices 0,1,3,2)
+   *  is reordered to sequential CCW (0,1,2,3) for internal storage.
+   *
+   *  When the third and fourth corners coincide, the SOLID is a triangle.
+   *
+   *  @param solid The parsed DXF SOLID entity (coordinates already in WCS after ApplyExtrusion).
+   *  @param document The AeSys document receiving the created primitive.
+   */
+  void ConvertSolidEntity(const EoDxfSolid& solid, AeSysDoc* document) const;
+  void ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document) const;
+  void ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) const;
+  void ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* document) const;
+  void ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document) const;
 
  private:
   AeSysDoc* m_document{};

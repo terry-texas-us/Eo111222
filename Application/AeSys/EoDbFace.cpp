@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <climits>
-#include <cmath>
 #include <cstdint>
 
 #include "AeSys.h"
@@ -23,8 +22,6 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
-
-// ── Constructors / Assignment ────────────────────────────────────────────────
 
 EoDbFace::EoDbFace(const EoDbFace& other)
     : EoDbPrimitive(other),

@@ -24,6 +24,10 @@ class EoDbLineTypeTable {
   EoDbLineTypeTable& operator=(const EoDbLineTypeTable& other);
   ~EoDbLineTypeTable() { RemoveAll(); }
 
+  /** @brief Fills a list control with line type names from the line type table.
+   * @param listControl The list control to fill.
+   * @return The number of line types added to the list control.
+   */
   int FillListControl(CListCtrl& listControl);
   auto GetStartPosition() { return m_MapLineTypes.GetStartPosition(); }
   void GetNextAssoc(POSITION& position, CString& name, EoDbLineType*& lineType) {

@@ -23,6 +23,16 @@ class EoDbEllipse : public EoDbPrimitive {
  public:
   EoDbEllipse() : m_center{}, m_majorAxis{}, m_minorAxis{}, m_sweepAngle{0.0} {}
 
+  /**
+   * @brief Constructs a circle (as ellipse) primitive defined by a center point and a start point in the current view.
+   *
+   * This constructor initializes a circle primitive using the specified center point and a start point that defines the
+   * radius. The major and minor axes are calculated based on the view's camera direction. The pen color and line type
+   * are set based on the current primitive state.
+   *
+   * @param center The center point of the circle.
+   * @param start The start point that defines the radius of the circle.
+   */
   EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start);
 
   // EoDbEllipse(EoGePoint3d& center, EoGeVector3d& extrusion, double radius);
@@ -38,6 +48,19 @@ class EoDbEllipse : public EoDbPrimitive {
   EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color = COLOR_BYLAYER,
       std::int16_t lineTypeIndex = LINETYPE_BYLAYER);
 
+  /**
+   * @brief Constructs a circle (as ellipse) primitive defined by a center point, plane normal, and radius.
+   *
+   * This constructor initializes a circle primitive using the specified center point, plane normal, and radius.
+   * The major and minor axes are calculated based on the provided normal vector.
+   * The pen color and line type are set based on the provided parameters.
+   *
+   * @param center The center point of the circle.
+   * @param normal The normal vector defining the plane of the circle.
+   * @param radius The radius of the circle.
+   * @param color The pen color for the ellipse.
+   * @param lineType The line type index for the ellipse.
+   */
   EoDbEllipse(EoGePoint3d& center, EoGeVector3d& normal, double radius, std::int16_t color, std::int16_t lineType);
 
   EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3d end);
@@ -84,9 +107,10 @@ class EoDbEllipse : public EoDbPrimitive {
   /// @brief Generates a set of points which may be used to represent a arc using a double angle algorithm.
   void GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const;
   EoGePoint3d PointAtStartAngle();
+
   /// @brief Determines the bounding region. This is always a quad, but it may not be xy oriented.
-  void GetBoundingBox(EoGePoint3dArray&);
-  EoGePoint3d PointAtEndAngle();
+  void GetBoundingBox(EoGePoint3dArray&) const;
+  [[nodiscard]] EoGePoint3d PointAtEndAngle() const;
   [[nodiscard]] const EoGeVector3d& MajorAxis() const noexcept { return m_majorAxis; }
   [[nodiscard]] const EoGeVector3d& MinorAxis() const noexcept { return m_minorAxis; }
   [[nodiscard]] const EoGePoint3d& CenterPoint() const noexcept { return m_center; }

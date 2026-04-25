@@ -44,27 +44,7 @@ static std::int16_t MapHatchPatternNameToIndex(const std::wstring& patternName) 
   return 0;  // Unrecognized pattern — caller falls back to Hollow
 }
 
-/** @brief Converts a DXF HATCH entity to one or more EoDbPolygon primitives.
- *
- * Each hatch boundary loop becomes a separate EoDbPolygon. Polyline boundaries
- * are tessellated (bulge arcs expanded); edge-type boundaries chain line, arc,
- * and ellipse edges into a closed vertex array. Spline edges are logged and skipped.
- *
- * Solid-fill hatches map to PolygonStyle::Solid. Pattern hatches map to
- * PolygonStyle::Hatch with reference vectors derived from the DXF pattern angle
- * and scale. Hollow hatches (solidFillFlag == 0 with pattern name "SOLID" absent)
- * map to PolygonStyle::Hollow.
- *
- * Boundary points are in OCS; when the extrusion normal differs from positive Z,
- * the OCS-to-WCS transform is applied to all points and reference vectors.
- *
- * Island loops (neither external nor outermost) are rendered as Hollow polygons
- * when the outer hatch is solid-filled, creating the visual "hole" effect.
- *
- * @param hatch  The parsed DXF HATCH entity.
- * @param document  The AeSysDoc receiving the converted primitives.
- */
-void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"Hatch entity conversion - Pattern: %s, Loops: %d, Solid: %d\n",
       hatch.m_hatchPatternName.c_str(), static_cast<int>(hatch.HatchLoops().size()), hatch.m_solidFillFlag);
 

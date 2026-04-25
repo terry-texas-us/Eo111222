@@ -25,9 +25,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      showgrid="true"
-     inkscape:zoom="2.4570313"
-     inkscape:cx="166.05405"
-     inkscape:cy="123.52305"
+     inkscape:zoom="4.9140626"
+     inkscape:cx="97.780602"
+     inkscape:cy="77.023846"
      inkscape:window-width="3840"
      inkscape:window-height="2126"
      inkscape:window-x="-11"
@@ -430,7 +430,7 @@
   <path
      d="m 137.0262,11.95365 c 0,2.7614 -2.2386,5 -5,5 -2.76142,0 -5,-2.2386 -5,-5 0,-2.761419 2.23858,-4.999999 5,-4.999999 2.7614,0 5,2.23858 5,4.999999 z"
      id="path8"
-     style="fill:#ffdd96;fill-opacity:0.92" />
+     style="fill:#ffdd96;fill-opacity:0.92;stroke-width:1;stroke-dasharray:none" />
   <path
      d="m 132.0262,1.953651 c 0.4142,0 0.75,0.33579 0.75,0.75 v 1.5 c 0,0.41421 -0.3358,0.75 -0.75,0.75 -0.4142,0 -0.75,-0.33579 -0.75,-0.75 v -1.5 c 0,-0.41421 0.3358,-0.75 0.75,-0.75 z"
      id="path1-4"
@@ -491,4 +491,11 @@
        d="M 332.97197,20.972629 314.98515,2.9498381"
        id="path24" />
   </g>
+  <ellipse
+     style="fill:#ffdd96;stroke:#808080;stroke-width:3;stroke-linecap:round;stroke-dasharray:none;paint-order:stroke fill markers"
+     id="path27"
+     cx="131.9682"
+     cy="12.006359"
+     rx="3.9682033"
+     ry="4.069952" />
 </svg>

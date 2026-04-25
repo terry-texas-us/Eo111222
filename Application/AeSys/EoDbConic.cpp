@@ -371,7 +371,7 @@ void EoDbConic::CutAt2Points(
       if (rel0 > Eo::geometricTolerance && rel1 < 1.0 - Eo::geometricTolerance) {
         // Cut section out of middle - produces 3 pieces
         // Piece 1: original start to first cut point
-        EoDbConic* piece1 = new EoDbConic(*this);
+        auto* piece1 = new EoDbConic(*this);
         piece1->SetAngles(originalStart, angle0);
         groups->AddTail(new EoDbGroup(piece1));
 
@@ -424,7 +424,7 @@ void EoDbConic::CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) {
 
   const double absoluteAngleAtPoint = m_startAngle + sweepAngle * parameterAtPoint;
 
-  EoDbConic* newConic = new EoDbConic(*this);
+  auto* newConic = new EoDbConic(*this);
 
   newConic->SetStartAngle(absoluteAngleAtPoint);
 
@@ -533,8 +533,8 @@ void EoDbConic::FormatExtra(CString& extra) {
 }
 
 void EoDbConic::GetXYExtents(EoGePoint3d arBeg, EoGePoint3d arEnd, EoGePoint3d* arMin, EoGePoint3d* arMax) const {
-  const double dx = double(m_center.x - arBeg.x);
-  const double dy = double(m_center.y - arBeg.y);
+  const auto dx = double(m_center.x - arBeg.x);
+  const auto dy = double(m_center.y - arBeg.y);
 
   const double dRad = std::sqrt(dx * dx + dy * dy);
 
@@ -995,7 +995,7 @@ bool EoDbConic::WriteLegacyEllipse(CFile& file) const {
   return true;
 }
 
-void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) {
+void EoDbConic::GetBoundingBox(EoGePoint3dArray& ptsBox) const {
   ptsBox.SetSize(4);
   ptsBox[0] = EoGePoint3d(-1.0, -1.0, 0.0);
   ptsBox[1] = EoGePoint3d(1.0, -1.0, 0.0);

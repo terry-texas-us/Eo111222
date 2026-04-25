@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <climits>
-#include <cmath>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -13,11 +12,11 @@
 #include "EoDxfEntities.h"
 #include "EoDxfInterface.h"
 #include "EoGeLine.h"
-#include "EoGsRenderDevice.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
+#include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
 EoDbPoint::EoDbPoint() {

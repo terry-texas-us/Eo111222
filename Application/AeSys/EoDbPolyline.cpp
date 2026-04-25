@@ -598,7 +598,7 @@ bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
   const auto numberOfVertices = m_pts.GetSize();
   if (numberOfVertices < 2) { return false; }
 
-  std::uint16_t wEdges = static_cast<std::uint16_t>(numberOfVertices);
+  auto wEdges = static_cast<std::uint16_t>(numberOfVertices);
   if (!IsClosed()) { wEdges--; }
   const auto wPts = static_cast<std::uint16_t>(numberOfVertices);
 

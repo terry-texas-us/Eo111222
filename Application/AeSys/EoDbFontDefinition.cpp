@@ -13,8 +13,8 @@ constexpr const wchar_t* invalidText = L"Invalid!";
 
 CString EoDbFontDefinition::FormatPrecision() const {
   return (m_precision >= EoDb::Precision::TrueType && m_precision <= EoDb::Precision::StrokeType)
-             ? CString{precisionText[static_cast<int>(m_precision) - static_cast<int>(EoDb::Precision::TrueType)]}
-             : CString{invalidText};
+      ? CString{precisionText[static_cast<int>(m_precision) - static_cast<int>(EoDb::Precision::TrueType)]}
+      : CString{invalidText};
 }
 
 CString EoDbFontDefinition::FormatPath() const {
@@ -25,16 +25,16 @@ CString EoDbFontDefinition::FormatPath() const {
 CString EoDbFontDefinition::FormatHorizontalAlignment() const {
   return (m_horizontalAlignment >= EoDb::HorizontalAlignment::Left &&
              m_horizontalAlignment <= EoDb::HorizontalAlignment::Right)
-             ? CString{horizontalAlignmentText[static_cast<int>(m_horizontalAlignment) -
-                                               static_cast<int>(EoDb::HorizontalAlignment::Left)]}
-             : CString{invalidText};
+      ? CString{horizontalAlignmentText[static_cast<int>(m_horizontalAlignment) -
+            static_cast<int>(EoDb::HorizontalAlignment::Left)]}
+      : CString{invalidText};
 }
 
 CString EoDbFontDefinition::FormatVerticalAlignment() const {
   return (m_verticalAlignment >= EoDb::VerticalAlignment::Top && m_verticalAlignment <= EoDb::VerticalAlignment::Bottom)
-             ? CString{verticalAlignmentText[static_cast<int>(m_verticalAlignment) -
-                                             static_cast<int>(EoDb::VerticalAlignment::Top)]}
-             : CString{invalidText};
+      ? CString{verticalAlignmentText[static_cast<int>(m_verticalAlignment) -
+            static_cast<int>(EoDb::VerticalAlignment::Top)]}
+      : CString{invalidText};
 }
 
 void EoDbFontDefinition::SetAlignment(

@@ -47,8 +47,8 @@ EoCtrlColorsButton::~EoCtrlColorsButton() {}
 void EoCtrlColorsButton::DrawCell(CDC* deviceContext, std::uint16_t index, COLORREF color) const {
   if (index == 0 || deviceContext == nullptr || m_palette == nullptr) { return; }
 
-  CRect CellRectangle;
-  SubItemRectangleByIndex(index, CellRectangle);
+  CRect cellRectangle;
+  SubItemRectangleByIndex(index, cellRectangle);
 
   // border thickness scaled for DPI
   double scale = 1.0;
@@ -59,31 +59,31 @@ void EoCtrlColorsButton::DrawCell(CDC* deviceContext, std::uint16_t index, COLOR
   const int frameThickness = std::max(1, ScaleInt(scale, 1));
 
   if (index == m_currentIndex || index == m_selectedIndex) {
-    CBrush FrameBrush;
+    CBrush frameBrush;
     if (index == m_currentIndex) {
-      FrameBrush.CreateSysColorBrush(COLOR_HIGHLIGHT);
+      frameBrush.CreateSysColorBrush(COLOR_HIGHLIGHT);
     } else {
-      FrameBrush.CreateSysColorBrush(COLOR_WINDOWFRAME);
+      frameBrush.CreateSysColorBrush(COLOR_WINDOWFRAME);
     }
-    deviceContext->FrameRect(&CellRectangle, &FrameBrush);
-    CellRectangle.DeflateRect(frameThickness, frameThickness);
-    CBrush InnerFrameBrush;
-    InnerFrameBrush.CreateSysColorBrush(COLOR_BTNHIGHLIGHT);
-    deviceContext->FrameRect(&CellRectangle, &InnerFrameBrush);
-    CellRectangle.DeflateRect(frameThickness, frameThickness);
+    deviceContext->FrameRect(&cellRectangle, &frameBrush);
+    cellRectangle.DeflateRect(frameThickness, frameThickness);
+    CBrush innerFrameBrush;
+    innerFrameBrush.CreateSysColorBrush(COLOR_BTNHIGHLIGHT);
+    deviceContext->FrameRect(&cellRectangle, &innerFrameBrush);
+    cellRectangle.DeflateRect(frameThickness, frameThickness);
   }
-  CBrush Brush(color);
-  deviceContext->FillRect(&CellRectangle, &Brush);
+  CBrush brush(color);
+  deviceContext->FillRect(&cellRectangle, &brush);
 }
 
 CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
-  CRect BeginRectangle;
-  CRect EndRectangle;
-  CRect UnionRectangle;
-  SubItemRectangleByIndex(m_beginIndex, BeginRectangle);
-  SubItemRectangleByIndex(m_endIndex, EndRectangle);
-  UnionRectangle.UnionRect(BeginRectangle, EndRectangle);
-  CSize Size = UnionRectangle.Size();
+  CRect beginRectangle;
+  CRect endRectangle;
+  CRect unionRectangle;
+  SubItemRectangleByIndex(m_beginIndex, beginRectangle);
+  SubItemRectangleByIndex(m_endIndex, endRectangle);
+  unionRectangle.UnionRect(beginRectangle, endRectangle);
+  CSize size = unionRectangle.Size();
 
   // Apply scaling to spacing/margins when computing final size
   double scale = 1.0;
@@ -96,22 +96,21 @@ CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
   const int scaledSpacingY = ScaleInt(scale, m_cellSpacing.cy);
   const int scaledMarginY = ScaleInt(scale, m_margins.cy);
 
-  Size.cx += 2 * (scaledSpacingX + scaledMarginX);
-  Size.cy += 2 * (scaledSpacingY + scaledMarginY);
+  size.cx += 2 * (scaledSpacingX + scaledMarginX);
+  size.cy += 2 * (scaledSpacingY + scaledMarginY);
   if (!calculateOnly) {
-    CRect ClientRectangle;
-    GetWindowRect(ClientRectangle);
+    CRect clientRectangle;
+    GetWindowRect(clientRectangle);
     CWnd* parent = GetParent();
     if (parent) {
-      parent->ScreenToClient(ClientRectangle);
+      parent->ScreenToClient(clientRectangle);
+      clientRectangle.right = clientRectangle.left + size.cx;
+      clientRectangle.bottom = clientRectangle.top + size.cy;
 
-      ClientRectangle.right = ClientRectangle.left + Size.cx;
-      ClientRectangle.bottom = ClientRectangle.top + Size.cy;
-
-      MoveWindow(ClientRectangle);
+      MoveWindow(clientRectangle);
     }
   }
-  return Size;
+  return size;
 }
 
 void EoCtrlColorsButton::SubItemRectangleByIndex(std::uint16_t index, CRect& rectangle) const {
@@ -147,29 +146,29 @@ void EoCtrlColorsButton::SubItemRectangleByIndex(std::uint16_t index, CRect& rec
 }
 
 std::uint16_t EoCtrlColorsButton::SubItemByPoint(const CPoint& point) const {
-  CRect Rectangle;
-  Rectangle.SetRectEmpty();
+  CRect rectangle;
+  rectangle.SetRectEmpty();
 
   switch (m_layout) {
     case SimpleSingleRow:
-      for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
-        SubItemRectangleByIndex(Index, Rectangle);
-        if (Rectangle.PtInRect(point) == TRUE) { return Index; }
+      for (auto index = m_beginIndex; index <= m_endIndex; index++) {
+        SubItemRectangleByIndex(index, rectangle);
+        if (rectangle.PtInRect(point) == TRUE) { return index; }
       }
       break;
     case GridDown5RowsOddOnly:
-      for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
-        if ((Index % 2) != 0) {
-          SubItemRectangleByIndex(Index, Rectangle);
-          if (Rectangle.PtInRect(point) == TRUE) { return Index; }
+      for (auto index = m_beginIndex; index <= m_endIndex; index++) {
+        if ((index % 2) != 0) {
+          SubItemRectangleByIndex(index, rectangle);
+          if (rectangle.PtInRect(point) == TRUE) { return index; }
         }
       }
       break;
     case GridUp5RowsEvenOnly:
-      for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
-        if ((Index % 2) == 0) {
-          SubItemRectangleByIndex(Index, Rectangle);
-          if (Rectangle.PtInRect(point) == TRUE) { return Index; }
+      for (auto index = m_beginIndex; index <= m_endIndex; index++) {
+        if ((index % 2) == 0) {
+          SubItemRectangleByIndex(index, rectangle);
+          if (rectangle.PtInRect(point) == TRUE) { return index; }
         }
       }
   }
@@ -181,13 +180,13 @@ void EoCtrlColorsButton::OnDraw(CDC* deviceContext, const CRect& /*rectangle */,
 
   if (m_palette == nullptr || deviceContext == nullptr) { return; }
 
-  for (std::uint16_t Index = m_beginIndex; Index <= m_endIndex; Index++) {
+  for (auto index = m_beginIndex; index <= m_endIndex; index++) {
     if (m_layout == SimpleSingleRow) {
-      DrawCell(deviceContext, Index, m_palette[Index]);
-    } else if (m_layout == GridDown5RowsOddOnly && ((Index % 2) != 0)) {
-      DrawCell(deviceContext, Index, m_palette[Index]);
-    } else if (m_layout == GridUp5RowsEvenOnly && ((Index % 2) == 0)) {
-      DrawCell(deviceContext, Index, m_palette[Index]);
+      DrawCell(deviceContext, index, m_palette[index]);
+    } else if (m_layout == GridDown5RowsOddOnly && ((index % 2) != 0)) {
+      DrawCell(deviceContext, index, m_palette[index]);
+    } else if (m_layout == GridUp5RowsEvenOnly && ((index % 2) == 0)) {
+      DrawCell(deviceContext, index, m_palette[index]);
     }
   }
 }
@@ -245,8 +244,8 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
       }
       m_subItem = std::max(m_beginIndex, std::min(m_endIndex, m_subItem));
 
-      CRect CurrentSubItemRectangle;
-      SubItemRectangleByIndex(m_subItem, CurrentSubItemRectangle);
+      CRect currentSubItemRectangle;
+      SubItemRectangleByIndex(m_subItem, currentSubItemRectangle);
 
       m_selectedIndex = m_subItem;
       if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
@@ -254,18 +253,18 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
       }
       ReleaseDC(deviceContext);
 
-      NMHDR NotifyStructure{};
-      NotifyStructure.hwndFrom = GetSafeHwnd();
-      NotifyStructure.idFrom = static_cast<uint64_t>(GetDlgCtrlID());
-      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)NotifyStructure.idFrom, (LPARAM)&NotifyStructure);
+      NMHDR notifyStructure{};
+      notifyStructure.hwndFrom = GetSafeHwnd();
+      notifyStructure.idFrom = static_cast<uint64_t>(GetDlgCtrlID());
+      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)notifyStructure.idFrom, (LPARAM)&notifyStructure);
     }
   }
   CMFCButton::OnKeyDown(keyCode, repeatCount, flags);
 }
 
 void EoCtrlColorsButton::OnLButtonUp(UINT flags, CPoint point) {
-  std::uint16_t CurrentSubItem = SubItemByPoint(point);
-  if (CurrentSubItem != 0) { m_subItem = CurrentSubItem; }
+  auto currentSubItem = SubItemByPoint(point);
+  if (currentSubItem != 0) { m_subItem = currentSubItem; }
   CMFCButton::OnLButtonUp(flags, point);
 }
 
@@ -286,11 +285,11 @@ void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
         DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
       }
 
-      NMHDR NotifyStructure{};
-      NotifyStructure.hwndFrom = GetSafeHwnd();
-      NotifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
+      NMHDR notifyStructure{};
+      notifyStructure.hwndFrom = GetSafeHwnd();
+      notifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
 
-      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)NotifyStructure.idFrom, (LPARAM)&NotifyStructure);
+      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)notifyStructure.idFrom, (LPARAM)&notifyStructure);
     }
     ReleaseDC(deviceContext);
   }
@@ -309,8 +308,8 @@ void EoCtrlColorsButton::OnSetFocus(CWnd* oldWindow) {
     DrawCell(deviceContext, m_subItem, m_palette[m_subItem]);
   }
   m_subItem = m_beginIndex;
-  CRect CurrentSubItemRectangle;
-  SubItemRectangleByIndex(m_subItem, CurrentSubItemRectangle);
+  CRect currentSubItemRectangle;
+  SubItemRectangleByIndex(m_subItem, currentSubItemRectangle);
 
   m_selectedIndex = m_subItem;
   if (m_palette && m_subItem >= m_beginIndex && m_subItem <= m_endIndex) {
@@ -318,9 +317,9 @@ void EoCtrlColorsButton::OnSetFocus(CWnd* oldWindow) {
   }
   ReleaseDC(deviceContext);
 
-  NMHDR NotifyStructure{};
-  NotifyStructure.hwndFrom = GetSafeHwnd();
-  NotifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
+  NMHDR notifyStructure{};
+  notifyStructure.hwndFrom = GetSafeHwnd();
+  notifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
 
-  ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)NotifyStructure.idFrom, (LPARAM)&NotifyStructure);
+  ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)notifyStructure.idFrom, (LPARAM)&notifyStructure);
 }

@@ -212,10 +212,10 @@ void AeSysDoc::ExpandTrappedGroups() {
 void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
   UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_trappedGroups);
 
-  auto GroupPosition = m_trappedGroups.GetHeadPosition();
-  while (GroupPosition != nullptr) {
-    auto* Group = m_trappedGroups.GetNext(GroupPosition);
-    Group->Square(view);
+  auto groupPosition = m_trappedGroups.GetHeadPosition();
+  while (groupPosition != nullptr) {
+    auto* group = m_trappedGroups.GetNext(groupPosition);
+    group->Square(view);
   }
   UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_trappedGroups);
 }

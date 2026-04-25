@@ -87,12 +87,12 @@ const EoDbBlockReference& EoDbBlockReference::operator=(const EoDbBlockReference
   return *this;
 }
 void EoDbBlockReference::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
-  EoDbBlock* Block{};
-  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return; }
+  EoDbBlock* block{};
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
 
   const auto hti = tvAddItem(tree, parent, L"<BlockReference>", this);
 
-  ((EoDbGroup*)Block)->AddPrimsToTreeViewControl(tree, hti);
+  ((EoDbGroup*)block)->AddPrimsToTreeViewControl(tree, hti);
 }
 
 EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& basePoint) const {
@@ -263,18 +263,17 @@ void EoDbBlockReference::GetExtents(
 
 bool EoDbBlockReference::IsInView(AeSysView* view) {
   // Test whether an instance of a block is wholly or partially within the current view volume.
-  EoDbBlock* Block{};
+  EoDbBlock* block{};
 
-  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, Block) == 0) { return false; }
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return false; }
 
-  const auto basePoint = Block->BasePoint();
-
+  const auto basePoint = block->BasePoint();
   EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
 
-  const bool bInView = Block->IsInView(view);
+  const bool bInView = block->IsInView(view);
 
   view->PopModelTransform();
   return bInView;

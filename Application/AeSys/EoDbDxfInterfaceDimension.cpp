@@ -76,7 +76,7 @@
  *  @param dimension The parsed DXF DIMENSION entity (Linear subtype).
  *  @param document The AeSys document receiving the created primitives.
  */
-void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"DimLinear entity conversion\n");
 
   // --- Resolve dimension style ---

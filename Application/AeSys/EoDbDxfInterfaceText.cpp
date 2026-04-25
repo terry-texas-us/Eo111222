@@ -1,6 +1,5 @@
 #include "Stdafx.h"
 
-#include <cmath>
 #include <cstdint>
 #include <string>
 
@@ -11,7 +10,6 @@
 #include "EoDbBlockReference.h"
 #include "EoDbDxfInterface.h"
 #include "EoDbFontDefinition.h"
-#include "EoDbGroup.h"
 #include "EoDbPrimitive.h"
 #include "EoDbText.h"
 #include "EoDxfEntities.h"
@@ -46,7 +44,7 @@ void EoDbDxfInterface::AddAttrib(const EoDxfAttrib& attrib) {
   }
 }
 
-void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unused]] AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"MText entity conversion\n");
 
   if (mtext.m_nominalTextHeight < Eo::geometricTolerance) {
@@ -261,7 +259,7 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
   AddToDocument(textPrimitive, document, mtext.m_space, mtext.m_ownerHandle);
 }
 
-void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) {
+void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]] AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"Text entity conversion\n");
 
   // Guard: skip degenerate entities with zero height or empty string

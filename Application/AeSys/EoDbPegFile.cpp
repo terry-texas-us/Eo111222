@@ -356,26 +356,25 @@ void EoDbPegFile::ReadBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fil
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kBlocksSection.");
   }
   EoDbPrimitive* primitive{};
-  CString Name;
-  CString XRefPathName;
+  CString name;
+  CString xRefPathName;
 
   const auto numberOfBlocks = EoDb::ReadUInt16(*this);
 
   for (std::uint16_t n = 0; n < numberOfBlocks; n++) {
     const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
-    EoDb::Read(*this, Name);
+    EoDb::Read(*this, name);
     const auto blockTypeFlags = EoDb::ReadUInt16(*this);
     const auto basePoint = EoDb::ReadPoint3d(*this);
-    auto* block = new EoDbBlock(blockTypeFlags, basePoint, XRefPathName);
-    document->InsertBlock(Name, block);
-
+    auto* block = new EoDbBlock(blockTypeFlags, basePoint, xRefPathName);
+    document->InsertBlock(name, block);
     if (fileVersion == EoDb::PegFileVersion::AE2026) {
       block->SetHandle(EoDb::ReadUInt64(*this));
       block->SetOwnerHandle(EoDb::ReadUInt64(*this));
     }
 
-    for (std::uint16_t PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
+    for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
       if (EoDb::Read(*this, primitive, fileVersion)) {
         document->RegisterHandle(primitive);
         block->AddTail(primitive);
@@ -406,10 +405,10 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion f
     const auto numberOfGroups = EoDb::ReadUInt16(*this);
 
     if (layer->IsInternal()) {
-      for (auto GroupIndex = 0; GroupIndex < numberOfGroups; GroupIndex++) {
+      for (auto groupIndex = 0; groupIndex < numberOfGroups; groupIndex++) {
         auto* group = new EoDbGroup;
         const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
-        for (auto PrimitiveIndex = 0; PrimitiveIndex < numberOfPrimitives; PrimitiveIndex++) {
+        for (auto primitiveIndex = 0; primitiveIndex < numberOfPrimitives; primitiveIndex++) {
           if (EoDb::Read(*this, primitive, fileVersion)) {
             document->RegisterHandle(primitive);
             group->AddTail(primitive);

@@ -4,9 +4,7 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
-#include <uxtheme.h>
 
-#include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
@@ -181,7 +179,6 @@ CComboBox* EoCtrlLineTypeComboBox::CreateCombo(CWnd* parentWindow, const CRect& 
   combo->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
   combo->ModifyStyle(WS_BORDER, 0);
   combo->SetWindowPos(nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-  ::SetWindowTheme(combo->m_hWnd, L"", L"");
 
   // Dropdown list is 150% the width of the edit control for full name visibility
   CRect comboRect;

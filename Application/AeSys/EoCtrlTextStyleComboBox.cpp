@@ -1,14 +1,14 @@
 #include "Stdafx.h"
 
-#include <uxtheme.h>
+#include <string>
 
-#include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoCtrlTextStyleComboBox.h"
 #include "EoDlgTextStyleManager.h"
 #include "EoGsRenderState.h"
+#include "Resource.h"
 
 IMPLEMENT_SERIAL(EoCtrlTextStyleComboBox, CMFCToolBarComboBoxButton, VERSIONABLE_SCHEMA | 1)
 
@@ -126,7 +126,6 @@ CComboBox* EoCtrlTextStyleComboBox::CreateCombo(CWnd* parentWindow, const CRect&
   combo->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
   combo->ModifyStyle(WS_BORDER, 0);
   combo->SetWindowPos(nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-  ::SetWindowTheme(combo->m_hWnd, L"", L"");
   return combo;
 }
 

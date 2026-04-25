@@ -1,11 +1,8 @@
 #include "Stdafx.h"
 
-#include <cmath>
-#include <format>
 #include <utility>
 
 #include "AeSys.h"
-#include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
 #include "EoDb.h"

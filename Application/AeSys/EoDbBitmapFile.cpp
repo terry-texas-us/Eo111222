@@ -18,7 +18,7 @@ EoDbBitmapFile::EoDbBitmapFile(const CString& fileName) {
  * @return true if the bitmap and palette were successfully loaded; false otherwise.
  */
 bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalette& loadedPalette) {
-  const HBITMAP bitmap =
+  const auto bitmap =
       static_cast<HBITMAP>(LoadImageW(nullptr, fileName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE));
   if (bitmap == nullptr) { return false; }
   loadedBitmap.Attach(bitmap);
@@ -78,7 +78,7 @@ bool EoDbBitmapFile::Load(const CString& fileName, CBitmap& loadedBitmap, CPalet
       Close();
       return false;
     }
-    LOGPALETTE* logicalPalette = reinterpret_cast<LOGPALETTE*>(paletteBuffer.get());
+    auto* logicalPalette = reinterpret_cast<LOGPALETTE*>(paletteBuffer.get());
     logicalPalette->palVersion = 0x300;
     logicalPalette->palNumEntries = std::uint16_t(colors);
 

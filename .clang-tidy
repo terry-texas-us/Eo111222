@@ -1,5 +1,7 @@
 ---
 Checks:            '-*,readability-identifier-naming,modernize-use-auto'
+ExtraArgs:
+  - '-I"C:/Program Files/LLVM/lib/clang/21/include"'
 CheckOptions:
   # Core variable styles – camelBack = camelCase (starts lowercase)
   - { key: readability-identifier-naming.LocalVariableCase,     value: camelBack }   # e.g., myLocalVar

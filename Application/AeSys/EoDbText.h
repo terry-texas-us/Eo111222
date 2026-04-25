@@ -124,8 +124,24 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* render
 /// @brief Attempts to display text is using true type font.
 bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
+
+/**
+ * Displays text with embedded formatting characters for line breaks, alignment changes, and stacking.
+ * Supported formatting characters are:
+ *   \P: Hard line break
+ *   \A: Alignment change with parameter (0=left, 1=center, 2=right)
+ *   \S: Stacked text or fractions with format \S<top text>/<bottom text>;
+ *
+ * The formatting characters are parsed and applied during display. For example, the text "Line1\PLine2" will be
+ * displayed as: Line1
+ *               Line2
+ *
+ * The function processes the input text sequentially, displaying segments of regular text and applying formatting as it
+ * encounters the special characters.
+ */
 void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, const CString& text);
+
 /// @brief Renders MTEXT text with automatic word-wrapping based on the reference rectangle width.
 /// Lines are broken at word boundaries (spaces) when the accumulated line width exceeds the
 /// wrap threshold derived from EoDbMTextProperties::referenceRectangleWidth. Hard paragraph
@@ -133,8 +149,9 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* rend
 /// and passed through to DisplayTextWithFormattingCharacters for each wrapped line segment.
 void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
     EoGeReferenceSystem& referenceSystem, const CString& text, const EoDbMTextProperties& mtextProperties);
+
 /// @brief Determines the count of characters in string excluding formatting characters.
-int LengthSansFormattingCharacters(const CString& text);
+[[nodiscard]] int LengthSansFormattingCharacters(const CString& text);
 /// @brief Determines the offset to the bottom left alignment position of a text string
 /// using per-character advance widths (v2) or fixed cell width (v1) in the z=0 plane.
 void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt);

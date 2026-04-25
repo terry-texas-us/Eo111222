@@ -1,7 +1,6 @@
 #include "Stdafx.h"
 
 #include <algorithm>
-#include <cmath>
 #include <cstdint>
 #include <vector>
 
@@ -22,7 +21,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 
-void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"Arc entity conversion\n");
 
   if (arc.m_radius < Eo::geometricTolerance) {
@@ -51,8 +50,8 @@ void EoDbDxfInterface::ConvertArcEntity(const EoDxfArc& arc, AeSysDoc* document)
   AddToDocument(radialArc, document, arc.m_space, arc.m_ownerHandle);
 }
 
-void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Circle entity conversion\n");
+void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* document) const {
+  ATLTRACE2(traceGeneral, 3, L"Circle entity conversion\n");
 
   if (circle.m_radius < Eo::geometricTolerance) {
     ATLTRACE2(traceGeneral, 3, L"Warning: Circle entity with non-positive radius (%f) skipped.\n", circle.m_radius);
@@ -98,8 +97,8 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
  *  @param ellipse The parsed DXF ELLIPSE entity.
  *  @param document The AeSys document receiving the created primitive.
  */
-void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Ellipse entity conversion (ratio=%.4f, startParam=%.4f, endParam=%.4f)\n",
+void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) const {
+  ATLTRACE2(traceGeneral, 3, L"Ellipse entity conversion (ratio=%.4f, startParam=%.4f, endParam=%.4f)\n",
       ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
 
   if (ellipse.m_ratio <= 0.0 || ellipse.m_ratio > 1.0) {
@@ -167,7 +166,7 @@ EoDbBlockReference* EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blo
   return insertPrimitive;
 }
 
-void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 3, L"Line entity conversion\n");
 
   auto linePrimitive = new EoDbLine();
@@ -177,7 +176,7 @@ void EoDbDxfInterface::ConvertLineEntity(const EoDxfLine& line, AeSysDoc* docume
   AddToDocument(linePrimitive, document, line.m_space, line.m_ownerHandle);
 }
 
-void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 3, L"LWPolyline entity conversion\n");
 
   auto* polylinePrimitive = new EoDbPolyline();
@@ -230,7 +229,7 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
   AddToDocument(polylinePrimitive, document, polyline.m_space, polyline.m_ownerHandle);
 }
 
-void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 3, L"Polyline 3D entity conversion (%zu vertices)\n", polyline.m_vertices.size());
 
   if (polyline.m_vertices.empty()) { return; }
@@ -255,7 +254,7 @@ void EoDbDxfInterface::ConvertPolyline3DEntity(const EoDxfPolyline& polyline, Ae
   AddToDocument(polylinePrimitive, document, polyline.m_space, polyline.m_ownerHandle);
 }
 
-void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 3, L"Polyline 2D entity conversion (%zu vertices)\n", polyline.m_vertices.size());
 
   if (polyline.m_vertices.empty()) { return; }
@@ -313,7 +312,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
     for (std::uint16_t index = 0; index < numVerts; ++index) {
       const auto* vertex = polyline.m_vertices[index];
       startWidths[index] = (Eo::IsGeometricallyNonZero(vertex->m_startingWidth)) ? vertex->m_startingWidth
-                                                                                  : polyline.m_defaultStartWidth;
+                                                                                 : polyline.m_defaultStartWidth;
       endWidths[index] =
           (Eo::IsGeometricallyNonZero(vertex->m_endingWidth)) ? vertex->m_endingWidth : polyline.m_defaultEndWidth;
     }
@@ -329,7 +328,7 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
   AddToDocument(polylinePrimitive, document, polyline.m_space, polyline.m_ownerHandle);
 }
 
-void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 3, L"Point entity conversion\n");
 
   auto pointPrimitive = new EoDbPoint();
@@ -365,8 +364,8 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
  *  @param spline The parsed DXF spline entity.
  *  @param document The AeSys document receiving the created primitive.
  */
-void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2,
+void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document) const {
+  ATLTRACE2(traceGeneral, 3,
       L"Spline entity conversion (degree=%d, controlPts=%d, fitPts=%d, knots=%d, flags=0x%04X)\n",
       spline.m_degreeOfTheSplineCurve, spline.m_numberOfControlPoints, spline.m_numberOfFitPoints,
       spline.m_numberOfKnots, spline.m_splineFlag);
@@ -410,8 +409,8 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
   splinePrimitive->SetBaseProperties(&spline, document);
 
   // Preserve DXF spline properties for faithful round-trip export and correct-degree rendering.
-  splinePrimitive->SetDegree(spline.m_degreeOfTheSplineCurve > 0 ? spline.m_degreeOfTheSplineCurve
-                                                                   : static_cast<std::int16_t>(3));
+  splinePrimitive->SetDegree(
+      spline.m_degreeOfTheSplineCurve > 0 ? spline.m_degreeOfTheSplineCurve : static_cast<std::int16_t>(3));
   splinePrimitive->SetFlags(spline.m_splineFlag);
 
   // Import knot vector when control points are used (knots are meaningless with fit-point fallback).
@@ -426,11 +425,11 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
 
   AddToDocument(splinePrimitive, document, spline.m_space, spline.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 2, L"  Spline \u2192 EoDbSpline (%d pts, degree=%d, flags=0x%04X, knots=%zu)\n",
-      pointCount, splinePrimitive->Degree(), splinePrimitive->Flags(), splinePrimitive->Knots().size());
+  ATLTRACE2(traceGeneral, 2, L"  Spline \u2192 EoDbSpline (%d pts, degree=%d, flags=0x%04X, knots=%zu)\n", pointCount,
+      splinePrimitive->Degree(), splinePrimitive->Flags(), splinePrimitive->Knots().size());
 }
 
-void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document) {
+void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document) const {
   ATLTRACE2(traceGeneral, 2, L"Viewport entity conversion (id=%d, status=%d)\n", viewport.m_viewportId,
       viewport.m_viewportStatus);
 
@@ -465,6 +464,6 @@ void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSy
 
   AddToDocument(viewportPrimitive, document, viewport.m_space, viewport.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d size=(%.2f x %.2f) center=(%.2f, %.2f)\n",
-      viewport.m_viewportId, viewport.m_width, viewport.m_height, viewport.m_centerPoint.x, viewport.m_centerPoint.y);
+  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d size=(%.2f x %.2f) center=(%.2f, %.2f)\n", viewport.m_viewportId,
+      viewport.m_width, viewport.m_height, viewport.m_centerPoint.x, viewport.m_centerPoint.y);
 }

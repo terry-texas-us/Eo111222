@@ -50,16 +50,16 @@ void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool id
 
       COLORREF* pCurColTbl = pColTbl;
 
-      const bool LayerIsDetectable = IsOpened() || IsWork() || IsActive();
+      const bool layerIsDetectable = IsOpened() || IsWork() || IsActive();
 
-      pColTbl = LayerIsDetectable ? Eo::ColorPalette : Eo::GrayPalette;
+      pColTbl = layerIsDetectable ? Eo::ColorPalette : Eo::GrayPalette;
 
       auto position = GetHeadPosition();
       while (position != nullptr) {
         auto* group = GetNext(position);
 
         if (group->IsInView(view)) {
-          if (LayerIsDetectable) { document->AddGroupToAllViews(group); }
+          if (layerIsDetectable) { document->AddGroupToAllViews(group); }
           if (identifyTrap && document->FindTrappedGroup(group) != nullptr) {
             EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
             group->Display(view, renderDevice);
