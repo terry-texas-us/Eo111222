@@ -420,7 +420,7 @@ void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) 
     dc.FillSolidRect(rect, colors.menuHighlightBackground);
     CPen borderPen(PS_SOLID, 1, colors.menuHighlightBorder);
     CPen* oldPen = dc.SelectObject(&borderPen);
-    CBrush* oldBrush = static_cast<CBrush*>(dc.SelectStockObject(NULL_BRUSH));
+    auto* oldBrush = static_cast<CBrush*>(dc.SelectStockObject(NULL_BRUSH));
     dc.Rectangle(rect);
     dc.SelectObject(oldBrush);
     dc.SelectObject(oldPen);
@@ -428,7 +428,7 @@ void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) 
     dc.FillSolidRect(rect, colors.menuHighlightBackground);
     CPen borderPen(PS_SOLID, 1, colors.menuHighlightBorder);
     CPen* oldPen = dc.SelectObject(&borderPen);
-    CBrush* oldBrush = static_cast<CBrush*>(dc.SelectStockObject(NULL_BRUSH));
+    auto* oldBrush = static_cast<CBrush*>(dc.SelectStockObject(NULL_BRUSH));
     dc.Rectangle(rect);
     dc.SelectObject(oldBrush);
     dc.SelectObject(oldPen);

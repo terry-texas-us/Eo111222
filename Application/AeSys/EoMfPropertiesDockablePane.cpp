@@ -49,10 +49,10 @@ void EoMfPropertiesDockablePane::ApplyColorScheme() {
 }
 int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   if (CDockablePane::OnCreate(createStruct) == -1) { return -1; }
-  CRect EmptyRect;
-  EmptyRect.SetRectEmpty();
+  CRect emptyRect;
+  emptyRect.SetRectEmpty();
 
-  if (!m_PropertyGrid.Create(WS_VISIBLE | WS_CHILD, EmptyRect, this, 2)) {
+  if (!m_PropertyGrid.Create(WS_VISIBLE | WS_CHILD, emptyRect, this, 2)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create Properties Grid \n");
     return -1;
   }
@@ -88,12 +88,12 @@ void EoMfPropertiesDockablePane::OnSize(UINT type, int cx, int cy) {
   AdjustLayout();
 }
 LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
-  CMFCPropertyGridProperty* Property = (CMFCPropertyGridProperty*)lparam;
+  auto* property = (CMFCPropertyGridProperty*)lparam;
 
-  switch (int(Property->GetData())) {
+  switch (int(property->GetData())) {
     case kActiveViewScale: {
       auto* activeView = AeSysView::GetActiveView();
-      activeView->SetWorldScale(Property->GetValue().dblVal);
+      activeView->SetWorldScale(property->GetValue().dblVal);
       activeView->UpdateStateInformation(AeSysView::Scale);
       return LRESULT(0);
     }
@@ -294,19 +294,19 @@ void EoMfPropertiesDockablePane::UpdateDocumentStatistics() {
 void EoMfPropertiesDockablePane::SetPropertyGridFont() {
   ::DeleteObject(m_PropertyGridFont.Detach());
 
-  LOGFONT LogFont;
-  afxGlobalData.fontRegular.GetLogFont(&LogFont);
+  LOGFONT logFont;
+  afxGlobalData.fontRegular.GetLogFont(&logFont);
 
-  NONCLIENTMETRICS Info{};
-  Info.cbSize = sizeof(Info);
+  NONCLIENTMETRICS info{};
+  info.cbSize = sizeof(info);
 
-  afxGlobalData.GetNonClientMetrics(Info);
+  afxGlobalData.GetNonClientMetrics(info);
 
-  LogFont.lfHeight = Info.lfMenuFont.lfHeight;
-  LogFont.lfWeight = Info.lfMenuFont.lfWeight;
-  LogFont.lfItalic = Info.lfMenuFont.lfItalic;
+  logFont.lfHeight = info.lfMenuFont.lfHeight;
+  logFont.lfWeight = info.lfMenuFont.lfWeight;
+  logFont.lfItalic = info.lfMenuFont.lfItalic;
 
-  m_PropertyGridFont.CreateFontIndirect(&LogFont);
+  m_PropertyGridFont.CreateFontIndirect(&logFont);
 
   m_PropertyGrid.SetFont(&m_PropertyGridFont);
 }

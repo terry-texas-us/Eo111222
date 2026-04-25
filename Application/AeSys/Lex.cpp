@@ -43,54 +43,54 @@ int tokenTypeIdentifiers[MaxTokens];
 }  // namespace
 
 void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTokens, int* locationOfTokens) {
-  int NumberOfOpenParentheses{};
-  int PreviousTokenType{};
+  int numberOfOpenParentheses{};
+  int previousTokenType{};
 
-  int OperatorStack[32]{};
-  int TopOfOperatorStack{1};
+  int operatorStack[32]{};
+  int topOfOperatorStack{1};
 
-  OperatorStack[TopOfOperatorStack] = IdentifierToken;
+  operatorStack[topOfOperatorStack] = IdentifierToken;
 
   numberOfTokens = 0;
 
-  int CurrentTokenType = TokType(firstTokenLocation);
-  while (CurrentTokenType != -1) {
-    switch (TokenPropertiesTable[CurrentTokenType].tokenClass) {
+  int currentTokenType = TokType(firstTokenLocation);
+  while (currentTokenType != -1) {
+    switch (TokenPropertiesTable[currentTokenType].tokenClass) {
       case Constant:
-        typeOfTokens[numberOfTokens] = CurrentTokenType;
+        typeOfTokens[numberOfTokens] = currentTokenType;
         locationOfTokens[numberOfTokens++] = firstTokenLocation;
         break;
 
       case OpenParentheses:
-        OperatorStack[++TopOfOperatorStack] = CurrentTokenType;  // Push to operator stack
-        NumberOfOpenParentheses++;
+        operatorStack[++topOfOperatorStack] = currentTokenType;  // Push to operator stack
+        numberOfOpenParentheses++;
         break;
 
       case CloseParentheses:
-        if (NumberOfOpenParentheses == 0) { break; }
+        if (numberOfOpenParentheses == 0) { break; }
 
-        while (OperatorStack[TopOfOperatorStack] != OpenParenthesesToken) {  // Move operator to token stack
-          typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
+        while (operatorStack[topOfOperatorStack] != OpenParenthesesToken) {  // Move operator to token stack
+          typeOfTokens[numberOfTokens++] = operatorStack[topOfOperatorStack--];
         }
-        TopOfOperatorStack--;  // Discard open parentheses
-        NumberOfOpenParentheses--;  // One less open parentheses
+        topOfOperatorStack--;  // Discard open parentheses
+        numberOfOpenParentheses--;  // One less open parentheses
         break;
 
       case BinaryArithmeticOperator:
       case Other:
-        if (CurrentTokenType == BinaryAddToken || CurrentTokenType == BinarySubtractToken) {
-          TokenClass eClassPrv = TokenPropertiesTable[PreviousTokenType].tokenClass;
+        if (currentTokenType == BinaryAddToken || currentTokenType == BinarySubtractToken) {
+          TokenClass eClassPrv = TokenPropertiesTable[previousTokenType].tokenClass;
           if (eClassPrv != Constant && eClassPrv != Identifier && eClassPrv != CloseParentheses) {
-            CurrentTokenType = (CurrentTokenType == BinaryAddToken) ? UnaryPlus : UnaryMinus;
+            currentTokenType = (currentTokenType == BinaryAddToken) ? UnaryPlus : UnaryMinus;
           }
         }
         // Pop higher priority operators from stack
-        while (TopOfOperatorStack > 0 && TokenPropertiesTable[OperatorStack[TopOfOperatorStack]].inStackPriority >=
-                                             TokenPropertiesTable[CurrentTokenType].inComingPriority) {
-          typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--];
+        while (topOfOperatorStack > 0 && TokenPropertiesTable[operatorStack[topOfOperatorStack]].inStackPriority >=
+                                             TokenPropertiesTable[currentTokenType].inComingPriority) {
+          typeOfTokens[numberOfTokens++] = operatorStack[topOfOperatorStack--];
         }
         // Push new operator onto stack
-        OperatorStack[++TopOfOperatorStack] = CurrentTokenType;
+        operatorStack[++topOfOperatorStack] = currentTokenType;
         break;
 
       // TODO .. classes of tokens which might be implemented
@@ -101,12 +101,12 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
       default:
         break;
     }
-    PreviousTokenType = CurrentTokenType;
-    CurrentTokenType = TokType(++firstTokenLocation);
+    previousTokenType = currentTokenType;
+    currentTokenType = TokType(++firstTokenLocation);
   }
-  if (NumberOfOpenParentheses > 0) { throw L"Unbalanced parentheses"; }
+  if (numberOfOpenParentheses > 0) { throw L"Unbalanced parentheses"; }
 
-  while (TopOfOperatorStack > 1) { typeOfTokens[numberOfTokens++] = OperatorStack[TopOfOperatorStack--]; }
+  while (topOfOperatorStack > 1) { typeOfTokens[numberOfTokens++] = operatorStack[topOfOperatorStack--]; }
 
   if (numberOfTokens == 0) { throw L"Syntax error"; }
 }
@@ -124,14 +124,12 @@ void lex::ConvertValToString(
   } else {
     wchar_t cVal[32]{};
     long* lVal = (long*)cVal;
-    double* dVal = (double*)cVal;
+    auto* dVal = (double*)cVal;
 
     wchar_t* szpVal{};
-    int iLoc;
-
-    int iVLen = 0;
-    int byteOfset = 0;
-    int iLnLoc = 0;
+        int iVLen{};
+    int byteOfset{};
+    int iLnLoc{};
     int iLen = valueMetaInformation->GetLength();
 
     if (valueMetaInformation->type != IntegerToken) { iLen = iLen / 2; }
@@ -153,9 +151,8 @@ void lex::ConvertValToString(
         memcpy(dVal, reinterpret_cast<const std::byte*>(valueBuffer) + byteOfset, 8);
         byteOfset += 8;
         if (valueMetaInformation->type == RealToken) {
-          iLoc = 1;
-          wchar_t* NextToken{};
-          szpVal = wcstok_s(cVal, L" ", &NextToken);
+          wchar_t* nextToken{};
+          szpVal = wcstok_s(cVal, L" ", &nextToken);
           wcscpy_s(&stringBuffer[iLnLoc], static_cast<size_t>(32 - iLnLoc), szpVal);
           iLnLoc += (int)wcslen(szpVal);
         } else if (valueMetaInformation->type == ArchitecturalUnitsLengthToken) {
@@ -180,7 +177,7 @@ void lex::ConvertValToString(
 void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition, void* buffer) {
   if (currentType == requiredType) { return; }
 
-  double* doubleInterpretedBuffer = reinterpret_cast<double*>(buffer);
+  auto* doubleInterpretedBuffer = reinterpret_cast<double*>(buffer);
   long* longInterpretedBuffer = reinterpret_cast<long*>(buffer);
 
   if (currentType == StringToken) {
@@ -227,7 +224,7 @@ void lex::ConvertStringToVal(
     }
     *resultDefinition = MAKELONG(1, 1);
   } else {
-    double* doubleInterpretedValue = reinterpret_cast<double*>(resultValue);
+    auto* doubleInterpretedValue = reinterpret_cast<double*>(resultValue);
 
     if (tokenType == IntegerToken) {
       *doubleInterpretedValue = static_cast<double>(_wtoi(token));
@@ -266,8 +263,8 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
   long lOpStk[32][32]{};
   long lOpStkDef[32]{};
 
-  double* dOp1 = reinterpret_cast<double*>(operandBuffer);
-  long* lOp1 = reinterpret_cast<long*>(operandBuffer);
+  auto* dOp1 = reinterpret_cast<double*>(operandBuffer);
+  auto* lOp1 = reinterpret_cast<long*>(operandBuffer);
 
   /**
    * @brief Zero-initialized buffer for operand storage, sized for 256 wchar_t but aligned for numeric reinterpretation.
@@ -280,9 +277,9 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
    * operands.
    */
   alignas(double) std::byte secondOperandBuffer[256 * sizeof(wchar_t)]{};
-  wchar_t* cOp2 = reinterpret_cast<wchar_t*>(secondOperandBuffer);
-  double* dOp2 = reinterpret_cast<double*>(secondOperandBuffer);
-  long* lOp2 = reinterpret_cast<long*>(secondOperandBuffer);
+  auto* cOp2 = reinterpret_cast<wchar_t*>(secondOperandBuffer);
+  auto* dOp2 = reinterpret_cast<double*>(secondOperandBuffer);
+  auto* lOp2 = reinterpret_cast<long*>(secondOperandBuffer);
 
   int operandStackTop{};  // Empty operand stack
   int iTokStkId{};  // Start with first token

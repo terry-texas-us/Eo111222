@@ -148,7 +148,7 @@ void EoMfOutputListBox::OnEditCopy() {
     auto clipboardDataHandle = GlobalAlloc(GMEM_MOVEABLE, size);
 
     if (clipboardDataHandle != nullptr) {
-      wchar_t* clipboardData = static_cast<wchar_t*>(GlobalLock(clipboardDataHandle));
+      auto* clipboardData = static_cast<wchar_t*>(GlobalLock(clipboardDataHandle));
       if (clipboardData != nullptr) {
         wcscpy_s(clipboardData, static_cast<size_t>(combinedText.GetLength() + 1), combinedText);
         GlobalUnlock(clipboardDataHandle);

@@ -39,7 +39,7 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   CDC memoryContext;
   memoryContext.CreateCompatibleDC(nullptr);
 
-  CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
+  CBitmap* bitmap = memoryContext.SelectObject(previewBitmap);
   memoryContext.PatBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, WHITENESS);
 
   // Swap ACI 7 and ACI 0 to black for white background visibility
@@ -69,12 +69,12 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
 
   block->GetExtents(activeView, ptMin, ptMax, transformMatrix);
 
-  const double UExtent = ptMax.x - ptMin.x;
-  const double VExtent = ptMax.y - ptMin.y;
+  const double uExtent = ptMax.x - ptMin.x;
+  const double vExtent = ptMax.y - ptMin.y;
 
   activeView->PushViewTransform();
 
-  activeView->SetCenteredWindow(UExtent, VExtent);
+  activeView->SetCenteredWindow(uExtent, vExtent);
 
   const EoGePoint3d ptTarget((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, 0.0);
 
@@ -93,7 +93,7 @@ void WndProcPreviewUpdateBlock(HWND previewWindow, EoDbBlock* block) {
   Eo::ColorPalette[0] = savedAci0;
   Eo::GrayPalette[7] = savedGray7;
   Eo::GrayPalette[0] = savedGray0;
-  memoryContext.SelectObject(Bitmap);
+  memoryContext.SelectObject(bitmap);
   InvalidateRect(previewWindow, nullptr, TRUE);
 }
 
@@ -136,9 +136,9 @@ LRESULT CALLBACK WndProcPreview(HWND hwnd, UINT message, WPARAM nParam, LPARAM l
       CDC memoryContext;
       memoryContext.CreateCompatibleDC(nullptr);
 
-      CBitmap* Bitmap = memoryContext.SelectObject(previewBitmap);
+      CBitmap* bitmap = memoryContext.SelectObject(previewBitmap);
       dc.BitBlt(0, 0, previewWindowRect.right, previewWindowRect.bottom, &memoryContext, 0, 0, SRCCOPY);
-      memoryContext.SelectObject(Bitmap);
+      memoryContext.SelectObject(bitmap);
 
       dc.Detach();
 

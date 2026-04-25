@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "Stdafx.h"
 
 #include <algorithm>
 
@@ -129,7 +129,7 @@ void EoMfVisualManager::OnDrawTab(CDC* deviceContext, CRect rectTab, int tabInde
 
   // Draw tab border
   CPen* previousPen = deviceContext->SelectObject(&m_borderPen);
-  CBrush* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+  auto* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
   deviceContext->Rectangle(rectTab);
   deviceContext->SelectObject(previousBrush);
 
@@ -258,7 +258,7 @@ void EoMfVisualManager::OnDrawButtonBorder(CDC* deviceContext, CMFCToolBarButton
   if (state == ButtonsIsHighlighted || state == ButtonsIsPressed) {
     CPen borderPen(PS_SOLID, 1, colors.menuHighlightBorder);
     CPen* previousPen = deviceContext->SelectObject(&borderPen);
-    CBrush* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+    auto* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
     deviceContext->Rectangle(rect);
     deviceContext->SelectObject(previousBrush);
     deviceContext->SelectObject(previousPen);
@@ -341,7 +341,7 @@ void EoMfVisualManager::OnDrawComboBorder(CDC* deviceContext, CRect rect, BOOL /
 
   // Draw subtle 1px border matching the scheme's structural border color.
   CPen* previousPen = deviceContext->SelectObject(&m_borderPen);
-  CBrush* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+  auto* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
   deviceContext->Rectangle(rect);
   deviceContext->SelectObject(previousBrush);
   deviceContext->SelectObject(previousPen);
@@ -407,7 +407,7 @@ void EoMfVisualManager::OnDrawSeparator(CDC* deviceContext, CBasePane* /*bar*/, 
 
 void EoMfVisualManager::OnDrawMenuBorder(CDC* deviceContext, CMFCPopupMenu* /*menu*/, CRect rect) {
   CPen* previousPen = deviceContext->SelectObject(&m_borderPen);
-  CBrush* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+  auto* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
   deviceContext->Rectangle(rect);
   deviceContext->SelectObject(previousBrush);
   deviceContext->SelectObject(previousPen);
@@ -426,7 +426,7 @@ void EoMfVisualManager::OnHighlightMenuItem(
 
   // Draw highlight border
   CPen* previousPen = deviceContext->SelectObject(&m_menuHighlightBorderPen);
-  CBrush* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+  auto* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
   deviceContext->Rectangle(rect);
   deviceContext->SelectObject(previousBrush);
   deviceContext->SelectObject(previousPen);
@@ -451,7 +451,7 @@ COLORREF EoMfVisualManager::GetMenuItemTextColor(
 
 void EoMfVisualManager::OnDrawPaneBorder(CDC* deviceContext, CBasePane* /*bar*/, CRect& rect) {
   CPen* previousPen = deviceContext->SelectObject(&m_borderPen);
-  CBrush* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
+  auto* previousBrush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
   deviceContext->Rectangle(rect);
   deviceContext->SelectObject(previousBrush);
   deviceContext->SelectObject(previousPen);

@@ -1,17 +1,14 @@
 ﻿
-#include "StdAfx.h"
+#include "Stdafx.h"
 
 #include <cassert>
 
 #include "AeSys.h"
-#include "AeSysDoc.h"
-#include "EoApOptions.h"
 #include "EoCtrlColorComboBox.h"
 #include "EoCtrlLayerComboBox.h"
 #include "EoCtrlLineTypeComboBox.h"
 #include "EoCtrlLineWeightComboBox.h"
 #include "EoCtrlTextStyleComboBox.h"
-#include "EoDlgTextStyleManager.h"
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -109,7 +106,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   // Prevent the menu bar from taking the focus on activation
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
-  const DWORD Style(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+  const DWORD controlStyle(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 
   // Default button/image sizes for initial toolbar creation. The actual button height
   // is adjusted after the first RecalcLayout, which creates the combo HWNDs via
@@ -119,7 +116,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   const CSize imageSize(24, 24);
   const CSize buttonSize(32, 32);
 
-  if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, Style, CRect(1, 1, 1, 1), IDR_MAINFRAME_24) ||
+  if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle, CRect(1, 1, 1, 1), IDR_MAINFRAME_24) ||
       !m_standardToolBar.LoadToolBar(IDR_MAINFRAME_24, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create toolbar\n");
     return -1;
@@ -129,7 +126,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   CMFCToolBar::SetSizes(buttonSize, imageSize);
   m_standardToolBar.SetWindowTextW(L"Standard");
 
-  if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
+  if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle) ||
       !m_renderPropertiesToolBar.LoadToolBar(IDR_RENDER_PROPERTIES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create render properties toolbar\n");
     return -1;
@@ -139,7 +136,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   EoMfStatelessToolBar::SetSizes(buttonSize, imageSize);
   m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
 
-  if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) || !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
+  if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle) ||
+      !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create styles toolbar\n");
     return -1;
   }
@@ -147,7 +145,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   EoMfStatelessToolBar::SetSizes(buttonSize, imageSize);
   m_stylesToolBar.SetWindowTextW(L"Styles");
 
-  if (!m_layerPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, Style) ||
+  if (!m_layerPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle) ||
       !m_layerPropertiesToolBar.LoadToolBar(IDR_LAYER_PROPERTIES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create layer properties toolbar\n");
     return -1;
@@ -249,13 +247,13 @@ BOOL CMainFrame::CreateDockablePanes() {
 
   const DWORD sharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
 
-  auto Caption = App::LoadStringResource(IDS_OUTPUT);
-  if (!m_outputPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_OUTPUTWND, sharedStyles | CBRS_BOTTOM)) {
+  auto windowName = App::LoadStringResource(IDS_OUTPUT);
+  if (!m_outputPane.Create(windowName, this, defaultSize, TRUE, ID_VIEW_OUTPUTWND, sharedStyles | CBRS_BOTTOM)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create Output pane\n");
     return FALSE;
   }
-  Caption = App::LoadStringResource(IDS_PROPERTIES);
-  if (!m_propertiesPane.Create(Caption, this, defaultSize, TRUE, ID_VIEW_PROPERTIESWND, sharedStyles | CBRS_RIGHT)) {
+  windowName = App::LoadStringResource(IDS_PROPERTIES);
+  if (!m_propertiesPane.Create(windowName, this, defaultSize, TRUE, ID_VIEW_PROPERTIESWND, sharedStyles | CBRS_RIGHT)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create Properties pane\n");
     return FALSE;
   }
@@ -267,11 +265,11 @@ void CMainFrame::SetDockablePanesIcons() {
   const CSize smallIconSize(::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
   const HINSTANCE resourceHandle(::AfxGetResourceHandle());
 
-  const HICON propertiesPaneIcon = static_cast<HICON>(LoadImageW(
+  const auto propertiesPaneIcon = static_cast<HICON>(LoadImageW(
       resourceHandle, MAKEINTRESOURCE(IDI_PROPERTIES_WND_HC), IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_propertiesPane.SetIcon(propertiesPaneIcon, FALSE);
 
-  const HICON outputPaneIcon = static_cast<HICON>(LoadImageW(
+  const auto outputPaneIcon = static_cast<HICON>(LoadImageW(
       resourceHandle, MAKEINTRESOURCE(IDI_OUTPUT_WND_HC), IMAGE_ICON, smallIconSize.cx, smallIconSize.cy, 0));
   m_outputPane.SetIcon(outputPaneIcon, FALSE);
 
@@ -279,10 +277,11 @@ void CMainFrame::SetDockablePanesIcons() {
 }
 
 void CMainFrame::OnWindowManager() { ShowWindowsDialog(); }
+
 void CMainFrame::OnViewCustomize() {
-  CMFCToolBarsCustomizeDialog* Dialog = new CMFCToolBarsCustomizeDialog(this, TRUE);
-  Dialog->EnableUserDefinedToolbars();
-  Dialog->Create();
+  auto* dialog = new CMFCToolBarsCustomizeDialog(this, TRUE);
+  dialog->EnableUserDefinedToolbars();
+  dialog->Create();
 }
 
 LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp, LPARAM name) {
@@ -324,21 +323,21 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
   if (!CMDIFrameWndEx::LoadFrame(resourceId, defaultStyle, parentWindow, createContext)) { return FALSE; }
 
   // Add some tools for example....
-  auto* UserToolsManager = app.GetUserToolsManager();
-  if (UserToolsManager != nullptr && UserToolsManager->GetUserTools().IsEmpty()) {
-    auto* tool1 = UserToolsManager->CreateNewTool();
+  auto* userToolsManager = app.GetUserToolsManager();
+  if (userToolsManager != nullptr && userToolsManager->GetUserTools().IsEmpty()) {
+    auto* tool1 = userToolsManager->CreateNewTool();
     tool1->m_strLabel = L"&Notepad";
     tool1->SetCommand(L"notepad.exe");
 
-    auto* tool2 = UserToolsManager->CreateNewTool();
+    auto* tool2 = userToolsManager->CreateNewTool();
     tool2->m_strLabel = L"Paint &Brush";
     tool2->SetCommand(L"mspaint.exe");
 
-    auto* tool3 = UserToolsManager->CreateNewTool();
+    auto* tool3 = userToolsManager->CreateNewTool();
     tool3->m_strLabel = L"&File Explorer";
     tool3->SetCommand(L"explorer.exe");
 
-    auto* tool4 = UserToolsManager->CreateNewTool();
+    auto* tool4 = userToolsManager->CreateNewTool();
     tool4->m_strLabel = L"Fanning, Fanning & Associates On-Line";
     tool4->SetCommand(L"http://www.fanningfanning.com");
   }
@@ -361,21 +360,22 @@ BOOL CMainFrame::LoadFrame(UINT resourceId, DWORD defaultStyle, CWnd* parentWind
 
   return TRUE;
 }
-LRESULT CMainFrame::OnToolbarContextMenu(WPARAM, LPARAM point) {
-  CMenu PopupToolbarMenu;
-  VERIFY(PopupToolbarMenu.LoadMenu(IDR_POPUP_TOOLBAR));
+LRESULT CMainFrame::OnToolbarContextMenu(WPARAM, LPARAM point_) {
+  CMenu popupToolbarMenu;
+  VERIFY(popupToolbarMenu.LoadMenu(IDR_POPUP_TOOLBAR));
 
-  auto* SubMenu = PopupToolbarMenu.GetSubMenu(0);
-  assert(SubMenu != nullptr);
+  auto* subMenu = popupToolbarMenu.GetSubMenu(0);
+  assert(subMenu != nullptr);
 
-  if (SubMenu) {
-    const CPoint Point(AFX_GET_X_LPARAM(point), AFX_GET_Y_LPARAM(point));
+  if (subMenu) {
+    const CPoint point(AFX_GET_X_LPARAM(point_), AFX_GET_Y_LPARAM(point_));
 
-    auto* PopupMenu = new CMFCPopupMenu;
-    PopupMenu->Create(this, Point.x, Point.y, SubMenu->Detach());
+    auto* popupMenu = new CMFCPopupMenu;
+    popupMenu->Create(this, point.x, point.y, subMenu->Detach());
   }
   return 0;
 }
+
 BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
   CMDIFrameWndEx::OnShowPopupMenu(pMenuPopup);
 
@@ -389,10 +389,10 @@ BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
     CMenu menu;
     VERIFY(menu.LoadMenu(IDR_POPUP_TOOLBAR));
 
-    auto* const PopupSubMenu = menu.GetSubMenu(0);
-    assert(PopupSubMenu != nullptr);
+    auto* const popupSubMenu = menu.GetSubMenu(0);
+    assert(popupSubMenu != nullptr);
 
-    if (PopupSubMenu) { pMenuPopup->GetMenuBar()->ImportFromMenu(*PopupSubMenu, TRUE); }
+    if (popupSubMenu) { pMenuPopup->GetMenuBar()->ImportFromMenu(*popupSubMenu, TRUE); }
   }
   return TRUE;
 }
@@ -409,7 +409,7 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   if (resetMDIChild) {
     HWND hwndT = ::GetWindow(m_hWndMDIClient, GW_CHILD);
     while (hwndT != nullptr) {
-      CMDIChildWndEx* frame = DYNAMIC_DOWNCAST(CMDIChildWndEx, CWnd::FromHandle(hwndT));
+      auto* frame = DYNAMIC_DOWNCAST(CMDIChildWndEx, CWnd::FromHandle(hwndT));
       if (frame != nullptr) { frame->ModifyStyle(WS_SYSMENU, 0); }
       hwndT = ::GetWindow(hwndT, GW_HWNDNEXT);
     }
@@ -426,20 +426,20 @@ void CMainFrame::UpdateMDITabs(BOOL resetMDIChild) {
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }
 
-BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL bDrop) {
-  if (bDrop) { return FALSE; }
+BOOL CMainFrame::OnShowMDITabContextMenu(CPoint point, DWORD dwAllowedItems, BOOL drop) {
+  if (drop) { return FALSE; }
   CMenu menu;
   VERIFY(menu.LoadMenu(IDR_POPUP_MDITABS));
 
-  auto* PopupSubMenu = menu.GetSubMenu(0);
-  assert(PopupSubMenu != nullptr);
+  auto* popupSubMenu = menu.GetSubMenu(0);
+  assert(popupSubMenu != nullptr);
 
-  if (PopupSubMenu) {
-    if ((dwAllowedItems & AFX_MDI_CAN_BE_DOCKED) == 0) { PopupSubMenu->DeleteMenu(ID_MDI_TABBED, MF_BYCOMMAND); }
-    CMFCPopupMenu* pPopupMenu = new CMFCPopupMenu;
-    if (pPopupMenu) {
-      pPopupMenu->SetAutoDestroy(FALSE);
-      pPopupMenu->Create(this, point.x, point.y, PopupSubMenu->GetSafeHmenu());
+  if (popupSubMenu) {
+    if ((dwAllowedItems & AFX_MDI_CAN_BE_DOCKED) == 0) { popupSubMenu->DeleteMenu(ID_MDI_TABBED, MF_BYCOMMAND); }
+    auto* popupMenu = new CMFCPopupMenu;
+    if (popupMenu) {
+      popupMenu->SetAutoDestroy(FALSE);
+      popupMenu->Create(this, point.x, point.y, popupSubMenu->GetSafeHmenu());
     }
   }
   return TRUE;
@@ -458,34 +458,43 @@ LRESULT CMainFrame::OnGetTabToolTip(WPARAM /*wp*/, LPARAM lp) {
 }
 
 void CMainFrame::OnMdiTabbed() {
-  CMDIChildWndEx* pMDIChild = DYNAMIC_DOWNCAST(CMDIChildWndEx, MDIGetActive());
+  auto* pMDIChild = DYNAMIC_DOWNCAST(CMDIChildWndEx, MDIGetActive());
   if (pMDIChild == nullptr) {
     assert(FALSE);
     return;
   }
   TabbedDocumentToControlBar(pMDIChild);
 }
+
 void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) { pCmdUI->SetCheck(); }
 void CMainFrame::OnDestroy() {
   ATLTRACE2(traceGeneral, 3, L"CMainFrame::OnDestroy() - Entering\n");
   PostQuitMessage(0);  // Force WM_QUIT message to terminate message loop
 }
 CString CMainFrame::GetPaneText(int index) { return m_statusBar.GetPaneText(index); }
+
 void CMainFrame::SetPaneInfo(int index, UINT newId, UINT style, int width) {
   m_statusBar.SetPaneInfo(index, newId, style, width);
 }
+
 BOOL CMainFrame::SetPaneText(int index, LPCWSTR newText) { return m_statusBar.SetPaneText(index, newText); }
+
 void CMainFrame::SetPaneStyle(int index, UINT style) { m_statusBar.SetPaneStyle(index, style); }
+
 void CMainFrame::SetPaneTextColor(int index, COLORREF textColor) { m_statusBar.SetPaneTextColor(index, textColor); }
+
 void CMainFrame::SetPaneBackgroundColor(int index, COLORREF backgroundColor) {
   m_statusBar.SetPaneBackgroundColor(index, backgroundColor);
 }
+
 void CMainFrame::OnViewFullScreen() { ShowFullScreen(); }
+
 void CMainFrame::EnsureToolbarsVisible() {
   // Safety net: after LoadMDIState() restores docking state from the registry,
   // verify that all application toolbars are visible. A stale or corrupted blob
   // (e.g. from a DPI change or structural toolbar change) can leave toolbars hidden.
-  CMFCToolBar* toolbars[] = {&m_standardToolBar, &m_renderPropertiesToolBar, &m_layerPropertiesToolBar, &m_stylesToolBar};
+  CMFCToolBar* toolbars[] = {
+      &m_standardToolBar, &m_renderPropertiesToolBar, &m_layerPropertiesToolBar, &m_stylesToolBar};
   for (auto* toolbar : toolbars) {
     if (!toolbar->IsVisible()) {
       toolbar->ShowPane(TRUE, FALSE, TRUE);
@@ -615,4 +624,3 @@ void CMainFrame::SyncLayerCombo(const CString& layerName) {
     }
   }
 }
-

@@ -80,7 +80,7 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
   const auto drawMode = ::SetROP2(deviceContextHandle, R2_XORPEN);
 
   // Show defining window as hollow rectangle with dark gray outline
-  const HBRUSH brush = (HBRUSH)::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH));
+  const auto brush = static_cast<HBRUSH>(::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH)));
   const HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
   const HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
   ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
