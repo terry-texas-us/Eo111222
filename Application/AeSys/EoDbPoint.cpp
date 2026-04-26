@@ -38,8 +38,11 @@ EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGeP
   m_numberOfDatums = 0;
   m_Data = nullptr;
 }
-EoDbPoint::EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point,
-    std::uint16_t numberOfDatums, double* data)
+EoDbPoint::EoDbPoint(std::int16_t penColor,
+    std::int16_t pointStyle,
+    const EoGePoint3d& point,
+    std::uint16_t numberOfDatums,
+    double* data)
     : m_Point(point) {
   m_color = penColor;
   m_pointStyle = pointStyle;
@@ -75,7 +78,9 @@ const EoDbPoint& EoDbPoint::operator=(const EoDbPoint& src) {
   for (std::uint16_t n = 0; n < m_numberOfDatums; n++) { m_Data[n] = src.m_Data[n]; }
   return (*this);
 }
-void EoDbPoint::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Point>", this); }
+void EoDbPoint::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, L"<Point>", this);
+}
 
 EoDbPrimitive*& EoDbPoint::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPoint(*this);
@@ -169,16 +174,22 @@ void EoDbPoint::FormatExtra(CString& str) {
   str.AppendFormat(L"\tStyle;%d", m_pointStyle);
   str += L'\t';
 }
-void EoDbPoint::FormatGeometry(CString& str) { str += L"Point;" + m_Point.ToString(); }
-EoGePoint3d EoDbPoint::GetControlPoint() { return m_Point; }
+void EoDbPoint::FormatGeometry(CString& str) {
+  str += L"Point;" + m_Point.ToString();
+}
+EoGePoint3d EoDbPoint::GetControlPoint() {
+  return m_Point;
+}
 
 void EoDbPoint::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
   points.Add(m_Point);
 }
 
-void EoDbPoint::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbPoint::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt(m_Point);
 
   view->ModelTransformPoint(pt);
@@ -201,8 +212,9 @@ EoGePoint3d EoDbPoint::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& 
   return (sm_controlPointIndex == 0) ? m_Point : EoGePoint3d::kOrigin;
 }
 
-bool EoDbPoint::SelectUsingLine(
-    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
+bool EoDbPoint::SelectUsingLine([[maybe_unused]] AeSysView* view,
+    [[maybe_unused]] EoGeLine line,
+    [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 
@@ -246,7 +258,9 @@ void EoDbPoint::SetPoint(double x, double y, double z) noexcept {
   m_Point.z = z;
 }
 
-void EoDbPoint::Transform(const EoGeTransformMatrix& transformMatrix) { m_Point = transformMatrix * m_Point; }
+void EoDbPoint::Transform(const EoGeTransformMatrix& transformMatrix) {
+  m_Point = transformMatrix * m_Point;
+}
 void EoDbPoint::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) { m_Point += v; }
 }

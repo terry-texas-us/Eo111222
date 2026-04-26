@@ -10,7 +10,9 @@ EoDlgSetLength::EoDlgSetLength(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgSetLen
 
 EoDlgSetLength::~EoDlgSetLength() {}
 
-void EoDlgSetLength::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
+void EoDlgSetLength::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+}
 
 BOOL EoDlgSetLength::OnInitDialog() {
   CDialog::OnInitDialog();

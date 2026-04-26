@@ -16,4 +16,6 @@ BOOL EoDlgPipeOptions::OnInitDialog() {
 
   return TRUE;
 }
-void EoDlgPipeOptions::OnOK() { CDialog::OnOK(); }
+void EoDlgPipeOptions::OnOK() {
+  CDialog::OnOK();
+}

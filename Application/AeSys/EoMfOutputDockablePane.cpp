@@ -35,8 +35,8 @@ int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   constexpr DWORD sharedStyles =
       WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL;
 
-  if (!m_OutputMessagesList.Create(sharedStyles, emptyRect, &m_wndTabs, 2) ||
-      !m_OutputReportsList.Create(sharedStyles, emptyRect, &m_wndTabs, 4)) {
+  if (!m_OutputMessagesList.Create(sharedStyles, emptyRect, &m_wndTabs, 2)
+      || !m_OutputReportsList.Create(sharedStyles, emptyRect, &m_wndTabs, 4)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create output windows\n");
     return -1;
   }

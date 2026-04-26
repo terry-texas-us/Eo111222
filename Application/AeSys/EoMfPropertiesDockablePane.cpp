@@ -38,8 +38,13 @@ EoMfPropertiesDockablePane::~EoMfPropertiesDockablePane() {}
 
 void EoMfPropertiesDockablePane::ApplyColorScheme() {
   const auto& colors = Eo::chromeColors;
-  m_PropertyGrid.SetCustomColors(colors.paneBackground, colors.paneText, colors.paneGroupBackground,
-      colors.paneGroupText, colors.paneDescriptionBackground, colors.paneDescriptionText, colors.paneLine);
+  m_PropertyGrid.SetCustomColors(colors.paneBackground,
+      colors.paneText,
+      colors.paneGroupBackground,
+      colors.paneGroupText,
+      colors.paneDescriptionBackground,
+      colors.paneDescriptionText,
+      colors.paneLine);
 
   // Reload toolbar images from the original bitmap, then adapt for dark theme if needed
   m_PropertiesToolBar.CleanUpLockedImages();
@@ -64,9 +69,9 @@ int EoMfPropertiesDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_PropertiesToolBar.LoadBitmap(IDB_PROPERTIES, 0U, 0U, TRUE, 0U, 0U);
 
   m_PropertiesToolBar.SetPaneStyle(m_PropertiesToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-  m_PropertiesToolBar.SetPaneStyle(
-      m_PropertiesToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM |
-                                               CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+  m_PropertiesToolBar.SetPaneStyle(m_PropertiesToolBar.GetPaneStyle()
+      & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT
+          | CBRS_BORDER_RIGHT));
   m_PropertiesToolBar.SetOwner(this);
 
   // All commands will be routed via this control , not via the parent frame:
@@ -101,7 +106,9 @@ LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
   return LRESULT(0);
 }
 
-void EoMfPropertiesDockablePane::OnExpandAllProperties() { m_PropertyGrid.ExpandAll(); }
+void EoMfPropertiesDockablePane::OnExpandAllProperties() {
+  m_PropertyGrid.ExpandAll();
+}
 void EoMfPropertiesDockablePane::OnProperties1() {
   ATLTRACE2(traceGeneral, 3, L"EoMfPropertiesDockablePane::OnProperties1\n");
 }
@@ -128,8 +135,12 @@ void EoMfPropertiesDockablePane::AdjustLayout() {
 
   m_PropertiesToolBar.SetWindowPos(
       nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
-  m_PropertyGrid.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyTlb, rectClient.Width(),
-      rectClient.Height() - cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
+  m_PropertyGrid.SetWindowPos(nullptr,
+      rectClient.left,
+      rectClient.top + cyTlb,
+      rectClient.Width(),
+      rectClient.Height() - cyTlb,
+      SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 void EoMfPropertiesDockablePane::InitializePropertyGrid() {
@@ -148,20 +159,19 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   // --- Document Statistics group (first in the grid) ---
   auto* document = AeSysDoc::GetDoc();
-  const int workCount = (document != nullptr)
-      ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers()
-      : 0;
+  const int workCount =
+      (document != nullptr) ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers() : 0;
   const int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
 
   auto* documentStatisticsGroup = new CMFCPropertyGridProperty(L"Document Statistics");
-  auto* workCountProperty = new CMFCPropertyGridProperty(
-      L"Active Groups", (_variant_t)static_cast<long>(workCount),
-      L"Number of groups in work and active layers", kWorkGroupCount);
+  auto* workCountProperty = new CMFCPropertyGridProperty(L"Active Groups",
+      (_variant_t) static_cast<long>(workCount),
+      L"Number of groups in work and active layers",
+      kWorkGroupCount);
   workCountProperty->Enable(FALSE);
   documentStatisticsGroup->AddSubItem(workCountProperty);
   auto* trapCountProperty = new CMFCPropertyGridProperty(
-      L"Trap Groups", (_variant_t)static_cast<long>(trapCount),
-      L"Number of groups in the trap", kTrapGroupCount);
+      L"Trap Groups", (_variant_t) static_cast<long>(trapCount), L"Number of groups in the trap", kTrapGroupCount);
   trapCountProperty->Enable(FALSE);
   documentStatisticsGroup->AddSubItem(trapCountProperty);
   m_PropertyGrid.AddProperty(documentStatisticsGroup);
@@ -276,19 +286,14 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 void EoMfPropertiesDockablePane::UpdateDocumentStatistics() {
   auto* document = AeSysDoc::GetDoc();
 
-  const int workCount = (document != nullptr)
-      ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers()
-      : 0;
+  const int workCount =
+      (document != nullptr) ? document->NumberOfGroupsInWorkLayer() + document->NumberOfGroupsInActiveLayers() : 0;
   const int trapCount = (document != nullptr) ? static_cast<int>(document->TrapGroupCount()) : 0;
 
   auto* workCountProperty = m_PropertyGrid.FindItemByData(kWorkGroupCount);
-  if (workCountProperty != nullptr) {
-    workCountProperty->SetValue((_variant_t)static_cast<long>(workCount));
-  }
+  if (workCountProperty != nullptr) { workCountProperty->SetValue((_variant_t) static_cast<long>(workCount)); }
   auto* trapCountProperty = m_PropertyGrid.FindItemByData(kTrapGroupCount);
-  if (trapCountProperty != nullptr) {
-    trapCountProperty->SetValue((_variant_t)static_cast<long>(trapCount));
-  }
+  if (trapCountProperty != nullptr) { trapCountProperty->SetValue((_variant_t) static_cast<long>(trapCount)); }
 }
 
 void EoMfPropertiesDockablePane::SetPropertyGridFont() {

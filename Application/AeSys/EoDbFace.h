@@ -50,18 +50,18 @@ class EoDbFace : public EoDbPrimitive {
   /// @brief DXF source entity type — controls export dispatch and coordinate transform.
   enum class SourceType : std::uint8_t {
     Face3d = 0,  ///< DXF 3DFACE: WCS, no extrusion, AcDbFace subclass, edge flags active
-    Solid = 1,   ///< DXF SOLID: OCS→WCS on import, AcDbTrace subclass, always filled, bowtie export
-    Trace = 2    ///< DXF TRACE: OCS→WCS on import, AcDbTrace subclass, always filled, bowtie export
+    Solid = 1,  ///< DXF SOLID: OCS→WCS on import, AcDbTrace subclass, always filled, bowtie export
+    Trace = 2  ///< DXF TRACE: OCS→WCS on import, AcDbTrace subclass, always filled, bowtie export
   };
 
   /// @brief Per-edge invisible flags (DXF 3DFACE group code 70).
   /// Bit layout matches DXF exactly — no translation needed on import/export.
   enum EdgeFlags : std::uint8_t {
-    AllVisible = 0x00,      ///< Default: all edges visible
+    AllVisible = 0x00,  ///< Default: all edges visible
     Edge1Invisible = 0x01,  ///< Edge v0→v1 invisible
     Edge2Invisible = 0x02,  ///< Edge v1→v2 invisible
     Edge3Invisible = 0x04,  ///< Edge v2→v3 invisible
-    Edge4Invisible = 0x08   ///< Edge v3→v0 invisible (quad only)
+    Edge4Invisible = 0x08  ///< Edge v3→v0 invisible (quad only)
   };
 
  private:
@@ -69,7 +69,7 @@ class EoDbFace : public EoDbPrimitive {
   EoGeVector3d m_extrusion{EoGeVector3d::positiveUnitZ};  ///< Extrusion direction (SOLID/TRACE OCS round-trip)
   SourceType m_sourceType{SourceType::Face3d};
   std::uint8_t m_edgeFlags{AllVisible};  ///< Per-edge invisible flags (3DFACE only; always 0 for SOLID/TRACE)
-  std::uint8_t m_vertexCount{4};         ///< 3 (triangle) or 4 (quad)
+  std::uint8_t m_vertexCount{4};  ///< 3 (triangle) or 4 (quad)
 
  public:
   EoDbFace() = default;
@@ -84,26 +84,39 @@ class EoDbFace : public EoDbPrimitive {
 
   /// @brief Creates an EoDbFace from a parsed DXF 3DFACE quad entity.
   /// Vertices are already WCS. Edge flags preserved.
-  [[nodiscard]] static EoDbFace* CreateFrom3dFace(const EoGePoint3d& v0, const EoGePoint3d& v1,
-      const EoGePoint3d& v2, const EoGePoint3d& v3, std::uint8_t edgeFlags);
+  [[nodiscard]] static EoDbFace* CreateFrom3dFace(const EoGePoint3d& v0,
+      const EoGePoint3d& v1,
+      const EoGePoint3d& v2,
+      const EoGePoint3d& v3,
+      std::uint8_t edgeFlags);
 
   /// @brief Creates a triangle EoDbFace from a parsed DXF 3DFACE entity.
-  [[nodiscard]] static EoDbFace* CreateTriangleFrom3dFace(
-      const EoGePoint3d& v0, const EoGePoint3d& v1, const EoGePoint3d& v2, std::uint8_t edgeFlags);
+  [[nodiscard]] static EoDbFace* CreateTriangleFrom3dFace(const EoGePoint3d& v0,
+      const EoGePoint3d& v1,
+      const EoGePoint3d& v2,
+      std::uint8_t edgeFlags);
 
   /// @brief Creates an EoDbFace from a parsed DXF SOLID entity.
   /// Caller must pass vertices AFTER OCS→WCS transform and AFTER bowtie→sequential reorder.
-  [[nodiscard]] static EoDbFace* CreateFromSolid(const EoGePoint3d& v0, const EoGePoint3d& v1,
-      const EoGePoint3d& v2, const EoGePoint3d& v3, const EoGeVector3d& extrusion);
+  [[nodiscard]] static EoDbFace* CreateFromSolid(const EoGePoint3d& v0,
+      const EoGePoint3d& v1,
+      const EoGePoint3d& v2,
+      const EoGePoint3d& v3,
+      const EoGeVector3d& extrusion);
 
   /// @brief Creates a triangle EoDbFace from a parsed DXF SOLID entity (3rd == 4th corner).
-  [[nodiscard]] static EoDbFace* CreateTriangleFromSolid(const EoGePoint3d& v0, const EoGePoint3d& v1,
-      const EoGePoint3d& v2, const EoGeVector3d& extrusion);
+  [[nodiscard]] static EoDbFace* CreateTriangleFromSolid(const EoGePoint3d& v0,
+      const EoGePoint3d& v1,
+      const EoGePoint3d& v2,
+      const EoGeVector3d& extrusion);
 
   /// @brief Creates an EoDbFace from a parsed DXF TRACE entity.
   /// Caller must pass vertices AFTER OCS→WCS transform and AFTER bowtie→sequential reorder.
-  [[nodiscard]] static EoDbFace* CreateFromTrace(const EoGePoint3d& v0, const EoGePoint3d& v1,
-      const EoGePoint3d& v2, const EoGePoint3d& v3, const EoGeVector3d& extrusion);
+  [[nodiscard]] static EoDbFace* CreateFromTrace(const EoGePoint3d& v0,
+      const EoGePoint3d& v1,
+      const EoGePoint3d& v2,
+      const EoGePoint3d& v3,
+      const EoGeVector3d& extrusion);
 
   // --- EoDbPrimitive virtual contract ---
   void AddReportToMessageList(const EoGePoint3d& point) override;
@@ -116,7 +129,9 @@ class EoDbFace : public EoDbPrimitive {
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override;
-  void GetExtents(AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint,
+  void GetExtents(AeSysView* view,
+      EoGePoint3d& minPoint,
+      EoGePoint3d& maxPoint,
       const EoGeTransformMatrix& transformMatrix) override;
   EoGePoint3d GoToNextControlPoint() override;
   bool Identical(EoDbPrimitive* primitive) override;
@@ -155,9 +170,7 @@ class EoDbFace : public EoDbPrimitive {
 
   /// @brief Tests whether a specific edge is visible.
   /// @param edgeIndex 0-based edge index (0 = v0→v1, 1 = v1→v2, etc.).
-  [[nodiscard]] bool IsEdgeVisible(int edgeIndex) const noexcept {
-    return (m_edgeFlags & (1 << edgeIndex)) == 0;
-  }
+  [[nodiscard]] bool IsEdgeVisible(int edgeIndex) const noexcept { return (m_edgeFlags & (1 << edgeIndex)) == 0; }
 
   void SetEdgeFlags(std::uint8_t flags) noexcept { m_edgeFlags = flags; }
 

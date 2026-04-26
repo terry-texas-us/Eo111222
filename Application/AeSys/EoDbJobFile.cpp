@@ -5,7 +5,7 @@
  *
  * @section jb1_purpose Purpose
  * The .jb1 file is a single-layer binary exchange format originating from the legacy VAX/VMS AE system.
- * It stores one layer's worth of primitive groups in a fixed-width 32-byte-chunk record layout using 
+ * It stores one layer's worth of primitive groups in a fixed-width 32-byte-chunk record layout using
  * VAX floating-point encoding. It is used in three distinct contexts within AeSys:
  *
  *   - **Tracing / layer cloaking** (`OnTracingCloak`, `LayerMelt`): A layer can be written to a .jb1 file
@@ -92,8 +92,8 @@
 #include <cmath>
 #include <cstdint>
 #include <stdexcept>
-#include <string>
 #include <string.h>
+#include <string>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -272,7 +272,9 @@ bool EoDbJobFile::GetNextVisibleGroup(CFile& file, EoDbGroup*& group) {
   } catch (const std::runtime_error& ex) {
     if (position >= 96) {
       const std::wstring errorMessage(ex.what(), ex.what() + strlen(ex.what()));
-      if (::MessageBoxW(nullptr, errorMessage.c_str(), nullptr, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) { return false; }
+      if (::MessageBoxW(nullptr, errorMessage.c_str(), nullptr, MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL) {
+        return false;
+      }
     }
     file.Seek(static_cast<LONGLONG>(position + 32), CFile::begin);
   }
@@ -735,13 +737,13 @@ EoDbText::EoDbText(std::uint8_t* buffer, int version) {
       m_fontDefinition.SetPath(EoDb::Path::Right);
     }
     m_fontDefinition.SetHorizontalAlignment(static_cast<EoDb::HorizontalAlignment>(fmod(d / 10.0, 10.0)));
-    if (m_fontDefinition.HorizontalAlignment() < EoDb::HorizontalAlignment::Left ||
-        m_fontDefinition.HorizontalAlignment() > EoDb::HorizontalAlignment::Right) {
+    if (m_fontDefinition.HorizontalAlignment() < EoDb::HorizontalAlignment::Left
+        || m_fontDefinition.HorizontalAlignment() > EoDb::HorizontalAlignment::Right) {
       m_fontDefinition.SetHorizontalAlignment(EoDb::HorizontalAlignment::Center);
     }
     m_fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment(static_cast<std::uint16_t>((d / 100.0))));
-    if (m_fontDefinition.VerticalAlignment() < EoDb::VerticalAlignment::Top ||
-        m_fontDefinition.VerticalAlignment() > EoDb::VerticalAlignment::Bottom) {
+    if (m_fontDefinition.VerticalAlignment() < EoDb::VerticalAlignment::Top
+        || m_fontDefinition.VerticalAlignment() > EoDb::VerticalAlignment::Bottom) {
       m_fontDefinition.SetVerticalAlignment(EoDb::VerticalAlignment::Middle);
     }
 

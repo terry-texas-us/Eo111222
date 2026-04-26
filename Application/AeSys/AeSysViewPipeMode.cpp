@@ -20,10 +20,42 @@
 #include "Resource.h"
 
 namespace {
-constexpr double symbolSize[] = {0.09375, 0.09375, 0.09375, 0.09375, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125,
-    0.125, 0.125, 0.125, 0.125, 0.0, 0.0, 0.09375};
-constexpr double tickDistance[] = {0.125, 0.125, 0.125, 0.125, 0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.15625,
-    0.15625, 0.15625, 0.15625, 0.15625, 0.15625, 0.03125, 0.03125, 0.125};
+constexpr double symbolSize[] = {0.09375,
+    0.09375,
+    0.09375,
+    0.09375,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.0,
+    0.0,
+    0.09375};
+constexpr double tickDistance[] = {0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.15625,
+    0.03125,
+    0.03125,
+    0.125};
 
 void AddLineToGroup(EoDbGroup* group, const EoGePoint3d& begin, const EoGePoint3d& end) {
   group->AddTail(EoDbLine::CreateLine(begin, end)->WithProperties(Gs::renderState));
@@ -621,7 +653,9 @@ void AeSysView::OnPipeModeWye() {
   OnPipeModeEscape();
 }
 
-void AeSysView::OnPipeModeReturn() { OnPipeModeEscape(); }
+void AeSysView::OnPipeModeReturn() {
+  OnPipeModeEscape();
+}
 
 void AeSysView::OnPipeModeEscape() {
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -679,8 +713,11 @@ void AeSysView::DoPipeModeMouseMove() {
   pts.SetSize(numberOfPoints);
 }
 
-void AeSysView::GenerateLineWithFittings(
-    int beginType, const EoGePoint3d& begin, int endType, const EoGePoint3d& end, EoDbGroup* group) {
+void AeSysView::GenerateLineWithFittings(int beginType,
+    const EoGePoint3d& begin,
+    int endType,
+    const EoGePoint3d& end,
+    EoDbGroup* group) {
   EoGePoint3d pt1 = begin;
   EoGePoint3d pt2 = end;
 
@@ -733,7 +770,9 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, Eo
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
-void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) const {
+void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point,
+    EoDbGroup* group,
+    EoDbLine* section) const {
   auto* document = GetDocument();
   const EoGePoint3d begin = section->Begin();
   const EoGePoint3d end = section->End();
@@ -753,8 +792,10 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point, Eo
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
-bool AeSysView::GenerateTickMark(
-    const EoGePoint3d& begin, const EoGePoint3d& end, double distance, EoDbGroup* group) const {
+bool AeSysView::GenerateTickMark(const EoGePoint3d& begin,
+    const EoGePoint3d& end,
+    double distance,
+    EoDbGroup* group) const {
   const auto pointOnLine = begin.ProjectToward(end, distance);
 
   EoGeVector3d projection(pointOnLine, end);

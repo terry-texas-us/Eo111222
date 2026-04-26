@@ -64,16 +64,22 @@ EoGeMatrixRow EoGeMatrixRow::operator*(double scaleFactor) const {
 
   return row;
 }
-double& EoGeMatrixRow::operator[](int i) { return m_d[i]; }
-const double& EoGeMatrixRow::operator[](int i) const { return m_d[i]; }
+double& EoGeMatrixRow::operator[](int i) {
+  return m_d[i];
+}
+const double& EoGeMatrixRow::operator[](int i) const {
+  return m_d[i];
+}
 void EoGeMatrixRow::Exchange(EoGeMatrixRow& rowA, EoGeMatrixRow& rowB) {
   const EoGeMatrixRow row(rowA);
   rowA = rowB;
   rowB = row;
 }
 
-EoGeMatrix::EoGeMatrix(
-    const EoGeMatrixRow& row0, const EoGeMatrixRow& row1, const EoGeMatrixRow& row2, const EoGeMatrixRow& row3) {
+EoGeMatrix::EoGeMatrix(const EoGeMatrixRow& row0,
+    const EoGeMatrixRow& row1,
+    const EoGeMatrixRow& row2,
+    const EoGeMatrixRow& row3) {
   m_row[0] = row0;
   m_row[1] = row1;
   m_row[2] = row2;
@@ -109,14 +115,20 @@ EoGeMatrix& EoGeMatrix::operator/=(double scaleFactor) {
   return *this;
 }
 
-EoGeMatrix EoGeMatrix::operator*(const EoGeMatrix& mB) { return Multiply(mB, *this); }
-EoGeMatrixRow& EoGeMatrix::operator[](int i) { return m_row[i]; }
-const EoGeMatrixRow& EoGeMatrix::operator[](int i) const { return m_row[i]; }
+EoGeMatrix EoGeMatrix::operator*(const EoGeMatrix& mB) {
+  return Multiply(mB, *this);
+}
+EoGeMatrixRow& EoGeMatrix::operator[](int i) {
+  return m_row[i];
+}
+const EoGeMatrixRow& EoGeMatrix::operator[](int i) const {
+  return m_row[i];
+}
 
 double EoGeMatrix::Determinant() const noexcept {
-  return m_4X4[0][0] * (m_4X4[1][1] * m_4X4[2][2] - m_4X4[1][2] * m_4X4[2][1]) -
-         m_4X4[0][1] * (m_4X4[1][0] * m_4X4[2][2] - m_4X4[1][2] * m_4X4[2][0]) +
-         m_4X4[0][2] * (m_4X4[1][0] * m_4X4[2][1] - m_4X4[1][1] * m_4X4[2][0]);
+  return m_4X4[0][0] * (m_4X4[1][1] * m_4X4[2][2] - m_4X4[1][2] * m_4X4[2][1])
+      - m_4X4[0][1] * (m_4X4[1][0] * m_4X4[2][2] - m_4X4[1][2] * m_4X4[2][0])
+      + m_4X4[0][2] * (m_4X4[1][0] * m_4X4[2][1] - m_4X4[1][1] * m_4X4[2][0]);
 }
 
 EoGeMatrix& EoGeMatrix::Identity() {

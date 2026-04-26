@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-
 #include <d2d1.h>
 #include <wrl/client.h>
 
@@ -9,10 +8,9 @@
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
 #include "EoDbPrimitive.h"
+#include "EoDlgPlot.h"
 #include "EoGeLine.h"
 #include "EoGeMatrix.h"
-
-#include "EoDlgPlot.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
@@ -579,7 +577,7 @@ class AeSysView : public CView {
   [[nodiscard]] double OverviewUMin() { return m_OverviewViewTransform.UMin(); }
   [[nodiscard]] double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
   [[nodiscard]] double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
-  
+
   [[nodiscard]] CPoint ProjectToClient(const EoGePoint4d& ndcPoint) { return m_Viewport.ProjectToClient(ndcPoint); }
 
   void ProjectToClient(CPoint* clientPoints, int numberOfPoints, const EoGePoint4d* ndcPoints) {
@@ -673,8 +671,11 @@ class AeSysView : public CView {
   /// beginPoint tail of line segment defining arrow head
   /// endPoint head of line segment defining arrow head
   /// group group where primitives are placed
-  void GenerateLineEndItem(
-      int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const;
+  void GenerateLineEndItem(int type,
+      double size,
+      EoGePoint3d& beginPoint,
+      EoGePoint3d& endPoint,
+      EoDbGroup* group) const;
   bool CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const;
 
   /// Draw Mode Interface ///////////////////////////////////////////////////////
@@ -914,8 +915,11 @@ class AeSysView : public CView {
    * @param endCapPoint A reference to store the selected point primitive if found.
    * @return The group containing the selected point primitive, or nullptr if none is found.
    */
-  [[nodiscard]] EoDbGroup* SelectPointUsingPoint(
-      EoGePoint3d& point, double tolerance, std::int16_t color, std::int16_t pointStyle, EoDbPoint*& endCapPoint);
+  [[nodiscard]] EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point,
+      double tolerance,
+      std::int16_t color,
+      std::int16_t pointStyle,
+      EoDbPoint*& endCapPoint);
 
   /** Locates and returns the first two lines that have an endpoint which coincides with
    * the endpoints of the specified line.
@@ -928,8 +932,10 @@ class AeSysView : public CView {
    * No check is made to see if lines are colinear.
    * Lines are normal to to test line (and therefore parallel to each other) if acceptance angle is 0.
    */
-  bool Find2LinesUsingLineEndpoints(
-      EoDbLine* testLinePrimitive, double angularTolerance, EoGeLine& leftLine, EoGeLine& rightLine);
+  bool Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive,
+      double angularTolerance,
+      EoGeLine& leftLine,
+      EoGeLine& rightLine);
   /// @brief Generates an end-cap.
   /// <remarks>
   /// End-caps are groups containing a line and a point.  The line defines the orientation of the end-cap.
@@ -952,8 +958,10 @@ class AeSysView : public CView {
    * @note need to allow continuation perpendicular to vertical section ?
    *      need to add end-cap if rise/drop line is long enough ?
    */
-  void GenerateRiseDrop(
-      const std::wstring& indicatorLineTypeName, Section section, EoGeLine& referenceLine, EoDbGroup* group);
+  void GenerateRiseDrop(const std::wstring& indicatorLineTypeName,
+      Section section,
+      EoGeLine& referenceLine,
+      EoDbGroup* group);
   /// @brief Generates rectangular section using a set of parallel lines.
   /// section width and depth of section
   /// group
@@ -965,8 +973,11 @@ class AeSysView : public CView {
   /// currentReferenceLine on exit the begin point is the same as the point on the endcap
   /// currentSection
   /// group
-  void GenerateRectangularElbow(EoGeLine& previousReferenceLine, Section previousSection,
-      EoGeLine& currentReferenceLine, Section currentSection, EoDbGroup* group);
+  void GenerateRectangularElbow(EoGeLine& previousReferenceLine,
+      Section previousSection,
+      EoGeLine& currentReferenceLine,
+      Section currentSection,
+      EoDbGroup* group);
   /// @brief Generates rectangular tap fitting.
   /// justification
   /// section
@@ -984,16 +995,21 @@ class AeSysView : public CView {
    * direction for the two elbow turns.
    *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
    */
-  [[nodiscard]] EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine,
-      double existingSectionWidth, double existingSectionDepth, EoDbGroup* group);
+  [[nodiscard]] EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup,
+      EoGeLine& existingSectionReferenceLine,
+      double existingSectionWidth,
+      double existingSectionDepth,
+      EoDbGroup* group);
 
   /** @brief Generates a full elbow takeoff from an existing section to the current section.
    * @param existingSectionReferenceLine Reference line of the existing section.
    * @param existingSection Cross sectional data of the existing section.
    * @param group Group to add the generated primitives to.
    */
-  void GenerateFullElbowTakeoff(
-      EoDbGroup* existingGroup, EoGeLine& existingSectionReferenceLine, Section existingSection, EoDbGroup* group);
+  void GenerateFullElbowTakeoff(EoDbGroup* existingGroup,
+      EoGeLine& existingSectionReferenceLine,
+      Section existingSection,
+      EoDbGroup* group);
 
   /// @brief Generates section which transitions from one rectangle to another
   /// @param referenceLine line defining the begin point and direction of the transition
@@ -1003,8 +1019,13 @@ class AeSysView : public CView {
   /// @param previousSection width and depth at begin of the transition
   /// @param currentSection width and depth at end of the transition
   /// group group receiving the primitives
-  void GenerateTransition(EoGeLine& referenceLine, double eccentricity, EJust justification, double slope,
-      Section previousSection, Section currentSection, EoDbGroup* group);
+  void GenerateTransition(EoGeLine& referenceLine,
+      double eccentricity,
+      EJust justification,
+      double slope,
+      Section previousSection,
+      Section currentSection,
+      EoDbGroup* group);
   /// @brief Sets the width and depth of ductwork.
   void SetDuctOptions(Section& section);
   /// @brief Determines the total length required to transition duct from one size to another
@@ -1013,8 +1034,10 @@ class AeSysView : public CView {
   /// @param previousSection width and depth of begin section
   /// @param currentSection width and depth of end section
   /// @return length of the transition
-  [[nodiscard]] double LengthOfTransition(
-      EJust justification, double slope, Section previousSection, Section currentSection);
+  [[nodiscard]] double LengthOfTransition(EJust justification,
+      double slope,
+      Section previousSection,
+      Section currentSection);
 
  private:  // Pipe mode interface
   int m_CurrentPipeSymbolIndex{};
@@ -1022,8 +1045,11 @@ class AeSysView : public CView {
   double m_PipeRiseDropRadius{0.03125};
 
   /// @brief Adds a fitting indication to horizontal pipe section as required by previous fitting type.
-  void GenerateLineWithFittings(
-      int beginType, const EoGePoint3d& beginPoint, int endType, const EoGePoint3d& endPoint, EoDbGroup* group);
+  void GenerateLineWithFittings(int beginType,
+      const EoGePoint3d& beginPoint,
+      int endType,
+      const EoGePoint3d& endPoint,
+      EoDbGroup* group);
 
   /** @brief Generates a tick mark at a specified distance along a line defined by two points, and adds it to the given
    * group.
@@ -1072,8 +1098,9 @@ class AeSysView : public CView {
   afx_msg void OnPowerModeReturn();
   afx_msg void OnPowerModeEscape();
 
-  void GeneratePowerConductorSymbol(
-      std::uint16_t conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
+  void GeneratePowerConductorSymbol(std::uint16_t conductorType,
+      EoGePoint3d& pointOnCircuit,
+      EoGePoint3d& endPoint) const;
   void GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
   void DoPowerModeConductor(std::uint16_t conductorType);
 

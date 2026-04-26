@@ -16,9 +16,7 @@ EoDbBlock::EoDbBlock(std::int16_t blockTypeFlags, EoGePoint3d basePoint, const C
 
 const EoDxfAttDef* EoDbBlock::FindAttributeDefinitionByTag(const std::wstring& tagName) const noexcept {
   for (const auto& attributeDefinition : m_attributeDefinitions) {
-    if (attributeDefinition.m_tagString == tagName) {
-      return &attributeDefinition;
-    }
+    if (attributeDefinition.m_tagString == tagName) { return &attributeDefinition; }
   }
   return nullptr;
 }

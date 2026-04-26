@@ -59,8 +59,10 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
   deviceContext.SelectStockObject(NULL_BRUSH);
   CPen grayPen(PS_SOLID, 2, Eo::colorGray);
   deviceContext.SelectObject(&grayPen);
-  deviceContext.Rectangle(EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+  deviceContext.Rectangle(EoDlgActiveViewKeyplan::m_rcWnd.left,
+      EoDlgActiveViewKeyplan::m_rcWnd.top,
+      EoDlgActiveViewKeyplan::m_rcWnd.right,
+      EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   // Restore device context
   deviceContext.SelectObject(pen);
@@ -83,8 +85,11 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
   const auto brush = static_cast<HBRUSH>(::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH)));
   const HPEN grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
   const HPEN pen = (HPEN)::SelectObject(deviceContextHandle, grayPen);
-  ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+  ::Rectangle(deviceContextHandle,
+      EoDlgActiveViewKeyplan::m_rcWnd.left,
+      EoDlgActiveViewKeyplan::m_rcWnd.top,
+      EoDlgActiveViewKeyplan::m_rcWnd.right,
+      EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   if (leftButtonDownInKeyplanRectangle) {
     OffsetRect(&EoDlgActiveViewKeyplan::m_rcWnd, (currentPoint.x - point.x), (currentPoint.y - point.y));
@@ -99,12 +104,17 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
     } else if (currentPoint.y < EoDlgActiveViewKeyplan::m_rcWnd.top) {
       EoDlgActiveViewKeyplan::m_rcWnd.top += (currentPoint.y - point.y);
     }
-    ::SendMessageW(::GetParent(hwnd), WM_COMMAND, static_cast<WPARAM>(::GetWindowLongPtrW(hwnd, GWL_ID)),
+    ::SendMessageW(::GetParent(hwnd),
+        WM_COMMAND,
+        static_cast<WPARAM>(::GetWindowLongPtrW(hwnd, GWL_ID)),
         reinterpret_cast<LPARAM>(hwnd));
   }
   point = currentPoint;
-  ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+  ::Rectangle(deviceContextHandle,
+      EoDlgActiveViewKeyplan::m_rcWnd.left,
+      EoDlgActiveViewKeyplan::m_rcWnd.top,
+      EoDlgActiveViewKeyplan::m_rcWnd.right,
+      EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   ::SelectObject(deviceContextHandle, pen);
   ::SelectObject(deviceContextHandle, brush);
@@ -134,8 +144,11 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
   const auto brush = static_cast<HBRUSH>(::SelectObject(deviceContextHandle, ::GetStockObject(NULL_BRUSH)));
   const auto grayPen = ::CreatePen(PS_SOLID, 2, Eo::colorGray);
   const auto pen = static_cast<HPEN>(::SelectObject(deviceContextHandle, grayPen));
-  Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+  Rectangle(deviceContextHandle,
+      EoDlgActiveViewKeyplan::m_rcWnd.left,
+      EoDlgActiveViewKeyplan::m_rcWnd.top,
+      EoDlgActiveViewKeyplan::m_rcWnd.right,
+      EoDlgActiveViewKeyplan::m_rcWnd.bottom);
 
   CDC dcMem{};
   dcMem.CreateCompatibleDC(nullptr);
@@ -156,8 +169,11 @@ void WndProcKeyPlanOnNewRatio(HWND hwnd, LPARAM lParam) {
   EoDlgActiveViewKeyplan::m_rcWnd.bottom =
       Eo::Round((1.0 - (vMin - dVMinOverview) / activeView->OverviewVExt()) * bitmap.bmHeight);
 
-  ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,
-      EoDlgActiveViewKeyplan::m_rcWnd.right, EoDlgActiveViewKeyplan::m_rcWnd.bottom);
+  ::Rectangle(deviceContextHandle,
+      EoDlgActiveViewKeyplan::m_rcWnd.left,
+      EoDlgActiveViewKeyplan::m_rcWnd.top,
+      EoDlgActiveViewKeyplan::m_rcWnd.right,
+      EoDlgActiveViewKeyplan::m_rcWnd.bottom);
   ::SelectObject(deviceContextHandle, pen);
   ::SelectObject(deviceContextHandle, brush);
   ::DeleteObject(grayPen);

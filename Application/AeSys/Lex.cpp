@@ -85,8 +85,9 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
           }
         }
         // Pop higher priority operators from stack
-        while (topOfOperatorStack > 0 && TokenPropertiesTable[operatorStack[topOfOperatorStack]].inStackPriority >=
-                                             TokenPropertiesTable[currentTokenType].inComingPriority) {
+        while (topOfOperatorStack > 0
+            && TokenPropertiesTable[operatorStack[topOfOperatorStack]].inStackPriority
+                >= TokenPropertiesTable[currentTokenType].inComingPriority) {
           typeOfTokens[numberOfTokens++] = operatorStack[topOfOperatorStack--];
         }
         // Push new operator onto stack
@@ -111,8 +112,10 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
   if (numberOfTokens == 0) { throw L"Syntax error"; }
 }
 
-void lex::ConvertValToString(
-    void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringBuffer, int* stringLength) {
+void lex::ConvertValToString(void* valueBuffer,
+    ValueMetaInformation* valueMetaInformation,
+    wchar_t* stringBuffer,
+    int* stringLength) {
   const int iDim = valueMetaInformation->GetDimension();
 
   if (valueMetaInformation->type == StringToken) {
@@ -127,7 +130,7 @@ void lex::ConvertValToString(
     auto* dVal = (double*)cVal;
 
     wchar_t* szpVal{};
-        int iVLen{};
+    int iVLen{};
     int byteOfset{};
     int iLnLoc{};
     int iLen = valueMetaInformation->GetLength();
@@ -201,8 +204,11 @@ void lex::ConvertValTyp(int currentType, int requiredType, long* valueDefinition
   }
 }
 
-void lex::ConvertStringToVal(
-    int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue) {
+void lex::ConvertStringToVal(int desiredType,
+    long tokenDefinition,
+    const wchar_t* inputLine,
+    long* resultDefinition,
+    void* resultValue) {
   if (LOWORD(tokenDefinition) <= 0) { throw std::invalid_argument("Empty string"); }
 
   wchar_t token[TokenBufferSize]{};

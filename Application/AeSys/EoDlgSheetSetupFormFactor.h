@@ -38,7 +38,7 @@ class EoDlgSheetSetupFormFactor : public CDialog {
   /// ARCH sheet sizes in landscape orientation (width × height in inches).
   struct SheetSize {
     const wchar_t* label;
-    double width;   ///< Landscape width
+    double width;  ///< Landscape width
     double height;  ///< Landscape height
   };
 
@@ -51,7 +51,7 @@ class EoDlgSheetSetupFormFactor : public CDialog {
   };
 
   int m_designationIndex{4};  ///< Default to ARCH E
-  bool m_isLandscape{true};   ///< Default to landscape
+  bool m_isLandscape{true};  ///< Default to landscape
   double m_sheetWidth{48.0};
   double m_sheetHeight{36.0};
 };

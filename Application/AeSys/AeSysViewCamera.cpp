@@ -26,14 +26,18 @@ constexpr double minimumWindowRatio{1e-6};
 
 }  // namespace
 
-CMFCStatusBar& AeSysView::GetStatusBar() const { return (static_cast<CMainFrame*>(AfxGetMainWnd()))->GetStatusBar(); }
+CMFCStatusBar& AeSysView::GetStatusBar() const {
+  return (static_cast<CMainFrame*>(AfxGetMainWnd()))->GetStatusBar();
+}
 
 void AeSysView::PopViewTransform() {
   if (!m_ViewTransforms.IsEmpty()) { m_ViewTransform = m_ViewTransforms.RemoveTail(); }
   m_ViewTransform.BuildTransformMatrix();
 }
 
-void AeSysView::PushViewTransform() { m_ViewTransforms.AddTail(m_ViewTransform); }
+void AeSysView::PushViewTransform() {
+  m_ViewTransforms.AddTail(m_ViewTransform);
+}
 
 void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio) {
   const auto aspectRatio = static_cast<double>(m_Viewport.Height() / m_Viewport.Width());
@@ -61,13 +65,17 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
   vMax += yAdjustment;
 }
 
-void AeSysView::PushModelTransform() { m_ModelTransform.Push(); }
+void AeSysView::PushModelTransform() {
+  m_ModelTransform.Push();
+}
 
 void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
   m_ModelTransform.SetLocalTM(transformation);
 }
 
-void AeSysView::PopModelTransform() { m_ModelTransform.Pop(); }
+void AeSysView::PopModelTransform() {
+  m_ModelTransform.Pop();
+}
 
 void AeSysView::DoCameraRotate(int rotationDirection) {
   try {
@@ -219,13 +227,21 @@ void AeSysView::On3dViewsIsometric() {
   InvalidateScene();
 }
 
-void AeSysView::OnCameraRotateLeft() { DoCameraRotate(ID_CAMERA_ROTATELEFT); }
+void AeSysView::OnCameraRotateLeft() {
+  DoCameraRotate(ID_CAMERA_ROTATELEFT);
+}
 
-void AeSysView::OnCameraRotateRight() { DoCameraRotate(ID_CAMERA_ROTATERIGHT); }
+void AeSysView::OnCameraRotateRight() {
+  DoCameraRotate(ID_CAMERA_ROTATERIGHT);
+}
 
-void AeSysView::OnCameraRotateUp() { DoCameraRotate(ID_CAMERA_ROTATEUP); }
+void AeSysView::OnCameraRotateUp() {
+  DoCameraRotate(ID_CAMERA_ROTATEUP);
+}
 
-void AeSysView::OnCameraRotateDown() { DoCameraRotate(ID_CAMERA_ROTATEDOWN); }
+void AeSysView::OnCameraRotateDown() {
+  DoCameraRotate(ID_CAMERA_ROTATEDOWN);
+}
 
 void AeSysView::OnViewParameters() {
   EoDlgViewParameters dialog;
@@ -391,8 +407,7 @@ void AeSysView::OnWindowZoomIn() {
     const double dcsCursorX = DotProduct(offset, dcsX);
     const double dcsCursorY = DotProduct(offset, dcsY);
 
-    const EoGePoint3d newCenter(
-        dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
+    const EoGePoint3d newCenter(dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
         dcsCursorY + (oldCenter.y - dcsCursorY) * factor,
         oldCenter.z);
     m_activeViewportPrimitive->SetViewCenter(newCenter);
@@ -423,8 +438,7 @@ void AeSysView::OnWindowZoomOut() {
     const double dcsCursorX = DotProduct(offset, dcsX);
     const double dcsCursorY = DotProduct(offset, dcsY);
 
-    const EoGePoint3d newCenter(
-        dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
+    const EoGePoint3d newCenter(dcsCursorX + (oldCenter.x - dcsCursorX) * factor,
         dcsCursorY + (oldCenter.y - dcsCursorY) * factor,
         oldCenter.z);
     m_activeViewportPrimitive->SetViewCenter(newCenter);

@@ -74,20 +74,28 @@ void EoDbViewport::AddReportToMessageList(const EoGePoint3d& point) {
   app.AddStringToMessageList(L"<Viewport>");
   EoDbPrimitive::AddReportToMessageList(point);
   CString message;
-  message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.3f x %.3f", m_viewportId, m_centerPoint.x,
-      m_centerPoint.y, m_centerPoint.z, m_width, m_height);
+  message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.3f x %.3f",
+      m_viewportId,
+      m_centerPoint.x,
+      m_centerPoint.y,
+      m_centerPoint.z,
+      m_width,
+      m_height);
   app.AddStringToMessageList(message);
 }
 
-void EoDbViewport::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Viewport>", this); }
+void EoDbViewport::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, L"<Viewport>", this);
+}
 
 EoDbPrimitive*& EoDbViewport::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbViewport(*this);
   return primitive;
 }
 
-void EoDbViewport::ComputeViewPlaneAxes(
-    EoGeVector3d& dcsX, EoGeVector3d& dcsY, EoGePoint3d& wcsCameraTarget) const noexcept {
+void EoDbViewport::ComputeViewPlaneAxes(EoGeVector3d& dcsX,
+    EoGeVector3d& dcsY,
+    EoGePoint3d& wcsCameraTarget) const noexcept {
   // DCS Z axis = viewDirection (toward viewer), following the convention in EoGsAbstractView.h:
   //   "The z-direction equals the direction from target to camera (points toward viewer)"
   EoGeVector3d dcsZ(m_viewDirection.x, m_viewDirection.y, m_viewDirection.z);
@@ -139,7 +147,9 @@ void EoDbViewport::FormatExtra(CString& extra) {
   extra += L'\t';
 }
 
-void EoDbViewport::FormatGeometry(CString& str) { str += L"Center;" + m_centerPoint.ToString(); }
+void EoDbViewport::FormatGeometry(CString& str) {
+  str += L"Center;" + m_centerPoint.ToString();
+}
 
 void EoDbViewport::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
@@ -153,8 +163,10 @@ void EoDbViewport::GetAllPoints(EoGePoint3dArray& points) {
   points.Add({m_centerPoint.x - halfWidth, m_centerPoint.y + halfHeight, m_centerPoint.z});
 }
 
-void EoDbViewport::GetExtents(
-    AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint, const EoGeTransformMatrix& transformMatrix) {
+void EoDbViewport::GetExtents(AeSysView* view,
+    EoGePoint3d& minPoint,
+    EoGePoint3d& maxPoint,
+    const EoGeTransformMatrix& transformMatrix) {
   const double halfWidth = m_width / 2.0;
   const double halfHeight = m_height / 2.0;
 
@@ -175,14 +187,14 @@ void EoDbViewport::GetExtents(
 
 bool EoDbViewport::Identical(EoDbPrimitive* primitive) {
   auto* other = static_cast<EoDbViewport*>(primitive);
-  return m_centerPoint == other->m_centerPoint && m_width == other->m_width && m_height == other->m_height &&
-      m_viewportStatus == other->m_viewportStatus && m_viewportId == other->m_viewportId &&
-      m_viewCenter == other->m_viewCenter && m_snapBasePoint == other->m_snapBasePoint &&
-      m_snapSpacing == other->m_snapSpacing && m_gridSpacing == other->m_gridSpacing &&
-      m_viewDirection == other->m_viewDirection && m_viewTargetPoint == other->m_viewTargetPoint &&
-      m_lensLength == other->m_lensLength && m_frontClipPlane == other->m_frontClipPlane &&
-      m_backClipPlane == other->m_backClipPlane && m_viewHeight == other->m_viewHeight &&
-      m_snapAngle == other->m_snapAngle && m_twistAngle == other->m_twistAngle;
+  return m_centerPoint == other->m_centerPoint && m_width == other->m_width && m_height == other->m_height
+      && m_viewportStatus == other->m_viewportStatus && m_viewportId == other->m_viewportId
+      && m_viewCenter == other->m_viewCenter && m_snapBasePoint == other->m_snapBasePoint
+      && m_snapSpacing == other->m_snapSpacing && m_gridSpacing == other->m_gridSpacing
+      && m_viewDirection == other->m_viewDirection && m_viewTargetPoint == other->m_viewTargetPoint
+      && m_lensLength == other->m_lensLength && m_frontClipPlane == other->m_frontClipPlane
+      && m_backClipPlane == other->m_backClipPlane && m_viewHeight == other->m_viewHeight
+      && m_snapAngle == other->m_snapAngle && m_twistAngle == other->m_twistAngle;
 }
 
 bool EoDbViewport::IsInView(AeSysView* view) {
@@ -245,10 +257,10 @@ bool EoDbViewport::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
     if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
       double relation{};
 
-      if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance &&
-          relation <= 1.0 + Eo::geometricTolerance) {
-        if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation) &&
-            relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+      if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance
+          && relation <= 1.0 + Eo::geometricTolerance) {
+        if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
+            && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
           intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
           intersections.Add(intersection);
         }
@@ -292,8 +304,8 @@ bool EoDbViewport::SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeft, 
   EoGePoint4d ndcCenter(m_centerPoint);
   view->ModelViewTransformPoint(ndcCenter);
 
-  return ndcCenter.x >= lowerLeft.x && ndcCenter.x <= upperRight.x && ndcCenter.y >= lowerLeft.y &&
-      ndcCenter.y <= upperRight.y;
+  return ndcCenter.x >= lowerLeft.x && ndcCenter.x <= upperRight.x && ndcCenter.y >= lowerLeft.y
+      && ndcCenter.y <= upperRight.y;
 }
 
 void EoDbViewport::Transform(const EoGeTransformMatrix& transformMatrix) {

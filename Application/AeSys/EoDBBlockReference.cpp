@@ -57,8 +57,13 @@ EoDbBlockReference::EoDbBlockReference(const EoDbBlockReference& other) : EoDbPr
   m_attributeHandles = other.m_attributeHandles;
   m_extensionDictionaryHandle = other.m_extensionDictionaryHandle;
 }
-EoDbBlockReference::EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name,
-    const EoGePoint3d& point, const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation)
+EoDbBlockReference::EoDbBlockReference(std::uint16_t color,
+    std::uint16_t lineType,
+    const CString& name,
+    const EoGePoint3d& point,
+    const EoGeVector3d& normal,
+    const EoGeVector3d scaleFactors,
+    double rotation)
     : m_blockName(name), m_insertionPoint(point), m_normal(normal), m_scaleFactors(scaleFactors) {
   m_color = static_cast<std::int16_t>(color);
   SetLineTypeName(EoDbLineTypeTable::LegacyLineTypeName(static_cast<std::int16_t>(lineType)));
@@ -115,8 +120,8 @@ EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& 
  *  @param basePoint The block definition's base point (subtracted first to center geometry).
  *  @param ocsInsertionPoint The insertion point in Object Coordinate System (group 10/20/30).
  */
-EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(
-    const EoGePoint3d& basePoint, const EoGePoint3d& ocsInsertionPoint) const {
+EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(const EoGePoint3d& basePoint,
+    const EoGePoint3d& ocsInsertionPoint) const {
   // Step 1: Translate block geometry so base point is at origin
   EoGeTransformMatrix tmNegBase;
   tmNegBase.Translate(EoGeVector3d(basePoint, EoGePoint3d::kOrigin));
@@ -135,8 +140,8 @@ EoGeTransformMatrix EoDbBlockReference::BuildTransformMatrix(
   // Step 5: OCS → WCS using the DXF arbitrary axis algorithm
   const EoGeOcsTransform tmOcsToWcs(m_normal);
 
-  return ((EoGeMatrix)tmNegBase * (EoGeMatrix)tmScale * (EoGeMatrix)tmZRot * (EoGeMatrix)tmInsertOcs *
-      (EoGeMatrix)tmOcsToWcs);
+  return ((EoGeMatrix)tmNegBase * (EoGeMatrix)tmScale * (EoGeMatrix)tmZRot * (EoGeMatrix)tmInsertOcs
+      * (EoGeMatrix)tmOcsToWcs);
 }
 
 EoDbPrimitive*& EoDbBlockReference::Copy(EoDbPrimitive*& primitive) {
@@ -231,7 +236,9 @@ void EoDbBlockReference::GetAllPoints(EoGePoint3dArray& points) {
 
 void EoDbBlockReference::FormatExtra(CString& extra) {
   EoDbPrimitive::FormatExtra(extra);
-  extra.AppendFormat(L"\tSegment Name;%s\tRotation Angle;%f\tAttributes;%zu", m_blockName.GetString(), m_rotation,
+  extra.AppendFormat(L"\tSegment Name;%s\tRotation Angle;%f\tAttributes;%zu",
+      m_blockName.GetString(),
+      m_rotation,
       m_attributeHandles.size());
   extra += L'\t';
 }
@@ -245,8 +252,10 @@ EoGePoint3d EoDbBlockReference::GetControlPoint() {
   point = m_insertionPoint;
   return point;
 }
-void EoDbBlockReference::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbBlockReference::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   EoDbBlock* block{};
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
@@ -279,8 +288,8 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
   return bInView;
 }
 
-bool EoDbBlockReference::IsPointOnControlPoint(
-    [[maybe_unused]] AeSysView* view, [[maybe_unused]] const EoGePoint4d& point) {
+bool EoDbBlockReference::IsPointOnControlPoint([[maybe_unused]] AeSysView* view,
+    [[maybe_unused]] const EoGePoint4d& point) {
   return false;
 }
 
@@ -312,8 +321,9 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
   return ptCtrl;
 }
 
-bool EoDbBlockReference::SelectUsingLine(
-    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
+bool EoDbBlockReference::SelectUsingLine([[maybe_unused]] AeSysView* view,
+    [[maybe_unused]] EoGeLine line,
+    [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 
@@ -415,8 +425,13 @@ EoDbBlockReference* EoDbBlockReference::ReadLegacyInsertPeg(CFile& file) {
 
   const EoGeVector3d scaleFactors(scaleX, scaleY, scaleZ);
 
-  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(lineType),
-      name, insertionPoint, normal, scaleFactors, rotation);
+  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color),
+      static_cast<std::uint16_t>(lineType),
+      name,
+      insertionPoint,
+      normal,
+      scaleFactors,
+      rotation);
   blockReference->m_columnCount = numberOfColumns;
   blockReference->m_rowCount = numberOfRows;
   blockReference->m_columnSpacing = columnSpacing;
@@ -439,8 +454,13 @@ EoDbBlockReference* EoDbBlockReference::ReadFromPeg(CFile& file) {
   const double columnSpacing = EoDb::ReadDouble(file);
   const double rowSpacing = EoDb::ReadDouble(file);
 
-  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color), static_cast<std::uint16_t>(lineType),
-      name, insertionPoint, normal, scaleFactors, rotation);
+  auto* blockReference = new EoDbBlockReference(static_cast<std::uint16_t>(color),
+      static_cast<std::uint16_t>(lineType),
+      name,
+      insertionPoint,
+      normal,
+      scaleFactors,
+      rotation);
   blockReference->m_columnCount = numberOfColumns;
   blockReference->m_rowCount = numberOfRows;
   blockReference->m_columnSpacing = columnSpacing;

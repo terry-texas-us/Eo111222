@@ -111,8 +111,9 @@ void EoCtrlLineTypeComboBox::BuildItemList() {
           sortedEntries.emplace_back(name, lineType);
         }
       }
-      std::sort(sortedEntries.begin(), sortedEntries.end(),
-          [](const auto& a, const auto& b) { return a.first.CompareNoCase(b.first) < 0; });
+      std::sort(sortedEntries.begin(), sortedEntries.end(), [](const auto& a, const auto& b) {
+        return a.first.CompareNoCase(b.first) < 0;
+      });
       for (const auto& [name, lineType] : sortedEntries) {
         AddItem(lineType->Name(), reinterpret_cast<DWORD_PTR>(lineType));
       }
@@ -271,8 +272,10 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
   }
 }
 
-void EoCtrlLineTypeComboBox::DrawDashPreview(
-    CDC* deviceContext, const CRect& rect, const EoDbLineType* lineType, COLORREF lineColor) {
+void EoCtrlLineTypeComboBox::DrawDashPreview(CDC* deviceContext,
+    const CRect& rect,
+    const EoDbLineType* lineType,
+    COLORREF lineColor) {
   const int yCenter = rect.top + rect.Height() / 2;
   const double xStart = rect.left + 2.0;
   const double xEnd = rect.right - 2.0;
@@ -322,8 +325,14 @@ void EoCtrlLineTypeComboBox::DrawDashPreview(
   deviceContext->SelectObject(oldPen);
 }
 
-void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
-    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
+void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext,
+    const CRect& rect,
+    CMFCToolBarImages* images,
+    BOOL isHorz,
+    BOOL isCustomizeMode,
+    BOOL isHighlighted,
+    BOOL drawBorder,
+    BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
@@ -375,8 +384,8 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCT
         // Determine the line type pointer — only dereference when a document is open
         // and the pointer is verified against the current document's line type table
         const EoDbLineType* lineType = nullptr;
-        if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER) &&
-            itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
+        if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER)
+            && itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
           auto* document = AeSysDoc::GetDoc();
           if (document != nullptr && !document->IsClosing()) {
             auto* candidate = reinterpret_cast<const EoDbLineType*>(itemData);
@@ -389,7 +398,10 @@ void EoCtrlLineTypeComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCT
                 CString name;
                 EoDbLineType* tableEntry{};
                 lineTypeTable->GetNextAssoc(pos, name, tableEntry);
-                if (tableEntry == candidate) { valid = true; break; }
+                if (tableEntry == candidate) {
+                  valid = true;
+                  break;
+                }
               }
             }
             if (valid) { lineType = candidate; }
@@ -480,7 +492,9 @@ void EoCtrlLineTypeOwnerDrawCombo::OnNcPaint() {
   dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
-BOOL EoCtrlLineTypeOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
+BOOL EoCtrlLineTypeOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) {
+  return TRUE;
+}
 
 void EoCtrlLineTypeOwnerDrawCombo::MeasureItem(LPMEASUREITEMSTRUCT measureItemStruct) {
   UINT dpi = ::GetDpiForWindow(m_hWnd);
@@ -532,8 +546,8 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
     // Only dereference EoDbLineType* when a document is open and the pointer
     // is verified against the current document's line type table.
     const EoDbLineType* lineType = nullptr;
-    if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER) &&
-        itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
+    if (itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYLAYER)
+        && itemData != static_cast<DWORD_PTR>(EoDbPrimitive::LINETYPE_BYBLOCK)) {
       auto* document = AeSysDoc::GetDoc();
       if (document != nullptr && !document->IsClosing()) {
         auto* candidate = reinterpret_cast<const EoDbLineType*>(itemData);
@@ -545,7 +559,10 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
             CString name;
             EoDbLineType* tableEntry{};
             lineTypeTable->GetNextAssoc(pos, name, tableEntry);
-            if (tableEntry == candidate) { valid = true; break; }
+            if (tableEntry == candidate) {
+              valid = true;
+              break;
+            }
           }
         }
         if (valid) { lineType = candidate; }

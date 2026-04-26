@@ -355,7 +355,9 @@ void AeSysView::PopState() {
   }
 }
 
-AeSysState* AeSysView::GetCurrentState() const { return m_stateStack.empty() ? nullptr : m_stateStack.top().get(); }
+AeSysState* AeSysView::GetCurrentState() const {
+  return m_stateStack.empty() ? nullptr : m_stateStack.top().get();
+}
 #endif
 AeSysDoc* AeSysView::GetDocument() const {
 #ifdef _DEBUG

@@ -23,9 +23,13 @@ EoGeLine::EoGeLine(const EoGeLine& other) {
   end = other.end;
 }
 
-bool EoGeLine::operator==(const EoGeLine& line) const { return (Identical(line, Eo::geometricTolerance)); }
+bool EoGeLine::operator==(const EoGeLine& line) const {
+  return (Identical(line, Eo::geometricTolerance));
+}
 
-inline bool EoGeLine::operator!=(const EoGeLine& other) const { return (!Identical(other, Eo::geometricTolerance)); }
+inline bool EoGeLine::operator!=(const EoGeLine& other) const {
+  return (!Identical(other, Eo::geometricTolerance));
+}
 
 inline EoGeLine& EoGeLine::operator=(const EoGeLine& other) {
   begin = other.begin;
@@ -43,18 +47,26 @@ inline void EoGeLine::operator-=(const EoGeVector3d& v) {
   end -= v;
 }
 
-EoGePoint3d& EoGeLine::operator[](int i) { return (i == 0 ? begin : end); }
+EoGePoint3d& EoGeLine::operator[](int i) {
+  return (i == 0 ? begin : end);
+}
 
-const EoGePoint3d& EoGeLine::operator[](int i) const { return (i == 0 ? begin : end); }
+const EoGePoint3d& EoGeLine::operator[](int i) const {
+  return (i == 0 ? begin : end);
+}
 
 void EoGeLine::operator()(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint) {
   begin = beginPoint;
   end = endPoint;
 }
 
-EoGeLine EoGeLine::operator-(const EoGeVector3d& offset) const { return (EoGeLine(begin - offset, end - offset)); }
+EoGeLine EoGeLine::operator-(const EoGeVector3d& offset) const {
+  return (EoGeLine(begin - offset, end - offset));
+}
 
-EoGeLine EoGeLine::operator+(const EoGeVector3d& offset) const { return (EoGeLine(begin + offset, end + offset)); }
+EoGeLine EoGeLine::operator+(const EoGeVector3d& offset) const {
+  return (EoGeLine(begin + offset, end + offset));
+}
 
 double EoGeLine::AngleFromXAxisXY() const {
   const EoGeVector3d thisAsVector((*this).begin, (*this).end);
@@ -89,8 +101,8 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAn
     if (dX >= std::max(dY, dZ)) {  // Major component of line is along x-axis
       dLen = std::sqrt(dY + dZ);
       if (dLen > Eo::geometricTolerance) {  // Not already on the x-axis
-        if (dLen / std::abs(pt.x) <
-            tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to x-axis
+        if (dLen / std::abs(pt.x)
+            < tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to x-axis
           pt.y = 0.;
           pt.z = 0.;
         }
@@ -98,8 +110,8 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAn
     } else if (dY >= dZ) {  // Major component of line is along y-axis
       dLen = std::sqrt(dX + dZ);
       if (dLen > Eo::geometricTolerance) {  // Not already on the y-axis
-        if (dLen / std::abs(pt.y) <
-            tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to y-axis
+        if (dLen / std::abs(pt.y)
+            < tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to y-axis
           pt.x = 0.;
           pt.z = 0.;
         }
@@ -107,8 +119,8 @@ EoGePoint3d EoGeLine::ConstrainToAxis(double influenceAngle, double axisOffsetAn
     } else {
       dLen = std::sqrt(dX + dY);
       if (dLen > Eo::geometricTolerance) {  // Not already on the z-axis
-        if (dLen / std::abs(pt.z) <
-            tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to z-axis
+        if (dLen / std::abs(pt.z)
+            < tan(Eo::DegreeToRadian(influenceAngle))) {  // Within cone of influence .. snap to z-axis
           pt.x = 0.;
           pt.y = 0.;
         }
@@ -174,8 +186,8 @@ void EoGeLine::Extents(EoGePoint3d& minExtent, EoGePoint3d& maxExtent) const {
 }
 
 bool EoGeLine::Identical(const EoGeLine& line, double tolerance) const {
-  return (begin.IsEqualTo(line.begin, tolerance) && end.IsEqualTo(line.end, tolerance)) ||
-         (end.IsEqualTo(line.begin, tolerance) && begin.IsEqualTo(line.end, tolerance));
+  return (begin.IsEqualTo(line.begin, tolerance) && end.IsEqualTo(line.end, tolerance))
+      || (end.IsEqualTo(line.begin, tolerance) && begin.IsEqualTo(line.end, tolerance));
 }
 
 double EoGeLine::Length() const {
@@ -184,10 +196,14 @@ double EoGeLine::Length() const {
   return (vector.Length());
 }
 
-EoGePoint3d EoGeLine::Midpoint() const { return ProjectBeginPointToEndPoint(0.5); }
+EoGePoint3d EoGeLine::Midpoint() const {
+  return ProjectBeginPointToEndPoint(0.5);
+}
 
-bool EoGeLine::GetParallels(
-    double distanceBetweenLines, double eccentricity, EoGeLine& leftLine, EoGeLine& rightLine) const {
+bool EoGeLine::GetParallels(double distanceBetweenLines,
+    double eccentricity,
+    EoGeLine& leftLine,
+    EoGeLine& rightLine) const {
   leftLine = *this;
   rightLine = *this;
 
@@ -240,7 +256,10 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
   }
 }
 
-bool EoGeLine::IsSelectedByPointXY(const EoGePoint3d& point, double aperture, EoGePoint3d& projectedPoint, double* relationship) const {
+bool EoGeLine::IsSelectedByPointXY(const EoGePoint3d& point,
+    double aperture,
+    EoGePoint3d& projectedPoint,
+    double* relationship) const {
   if (point.x < std::min(begin.x, end.x) - aperture) { return false; }
   if (point.x > std::max(begin.x, end.x) + aperture) { return false; }
   if (point.y < std::min(begin.y, end.y) - aperture) { return false; }
@@ -296,7 +315,9 @@ EoGePoint3d EoGeLine::ProjectPointToLine(const EoGePoint3d& point) const {
   return (begin + vBegEnd);
 }
 
-EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(double t) const { return begin + (end - begin) * t; }
+EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(double t) const {
+  return begin + (end - begin) * t;
+}
 
 int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistance, EoGePoint3d* projectedPoint) const {
   double dX = end.x - begin.x;
@@ -390,8 +411,10 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
   return (0.0);
 }
 
-EoGePoint4d EoGeLine::IntersectionWithPlane(
-    const EoGePoint4d& begin, const EoGePoint4d& end, const EoGePoint4d& point, const EoGeVector3d& normal) {
+EoGePoint4d EoGeLine::IntersectionWithPlane(const EoGePoint4d& begin,
+    const EoGePoint4d& end,
+    const EoGePoint4d& point,
+    const EoGeVector3d& normal) {
   EoGeVector3d beginEndVector(EoGePoint3d{begin}, EoGePoint3d{end});
   double dotProduct = DotProduct(normal, beginEndVector);
 
@@ -405,8 +428,11 @@ EoGePoint4d EoGeLine::IntersectionWithPlane(
   return (begin - beginEndVector);
 }
 
-bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVector, EoGePoint3d pointOnPlane,
-    EoGeVector3d planeNormal, EoGePoint3d* intersection) {
+bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint,
+    EoGeVector3d lineVector,
+    EoGePoint3d pointOnPlane,
+    EoGeVector3d planeNormal,
+    EoGePoint3d* intersection) {
   double dDotProd = DotProduct(planeNormal, lineVector);
 
   if (Eo::IsGeometricallyNonZero(dDotProd)) {  // Line and plane are not parallel

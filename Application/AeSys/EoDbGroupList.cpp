@@ -64,8 +64,10 @@ int EoDbGroupList::GetBlockRefCount(const CString& name) {
   return count;
 }
 
-void EoDbGroupList::GetExtents(
-    AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, const EoGeTransformMatrix& transformMatrix) {
+void EoDbGroupList::GetExtents(AeSysView* view,
+    EoGePoint3d& minimum,
+    EoGePoint3d& maximum,
+    const EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);
@@ -96,7 +98,8 @@ void EoDbGroupList::ModifyLineType(const std::wstring& lineTypeName) {
 }
 
 void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
-    const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+    const EoDbCharacterCellDefinition& characterCellDefinition,
+    int attributes) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* group = GetNext(position);

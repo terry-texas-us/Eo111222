@@ -21,14 +21,18 @@ class AeSysState {
   virtual void OnExit([[maybe_unused]] AeSysView* context) {}
 
   // Input handling (keypad, mouse)
-  virtual bool HandleKeypad([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT nChar,
-      [[maybe_unused]] UINT nRepCnt, [[maybe_unused]] UINT nFlags) {
+  virtual bool HandleKeypad([[maybe_unused]] AeSysView* context,
+      [[maybe_unused]] UINT nChar,
+      [[maybe_unused]] UINT nRepCnt,
+      [[maybe_unused]] UINT nFlags) {
     return false;
   }
-  virtual void OnLButtonDown(
-      [[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT nFlags, [[maybe_unused]] CPoint point) {}
-  virtual void OnMouseMove(
-      [[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT nFlags, [[maybe_unused]] CPoint point) {}
+  virtual void OnLButtonDown([[maybe_unused]] AeSysView* context,
+      [[maybe_unused]] UINT nFlags,
+      [[maybe_unused]] CPoint point) {}
+  virtual void OnMouseMove([[maybe_unused]] AeSysView* context,
+      [[maybe_unused]] UINT nFlags,
+      [[maybe_unused]] CPoint point) {}
   // Add more: OnRButtonDown, etc., as needed from AeSysView.cpp
 
   // Command handling (delegate MFC ON_COMMAND)
@@ -37,8 +41,10 @@ class AeSysState {
   // Drawing/Updates
   virtual void OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) {}
 
-  virtual bool OnUpdate([[maybe_unused]] AeSysView* context, [[maybe_unused]] CView* sender,
-      [[maybe_unused]] LPARAM hint, [[maybe_unused]] CObject* objectHint) {
+  virtual bool OnUpdate([[maybe_unused]] AeSysView* context,
+      [[maybe_unused]] CView* sender,
+      [[maybe_unused]] LPARAM hint,
+      [[maybe_unused]] CObject* objectHint) {
     return false;
   }
 };

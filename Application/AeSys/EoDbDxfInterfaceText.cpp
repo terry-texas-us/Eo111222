@@ -311,10 +311,10 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
 
   // Determine if this is the default alignment (Left + Baseline)
-  const bool isDefaultAlignment = (horizontalAlignment == EoDxfText::HorizontalAlignment::Left &&
-      verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
-  const bool isAlignedOrFit = (horizontalAlignment == EoDxfText::HorizontalAlignment::AlignedIfBaseLine ||
-      horizontalAlignment == EoDxfText::HorizontalAlignment::FitIfBaseLine);
+  const bool isDefaultAlignment = (horizontalAlignment == EoDxfText::HorizontalAlignment::Left
+      && verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
+  const bool isAlignedOrFit = (horizontalAlignment == EoDxfText::HorizontalAlignment::AlignedIfBaseLine
+      || horizontalAlignment == EoDxfText::HorizontalAlignment::FitIfBaseLine);
 
   // Compute baseline direction – respect DXF rules for Aligned/Fit
   auto baselineDirection = EoGeVector3d::positiveUnitX;
@@ -372,8 +372,8 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
    *  vertically at the middle of the text height. It is only valid paired with vertical alignment 0
    *  (Baseline). Override the vertical to Middle when this special case is detected.
    */
-  const bool isMiddleComposite = (horizontalAlignment == EoDxfText::HorizontalAlignment::MiddleIfBaseLine &&
-      verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
+  const bool isMiddleComposite = (horizontalAlignment == EoDxfText::HorizontalAlignment::MiddleIfBaseLine
+      && verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
 
   switch (horizontalAlignment) {
     case EoDxfText::HorizontalAlignment::Center:
@@ -434,16 +434,26 @@ void EoDbDxfInterface::ConvertAttDefEntity(const EoDxfAttDef& attdef, [[maybe_un
   // DXF round-trip export and future interactive attribute prompting.
   if (m_currentOpenBlockDefinition != nullptr) {
     m_currentOpenBlockDefinition->AddAttributeDefinition(attdef);
-    ATLTRACE2(traceGeneral, 2, L"AttDef stored in block (tag='%s', default='%s', prompt='%s')\n",
-        attdef.m_tagString.c_str(), attdef.m_defaultValue.c_str(), attdef.m_promptString.c_str());
+    ATLTRACE2(traceGeneral,
+        2,
+        L"AttDef stored in block (tag='%s', default='%s', prompt='%s')\n",
+        attdef.m_tagString.c_str(),
+        attdef.m_defaultValue.c_str(),
+        attdef.m_promptString.c_str());
   } else {
-    ATLTRACE2(traceGeneral, 2, L"AttDef entity skipped — not inside block (tag='%s', default='%s')\n",
-        attdef.m_tagString.c_str(), attdef.m_defaultValue.c_str());
+    ATLTRACE2(traceGeneral,
+        2,
+        L"AttDef entity skipped — not inside block (tag='%s', default='%s')\n",
+        attdef.m_tagString.c_str(),
+        attdef.m_defaultValue.c_str());
   }
 }
 
 EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeSysDoc* document) {
-  ATLTRACE2(traceGeneral, 2, L"Attrib entity conversion (tag='%s', value='%s')\n", attrib.m_tagString.c_str(),
+  ATLTRACE2(traceGeneral,
+      2,
+      L"Attrib entity conversion (tag='%s', value='%s')\n",
+      attrib.m_tagString.c_str(),
       attrib.m_attributeValue.c_str());
 
   // Skip invisible attributes (flag bit 0)
@@ -473,8 +483,12 @@ EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeS
   auto horizontalAlignment = attrib.m_horizontalTextJustification;
   auto verticalAlignment = attrib.m_verticalTextJustification;
 
-  ATLTRACE2(traceGeneral, 2, L"  Attrib alignment: h=%d, v=%d, hasSecondPt=%d\n", horizontalAlignment,
-      verticalAlignment, attrib.HasSecondAlignmentPoint() ? 1 : 0);
+  ATLTRACE2(traceGeneral,
+      2,
+      L"  Attrib alignment: h=%d, v=%d, hasSecondPt=%d\n",
+      horizontalAlignment,
+      verticalAlignment,
+      attrib.HasSecondAlignmentPoint() ? 1 : 0);
 
   auto secondAlignmentPointInOcs =
       EoGePoint3d{attrib.m_secondAlignmentPoint.x, attrib.m_secondAlignmentPoint.y, attrib.m_secondAlignmentPoint.z};
@@ -571,7 +585,8 @@ EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeS
     }
   }
 
-  auto* attribPrimitive = new EoDbAttrib(fontDefinition, referenceSystem, string, attrib.m_tagString, attrib.m_attributeFlags);
+  auto* attribPrimitive =
+      new EoDbAttrib(fontDefinition, referenceSystem, string, attrib.m_tagString, attrib.m_attributeFlags);
   attribPrimitive->SetBaseProperties(&attrib, document);
   attribPrimitive->SetTextGenerationFlags(attrib.m_textGenerationFlags);
   attribPrimitive->SetExtrusion(extrusionDirection);

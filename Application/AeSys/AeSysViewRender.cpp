@@ -70,9 +70,10 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       const int horzRes = deviceContext->GetDeviceCaps(HORZRES);
       const int vertRes = deviceContext->GetDeviceCaps(VERTRES);
 
-      D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties(
-          D2D1_RENDER_TARGET_TYPE_DEFAULT,
-          D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE), dpiX, dpiY);
+      D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,
+          D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
+          dpiX,
+          dpiY);
 
       Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> dcTarget;
       HRESULT hr = factory->CreateDCRenderTarget(&rtProps, &dcTarget);
@@ -92,8 +93,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         renderedWithD2D = SUCCEEDED(hr);
       }
       if (!renderedWithD2D) {
-        ATLTRACE2(traceGeneral, 0, L"AeSysView<%p>::OnDraw — D2D print failed hr=0x%08X, falling back to GDI\n",
-            this, hr);
+        ATLTRACE2(
+            traceGeneral, 0, L"AeSysView<%p>::OnDraw — D2D print failed hr=0x%08X, falling back to GDI\n", this, hr);
       }
     }
 
@@ -121,8 +122,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       // The D2D render target is sized to the full HWND client area to prevent
       // scaling; the clip rect keeps Clear() and entity rendering out of the
       // tab-bar region.
-      const auto drawingClipRect = D2D1::RectF(
-          0.0f, 0.0f, static_cast<float>(m_Viewport.Width()), static_cast<float>(m_Viewport.Height()));
+      const auto drawingClipRect =
+          D2D1::RectF(0.0f, 0.0f, static_cast<float>(m_Viewport.Width()), static_cast<float>(m_Viewport.Height()));
       m_d2dRenderTarget->PushAxisAlignedClip(drawingClipRect, D2D1_ANTIALIAS_MODE_ALIASED);
 
       auto* document = GetDocument();
@@ -243,7 +244,8 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       const bool isBlockEdit = document->IsEditingBlock();
       const bool needsWhiteBackground = isPaperSpace && !isBlockEdit;
       CRect bufferRect(0, 0, m_backBufferSize.cx, m_backBufferSize.cy);
-      const auto gdiBgColor = isBlockEdit ? Eo::BlockEditBackgroundColor() : Eo::ViewBackgroundColorForSpace(isPaperSpace);
+      const auto gdiBgColor =
+          isBlockEdit ? Eo::BlockEditBackgroundColor() : Eo::ViewBackgroundColorForSpace(isPaperSpace);
       m_backBufferDC.FillSolidRect(bufferRect, gdiBgColor);
 
       // White background (paper space) — force ACI 7→black so entities using the
@@ -289,8 +291,14 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
     // Blit back buffer to screen (or fall back to direct rendering if no back buffer yet)
     if (m_backBufferDC.GetSafeHdc() != nullptr) {
-      deviceContext->BitBlt(clipRect.left, clipRect.top, clipRect.Width(), clipRect.Height(), &m_backBufferDC,
-          clipRect.left, clipRect.top, SRCCOPY);
+      deviceContext->BitBlt(clipRect.left,
+          clipRect.top,
+          clipRect.Width(),
+          clipRect.Height(),
+          &m_backBufferDC,
+          clipRect.left,
+          clipRect.top,
+          SRCCOPY);
     } else {
       // Fallback: direct rendering before first OnSize delivers a back buffer
       if (!m_ViewRendered) {
@@ -491,10 +499,17 @@ void AeSysView::ApplyActiveViewport() {
   m_ViewTransform.BuildTransformMatrix();
   m_OverviewViewTransform = m_ViewTransform;
 
-  ATLTRACE2(traceGeneral, 1,
+  ATLTRACE2(traceGeneral,
+      1,
       L"AeSysView<%p>::ApplyActiveViewport() — "
       L"target=(%.2f, %.2f, %.2f) height=%.2f width=%.2f aspect=%.4f\n",
-      this, targetPoint.x, targetPoint.y, targetPoint.z, viewHeight, viewWidth, activeVPort->m_viewAspectRatio);
+      this,
+      targetPoint.x,
+      targetPoint.y,
+      targetPoint.z,
+      viewHeight,
+      viewWidth,
+      activeVPort->m_viewAspectRatio);
 }
 
 void AeSysView::DisplayUsingHint(CView* sender, LPARAM hint, CObject* hintObject, EoGsRenderDevice* renderDevice) {
@@ -769,7 +784,8 @@ void AeSysView::CreateD2DRenderTarget() {
   GetClientRect(&clientRect);
   if (clientRect.IsRectEmpty()) { return; }
 
-  const D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(clientRect.Width()), static_cast<UINT32>(clientRect.Height()));
+  const D2D1_SIZE_U size =
+      D2D1::SizeU(static_cast<UINT32>(clientRect.Width()), static_cast<UINT32>(clientRect.Height()));
 
   D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties();
   rtProps.dpiX = 96.0f;
@@ -783,9 +799,13 @@ void AeSysView::CreateD2DRenderTarget() {
   }
 }
 
-void AeSysView::DiscardD2DResources() { m_d2dRenderTarget.Reset(); }
+void AeSysView::DiscardD2DResources() {
+  m_d2dRenderTarget.Reset();
+}
 
-void AeSysView::OnContextMenu(CWnd*, CPoint point) { app.ShowPopupMenu(IDR_CONTEXT_MENU, point, this); }
+void AeSysView::OnContextMenu(CWnd*, CPoint point) {
+  app.ShowPopupMenu(IDR_CONTEXT_MENU, point, this);
+}
 
 void AeSysView::OnSize(UINT type, int cx, int cy) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>OnSize(%i, %i, %i)\n", this, type, cx, cy);
@@ -887,7 +907,8 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   const int iWidSrc = rcWnd.Width();
   const int iHgtSrc = rcWnd.Height();
 
-  deviceContext->StretchBlt(0, 0, iWidDst, iHgtDst, &dcMem, static_cast<int>(rcWnd.left), (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
+  deviceContext->StretchBlt(
+      0, 0, iWidDst, iHgtDst, &dcMem, static_cast<int>(rcWnd.left), (int)rcWnd.top, iWidSrc, iHgtSrc, SRCCOPY);
 
   dcMem.SelectObject(pBitmap);
   deviceContext->SelectPalette(pPalette, FALSE);
@@ -897,7 +918,9 @@ void AeSysView::ViewportPopActive() {
   if (!m_Viewports.IsEmpty()) { m_Viewport = m_Viewports.RemoveTail(); }
 }
 
-void AeSysView::ViewportPushActive() { m_Viewports.AddTail(m_Viewport); }
+void AeSysView::ViewportPushActive() {
+  m_Viewports.AddTail(m_Viewport);
+}
 
 void AeSysView::DisplayPixel(CDC* deviceContext, COLORREF cr, const EoGePoint3d& point) {
   EoGePoint4d ndcPoint(point);

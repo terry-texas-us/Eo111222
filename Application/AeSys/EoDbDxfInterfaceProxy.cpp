@@ -116,8 +116,11 @@ void EoDbDxfInterface::ConvertTraceEntity(const EoDxfTrace& trace, AeSysDoc* doc
 }
 
 void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyEntity, AeSysDoc* document) const {
-  ATLTRACE2(traceGeneral, 2, L"ACAD_PROXY_ENTITY conversion (classId=%d, appClassId=%d)\n",
-      proxyEntity.m_proxyEntityClassId, proxyEntity.m_applicationEntityClassId);
+  ATLTRACE2(traceGeneral,
+      2,
+      L"ACAD_PROXY_ENTITY conversion (classId=%d, appClassId=%d)\n",
+      proxyEntity.m_proxyEntityClassId,
+      proxyEntity.m_applicationEntityClassId);
 
   if (!proxyEntity.HasGraphicsData()) {
     ATLTRACE2(traceGeneral, 2, L"  No graphics data — proxy entity skipped\n");
@@ -127,17 +130,30 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
   const auto declaredSize = proxyEntity.m_graphicsDataSizeInBytes;
   const auto computedSize = proxyEntity.ComputedGraphicsDataSizeInBytes();
 
-  ATLTRACE2(traceGeneral, 2, L"  Graphics data: declared=%d bytes, computed=%d bytes, chunks=%zu\n", declaredSize,
-      computedSize, proxyEntity.m_graphicsDataChunks.size());
-  ATLTRACE2(traceGeneral, 2, L"  Entity data: %d bits, chunks=%zu\n", proxyEntity.m_entityDataSizeInBits,
+  ATLTRACE2(traceGeneral,
+      2,
+      L"  Graphics data: declared=%d bytes, computed=%d bytes, chunks=%zu\n",
+      declaredSize,
+      computedSize,
+      proxyEntity.m_graphicsDataChunks.size());
+  ATLTRACE2(traceGeneral,
+      2,
+      L"  Entity data: %d bits, chunks=%zu\n",
+      proxyEntity.m_entityDataSizeInBits,
       proxyEntity.m_entityDataChunks.size());
-  ATLTRACE2(traceGeneral, 2, L"  Handle refs: soft=%zu, hard=%zu, softOwner=%zu, hardOwner=%zu\n",
-      proxyEntity.m_softPointerHandles.size(), proxyEntity.m_hardPointerHandles.size(),
-      proxyEntity.m_softOwnerHandles.size(), proxyEntity.m_hardOwnerHandles.size());
+  ATLTRACE2(traceGeneral,
+      2,
+      L"  Handle refs: soft=%zu, hard=%zu, softOwner=%zu, hardOwner=%zu\n",
+      proxyEntity.m_softPointerHandles.size(),
+      proxyEntity.m_hardPointerHandles.size(),
+      proxyEntity.m_softOwnerHandles.size(),
+      proxyEntity.m_hardOwnerHandles.size());
 
   if (declaredSize != computedSize) {
-    ATLTRACE2(traceGeneral, 1,
-        L"  WARNING: Graphics data size mismatch (declared=%d, computed=%d) — data may be truncated\n", declaredSize,
+    ATLTRACE2(traceGeneral,
+        1,
+        L"  WARNING: Graphics data size mismatch (declared=%d, computed=%d) — data may be truncated\n",
+        declaredSize,
         computedSize);
   }
 
@@ -222,8 +238,13 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           AddToDocument(conicPrimitive, document, proxyEntity.m_space, proxyEntity.m_ownerHandle);
           ++primitiveCount;
 
-          ATLTRACE2(traceGeneral, 3, L"  Proxy type 2 → Circle center(%.2f,%.2f,%.2f) r=%.2f\n", center.x, center.y,
-              center.z, radius);
+          ATLTRACE2(traceGeneral,
+              3,
+              L"  Proxy type 2 → Circle center(%.2f,%.2f,%.2f) r=%.2f\n",
+              center.x,
+              center.y,
+              center.z,
+              radius);
         }
 
         offset += circleSize;
@@ -285,8 +306,15 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
             AddToDocument(conicPrimitive, document, proxyEntity.m_space, proxyEntity.m_ownerHandle);
             ++primitiveCount;
 
-            ATLTRACE2(traceGeneral, 3, L"  Proxy type 4 → Arc center(%.2f,%.2f,%.2f) r=%.2f start=%.4f end=%.4f\n",
-                center.x, center.y, center.z, radius, startAngle, endAngle);
+            ATLTRACE2(traceGeneral,
+                3,
+                L"  Proxy type 4 → Arc center(%.2f,%.2f,%.2f) r=%.2f start=%.4f end=%.4f\n",
+                center.x,
+                center.y,
+                center.z,
+                radius,
+                startAngle,
+                endAngle);
           }
         }
 
@@ -305,7 +333,10 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         offset += 4;
 
         if (numVertices <= 0 || numVertices > 10000) {
-          ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: unreasonable vertex count %d at offset %zu\n", numVertices,
+          ATLTRACE2(traceGeneral,
+              1,
+              L"  Proxy graphics: unreasonable vertex count %d at offset %zu\n",
+              numVertices,
               offset - 4);
           offset = dataSize;
           break;
@@ -313,9 +344,12 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
 
         const auto pointsSize = static_cast<std::size_t>(numVertices) * 24;
         if (offset + pointsSize > dataSize) {
-          ATLTRACE2(traceGeneral, 1,
-              L"  Proxy graphics: insufficient data for %d vertices (need %zu bytes, have %zu)\n", numVertices,
-              pointsSize, dataSize - offset);
+          ATLTRACE2(traceGeneral,
+              1,
+              L"  Proxy graphics: insufficient data for %d vertices (need %zu bytes, have %zu)\n",
+              numVertices,
+              pointsSize,
+              dataSize - offset);
           offset = dataSize;
           break;
         }
@@ -333,8 +367,16 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           AddToDocument(linePrimitive, document, proxyEntity.m_space, proxyEntity.m_ownerHandle);
           ++primitiveCount;
 
-          ATLTRACE2(traceGeneral, 3, L"  Proxy type %d → Line (%.2f,%.2f,%.2f)→(%.2f,%.2f,%.2f)\n", typeCode,
-              startPoint.x, startPoint.y, startPoint.z, endPoint.x, endPoint.y, endPoint.z);
+          ATLTRACE2(traceGeneral,
+              3,
+              L"  Proxy type %d → Line (%.2f,%.2f,%.2f)→(%.2f,%.2f,%.2f)\n",
+              typeCode,
+              startPoint.x,
+              startPoint.y,
+              startPoint.z,
+              endPoint.x,
+              endPoint.y,
+              endPoint.z);
         } else {
           // Multi-point polyline or polygon → create EoDbPolyline
           EoGePoint3dArray points;
@@ -443,7 +485,10 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
           offset = dataSize;
           break;
         }
-        ATLTRACE2(traceGeneral, 2, L"  Proxy type 9 → Shell %d verts, %d face entries (not rendered)\n", numVerts,
+        ATLTRACE2(traceGeneral,
+            2,
+            L"  Proxy type 9 → Shell %d verts, %d face entries (not rendered)\n",
+            numVerts,
             numFaceEntries);
         ++skippedGeometryCount;
         offset += facesSize;
@@ -660,8 +705,11 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
         // Skip flags (int32) + point data
         const auto lwPolyPayloadSize = 4 + static_cast<std::size_t>(numPoints) * 24;
         if (offset + lwPolyPayloadSize > dataSize) {
-          ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated lwpolyline data for %d points at offset %zu\n",
-              numPoints, offset);
+          ATLTRACE2(traceGeneral,
+              1,
+              L"  Proxy graphics: truncated lwpolyline data for %d points at offset %zu\n",
+              numPoints,
+              offset);
           offset = dataSize;
           break;
         }
@@ -673,9 +721,12 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
 
       default:
         // Unknown type code — cannot determine record length, must abort parsing.
-        ATLTRACE2(traceGeneral, 1,
+        ATLTRACE2(traceGeneral,
+            1,
             L"  Proxy graphics: unknown type code %d at offset %zu — aborting parse (%d primitives created)\n",
-            typeCode, offset - 4, primitiveCount);
+            typeCode,
+            offset - 4,
+            primitiveCount);
         offset = dataSize;
         break;
     }

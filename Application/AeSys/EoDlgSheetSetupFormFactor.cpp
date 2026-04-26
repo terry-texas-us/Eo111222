@@ -1,12 +1,12 @@
 #include "Stdafx.h"
 
-#include "EoDlgSheetSetupFormFactor.h"
 #include <iterator>
+
+#include "EoDlgSheetSetupFormFactor.h"
 
 IMPLEMENT_DYNAMIC(EoDlgSheetSetupFormFactor, CDialog)
 
-EoDlgSheetSetupFormFactor::EoDlgSheetSetupFormFactor(CWnd* parent)
-    : CDialog(IDD, parent) {}
+EoDlgSheetSetupFormFactor::EoDlgSheetSetupFormFactor(CWnd* parent) : CDialog(IDD, parent) {}
 
 void EoDlgSheetSetupFormFactor::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
@@ -21,14 +21,13 @@ BOOL EoDlgSheetSetupFormFactor::OnInitDialog() {
   // Populate the sheet designation combo
   auto* comboBox = static_cast<CComboBox*>(GetDlgItem(IDC_SHEET_DESIGNATION));
   if (comboBox != nullptr) {
-    for (const auto& sheetSize : kSheetSizes) {
-      comboBox->AddString(sheetSize.label);
-    }
+    for (const auto& sheetSize : kSheetSizes) { comboBox->AddString(sheetSize.label); }
     comboBox->SetCurSel(m_designationIndex);
   }
 
   // Set orientation radio buttons
-  CheckRadioButton(IDC_ORIENTATION_LANDSCAPE, IDC_ORIENTATION_PORTRAIT,
+  CheckRadioButton(IDC_ORIENTATION_LANDSCAPE,
+      IDC_ORIENTATION_PORTRAIT,
       m_isLandscape ? IDC_ORIENTATION_LANDSCAPE : IDC_ORIENTATION_PORTRAIT);
 
   return TRUE;

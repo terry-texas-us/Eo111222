@@ -86,8 +86,10 @@ CString EoCtrlLineWeightComboBox::LineWeightToName(EoDxfLineWeights::LineWeight 
   }
 }
 
-void EoCtrlLineWeightComboBox::DrawWeightPreview(
-    CDC* deviceContext, const CRect& rect, EoDxfLineWeights::LineWeight lineWeight, COLORREF lineColor) {
+void EoCtrlLineWeightComboBox::DrawWeightPreview(CDC* deviceContext,
+    const CRect& rect,
+    EoDxfLineWeights::LineWeight lineWeight,
+    COLORREF lineColor) {
   const int yCenter = rect.top + rect.Height() / 2;
   const int xStart = rect.left + 2;
   const int xEnd = rect.right - 2;
@@ -174,8 +176,14 @@ void EoCtrlLineWeightComboBox::OnSelectionChanged() {
   Gs::renderState.SetLineWeight(newWeight);
 }
 
-void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
-    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
+void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext,
+    const CRect& rect,
+    CMFCToolBarImages* images,
+    BOOL isHorz,
+    BOOL isCustomizeMode,
+    BOOL isHighlighted,
+    BOOL drawBorder,
+    BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
@@ -294,7 +302,9 @@ void EoCtrlLineWeightOwnerDrawCombo::OnNcPaint() {
   dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
-BOOL EoCtrlLineWeightOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
+BOOL EoCtrlLineWeightOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) {
+  return TRUE;
+}
 
 void EoCtrlLineWeightOwnerDrawCombo::MeasureItem(LPMEASUREITEMSTRUCT measureItemStruct) {
   UINT dpi = ::GetDpiForWindow(m_hWnd);

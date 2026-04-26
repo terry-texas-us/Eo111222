@@ -148,7 +148,9 @@ void EoGsViewTransform::BuildTransformMatrix() {
     m_ProjectionMatrix[3][3] = 1.0f;
 
     DirectX::XMMATRIX xProjectionMatrix = DirectX::XMMatrixOrthographicRH(static_cast<float>(uExtent),
-        static_cast<float>(vExtent), static_cast<float>(m_NearClipDistance), static_cast<float>(m_FarClipDistance));
+        static_cast<float>(vExtent),
+        static_cast<float>(m_NearClipDistance),
+        static_cast<float>(m_FarClipDistance));
     xProjectionMatrix = XMMatrixTranspose(xProjectionMatrix);
   }
   m_Matrix *= m_ProjectionMatrix;
@@ -178,7 +180,9 @@ void EoGsViewTransform::Initialize(const EoGsViewport& viewport) {
   BuildTransformMatrix();
 }
 
-void EoGsViewTransform::LoadIdentity() { m_Matrix.Identity(); }
+void EoGsViewTransform::LoadIdentity() {
+  m_Matrix.Identity();
+}
 
 void EoGsViewTransform::ZAxisRotation(double sinAngle, double cosAngle) {
   m_Matrix *= EoGeTransformMatrix::ZAxisRotation(sinAngle, cosAngle);
@@ -203,7 +207,9 @@ void EoGsViewTransform::SetCenteredWindow(const EoGsViewport& viewport, double u
   SetWindow(-uExtent * 0.5, -vExtent * 0.5, uExtent * 0.5, vExtent * 0.5);
 }
 
-void EoGsViewTransform::SetMatrix(EoGeTransformMatrix& transformMatrix) { m_Matrix = transformMatrix; }
+void EoGsViewTransform::SetMatrix(EoGeTransformMatrix& transformMatrix) {
+  m_Matrix = transformMatrix;
+}
 
 void EoGsViewTransform::SetWindow(double uMin, double vMin, double uMax, double vMax) {
   m_UMin = uMin;

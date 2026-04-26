@@ -4,8 +4,7 @@
 
 IMPLEMENT_DYNAMIC(EoDlgAttributePrompt, CDialog)
 
-EoDlgAttributePrompt::EoDlgAttributePrompt(CWnd* parent)
-    : CDialog(IDD, parent) {}
+EoDlgAttributePrompt::EoDlgAttributePrompt(CWnd* parent) : CDialog(IDD, parent) {}
 
 void EoDlgAttributePrompt::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);

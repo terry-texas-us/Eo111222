@@ -17,10 +17,9 @@
 #define _AFX_ALL_WARNINGS
 
 #include <afxcontrolbars.h>  // MFC support for ribbons and control bars
-
-#include <afxwin.h>
 #include <afxext.h>
 #include <afxstr.h>
+#include <afxwin.h>
 
 #ifdef _UNICODE
 #if defined _M_IX86
@@ -52,7 +51,7 @@ UINT AFXAPI HashKey(CString& str);
 
 #define AESYS_USE_CONIC_PRIMITIVE
 // #define USING_STATE_PATTERN  // Deactivated: experimental state pattern to be restarted after preview group overlay
-//#define USING_DDE
+// #define USING_DDE
 
 #ifdef USING_DDE
 #include <ddeml.h>

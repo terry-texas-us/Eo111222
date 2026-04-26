@@ -33,8 +33,13 @@ class EoCtrlColorComboBox : public CMFCToolBarComboBoxButton {
   CComboBox* CreateCombo(CWnd* parentWindow, const CRect& rect) override;
   BOOL NotifyCommand(int notifyCode) override;
   void Serialize(CArchive& ar) override;
-  void OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz = TRUE,
-      BOOL isCustomizeMode = FALSE, BOOL isHighlighted = FALSE, BOOL drawBorder = TRUE,
+  void OnDraw(CDC* deviceContext,
+      const CRect& rect,
+      CMFCToolBarImages* images,
+      BOOL isHorz = TRUE,
+      BOOL isCustomizeMode = FALSE,
+      BOOL isHighlighted = FALSE,
+      BOOL drawBorder = TRUE,
       BOOL grayDisabledButtons = TRUE) override;
 
  private:

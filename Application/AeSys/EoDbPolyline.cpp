@@ -28,7 +28,9 @@ std::uint16_t EoDbPolyline::sm_EdgeToEvaluate{};
 std::uint16_t EoDbPolyline::sm_Edge{};
 int EoDbPolyline::sm_pivotVertex{};
 
-EoDbPolyline::EoDbPolyline() { m_flags = 0; }
+EoDbPolyline::EoDbPolyline() {
+  m_flags = 0;
+}
 
 /** Constructs a closed polyline approximating a regular polygon.
  *
@@ -38,8 +40,11 @@ EoDbPolyline::EoDbPolyline() { m_flags = 0; }
  * @param radius The radius of the circumscribed circle.
  * @param numberOfSides The number of sides for the polygon.
  */
-EoDbPolyline::EoDbPolyline(
-    std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides)
+EoDbPolyline::EoDbPolyline(std::int16_t penColor,
+    std::int16_t lineType,
+    EoGePoint3d& centerPoint,
+    double radius,
+    int numberOfSides)
     : EoDbPrimitive(penColor, lineType) {
   m_flags = sm_Closed;
 
@@ -90,7 +95,9 @@ const EoDbPolyline& EoDbPolyline::operator=(const EoDbPolyline& other) {
   return (*this);
 }
 
-void EoDbPolyline::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Polyline>", this); }
+void EoDbPolyline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, L"<Polyline>", this);
+}
 
 EoDbPrimitive*& EoDbPolyline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolyline(*this);
@@ -177,34 +184,34 @@ void EoDbPolyline::DisplayWidthFill(AeSysView* view, EoGsRenderDevice* renderDev
   renderDevice->SelectPen(PS_NULL, 0, 0);
 
   // Renders a single sub-segment as a filled trapezoid
-  const auto renderQuad = [&](const EoGePoint3d& startPt, const EoGePoint3d& endPt, double halfStartWidth,
-                              double halfEndWidth) {
-    const EoGeVector3d segDirection(startPt, endPt);
-    if (segDirection.IsNearNull()) { return; }
+  const auto renderQuad =
+      [&](const EoGePoint3d& startPt, const EoGePoint3d& endPt, double halfStartWidth, double halfEndWidth) {
+        const EoGeVector3d segDirection(startPt, endPt);
+        if (segDirection.IsNearNull()) { return; }
 
-    // Perpendicular in XY plane: rotate direction 90° CCW → (-dy, dx, 0)
-    EoGeVector3d perpendicular(-segDirection.y, segDirection.x, 0.0);
-    if (perpendicular.IsNearNull()) { return; }
-    perpendicular.Unitize();
+        // Perpendicular in XY plane: rotate direction 90° CCW → (-dy, dx, 0)
+        EoGeVector3d perpendicular(-segDirection.y, segDirection.x, 0.0);
+        if (perpendicular.IsNearNull()) { return; }
+        perpendicular.Unitize();
 
-    // Four corners: start-left, start-right, end-right, end-left (winding order for CDC::Polygon)
-    EoGePoint4dArray quadNdc;
-    quadNdc.SetSize(4);
-    quadNdc[0] = EoGePoint4d(startPt + perpendicular * halfStartWidth);
-    quadNdc[1] = EoGePoint4d(startPt - perpendicular * halfStartWidth);
-    quadNdc[2] = EoGePoint4d(endPt - perpendicular * halfEndWidth);
-    quadNdc[3] = EoGePoint4d(endPt + perpendicular * halfEndWidth);
+        // Four corners: start-left, start-right, end-right, end-left (winding order for CDC::Polygon)
+        EoGePoint4dArray quadNdc;
+        quadNdc.SetSize(4);
+        quadNdc[0] = EoGePoint4d(startPt + perpendicular * halfStartWidth);
+        quadNdc[1] = EoGePoint4d(startPt - perpendicular * halfStartWidth);
+        quadNdc[2] = EoGePoint4d(endPt - perpendicular * halfEndWidth);
+        quadNdc[3] = EoGePoint4d(endPt + perpendicular * halfEndWidth);
 
-    view->ModelViewTransformPoints(quadNdc);
-    EoGePoint4d::ClipPolygon(quadNdc);
+        view->ModelViewTransformPoints(quadNdc);
+        EoGePoint4d::ClipPolygon(quadNdc);
 
-    const auto clippedCount = static_cast<int>(quadNdc.GetSize());
-    if (clippedCount < 3) { return; }
+        const auto clippedCount = static_cast<int>(quadNdc.GetSize());
+        if (clippedCount < 3) { return; }
 
-    std::vector<CPoint> clientPoints(static_cast<size_t>(clippedCount));
-    view->ProjectToClient(clientPoints.data(), quadNdc);
-    renderDevice->Polygon(clientPoints.data(), clippedCount);
-  };
+        std::vector<CPoint> clientPoints(static_cast<size_t>(clippedCount));
+        view->ProjectToClient(clientPoints.data(), quadNdc);
+        renderDevice->Polygon(clientPoints.data(), clippedCount);
+      };
 
   const auto segmentCount = IsClosed() ? numberOfVertices : (numberOfVertices - 1);
 
@@ -445,8 +452,11 @@ void EoDbPolyline::FormatGeometry(CString& str) {
 
 void EoDbPolyline::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tPoints;%d\tClosed;%s\tBulge;%s\tWidth;%s", static_cast<int>(m_pts.GetSize()),
-      IsClosed() ? L"Yes" : L"No", HasBulge() ? L"Yes" : L"No", HasWidth() ? L"Yes" : L"No");
+  str.AppendFormat(L"\tPoints;%d\tClosed;%s\tBulge;%s\tWidth;%s",
+      static_cast<int>(m_pts.GetSize()),
+      IsClosed() ? L"Yes" : L"No",
+      HasBulge() ? L"Yes" : L"No",
+      HasWidth() ? L"Yes" : L"No");
   str += L'\t';
 }
 
@@ -463,8 +473,10 @@ EoGePoint3d EoDbPolyline::GetControlPoint() {
   return pt;
 }
 
-void EoDbPolyline::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbPolyline::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray tessellatedPoints;
   BuildTessellatedPoints(tessellatedPoints);
 
@@ -624,10 +636,10 @@ bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
         if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
           double relation{};
 
-          if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance &&
-              relation <= 1.0 + Eo::geometricTolerance) {
-            if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation) &&
-                relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+          if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance
+              && relation <= 1.0 + Eo::geometricTolerance) {
+            if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
+                && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
               intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
               intersections.Add(intersection);
             }
@@ -648,10 +660,10 @@ bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
       if (EoGeLine::Intersection_xy(line, EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}), intersection)) {
         double relation{};
 
-        if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance &&
-            relation <= 1.0 + Eo::geometricTolerance) {
-          if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation) &&
-              relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
+        if (line.ComputeParametricRelation(intersection, relation) && relation >= -Eo::geometricTolerance
+            && relation <= 1.0 + Eo::geometricTolerance) {
+          if (EoGeLine(EoGePoint3d{ptBeg}, EoGePoint3d{ptEnd}).ComputeParametricRelation(intersection, relation)
+              && relation >= -Eo::geometricTolerance && relation <= 1.0 + Eo::geometricTolerance) {
             intersection.z = ptBeg.z + relation * (ptEnd.z - ptBeg.z);
             intersections.Add(intersection);
           }

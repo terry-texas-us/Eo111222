@@ -219,8 +219,13 @@ void EoDlgFileManageLayers::DrawItem(CDC& deviceContext, int itemID, int labelIn
       break;
     case Name: {
       const CString layerName = layer->Name();
-      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 4, ETO_CLIPPED, &itemRectangle, layerName,
-          static_cast<UINT>(layerName.GetLength()), nullptr);
+      deviceContext.ExtTextOutW(itemRectangle.left + 6,
+          itemRectangle.top + 4,
+          ETO_CLIPPED,
+          &itemRectangle,
+          layerName,
+          static_cast<UINT>(layerName.GetLength()),
+          nullptr);
     } break;
     case On: {
       const int iconX = itemRectangle.left + ((itemRectangle.right - itemRectangle.left) - 24) / 2;
@@ -256,20 +261,35 @@ void EoDlgFileManageLayers::DrawItem(CDC& deviceContext, int itemID, int labelIn
       if (colorRectangle.right + 4 < itemRectangle.right) {
         CString colorName;
         colorName.Format(L"%i", layer->ColorIndex());
-        deviceContext.ExtTextOutW(colorRectangle.right + 4, itemRectangle.top + 4, ETO_CLIPPED, &itemRectangle,
-            colorName, static_cast<UINT>(colorName.GetLength()), nullptr);
+        deviceContext.ExtTextOutW(colorRectangle.right + 4,
+            itemRectangle.top + 4,
+            ETO_CLIPPED,
+            &itemRectangle,
+            colorName,
+            static_cast<UINT>(colorName.GetLength()),
+            nullptr);
       }
     } break;
     case LineType: {
       const CString lineTypeName = layer->LineTypeName();
-      deviceContext.ExtTextOutW(itemRectangle.left + 6, itemRectangle.top + 4, ETO_CLIPPED, &itemRectangle,
-          lineTypeName, static_cast<UINT>(lineTypeName.GetLength()), nullptr);
+      deviceContext.ExtTextOutW(itemRectangle.left + 6,
+          itemRectangle.top + 4,
+          ETO_CLIPPED,
+          &itemRectangle,
+          lineTypeName,
+          static_cast<UINT>(lineTypeName.GetLength()),
+          nullptr);
     } break;
     case LineWeight: {
       CString lineWeight;
       lineWeight.Format(L"%hd", static_cast<std::int16_t>(layer->LineWeight()));
-      deviceContext.ExtTextOutW(itemRectangle.left + 8, itemRectangle.top + 4, ETO_CLIPPED, &itemRectangle, lineWeight,
-          static_cast<UINT>(lineWeight.GetLength()), nullptr);
+      deviceContext.ExtTextOutW(itemRectangle.left + 8,
+          itemRectangle.top + 4,
+          ETO_CLIPPED,
+          &itemRectangle,
+          lineWeight,
+          static_cast<UINT>(lineWeight.GetLength()),
+          nullptr);
     } break;
   }
 }
@@ -291,7 +311,7 @@ void EoDlgFileManageLayers::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT l
         if (itemID != -1) {
           // The text color is stored as the item data.
           const COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
-                                                                          : ::GetSysColor(COLOR_WINDOWTEXT);
+                                                                                : ::GetSysColor(COLOR_WINDOWTEXT);
           deviceContext.SetBkColor(rgbBkgnd);
           deviceContext.SetTextColor(rgbText);
           for (int labelIndex = 0; labelIndex < m_numberOfColumns; ++labelIndex) {

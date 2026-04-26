@@ -77,8 +77,10 @@ class EoDbPegFile : public CFile {
    * @param definitionLength A reference to an std::uint16_t that will be set to the number of dash elements in the
    * linetype.
    */
-  void ReadLinetypeDefinition(
-      std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength);
+  void ReadLinetypeDefinition(std::vector<double>& dashLength,
+      CString& name,
+      CString& description,
+      std::uint16_t& definitionLength);
   void ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion);
   void ReadPaperSpaceLayoutLayers(AeSysDoc* document, EoDb::PegFileVersion fileVersion, std::uint64_t layoutHandle);
   void ReadPaperSpaceLayoutEntities(AeSysDoc* document, EoDb::PegFileVersion fileVersion, std::uint64_t layoutHandle);

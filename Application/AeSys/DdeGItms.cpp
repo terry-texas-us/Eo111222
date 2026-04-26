@@ -3,7 +3,6 @@
 #ifdef USING_DDE
 #include "AeSys.h"
 #include "AeSysView.h"
-
 #include "ddeGItms.h"
 
 namespace dde {

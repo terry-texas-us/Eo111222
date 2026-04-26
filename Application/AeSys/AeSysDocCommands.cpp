@@ -166,8 +166,8 @@ void AeSysDoc::OnPrimBreak() {
         group->AddTail(line);
       }
       if (polyline->IsLooped()) {
-        auto* line =
-            EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName, lineWeight);
+        auto* line = EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])
+                         ->WithProperties(color, lineTypeName, lineWeight);
         RegisterHandle(line);
         group->AddTail(line);
       }
@@ -295,7 +295,9 @@ void AeSysDoc::OnLayerHidden() {
   }
 }
 
-void AeSysDoc::OnLayerMelt() { LayerMelt(m_IdentifiedLayerName); }
+void AeSysDoc::OnLayerMelt() {
+  LayerMelt(m_IdentifiedLayerName);
+}
 
 void AeSysDoc::OnLayerWork() {
   auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
@@ -304,9 +306,13 @@ void AeSysDoc::OnLayerWork() {
   SetWorkLayer(layer);
 }
 
-void AeSysDoc::OnTracingMap() { TracingMap(m_IdentifiedLayerName); }
+void AeSysDoc::OnTracingMap() {
+  TracingMap(m_IdentifiedLayerName);
+}
 
-void AeSysDoc::OnTracingView() { TracingView(m_IdentifiedLayerName); }
+void AeSysDoc::OnTracingView() {
+  TracingView(m_IdentifiedLayerName);
+}
 
 void AeSysDoc::OnTracingCloak() {
   auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
@@ -327,8 +333,12 @@ void AeSysDoc::OnTracingCloak() {
   }
 }
 
-void AeSysDoc::OnTracingFuse() { TracingFuse(m_IdentifiedLayerName); }
-void AeSysDoc::OnTracingOpen() { TracingOpen(m_IdentifiedLayerName); }
+void AeSysDoc::OnTracingFuse() {
+  TracingFuse(m_IdentifiedLayerName);
+}
+void AeSysDoc::OnTracingOpen() {
+  TracingOpen(m_IdentifiedLayerName);
+}
 
 void AeSysDoc::OnLayersActiveAll() {
   for (auto i = 0; i < GetLayerTableSize(); i++) {
@@ -346,9 +356,15 @@ void AeSysDoc::OnLayersStaticAll() {
   UpdateAllViews(nullptr, 0L, nullptr);
 }
 
-void AeSysDoc::OnLayersRemoveEmpty() { RemoveEmptyLayers(); }
-void AeSysDoc::OnToolsGroupUndelete() { DeletedGroupsRestore(); }
-void AeSysDoc::OnPensRemoveUnusedStyles() { m_LineTypeTable.RemoveUnused(); }
+void AeSysDoc::OnLayersRemoveEmpty() {
+  RemoveEmptyLayers();
+}
+void AeSysDoc::OnToolsGroupUndelete() {
+  DeletedGroupsRestore();
+}
+void AeSysDoc::OnPensRemoveUnusedStyles() {
+  m_LineTypeTable.RemoveUnused();
+}
 void AeSysDoc::OnBlocksLoad() {
   CFileDialog dlg(TRUE, L"blk", L"*.blk");
   dlg.m_ofn.lpstrTitle = L"Load Blocks";
@@ -362,7 +378,9 @@ void AeSysDoc::OnBlocksLoad() {
     }
   }
 }
-void AeSysDoc::OnBlocksRemoveUnused() { RemoveUnusedBlocks(); }
+void AeSysDoc::OnBlocksRemoveUnused() {
+  RemoveUnusedBlocks();
+}
 void AeSysDoc::OnBlocksUnload() {
   CFileDialog dlg(FALSE, L"blk", L"*.blk");
   dlg.m_ofn.lpstrTitle = L"Unload Blocks As";
@@ -522,7 +540,9 @@ void AeSysDoc::OnEditTrapWorkAndActive() {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::TrapCount);
 }
 
-void AeSysDoc::OnTrapCommandsCompress() { CompressTrappedGroups(); }
+void AeSysDoc::OnTrapCommandsCompress() {
+  CompressTrappedGroups();
+}
 
 void AeSysDoc::OnTrapCommandsExpand() {
   try {
@@ -591,7 +611,9 @@ void AeSysDoc::OnTrapCommandsBlock() {
   InsertBlock(CString(name), block);
 }
 
-void AeSysDoc::OnTrapCommandsUnblock() { m_trappedGroups.ExplodeBlockReferences(); }
+void AeSysDoc::OnTrapCommandsUnblock() {
+  m_trappedGroups.ExplodeBlockReferences();
+}
 void AeSysDoc::OnSetupPenColor() {
   EoDlgSetupColor dialog;
   dialog.m_ColorIndex = static_cast<std::uint16_t>(Gs::renderState.Color());
@@ -625,7 +647,8 @@ void AeSysDoc::OnSetupLineType() {
     [[maybe_unused]] const auto found = m_LineTypeTable.Lookup(CString(currentName.c_str()), currentLineType);
   }
   if (currentLineType == nullptr) {
-    m_LineTypeTable.LookupUsingLegacyIndex(static_cast<std::uint16_t>(Gs::renderState.LineTypeIndex()), currentLineType);
+    m_LineTypeTable.LookupUsingLegacyIndex(
+        static_cast<std::uint16_t>(Gs::renderState.LineTypeIndex()), currentLineType);
   }
   dialog.SetSelectedLineType(currentLineType);
 
@@ -655,8 +678,12 @@ void AeSysDoc::OnSetupLineType() {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Line);
 }
 
-void AeSysDoc::OnSetupFillHollow() { Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow); }
-void AeSysDoc::OnSetupFillSolid() { Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid); }
+void AeSysDoc::OnSetupFillHollow() {
+  Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hollow);
+}
+void AeSysDoc::OnSetupFillSolid() {
+  Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid);
+}
 void AeSysDoc::OnSetupFillPattern() {}
 void AeSysDoc::OnSetupFillHatch() {
   EoDlgSetupHatch dialog;
@@ -860,7 +887,8 @@ void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {
   const int numberOfEmptyNotes = RemoveEmptyNotesAndDelete();
   const int numberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
-  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", numberOfEmptyNotes,
+  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.",
+      numberOfEmptyNotes,
       numberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
@@ -870,7 +898,9 @@ void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
   str.Format(L"%d were removed.", numberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
-void AeSysDoc::OnPensEditColors() { app.EditColorPalette(); }
+void AeSysDoc::OnPensEditColors() {
+  app.EditColorPalette();
+}
 
 void AeSysDoc::OnPensLoadColors() {
   const auto filter = App::LoadStringResource(IDS_OPENFILE_FILTER_PENCOLORS);
@@ -970,8 +1000,8 @@ void AeSysDoc::OnPrimExtractNum() {
       lex::Parse(number);
       lex::EvalTokenStream(&iTokId, &lDef, &iTyp, value);
 
-      if (iTyp != lex::ArchitecturalUnitsLengthToken && iTyp != lex::EngineeringUnitsLengthToken &&
-          iTyp != lex::SimpleUnitsLengthToken) {
+      if (iTyp != lex::ArchitecturalUnitsLengthToken && iTyp != lex::EngineeringUnitsLengthToken
+          && iTyp != lex::SimpleUnitsLengthToken) {
         lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, value);
       }
       wchar_t message[64]{};
@@ -1053,4 +1083,6 @@ void AeSysDoc::OnViewModelSpace() {
   UpdateAllViews(nullptr, 0L, nullptr);
 }
 
-void AeSysDoc::OnUpdateViewModelSpace(CCmdUI* cmdUI) { cmdUI->SetCheck(m_activeSpace == EoDxf::Space::ModelSpace); }
+void AeSysDoc::OnUpdateViewModelSpace(CCmdUI* cmdUI) {
+  cmdUI->SetCheck(m_activeSpace == EoDxf::Space::ModelSpace);
+}

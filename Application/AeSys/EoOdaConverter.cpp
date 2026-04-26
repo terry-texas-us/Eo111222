@@ -27,7 +27,10 @@ std::wstring CreateTempFolder(const std::wstring& suffix) {
   std::error_code errorCode;
   std::filesystem::create_directories(folderPath, errorCode);
   if (errorCode) {
-    ATLTRACE2(traceGeneral, 1, L"EoOdaConverter::CreateTempFolder: failed to create '%s' (%hs)\n", folderPath.c_str(),
+    ATLTRACE2(traceGeneral,
+        1,
+        L"EoOdaConverter::CreateTempFolder: failed to create '%s' (%hs)\n",
+        folderPath.c_str(),
         errorCode.message().c_str());
     return {};
   }
@@ -40,7 +43,10 @@ bool DeleteTempFolder(const std::wstring& folderPath) {
   std::error_code errorCode;
   std::filesystem::remove_all(folderPath, errorCode);
   if (errorCode) {
-    ATLTRACE2(traceGeneral, 1, L"EoOdaConverter::DeleteTempFolder: failed to remove '%s' (%hs)\n", folderPath.c_str(),
+    ATLTRACE2(traceGeneral,
+        1,
+        L"EoOdaConverter::DeleteTempFolder: failed to remove '%s' (%hs)\n",
+        folderPath.c_str(),
         errorCode.message().c_str());
     return false;
   }
@@ -69,15 +75,20 @@ static bool RunConverter(std::wstring& commandLine) {
       kOdaConverterPath, commandLine.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startupInfo, &processInfo);
 
   if (!created) {
-    ATLTRACE2(traceGeneral, 1, L"EoOdaConverter::RunConverter: CreateProcessW failed (error %lu) for:\n  %s\n",
-        ::GetLastError(), commandLine.c_str());
+    ATLTRACE2(traceGeneral,
+        1,
+        L"EoOdaConverter::RunConverter: CreateProcessW failed (error %lu) for:\n  %s\n",
+        ::GetLastError(),
+        commandLine.c_str());
     return false;
   }
 
   const auto waitResult = ::WaitForSingleObject(processInfo.hProcess, kConverterTimeoutMs);
 
   if (waitResult == WAIT_TIMEOUT) {
-    ATLTRACE2(traceGeneral, 1, L"EoOdaConverter::RunConverter: process timed out after %lu ms — terminating\n",
+    ATLTRACE2(traceGeneral,
+        1,
+        L"EoOdaConverter::RunConverter: process timed out after %lu ms — terminating\n",
         kConverterTimeoutMs);
     ::TerminateProcess(processInfo.hProcess, 1);
     ::WaitForSingleObject(processInfo.hProcess, 5'000);  // brief wait for termination
@@ -99,8 +110,10 @@ static bool RunConverter(std::wstring& commandLine) {
   return true;
 }
 
-std::wstring ConvertDwgToDxf(const std::wstring& dwgPath, const std::wstring& tempDwgFolder,
-    const std::wstring& tempDxfFolder, const std::wstring& dxfVersion) {
+std::wstring ConvertDwgToDxf(const std::wstring& dwgPath,
+    const std::wstring& tempDwgFolder,
+    const std::wstring& tempDxfFolder,
+    const std::wstring& dxfVersion) {
   namespace fs = std::filesystem;
 
   // Copy the .dwg file into the temp folder
@@ -137,8 +150,10 @@ std::wstring ConvertDwgToDxf(const std::wstring& dwgPath, const std::wstring& te
   return dxfPath.wstring();
 }
 
-std::wstring ConvertDxfToDwg(const std::wstring& tempFolder, const std::wstring& dxfFileName,
-    const std::wstring& dwgOutputFolder, const std::wstring& dwgVersion) {
+std::wstring ConvertDxfToDwg(const std::wstring& tempFolder,
+    const std::wstring& dxfFileName,
+    const std::wstring& dwgOutputFolder,
+    const std::wstring& dwgVersion) {
   namespace fs = std::filesystem;
 
   // ODAFileConverter syntax:

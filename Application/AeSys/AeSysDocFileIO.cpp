@@ -59,7 +59,7 @@ void ReportDxfImportStatistics(EoDbDxfInterface& dxfInterface) {
   app.AddStringToReportsList(std::format(L"Viewport: {}", dxfInterface.countOfViewport));
 }
 
-}
+}  // namespace
 
 /** @brief Maps a 1-based CFileDialog filter index from IDS_SAVEFILE_FILTER to a file type.
  *
@@ -161,9 +161,7 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     const auto* expectedExtension = DefaultExtensionForFileType(m_saveAsType);
     std::filesystem::path currentPath(static_cast<const wchar_t*>(selectedPath));
     auto currentExtension = currentPath.extension().wstring();
-    if (!currentExtension.empty() && currentExtension[0] == L'.') {
-      currentExtension = currentExtension.substr(1);
-    }
+    if (!currentExtension.empty() && currentExtension[0] == L'.') { currentExtension = currentExtension.substr(1); }
     needsDialog = (_wcsicmp(currentExtension.c_str(), expectedExtension) != 0);
   }
 
@@ -196,8 +194,11 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     const auto initialFilterIndex = FilterIndexFromFileType(m_saveAsType);
 
     CFileDialog saveDialog(FALSE,  // FALSE = Save As dialog
-        DefaultExtensionForFileType(m_saveAsType), defaultFileName,
-        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST, filterString, AfxGetMainWnd());
+        DefaultExtensionForFileType(m_saveAsType),
+        defaultFileName,
+        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST,
+        filterString,
+        AfxGetMainWnd());
 
     saveDialog.m_ofn.nFilterIndex = initialFilterIndex;
     if (!initialDirectory.IsEmpty()) { saveDialog.m_ofn.lpstrInitialDir = initialDirectory; }
@@ -218,7 +219,9 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     }
 
     if (m_saveAsType == EoDb::FileTypes::Unknown) {
-      ATLTRACE2(traceGeneral, 1, L"DoSave: unable to determine file type for '%s'\n",
+      ATLTRACE2(traceGeneral,
+          1,
+          L"DoSave: unable to determine file type for '%s'\n",
           static_cast<const wchar_t*>(selectedPath));
       return FALSE;
     }
@@ -227,7 +230,9 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
   if (!OnSaveDocument(selectedPath)) {
     // If this was a new file (no prior path), clean up the partially created file
     if (pathName == nullptr || CString(pathName).IsEmpty()) {
-      TRY { CFile::Remove(selectedPath); }
+      TRY {
+        CFile::Remove(selectedPath);
+      }
       CATCH_ALL(e) {
         ATLTRACE2(traceGeneral, 3, L"Warning: failed to delete file after failed SaveAs.\n");
         do { e->Delete(); } while (0);

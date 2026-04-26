@@ -90,8 +90,9 @@ int EoGePoint3d::RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint, cons
   return returnValue;
 }
 
-EoGePoint3d EoGePoint3d::RotateAboutAxis(
-    const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, double angle) {
+EoGePoint3d EoGePoint3d::RotateAboutAxis(const EoGePoint3d& referenceOrigin,
+    const EoGeVector3d& referenceAxis,
+    double angle) {
   if (referenceAxis == EoGeVector3d::positiveUnitZ) {
     const double sinAngle = std::sin(angle);
     const double cosAngle = std::cos(angle);
@@ -99,7 +100,8 @@ EoGePoint3d EoGePoint3d::RotateAboutAxis(
     const EoGeVector3d v(referenceOrigin, *this);
 
     return (EoGePoint3d(referenceOrigin.x + (v.x * cosAngle - v.y * sinAngle),
-        referenceOrigin.y + (v.x * sinAngle + v.y * cosAngle), z));
+        referenceOrigin.y + (v.x * sinAngle + v.y * cosAngle),
+        z));
   } else {
     const EoGeTransformMatrix transformMatrix(referenceOrigin, referenceAxis, angle);
     return (transformMatrix * (*this));

@@ -203,8 +203,7 @@ BOOL EoCtrlTextStyleComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
   return CMFCToolBarComboBoxButton::OnClick(parentWindow, delay);
 }
 
-void EoCtrlTextStyleComboBox::DrawTextStyleIcon(
-    CDC* deviceContext, const CRect& iconRect, COLORREF /*textColor*/) {
+void EoCtrlTextStyleComboBox::DrawTextStyleIcon(CDC* deviceContext, const CRect& iconRect, COLORREF /*textColor*/) {
   // Draw the text style icon bitmap centered in the icon area.
   CBitmap bitmap;
   if (!bitmap.LoadBitmap(IDB_TEXTSTYLE_EDIT)) { return; }
@@ -231,8 +230,14 @@ void EoCtrlTextStyleComboBox::OpenTextStyleManager() {
   PopulateItems();
 }
 
-void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
-    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
+void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext,
+    const CRect& rect,
+    CMFCToolBarImages* images,
+    BOOL isHorz,
+    BOOL isCustomizeMode,
+    BOOL isHighlighted,
+    BOOL drawBorder,
+    BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
@@ -241,7 +246,7 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
 
   const BOOL isDisabled = (isCustomizeMode && !IsEditable()) || (!isCustomizeMode && (m_nStyle & TBBS_DISABLED));
 
-    if (m_bFlat) {
+  if (m_bFlat) {
     if (m_bIsHotEdit) { isHighlighted = TRUE; }
 
     CRect rectCombo = m_rectCombo;
@@ -308,7 +313,8 @@ END_MESSAGE_MAP()
 
 HBRUSH EoCtrlTextStyleThemedCombo::OnCtlColor(CDC* deviceContext, CWnd* /*control*/, UINT ctlColor) {
   if (ctlColor == CTLCOLOR_LISTBOX || ctlColor == CTLCOLOR_STATIC) {
-    const COLORREF bgColor = (ctlColor == CTLCOLOR_LISTBOX) ? Eo::chromeColors.menuBackground : Eo::chromeColors.paneBackground;
+    const COLORREF bgColor =
+        (ctlColor == CTLCOLOR_LISTBOX) ? Eo::chromeColors.menuBackground : Eo::chromeColors.paneBackground;
     m_dropdownBackgroundBrush.DeleteObject();
     m_dropdownBackgroundBrush.CreateSolidBrush(bgColor);
     deviceContext->SetBkColor(bgColor);
@@ -354,4 +360,6 @@ void EoCtrlTextStyleThemedCombo::OnNcPaint() {
   dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
-BOOL EoCtrlTextStyleThemedCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
+BOOL EoCtrlTextStyleThemedCombo::OnEraseBkgnd(CDC* /*deviceContext*/) {
+  return TRUE;
+}

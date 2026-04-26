@@ -37,15 +37,17 @@ std::uint16_t PreviousDimensionCommand{};
  *  @param[out] xAxisReference Receives the reference X axis vector for the character cell.
  *  @param[out] yAxisReference Receives the reference Y axis vector for the character cell.
  */
-void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCellDefinition, const EoGeVector3d& normal,
-    EoGeVector3d& xAxisReference, EoGeVector3d& yAxisReference) {
+void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCellDefinition,
+    const EoGeVector3d& normal,
+    EoGeVector3d& xAxisReference,
+    EoGeVector3d& yAxisReference) {
   xAxisReference = ComputeArbitraryAxis(normal);
   xAxisReference.RotateAboutArbitraryAxis(normal, characterCellDefinition.RotationAngle());
 
   yAxisReference = CrossProduct(normal, xAxisReference);
 
-  xAxisReference *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
-      characterCellDefinition.ExpansionFactor();
+  xAxisReference *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height()
+      * characterCellDefinition.ExpansionFactor();
 
   yAxisReference.RotateAboutArbitraryAxis(normal, characterCellDefinition.SlantAngle());
   yAxisReference *= characterCellDefinition.Height();
@@ -496,7 +498,8 @@ void AeSysView::OnDimensionModeConvert() {
           EoGeReferenceSystem referenceSystem = pPrimDim->ReferenceSystem();
 
           auto* linePrimitive =
-              EoDbLine::CreateLine(pPrimDim->Line())->WithProperties(primitive->Color(), primitive->LineTypeName(), primitive->LineWeight());
+              EoDbLine::CreateLine(pPrimDim->Line())
+                  ->WithProperties(primitive->Color(), primitive->LineTypeName(), primitive->LineWeight());
 
           auto* pPrimText = new EoDbText(pPrimDim->FontDefinition(), referenceSystem, pPrimDim->Text());
           pPrimText->SetColor(pPrimDim->TextColor());

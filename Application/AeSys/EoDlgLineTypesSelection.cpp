@@ -173,8 +173,12 @@ void EoDlgLineTypesSelection::PopulateList() {
 }
 
 void EoDlgLineTypesSelection::OnBnClickedLoadFile() {
-  CFileDialog fileDialog(TRUE, L"txt", nullptr, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST,
-      L"Line Type Files (*.txt)|*.txt|All Files (*.*)|*.*||", this);
+  CFileDialog fileDialog(TRUE,
+      L"txt",
+      nullptr,
+      OFN_HIDEREADONLY | OFN_FILEMUSTEXIST,
+      L"Line Type Files (*.txt)|*.txt|All Files (*.*)|*.*||",
+      this);
   fileDialog.m_ofn.lpstrTitle = L"Load Line Types";
 
   if (fileDialog.DoModal() != IDOK) { return; }
@@ -215,8 +219,9 @@ void EoDlgLineTypesSelection::OnNMCustomDrawFileList(NMHDR* pNMHDR, LRESULT* res
   DrawLineTypePreview(m_fileLineTypesListControl, reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR), result);
 }
 
-void EoDlgLineTypesSelection::DrawLineTypePreview(
-    CListCtrl& listControl, NMLVCUSTOMDRAW* listViewCustomDraw, LRESULT* result) {
+void EoDlgLineTypesSelection::DrawLineTypePreview(CListCtrl& listControl,
+    NMLVCUSTOMDRAW* listViewCustomDraw,
+    LRESULT* result) {
   *result = CDRF_DODEFAULT;
 
   switch (listViewCustomDraw->nmcd.dwDrawStage) {

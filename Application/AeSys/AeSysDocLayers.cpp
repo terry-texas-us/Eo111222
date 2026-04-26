@@ -21,8 +21,10 @@
 #include "EoGeTransformMatrix.h"
 #include "Resource.h"
 
-void AeSysDoc::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, EoGeTransformMatrix& transformMatrix) {
+void AeSysDoc::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    EoGeTransformMatrix& transformMatrix) {
   ptMin.Set(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   ptMax.Set(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
@@ -100,9 +102,7 @@ void AeSysDoc::RemoveAllLayerTableLayers() {
     layers.RemoveAll();
   };
   clearLayers(m_modelSpaceLayers);
-  for (auto& [handle, layers] : m_paperSpaceLayoutLayers) {
-    clearLayers(layers);
-  }
+  for (auto& [handle, layers] : m_paperSpaceLayoutLayers) { clearLayers(layers); }
   m_paperSpaceLayoutLayers.clear();
   m_activeLayoutHandle = EoDxf::Handles::PaperSpaceBlockRecord;
 }
@@ -147,7 +147,9 @@ CLayers& AeSysDoc::SpaceLayers(EoDxf::Space space) {
   return (space == EoDxf::Space::PaperSpace) ? PaperSpaceLayers() : m_modelSpaceLayers;
 }
 
-int AeSysDoc::GetLayerTableSize() const { return static_cast<int>(ActiveSpaceLayers().GetSize()); }
+int AeSysDoc::GetLayerTableSize() const {
+  return static_cast<int>(ActiveSpaceLayers().GetSize());
+}
 
 void AeSysDoc::AddLayerTableLayer(EoDbLayer* layer) {
   ActiveSpaceLayers().Add(layer);
@@ -187,7 +189,9 @@ EoDbLayer* AeSysDoc::FindLayerInLayout(const CString& name, std::uint64_t blockR
 const CLayers& AeSysDoc::PaperSpaceLayers() const {
   auto it = m_paperSpaceLayoutLayers.find(m_activeLayoutHandle);
   if (it != m_paperSpaceLayoutLayers.end()) { return it->second; }
-  ATLTRACE2(traceGeneral, 1, L"Warning: PaperSpaceLayers() — active layout handle %I64X not found in layout map.\n",
+  ATLTRACE2(traceGeneral,
+      1,
+      L"Warning: PaperSpaceLayers() — active layout handle %I64X not found in layout map.\n",
       m_activeLayoutHandle);
   static const CLayers emptyLayers;
   return emptyLayers;
@@ -471,9 +475,7 @@ void AeSysDoc::MoveTrappedGroupsToSpace(EoDxf::Space targetSpace) {
     auto primPosition = group->GetHeadPosition();
     if (primPosition != nullptr) {
       const auto* primitive = group->GetNext(primPosition);
-      if (primitive != nullptr && !primitive->LayerName().empty()) {
-        targetLayerName = primitive->LayerName().c_str();
-      }
+      if (primitive != nullptr && !primitive->LayerName().empty()) { targetLayerName = primitive->LayerName().c_str(); }
     }
 
     // Remove the group from its current layer (searches both model and paper spaces).
@@ -502,13 +504,15 @@ void AeSysDoc::MoveTrappedGroupsToSpace(EoDxf::Space targetSpace) {
     if (targetSpace == EoDxf::Space::PaperSpace) {
       targetLayer = FindLayerInLayout(targetLayerName, m_activeLayoutHandle);
       if (targetLayer == nullptr) {
-        targetLayer = new EoDbLayer(targetLayerName, EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
+        targetLayer = new EoDbLayer(
+            targetLayerName, EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
         AddLayerToLayout(targetLayer, m_activeLayoutHandle);
       }
     } else {
       targetLayer = FindLayerInSpace(targetLayerName, EoDxf::Space::ModelSpace);
       if (targetLayer == nullptr) {
-        targetLayer = new EoDbLayer(targetLayerName, EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
+        targetLayer = new EoDbLayer(
+            targetLayerName, EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive);
         AddLayerToSpace(targetLayer, EoDxf::Space::ModelSpace);
       }
     }
@@ -595,7 +599,8 @@ void AeSysDoc::ReloadTracingLayer(EoDbLayer* layer) {
   if (!TracingLoadLayer(pathCs, layer)) {
     CString message;
     message.Format(L"Tracing file not found (layer '%s'): %s — layer will be empty.",
-        layer->Name().GetString(), pathCs.GetString());
+        layer->Name().GetString(),
+        pathCs.GetString());
     app.AddStringToMessageList(message);
   }
 }
@@ -684,8 +689,8 @@ bool AeSysDoc::TracingOpen(const CString& pathName) {
   // called as an overlay command on an existing .peg/.peg11 document, preserve
   // the original type so Ctrl+S / Save All continue to save the host document
   // correctly.
-  if (m_saveAsType == EoDb::FileTypes::Unknown || m_saveAsType == EoDb::FileTypes::Tracing ||
-      m_saveAsType == EoDb::FileTypes::Job) {
+  if (m_saveAsType == EoDb::FileTypes::Unknown || m_saveAsType == EoDb::FileTypes::Tracing
+      || m_saveAsType == EoDb::FileTypes::Job) {
     m_saveAsType = EoDb::FileTypes::Tracing;
   }
   SetWorkLayer(layer);

@@ -187,8 +187,14 @@ void EoCtrlColorComboBox::OnSelectionChanged() {
   if (activeView != nullptr) { activeView->UpdateStateInformation(AeSysView::Pen); }
 }
 
-void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
-    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
+void EoCtrlColorComboBox::OnDraw(CDC* deviceContext,
+    const CRect& rect,
+    CMFCToolBarImages* images,
+    BOOL isHorz,
+    BOOL isCustomizeMode,
+    BOOL isHighlighted,
+    BOOL drawBorder,
+    BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
@@ -238,11 +244,14 @@ void EoCtrlColorComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
       const int swatchSize = rectContent.Height() - 2 * swatchMargin;
 
       if (!isMoreColors && swatchSize > 0) {
-        CRect swatchRect(rectContent.left + swatchMargin + 1, rectContent.top + swatchMargin,
-            rectContent.left + swatchMargin + 1 + swatchSize, rectContent.top + swatchMargin + swatchSize);
+        CRect swatchRect(rectContent.left + swatchMargin + 1,
+            rectContent.top + swatchMargin,
+            rectContent.left + swatchMargin + 1 + swatchSize,
+            rectContent.top + swatchMargin + swatchSize);
 
         const auto aciIndex = static_cast<std::int16_t>(itemData);
-        const COLORREF swatchColor = (aciIndex == EoDbPrimitive::COLOR_BYLAYER || aciIndex == EoDbPrimitive::COLOR_BYBLOCK)
+        const COLORREF swatchColor =
+            (aciIndex == EoDbPrimitive::COLOR_BYLAYER || aciIndex == EoDbPrimitive::COLOR_BYBLOCK)
             ? RGB(255, 255, 255)
             : AciToColorRef(aciIndex);
         deviceContext->FillSolidRect(swatchRect, swatchColor);
@@ -332,7 +341,9 @@ void EoCtrlColorOwnerDrawCombo::OnNcPaint() {
   dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
-BOOL EoCtrlColorOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
+BOOL EoCtrlColorOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) {
+  return TRUE;
+}
 
 void EoCtrlColorOwnerDrawCombo::MeasureItem(LPMEASUREITEMSTRUCT measureItemStruct) {
   UINT dpi = ::GetDpiForWindow(m_hWnd);
@@ -374,8 +385,10 @@ void EoCtrlColorOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
 
   constexpr int swatchMargin = 2;
   const int swatchSize = itemRect.Height() - 2 * swatchMargin;
-  CRect swatchRect(itemRect.left + swatchMargin + 1, itemRect.top + swatchMargin,
-      itemRect.left + swatchMargin + 1 + swatchSize, itemRect.top + swatchMargin + swatchSize);
+  CRect swatchRect(itemRect.left + swatchMargin + 1,
+      itemRect.top + swatchMargin,
+      itemRect.left + swatchMargin + 1 + swatchSize,
+      itemRect.top + swatchMargin + swatchSize);
 
   const bool isMoreColors = (itemData == EoCtrlColorComboBox::kMoreColors);
 

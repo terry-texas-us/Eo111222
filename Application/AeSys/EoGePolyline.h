@@ -33,8 +33,7 @@ void SetVertex(const EoGePoint3d& point);
 /// Replaces the former __End(AeSysView*, CDC*, ...). Rendering calls go through the
 /// abstract EoGsRenderDevice interface (MoveTo/LineTo/Polyline), eliminating the
 /// direct CDC* dependency from the polyline rendering pipeline.
-void End(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t lineType,
-    const std::wstring& lineTypeName = {});
+void End(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t lineType, const std::wstring& lineTypeName = {});
 
 // ── Selection (delegate to global EoGsVertexBuffer) ───────────────────
 
@@ -49,8 +48,11 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
 bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2, const EoGePoint3dArray& pts);
 
 /// @brief Determines points necessary to represent an N-Polygon with line segments.
-void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis,
-    int numberOfPoints, EoGePoint3dArray& pts);
+void GeneratePointsForNPoly(EoGePoint3d& centerPoint,
+    EoGeVector3d majorAxis,
+    EoGeVector3d minorAxis,
+    int numberOfPoints,
+    EoGePoint3dArray& pts);
 
 /// @brief Tessellates a single bulge arc segment into approximation points.
 ///
@@ -63,7 +65,9 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
 /// @param bulge        Bulge value at startPoint: tan(θ/4) where θ is the included arc angle.
 ///                    Positive = CCW arc, negative = CW arc, 0 = straight (returns endPoint only).
 /// @param[out] arcPoints  Output vector receiving the tessellated arc points (cleared on entry).
-void TessellateArcSegment(
-    const EoGePoint3d& startPoint, const EoGePoint3d& endPoint, double bulge, std::vector<EoGePoint3d>& arcPoints);
+void TessellateArcSegment(const EoGePoint3d& startPoint,
+    const EoGePoint3d& endPoint,
+    double bulge,
+    std::vector<EoGePoint3d>& arcPoints);
 
 }  // namespace polyline

@@ -115,7 +115,9 @@ ON_COMMAND(ID_VIEW_MODELSPACE, OnViewModelSpace)
 ON_UPDATE_COMMAND_UI(ID_VIEW_MODELSPACE, OnUpdateViewModelSpace)
 END_MESSAGE_MAP()
 
-AeSysDoc::AeSysDoc() { EoDbPrimitive::SetHandleManager(&m_handleManager); }
+AeSysDoc::AeSysDoc() {
+  EoDbPrimitive::SetHandleManager(&m_handleManager);
+}
 
 AeSysDoc::~AeSysDoc() = default;
 
@@ -718,8 +720,12 @@ void AeSysDoc::OnToolsSaveAsTracingEdit() {
   EoDbLayer* layerToSave = isEmbedded ? m_embeddedTracingLayer : m_tracingEditLayer;
   if (layerToSave == nullptr) { return; }
 
-  CFileDialog saveDialog(FALSE, L"tra", m_editingTracingPath,
-      OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST, L"Tracing Files (*.tra)|*.tra||", AfxGetMainWnd());
+  CFileDialog saveDialog(FALSE,
+      L"tra",
+      m_editingTracingPath,
+      OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST,
+      L"Tracing Files (*.tra)|*.tra||",
+      AfxGetMainWnd());
 
   if (saveDialog.DoModal() != IDOK) { return; }
 
@@ -746,7 +752,9 @@ void AeSysDoc::OnToolsSaveAsTracingEdit() {
   ExitTracingEditMode(true);  // Solo mode — exit after Save As
 }
 
-void AeSysDoc::OnToolsExitTracingEdit() { ExitTracingEditMode(true); }
+void AeSysDoc::OnToolsExitTracingEdit() {
+  ExitTracingEditMode(true);
+}
 
 void AeSysDoc::OnToolsCancelTracingEdit() {
   if (m_tracingEditDirty) {
@@ -765,4 +773,6 @@ void AeSysDoc::OnToolsCancelTracingEdit() {
   ExitTracingEditMode(false);
 }
 
-void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) { cmdUI->Enable(!IsInEditor() && !BlockTableIsEmpty()); }
+void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) {
+  cmdUI->Enable(!IsInEditor() && !BlockTableIsEmpty());
+}

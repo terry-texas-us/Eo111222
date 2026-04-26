@@ -22,8 +22,9 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 
-void EoDbDxfInterface::SetHeaderSectionVariable(
-    const EoDxfHeader* header, std::wstring_view keyToFind, EoDbHeaderSection& headerSection) {
+void EoDbDxfInterface::SetHeaderSectionVariable(const EoDxfHeader* header,
+    std::wstring_view keyToFind,
+    EoDbHeaderSection& headerSection) {
   auto it = header->m_variants.find(std::wstring{keyToFind});
   if (it == header->m_variants.end() || it->second == nullptr) { return; }
 
@@ -433,7 +434,10 @@ void EoDbDxfInterface::ConvertBlockEnd([[maybe_unused]] AeSysDoc* document) {
  * @param ownerHandle The entity's owner BLOCK_RECORD handle (code 330). For paper-space
  *   entities this identifies the layout. NoHandle falls back to the default layout (0x1E).
  */
-EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle) const {
+EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive,
+    AeSysDoc* document,
+    EoDxf::Space space,
+    std::uint64_t ownerHandle) const {
   // Override space for entities inside *Paper_Space layout pseudo-blocks.
   // Many DXF writers (including ODA Converter) don't set group code 67 for entities
   // inside *Paper_Space blocks — the block context already implies paper space.
@@ -454,9 +458,7 @@ EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* d
     if (layer == nullptr) {
       // On-demand layer creation: clone properties from default layout or model space
       EoDbLayer* sourceLayer = document->FindLayerInLayout(layerName, EoDxf::Handles::PaperSpaceBlockRecord);
-      if (sourceLayer == nullptr) {
-        sourceLayer = document->FindLayerInSpace(layerName, EoDxf::Space::ModelSpace);
-      }
+      if (sourceLayer == nullptr) { sourceLayer = document->FindLayerInSpace(layerName, EoDxf::Space::ModelSpace); }
       auto* newLayer = [&]() -> EoDbLayer* {
         if (sourceLayer != nullptr) {
           auto* cloned = new EoDbLayer(CString(layerName), sourceLayer->GetState());
@@ -472,8 +474,11 @@ EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* d
           return cloned;
         }
         // No source layer found anywhere — create a minimal layer with default properties
-        ATLTRACE2(traceGeneral, 3, L"AddToDocument: creating minimal paper-space layer '%s' for layout 0x%I64X\n",
-            layerName, layoutHandle);
+        ATLTRACE2(traceGeneral,
+            3,
+            L"AddToDocument: creating minimal paper-space layer '%s' for layout 0x%I64X\n",
+            layerName,
+            layoutHandle);
         constexpr auto defaultState =
             EoDbLayer::State::isResident | EoDbLayer::State::isInternal | EoDbLayer::State::isActive;
         return new EoDbLayer(CString(layerName), defaultState);
@@ -496,16 +501,25 @@ EoDbGroup* EoDbDxfInterface::AddToDocument(EoDbPrimitive* primitive, AeSysDoc* d
     }
   }
 
-  ATLTRACE2(traceGeneral, 3, L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n", primitive,
-      m_inBlockDefinition ? 1 : 0, m_currentOpenBlockDefinition, layerName);
+  ATLTRACE2(traceGeneral,
+      3,
+      L"AddToDocument: primitive=%p, inBlock=%d, currentBlock=%p, layer='%s'\n",
+      primitive,
+      m_inBlockDefinition ? 1 : 0,
+      m_currentOpenBlockDefinition,
+      layerName);
 
   document->RegisterHandle(primitive);
 
   if (m_currentOpenBlockDefinition == nullptr) {
     auto* group = new EoDbGroup();
 
-    ATLTRACE2(traceGeneral, 3, L"  -> Creating %s group %p for primitive %p\n",
-        (space == EoDxf::Space::PaperSpace) ? L"PAPER SPACE" : L"MODEL SPACE", group, primitive);
+    ATLTRACE2(traceGeneral,
+        3,
+        L"  -> Creating %s group %p for primitive %p\n",
+        (space == EoDxf::Space::PaperSpace) ? L"PAPER SPACE" : L"MODEL SPACE",
+        group,
+        primitive);
 
     group->AddTail(primitive);
     layer->AddTail(group);

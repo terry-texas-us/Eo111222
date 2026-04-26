@@ -36,7 +36,10 @@ void AeSysDoc::RemoveAllBlocks() {
   auto blockPosition = m_BlocksTable.GetStartPosition();
   while (blockPosition != nullptr) {
     m_BlocksTable.GetNextAssoc(blockPosition, name, block);
-    ATLTRACE2(traceGeneral, 3, L"  Deleting block: %s with %d primitives\n", name.GetString(),
+    ATLTRACE2(traceGeneral,
+        3,
+        L"  Deleting block: %s with %d primitives\n",
+        name.GetString(),
         static_cast<int>(block->GetCount()));
     UnregisterHandle(block->Handle());
     block->DeletePrimitivesAndRemoveAll();
@@ -105,21 +108,15 @@ bool AeSysDoc::RenameBlock(const CString& oldName, const CString& newName) {
   // Helper: patches all groups in a layer (EoDbGroupList)
   auto patchGroupList = [&](EoDbGroupList& groupList) {
     auto groupPosition = groupList.GetHeadPosition();
-    while (groupPosition != nullptr) {
-      patchGroup(groupList.GetNext(groupPosition));
-    }
+    while (groupPosition != nullptr) { patchGroup(groupList.GetNext(groupPosition)); }
   };
 
   // Patch model-space layers
-  for (INT_PTR i = 0; i < m_modelSpaceLayers.GetSize(); i++) {
-    patchGroupList(*m_modelSpaceLayers.GetAt(i));
-  }
+  for (INT_PTR i = 0; i < m_modelSpaceLayers.GetSize(); i++) { patchGroupList(*m_modelSpaceLayers.GetAt(i)); }
 
   // Patch all paper-space layout layers
   for (auto& [handle, layers] : m_paperSpaceLayoutLayers) {
-    for (INT_PTR i = 0; i < layers.GetSize(); i++) {
-      patchGroupList(*layers.GetAt(i));
-    }
+    for (INT_PTR i = 0; i < layers.GetSize(); i++) { patchGroupList(*layers.GetAt(i)); }
   }
 
   // Patch block definitions (nested INSERT inside another block)

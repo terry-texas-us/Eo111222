@@ -25,18 +25,42 @@ void AeSysView::InitializeConstraints() {
   m_DisplayGridWithPoints = false;
   m_GridSnap = false;
 }
-double AeSysView::AxisConstraintInfluenceAngle() const { return m_AxisConstraintInfluenceAngle; }
-void AeSysView::SetAxisConstraintInfluenceAngle(double angle) { m_AxisConstraintInfluenceAngle = angle; }
-double AeSysView::AxisConstraintOffsetAngle() const { return m_AxisConstraintOffsetAngle; }
-void AeSysView::SetAxisConstraintOffsetAngle(double angle) { m_AxisConstraintOffsetAngle = angle; }
-EoGePoint3d AeSysView::GridOrign() const { return m_GridOrigin; }
-void AeSysView::GridOrign(const EoGePoint3d& origin) { m_GridOrigin = origin; }
-bool AeSysView::DisplayGridWithLines() const { return m_DisplayGridWithLines; }
-void AeSysView::EnableDisplayGridWithLines(bool display) { m_DisplayGridWithLines = display; }
-void AeSysView::EnableDisplayGridWithPoints(bool display) { m_DisplayGridWithPoints = display; }
-bool AeSysView::DisplayGridWithPoints() const { return m_DisplayGridWithPoints; }
-bool AeSysView::GridSnap() const { return m_GridSnap; }
-void AeSysView::EnableGridSnap(bool snap) { m_GridSnap = snap; }
+double AeSysView::AxisConstraintInfluenceAngle() const {
+  return m_AxisConstraintInfluenceAngle;
+}
+void AeSysView::SetAxisConstraintInfluenceAngle(double angle) {
+  m_AxisConstraintInfluenceAngle = angle;
+}
+double AeSysView::AxisConstraintOffsetAngle() const {
+  return m_AxisConstraintOffsetAngle;
+}
+void AeSysView::SetAxisConstraintOffsetAngle(double angle) {
+  m_AxisConstraintOffsetAngle = angle;
+}
+EoGePoint3d AeSysView::GridOrign() const {
+  return m_GridOrigin;
+}
+void AeSysView::GridOrign(const EoGePoint3d& origin) {
+  m_GridOrigin = origin;
+}
+bool AeSysView::DisplayGridWithLines() const {
+  return m_DisplayGridWithLines;
+}
+void AeSysView::EnableDisplayGridWithLines(bool display) {
+  m_DisplayGridWithLines = display;
+}
+void AeSysView::EnableDisplayGridWithPoints(bool display) {
+  m_DisplayGridWithPoints = display;
+}
+bool AeSysView::DisplayGridWithPoints() const {
+  return m_DisplayGridWithPoints;
+}
+bool AeSysView::GridSnap() const {
+  return m_GridSnap;
+}
+void AeSysView::EnableGridSnap(bool snap) {
+  m_GridSnap = snap;
+}
 
 void AeSysView::GetGridLineSpacing(double& x, double& y, double& z) const {
   x = m_XGridLineSpacing;

@@ -142,9 +142,13 @@ void WriteInt32(CFile& file, std::int32_t number);
 void WriteUInt16(CFile& file, std::uint16_t number);
 void WriteUInt64(CFile& file, std::uint64_t number);
 
-inline void Write(CFile& file, EoDb::Path path) { WriteUInt16(file, static_cast<std::uint16_t>(path)); }
+inline void Write(CFile& file, EoDb::Path path) {
+  WriteUInt16(file, static_cast<std::uint16_t>(path));
+}
 
-inline void Write(CFile& file, EoDb::Precision precision) { WriteUInt16(file, static_cast<std::uint16_t>(precision)); }
+inline void Write(CFile& file, EoDb::Precision precision) {
+  WriteUInt16(file, static_cast<std::uint16_t>(precision));
+}
 
 inline void Write(CFile& file, EoDb::HorizontalAlignment horizontalAlignment) {
   WriteUInt16(file, static_cast<std::uint16_t>(horizontalAlignment));

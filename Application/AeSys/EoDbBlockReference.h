@@ -38,8 +38,13 @@ class EoDbBlockReference : public EoDbPrimitive {
   EoDbBlockReference();
   EoDbBlockReference(const CString& strName, const EoGePoint3d& pt);
   EoDbBlockReference(const EoDbBlockReference&);
-  EoDbBlockReference(std::uint16_t color, std::uint16_t lineType, const CString& name, const EoGePoint3d& point,
-      const EoGeVector3d& normal, const EoGeVector3d scaleFactors, double rotation);
+  EoDbBlockReference(std::uint16_t color,
+      std::uint16_t lineType,
+      const CString& name,
+      const EoGePoint3d& point,
+      const EoGeVector3d& normal,
+      const EoGeVector3d scaleFactors,
+      double rotation);
   ~EoDbBlockReference() override = default;
 
   const EoDbBlockReference& operator=(const EoDbBlockReference&);

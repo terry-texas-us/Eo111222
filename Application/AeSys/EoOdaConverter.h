@@ -42,8 +42,10 @@ bool DeleteTempFolder(const std::wstring& folderPath);
 /// @param tempDxfFolder   Absolute path to the (empty) temporary dxf folder.
 /// @param dxfVersion   ODA version string for the output DXF (e.g. "ACAD2018", "ACAD2013").
 /// @return Absolute path to the resulting .dxf file, or empty string on failure.
-[[nodiscard]] std::wstring ConvertDwgToDxf(const std::wstring& dwgPath, const std::wstring& tempDwgFolder,
-    const std::wstring& tempDxfFolder, const std::wstring& dxfVersion = L"ACAD2018");
+[[nodiscard]] std::wstring ConvertDwgToDxf(const std::wstring& dwgPath,
+    const std::wstring& tempDwgFolder,
+    const std::wstring& tempDxfFolder,
+    const std::wstring& dxfVersion = L"ACAD2018");
 
 /// @brief Converts a single .dxf file to .dwg using ODA File Converter.
 ///
@@ -55,7 +57,9 @@ bool DeleteTempFolder(const std::wstring& folderPath);
 /// @param dwgOutputFolder  Absolute path to the folder that receives the .dwg file.
 /// @param dwgVersion       ODA version string for the output DWG (e.g. "ACAD2018", "ACAD2013").
 /// @return Absolute path to the resulting .dwg file, or empty string on failure.
-[[nodiscard]] std::wstring ConvertDxfToDwg(const std::wstring& tempFolder, const std::wstring& dxfFileName,
-    const std::wstring& dwgOutputFolder, const std::wstring& dwgVersion = L"ACAD2018");
+[[nodiscard]] std::wstring ConvertDxfToDwg(const std::wstring& tempFolder,
+    const std::wstring& dxfFileName,
+    const std::wstring& dwgOutputFolder,
+    const std::wstring& dwgVersion = L"ACAD2018");
 
 }  // namespace EoOdaConverter

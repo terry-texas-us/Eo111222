@@ -230,8 +230,14 @@ void EoCtrlLayerComboBox::OpenLayerManager() {
   if (document != nullptr) { document->OnFileManageLayers(); }
 }
 
-void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
-    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
+void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext,
+    const CRect& rect,
+    CMFCToolBarImages* images,
+    BOOL isHorz,
+    BOOL isCustomizeMode,
+    BOOL isHighlighted,
+    BOOL drawBorder,
+    BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
@@ -286,7 +292,10 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
       if (!needsRebuild) {
         bool found = false;
         for (int i = 0; i < document->GetLayerTableSize(); i++) {
-          if (document->GetLayerTableLayerAt(i) == existingLayer) { found = true; break; }
+          if (document->GetLayerTableLayerAt(i) == existingLayer) {
+            found = true;
+            break;
+          }
         }
         if (!found) { needsRebuild = true; }
       }
@@ -371,8 +380,8 @@ LRESULT EoCtrlLayerOwnerDrawCombo::OnRebuildLayers(WPARAM, LPARAM) {
 }
 
 /// @brief Subclass proc for the dropdown listbox — intercepts clicks on icon areas.
-static LRESULT CALLBACK ListboxSubclassProc(
-    HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR /*subclassId*/, DWORD_PTR refData) {
+static LRESULT CALLBACK
+ListboxSubclassProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, UINT_PTR /*subclassId*/, DWORD_PTR refData) {
   if (message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN) {
     auto* combo = reinterpret_cast<EoCtrlLayerOwnerDrawCombo*>(refData);
     const CPoint point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -500,7 +509,9 @@ void EoCtrlLayerOwnerDrawCombo::OnNcPaint() {
   dc.FillSolidRect(&windowRect, Eo::chromeColors.paneBackground);
 }
 
-BOOL EoCtrlLayerOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) { return TRUE; }
+BOOL EoCtrlLayerOwnerDrawCombo::OnEraseBkgnd(CDC* /*deviceContext*/) {
+  return TRUE;
+}
 
 void EoCtrlLayerOwnerDrawCombo::MeasureItem(LPMEASUREITEMSTRUCT measureItemStruct) {
   measureItemStruct->itemHeight = 24;
@@ -530,7 +541,10 @@ void EoCtrlLayerOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   if (layer != nullptr) {
     bool found = false;
     for (int i = 0; i < document->GetLayerTableSize(); ++i) {
-      if (document->GetLayerTableLayerAt(i) == layer) { found = true; break; }
+      if (document->GetLayerTableLayerAt(i) == layer) {
+        found = true;
+        break;
+      }
     }
     if (!found) { layer = nullptr; }
   }

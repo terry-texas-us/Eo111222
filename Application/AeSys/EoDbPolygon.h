@@ -45,8 +45,13 @@ class EoDbPolygon : public EoDbPrimitive {
 
   EoDbPolygon(std::uint16_t, EoGePoint3d*);
   EoDbPolygon(const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts);
-  EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex, const EoGePoint3d& origin,
-      const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points);
+  EoDbPolygon(std::int16_t color,
+      EoDb::PolygonStyle style,
+      std::int16_t styleIndex,
+      const EoGePoint3d& origin,
+      const EoGeVector3d& xAxis,
+      const EoGeVector3d& yAxis,
+      EoGePoint3dArray& points);
   EoDbPolygon(std::uint16_t, EoGePoint3d, EoGeVector3d, EoGeVector3d, const EoGePoint3d*);
 
   EoDbPolygon(const EoDbPolygon& other);

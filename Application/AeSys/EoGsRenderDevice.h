@@ -189,8 +189,16 @@ class EoGsRenderDevice {
   /// @param srcWidth Source width.
   /// @param srcHeight Source height.
   /// @param rop Raster operation code (e.g., SRCCOPY).
-  virtual void StretchBlt(int destX, int destY, int destWidth, int destHeight, EoGsRenderDevice* sourceDevice,
-      int srcX, int srcY, int srcWidth, int srcHeight, DWORD rop) = 0;
+  virtual void StretchBlt(int destX,
+      int destY,
+      int destWidth,
+      int destHeight,
+      EoGsRenderDevice* sourceDevice,
+      int srcX,
+      int srcY,
+      int srcWidth,
+      int srcHeight,
+      DWORD rop) = 0;
 
   // ── Palette (GDI-specific, no-op on D2D) ──────────────────────────────
 

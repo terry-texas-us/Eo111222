@@ -53,16 +53,32 @@ class EoGsRenderState {
   void ManagePenResources(EoGsRenderDevice* renderDevice, std::int16_t color, int width, std::int16_t lineType);
 
   void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType);
-  void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType,
+  void SetPen(AeSysView* view,
+      CDC* deviceContext,
+      std::int16_t penColor,
+      std::int16_t lineType,
       const std::wstring& lineTypeName);
-  void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType,
-      const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale);
+  void SetPen(AeSysView* view,
+      CDC* deviceContext,
+      std::int16_t penColor,
+      std::int16_t lineType,
+      const std::wstring& lineTypeName,
+      EoDxfLineWeights::LineWeight lineWeight,
+      double lineTypeScale);
 
   void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType);
-  void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType,
+  void SetPen(AeSysView* view,
+      EoGsRenderDevice* renderDevice,
+      std::int16_t penColor,
+      std::int16_t lineType,
       const std::wstring& lineTypeName);
-  void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType,
-      const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale);
+  void SetPen(AeSysView* view,
+      EoGsRenderDevice* renderDevice,
+      std::int16_t penColor,
+      std::int16_t lineType,
+      const std::wstring& lineTypeName,
+      EoDxfLineWeights::LineWeight lineWeight,
+      double lineTypeScale);
 
   void SetColor(CDC* deviceContext, std::int16_t color);
   void SetColor(EoGsRenderDevice* renderDevice, std::int16_t color);
@@ -113,10 +129,12 @@ class EoGsRenderState {
   int SetROP2(CDC* deviceContext, int drawMode);
   int SetROP2(EoGsRenderDevice* renderDevice, int drawMode);
 
-  void SetAlignment(
-      CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
-  void SetAlignment(
-      EoGsRenderDevice* renderDevice, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment);
+  void SetAlignment(CDC* deviceContext,
+      EoDb::HorizontalAlignment horizontalAlignment,
+      EoDb::VerticalAlignment verticalAlignment);
+  void SetAlignment(EoGsRenderDevice* renderDevice,
+      EoDb::HorizontalAlignment horizontalAlignment,
+      EoDb::VerticalAlignment verticalAlignment);
 };
 
 /// @brief Graphics State — application-wide singletons for the Gs rendering layer.

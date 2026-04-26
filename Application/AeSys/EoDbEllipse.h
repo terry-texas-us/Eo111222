@@ -39,13 +39,21 @@ class EoDbEllipse : public EoDbPrimitive {
 
   // EoDbEllipse(const EoGePoint3d& center, double radius, double startAngle, double endAngle);
 
-  EoDbEllipse(
-      const EoGePoint3d& center, const EoGeVector3d& majorAxis, const EoGeVector3d& minorAxis, double sweepAngle);
+  EoDbEllipse(const EoGePoint3d& center,
+      const EoGeVector3d& majorAxis,
+      const EoGeVector3d& minorAxis,
+      double sweepAngle);
 
-  EoDbEllipse(EoGePoint3d& center, EoGeVector3d& majorAxis, EoGeVector3d& minorAxis, double sweepAngle,
-      std::int16_t color, std::int16_t lineTypeIndex);
+  EoDbEllipse(EoGePoint3d& center,
+      EoGeVector3d& majorAxis,
+      EoGeVector3d& minorAxis,
+      double sweepAngle,
+      std::int16_t color,
+      std::int16_t lineTypeIndex);
 
-  EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color = COLOR_BYLAYER,
+  EoDbEllipse(EoGePoint3d& center,
+      double radius,
+      std::int16_t color = COLOR_BYLAYER,
       std::int16_t lineTypeIndex = LINETYPE_BYLAYER);
 
   /**
@@ -101,8 +109,10 @@ class EoDbEllipse : public EoDbPrimitive {
 
  public:
   void CutAtPoint(const EoGePoint3d& point, EoDbGroup*) override;
-  void CutAt2Points(
-      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
+  void CutAt2Points(const EoGePoint3d& firstPoint,
+      const EoGePoint3d& secondPoint,
+      EoDbGroupList*,
+      EoDbGroupList*) override;
 
   /// @brief Generates a set of points which may be used to represent a arc using a double angle algorithm.
   void GenPts(EoGePoint3d centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis, double sweepAngle) const;

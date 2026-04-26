@@ -49,8 +49,10 @@ class CMainFrame : public CMDIFrameWndEx {
 
  public:
   BOOL PreCreateWindow(CREATESTRUCT& cs) override;
-  BOOL LoadFrame(UINT resourceId, DWORD defaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
-      CWnd* parentWnd = nullptr, CCreateContext* createContext = nullptr) override;
+  BOOL LoadFrame(UINT resourceId,
+      DWORD defaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE,
+      CWnd* parentWnd = nullptr,
+      CCreateContext* createContext = nullptr) override;
 
  public:
   ~CMainFrame() override;

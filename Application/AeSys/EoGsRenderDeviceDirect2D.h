@@ -10,11 +10,11 @@
 /// Ownership: the caller owns the render target and write factory; this device
 /// holds non-owning pointers and manages only per-frame brush/stroke resources.
 
-#include "EoGsRenderDevice.h"
-
 #include <d2d1.h>
 #include <dwrite.h>
 #include <wrl/client.h>
+
+#include "EoGsRenderDevice.h"
 
 /// @brief Concrete Direct2D rendering device.
 ///
@@ -137,8 +137,16 @@ class EoGsRenderDeviceDirect2D : public EoGsRenderDevice {
   void PopClipRect() override;
 
   // ── Bitmap Operations ─────────────────────────────────────────────────
-  void StretchBlt(int destX, int destY, int destWidth, int destHeight, EoGsRenderDevice* sourceDevice, int srcX,
-      int srcY, int srcWidth, int srcHeight, DWORD rop) override;
+  void StretchBlt(int destX,
+      int destY,
+      int destWidth,
+      int destHeight,
+      EoGsRenderDevice* sourceDevice,
+      int srcX,
+      int srcY,
+      int srcWidth,
+      int srcHeight,
+      DWORD rop) override;
 
   // ── Palette ───────────────────────────────────────────────────────────
   void* SelectPalette(void* palette, bool forceBackground) override;

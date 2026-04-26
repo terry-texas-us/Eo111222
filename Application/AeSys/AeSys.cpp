@@ -39,8 +39,8 @@ void RegisterAeSysTopics();
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
 
-double penWidthsTable[numberOfPenWidths] = {
-    0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
+double penWidthsTable[numberOfPenWidths] =
+    {0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 
 namespace {
 /** @brief Converts a multi-byte (UTF-8) string to a wide-character string.
@@ -57,8 +57,8 @@ std::wstring MultiByteToWString(const char* multiByte) {
   return string;
 }
 
-constexpr double defaultPenWidths[numberOfPenWidths] = {
-    0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
+constexpr double defaultPenWidths[numberOfPenWidths] =
+    {0.0, 0.0075, 0.015, 0.02, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225, 0.03, 0.0075, 0.015, 0.0225};
 }  // namespace
 
 static void ResetPenWidthsToDefault() {
@@ -199,7 +199,8 @@ BOOL AeSys::InitInstance() {
   HRESULT hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, m_d2dFactory.GetAddressOf());
   if (FAILED(hr)) { ATLTRACE2(traceGeneral, 0, L"D2D1CreateFactory failed: 0x%08X\n", hr); }
 
-  hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+  hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+      __uuidof(IDWriteFactory),
       reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
   if (FAILED(hr)) { ATLTRACE2(traceGeneral, 0, L"DWriteCreateFactory failed: 0x%08X\n", hr); }
 
@@ -332,9 +333,15 @@ void AeSys::OnTrapCommandsHighlight() {
   // UpdateAllViews(nullptr, lHint, &m_TrappedGroupList);
 }
 
-void AeSys::OnEditCfGroups() { m_ClipboardDataEoGroups = !m_ClipboardDataEoGroups; }
-void AeSys::OnEditCfImage() { m_ClipboardDataImage = !m_ClipboardDataImage; }
-void AeSys::OnEditCfText() { m_ClipboardDataText = !m_ClipboardDataText; }
+void AeSys::OnEditCfGroups() {
+  m_ClipboardDataEoGroups = !m_ClipboardDataEoGroups;
+}
+void AeSys::OnEditCfImage() {
+  m_ClipboardDataImage = !m_ClipboardDataImage;
+}
+void AeSys::OnEditCfText() {
+  m_ClipboardDataText = !m_ClipboardDataText;
+}
 
 void AeSys::OnModeLetter() {
   EoDlgModeLetter dialog;
@@ -359,7 +366,9 @@ void AeSys::OnFileRun() {
   }
 }
 
-void AeSys::OnHelpContents() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L); }
+void AeSys::OnHelpContents() {
+  ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_CONTENTS, 0L);
+}
 
 void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   CStdioFile file;
@@ -510,8 +519,10 @@ void AeSys::EditColorPalette() {
   cc.lpCustColors = Eo::GrayPalette;
   ::ChooseColor(&cc);
 
-  MessageBoxW(nullptr, L"The background color is no longer associated with the pen Color Palette.",
-      L"Deprecation Notice", MB_OK | MB_ICONINFORMATION);
+  MessageBoxW(nullptr,
+      L"The background color is no longer associated with the pen Color Palette.",
+      L"Deprecation Notice",
+      MB_OK | MB_ICONINFORMATION);
 
   AeSysDoc::GetDoc()->UpdateAllViews(nullptr, 0L, nullptr);
 }
@@ -598,11 +609,21 @@ void AeSys::ReleaseSimplexStrokeFont() {
   if (m_SimplexStrokeFont != nullptr) { delete[] m_SimplexStrokeFont; }
 }
 
-void AeSys::OnUpdateEditCfGroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataEoGroups); }
-void AeSys::OnUpdateEditCfImage(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataImage); }
-void AeSys::OnUpdateEditCfText(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ClipboardDataText); }
-void AeSys::OnUpdateTrapcommandsAddgroups(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_TrapModeAddGroups); }
-void AeSys::OnUpdateTrapcommandsHighlight(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_TrapHighlighted); }
+void AeSys::OnUpdateEditCfGroups(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_ClipboardDataEoGroups);
+}
+void AeSys::OnUpdateEditCfImage(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_ClipboardDataImage);
+}
+void AeSys::OnUpdateEditCfText(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_ClipboardDataText);
+}
+void AeSys::OnUpdateTrapcommandsAddgroups(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_TrapModeAddGroups);
+}
+void AeSys::OnUpdateTrapcommandsHighlight(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_TrapHighlighted);
+}
 
 // Modifies the base accelerator table by defining the mode specific keys.
 void AeSys::BuildModifiedAcceleratorTable() const {
@@ -668,8 +689,11 @@ void AeSys::FormatAngle(CString& angleAsString, double angle, const int width, c
   angleAsString.Format(formatSpecification, Eo::RadianToDegree(angle));
 }
 
-void AeSys::FormatLength(
-    CString& lengthAsString, Eo::Units units, double length, const int minWidth, const int precision) {
+void AeSys::FormatLength(CString& lengthAsString,
+    Eo::Units units,
+    double length,
+    const int minWidth,
+    const int precision) {
   constexpr size_t bufSize{32};
   auto lengthAsBuffer = lengthAsString.GetBufferSetLength(bufSize);
 
@@ -726,8 +750,11 @@ void AeSys::FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufS
   wcscat_s(lengthAsBuffer, bufSize, L"\"");
 }
 
-void AeSys::FormatLengthEngineering(
-    wchar_t* lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision) {
+void AeSys::FormatLengthEngineering(wchar_t* lengthAsBuffer,
+    const size_t bufSize,
+    double length,
+    const int width,
+    const int precision) {
   wchar_t szBuf[16]{};
 
   double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -761,8 +788,12 @@ void AeSys::FormatLengthEngineering(
   }
 }
 
-void AeSys::FormatLengthSimple(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length,
-    const int width, const int precision) {
+void AeSys::FormatLengthSimple(wchar_t* lengthAsBuffer,
+    const size_t bufSize,
+    Eo::Units units,
+    double length,
+    const int width,
+    const int precision) {
   const double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   CString formatSpecification;
@@ -925,8 +956,8 @@ double AeSys::ParseLength(Eo::Units units, const wchar_t* inputLine) {
       return (0.0);
     } catch (const wchar_t* errorMessage) { app.AddStringToMessageList(std::wstring(errorMessage)); }
 
-    if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken ||
-        iTyp == lex::SimpleUnitsLengthToken) {
+    if (iTyp == lex::ArchitecturalUnitsLengthToken || iTyp == lex::EngineeringUnitsLengthToken
+        || iTyp == lex::SimpleUnitsLengthToken) {
       return (length[0]);
     }
     lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, length);
@@ -987,8 +1018,12 @@ class EoDlgAbout : public CDialogEx {
 
 EoDlgAbout::EoDlgAbout() : CDialogEx(IDD) {}
 
-void EoDlgAbout::DoDataExchange(CDataExchange* dataExchange) { CDialogEx::DoDataExchange(dataExchange); }
-void EoDlgAbout::OnOK() { CDialogEx::OnOK(); }
+void EoDlgAbout::DoDataExchange(CDataExchange* dataExchange) {
+  CDialogEx::DoDataExchange(dataExchange);
+}
+void EoDlgAbout::OnOK() {
+  CDialogEx::OnOK();
+}
 
 void AeSys::OnAppAbout() {
   EoDlgAbout dlg;

@@ -8,8 +8,8 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 
-EoGeReferenceSystem::EoGeReferenceSystem(
-    const EoGePoint3d& origin, const EoDbCharacterCellDefinition& characterCellDefinition)
+EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin,
+    const EoDbCharacterCellDefinition& characterCellDefinition)
     : m_origin{origin} {
   auto* const activeView = AeSysView::GetActiveView();
   const auto cameraDirection = activeView->CameraDirection();
@@ -20,8 +20,8 @@ EoGeReferenceSystem::EoGeReferenceSystem(
   m_xDirection = m_yDirection;
   m_xDirection.RotateAboutArbitraryAxis(cameraDirection, -Eo::HalfPi);
   m_yDirection.RotateAboutArbitraryAxis(cameraDirection, characterCellDefinition.SlantAngle());
-  m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
-                  characterCellDefinition.ExpansionFactor();
+  m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height()
+      * characterCellDefinition.ExpansionFactor();
   m_yDirection *= characterCellDefinition.Height();
 }
 
@@ -43,8 +43,8 @@ void EoGeReferenceSystem::Rescale(const EoDbCharacterCellDefinition& characterCe
   m_xDirection.Unitize();
   m_yDirection = m_xDirection;
   m_yDirection.RotateAboutArbitraryAxis(normal, Eo::HalfPi + characterCellDefinition.SlantAngle());
-  m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height() *
-                  characterCellDefinition.ExpansionFactor();
+  m_xDirection *= Eo::defaultCharacterCellAspectRatio * characterCellDefinition.Height()
+      * characterCellDefinition.ExpansionFactor();
   m_yDirection *= characterCellDefinition.Height();
 }
 

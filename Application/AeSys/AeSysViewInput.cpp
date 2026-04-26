@@ -88,16 +88,12 @@ void AeSysView::OnLButtonDblClk([[maybe_unused]] UINT flags, CPoint point) {
     // Double-click outside or inside a different viewport: deactivate first
     DeactivateViewport();
     // If the click was inside a different viewport, activate it
-    if (hitViewport != nullptr) {
-      SetActiveViewportPrimitive(hitViewport);
-    }
+    if (hitViewport != nullptr) { SetActiveViewportPrimitive(hitViewport); }
     return;
   }
 
   // No viewport active — activate the one under the cursor
-  if (hitViewport != nullptr) {
-    SetActiveViewportPrimitive(hitViewport);
-  }
+  if (hitViewport != nullptr) { SetActiveViewportPrimitive(hitViewport); }
 }
 
 void AeSysView::SetActiveViewportPrimitive(EoDbViewport* viewport) {
@@ -210,13 +206,17 @@ bool AeSysView::ConfigureViewportTransform(const EoDbViewport* viewport) {
   const double windowCenterU = halfExtentU * (1.0 - 2.0 * clipCenterX / deviceWidth);
   const double windowCenterV = halfExtentV * (2.0 * clipCenterY / deviceHeight - 1.0);
 
-  SetViewWindow(windowCenterU - halfExtentU, windowCenterV - halfExtentV,
-      windowCenterU + halfExtentU, windowCenterV + halfExtentV);
+  SetViewWindow(windowCenterU - halfExtentU,
+      windowCenterV - halfExtentV,
+      windowCenterU + halfExtentU,
+      windowCenterV + halfExtentV);
 
   return true;
 }
 
-void AeSysView::RestoreViewportTransform() { PopViewTransform(); }
+void AeSysView::RestoreViewportTransform() {
+  PopViewTransform();
+}
 
 void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
   if (app.CustomRButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
@@ -480,8 +480,8 @@ void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
     CPoint clientPoint = ProjectToClient(ndcPoint);
     RestoreViewportTransform();
 
-    m_ptCursorPosDev = EoGePoint3d(
-        static_cast<double>(clientPoint.x), static_cast<double>(clientPoint.y), ndcPoint.z / ndcPoint.w);
+    m_ptCursorPosDev =
+        EoGePoint3d(static_cast<double>(clientPoint.x), static_cast<double>(clientPoint.y), ndcPoint.z / ndcPoint.w);
     m_ptCursorPosWorld = position;
 
     ClientToScreen(&clientPoint);
@@ -570,8 +570,8 @@ static HCURSOR LoadCursorFromRcData(UINT resourceIdentifier, int desiredSize) {
   *reinterpret_cast<WORD*>(buffer.get() + 2) = hotspotY;
   std::memcpy(buffer.get() + 4, data + imageOffset, imageSize);
 
-  return static_cast<HCURSOR>(CreateIconFromResourceEx(
-      buffer.get(), bufferSize, FALSE, 0x00030000, bestWidth, bestWidth, 0));
+  return static_cast<HCURSOR>(
+      CreateIconFromResourceEx(buffer.get(), bufferSize, FALSE, 0x00030000, bestWidth, bestWidth, 0));
 }
 
 void AeSysView::SetModeCursor(int mode) {
@@ -581,8 +581,8 @@ void AeSysView::SetModeCursor(int mode) {
   // Paper space is always white — cursor must use white-background variant.
   // Block edit uses gray background — cursor uses the normal dark-scheme variant.
   auto* document = GetDocument();
-  auto isWhiteBackground = (Eo::activeViewBackground == Eo::ViewBackground::White) ||
-      (document != nullptr && document->ActiveSpace() == EoDxf::Space::PaperSpace && !document->IsEditingBlock());
+  auto isWhiteBackground = (Eo::activeViewBackground == Eo::ViewBackground::White)
+      || (document != nullptr && document->ActiveSpace() == EoDxf::Space::PaperSpace && !document->IsEditingBlock());
   std::uint16_t resourceIdentifier{};
 
   switch (mode) {
@@ -648,11 +648,11 @@ void AeSysView::SetModeCursor(int mode) {
   }
 
   // Compute DPI-scaled cursor size for resources that contain high-resolution images.
-  // SM_CXCURSOR is not DPI-aware and always returns 32, so LR_DEFAULTSIZE picks 32x32 even on high-DPI displays. 
+  // SM_CXCURSOR is not DPI-aware and always returns 32, so LR_DEFAULTSIZE picks 32x32 even on high-DPI displays.
   // For Draw mode, target a 1-inch cursor: size in pixels equals the DPI value. LoadImageW picks the closest match
   // from the .cur file (e.g., 128x128 at 144 DPI, 256x256 at 288+ DPI).
   //
-  // Draw mode uses RCDATA (not CURSOR) because the .cur file contains PNG-compressed images that rc.exe cannot parse. 
+  // Draw mode uses RCDATA (not CURSOR) because the .cur file contains PNG-compressed images that rc.exe cannot parse.
   // LoadCursorFromRcData handles the directory parsing and calls CreateIconFromResourceEx with the best-match image.
   HCURSOR cursorHandle{};
   if (mode == ID_MODE_DRAW || mode == ID_MODE_TRAP || mode == ID_MODE_TRAPR) {
@@ -660,8 +660,8 @@ void AeSysView::SetModeCursor(int mode) {
     cursorHandle = LoadCursorFromRcData(resourceIdentifier, desiredSize);
   }
   if (cursorHandle == nullptr) {
-    cursorHandle = static_cast<HCURSOR>(LoadImageW(
-        AeSys::GetInstance(), MAKEINTRESOURCE(resourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
+    cursorHandle = static_cast<HCURSOR>(
+        LoadImageW(AeSys::GetInstance(), MAKEINTRESOURCE(resourceIdentifier), IMAGE_CURSOR, 0, 0, LR_DEFAULTSIZE));
   }
   VERIFY(cursorHandle);
   SetCursor(cursorHandle);

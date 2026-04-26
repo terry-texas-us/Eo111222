@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Resource.h"
-
 #include <cstdint>
 #include <string>
 #include <vector>
 
+#include "Resource.h"
+
 /// @brief Defines which portion of the drawing to plot.
 enum class PlotArea : int {
-  Layout = 0,   ///< Entire paper-space layout (paper space) or drawing limits (model space).
+  Layout = 0,  ///< Entire paper-space layout (paper space) or drawing limits (model space).
   Extents = 1,  ///< All objects — computed from document extents.
   Display = 2,  ///< Current screen view.
-  Window = 3,   ///< User-defined rectangle (future — pick corners).
+  Window = 3,  ///< User-defined rectangle (future — pick corners).
 };
 
 /// @brief Aggregates all user-selected plot settings produced by the Plot dialog.
@@ -20,28 +20,28 @@ enum class PlotArea : int {
 /// to configure the printer device context and view transform.
 struct PlotSettings {
   // Printer
-  std::wstring printerName;    ///< Display name of the selected Windows printer.
-  bool printToFile{};          ///< If true, prompt for output file path.
+  std::wstring printerName;  ///< Display name of the selected Windows printer.
+  bool printToFile{};  ///< If true, prompt for output file path.
 
   // Paper
-  int paperSizeIndex{-1};      ///< Index into the device's paper-size list (-1 = default).
-  short dmPaperSize{};         ///< DEVMODE dmPaperSize value for the selected paper.
-  bool landscape{true};        ///< true = landscape, false = portrait.
+  int paperSizeIndex{-1};  ///< Index into the device's paper-size list (-1 = default).
+  short dmPaperSize{};  ///< DEVMODE dmPaperSize value for the selected paper.
+  bool landscape{true};  ///< true = landscape, false = portrait.
 
   // Plot area
   PlotArea plotArea{PlotArea::Extents};
 
   // Plot offset
-  bool centerPlot{true};       ///< Auto-center the drawing on the sheet.
-  double offsetX{};            ///< Manual X offset from lower-left of printable area (inches).
-  double offsetY{};            ///< Manual Y offset from lower-left of printable area (inches).
+  bool centerPlot{true};  ///< Auto-center the drawing on the sheet.
+  double offsetX{};  ///< Manual X offset from lower-left of printable area (inches).
+  double offsetY{};  ///< Manual Y offset from lower-left of printable area (inches).
 
   // Plot scale
-  bool fitToPaper{true};       ///< Auto-scale to fill the sheet.
-  int scalePresetIndex{-1};    ///< Index into standard scale list (-1 = custom).
+  bool fitToPaper{true};  ///< Auto-scale to fill the sheet.
+  int scalePresetIndex{-1};  ///< Index into standard scale list (-1 = custom).
   double customPaperUnits{1.0};  ///< Paper units (inches) in custom scale ratio.
   double customDrawingUnits{1.0};  ///< Drawing units in custom scale ratio.
-  bool scaleLineweights{};     ///< Scale lineweights proportionally with plot scale.
+  bool scaleLineweights{};  ///< Scale lineweights proportionally with plot scale.
 
   // Copies
   int copies{1};
@@ -57,17 +57,17 @@ struct PlotSettings {
 
 /// @brief Describes a paper size reported by a printer driver.
 struct PlotPaperSize {
-  std::wstring name;     ///< Display name (e.g., "Letter 8 1/2 x 11 in").
-  short dmPaperSize{};   ///< DEVMODE dmPaperSize constant.
-  double widthMm{};      ///< Width in millimetres (landscape orientation).
-  double heightMm{};     ///< Height in millimetres (landscape orientation).
+  std::wstring name;  ///< Display name (e.g., "Letter 8 1/2 x 11 in").
+  short dmPaperSize{};  ///< DEVMODE dmPaperSize constant.
+  double widthMm{};  ///< Width in millimetres (landscape orientation).
+  double heightMm{};  ///< Height in millimetres (landscape orientation).
 };
 
 /// @brief Standard plot scale preset entry.
 struct PlotScalePreset {
-  const wchar_t* label;       ///< Display text (e.g., "1:1", "1/4\" = 1'-0\"").
-  double paperUnits;          ///< Inches on paper.
-  double drawingUnits;        ///< Drawing units.
+  const wchar_t* label;  ///< Display text (e.g., "1:1", "1/4\" = 1'-0\"").
+  double paperUnits;  ///< Inches on paper.
+  double drawingUnits;  ///< Drawing units.
 };
 
 /// @brief Unified Plot dialog — replaces Print Setup, Print, Plot submenu, and Print Preview.

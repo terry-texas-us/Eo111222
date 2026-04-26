@@ -35,10 +35,13 @@ class EoDbGroupList : public CObList {
    * block reference primitives remain in any group.
    */
   void ExplodeBlockReferences();
-  
+
   int GetBlockRefCount(const CString& name);
   /// @brief Determines the extent of all groups in list.
-  void GetExtents(AeSysView* view, EoGePoint3d& minimum, EoGePoint3d& maximum, const EoGeTransformMatrix& transformMatrix);
+  void GetExtents(AeSysView* view,
+      EoGePoint3d& minimum,
+      EoGePoint3d& maximum,
+      const EoGeTransformMatrix& transformMatrix);
   int GetLineTypeRefCount(const std::wstring& lineTypeName);
 
   /** Modifies the notes of all groups in the list using the specified font definition, character cell definition and
@@ -48,7 +51,8 @@ class EoDbGroupList : public CObList {
    * @param attributes The attributes that specify which properties of the notes to modify. This can be a combination of
    * TM_TEXT_ALL, TM_TEXT_FONT, and TM_TEXT_HEIGHT.
    */
-  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition,
+      const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);
   void ModifyColor(std::int16_t color);
   void ModifyLineType(const std::wstring& lineTypeName);

@@ -10,7 +10,8 @@ AllowShortFunctionsOnASingleLine: Inline
 
 SortIncludes: true
 IncludeBlocks: Regroup
-IncludeIsMainRegex: ''
+IncludeIsMainSourceRegex: ''
+IncludeIsMainRegex: '^$'
 
 IncludeCategories:
   # Precompiled Header - MUST ALWAYS BE FIRST

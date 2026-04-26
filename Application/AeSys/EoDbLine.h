@@ -76,8 +76,10 @@ class EoDbLine : public EoDbPrimitive {
   /// @return A pointer to the constructed EoDbLine.
   static EoDbLine* ReadFromPeg(CFile& file);
 
-  void CutAt2Points(
-      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
+  void CutAt2Points(const EoGePoint3d& firstPoint,
+      const EoGePoint3d& secondPoint,
+      EoDbGroupList*,
+      EoDbGroupList*) override;
 
   /** @brief Cuts a line at a point.
    * @param point Point for the line cut.

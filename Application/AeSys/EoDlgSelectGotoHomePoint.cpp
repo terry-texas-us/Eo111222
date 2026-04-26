@@ -48,7 +48,9 @@ BOOL EoDlgSelectGotoHomePoint::OnInitDialog() {
 
   return TRUE;
 }
-void EoDlgSelectGotoHomePoint::OnOK() { CDialog::OnOK(); }
+void EoDlgSelectGotoHomePoint::OnOK() {
+  CDialog::OnOK();
+}
 void EoDlgSelectGotoHomePoint::OnCbnEditupdateList() {
   CString namesItem;
   m_HomePointNames.GetWindowTextW(namesItem);

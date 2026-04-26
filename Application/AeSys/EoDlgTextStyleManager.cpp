@@ -17,8 +17,7 @@ constexpr UINT kInPlaceEditId = 2001;
 
 IMPLEMENT_DYNAMIC(EoDlgTextStyleManager, CDialog)
 
-EoDlgTextStyleManager::EoDlgTextStyleManager(CWnd* parent)
-    : CDialog(IDD, parent) {}
+EoDlgTextStyleManager::EoDlgTextStyleManager(CWnd* parent) : CDialog(IDD, parent) {}
 
 void EoDlgTextStyleManager::DoDataExchange(CDataExchange* dataExchange) {
   CDialog::DoDataExchange(dataExchange);
@@ -105,8 +104,8 @@ void EoDlgTextStyleManager::BeginInPlaceEdit(int row, int column) {
   const CString currentText = m_styleList.GetItemText(row, column);
 
   if (!m_inPlaceEdit.GetSafeHwnd()) {
-    m_inPlaceEdit.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_RIGHT, subItemRect, &m_styleList,
-        kInPlaceEditId);
+    m_inPlaceEdit.Create(
+        WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL | ES_RIGHT, subItemRect, &m_styleList, kInPlaceEditId);
     m_inPlaceEdit.SetFont(m_styleList.GetFont());
   } else {
     m_inPlaceEdit.MoveWindow(&subItemRect);
@@ -173,7 +172,9 @@ void EoDlgTextStyleManager::CancelInPlaceEdit() {
   m_editingColumn = -1;
 }
 
-void EoDlgTextStyleManager::OnEndEditKillFocus() { CommitInPlaceEdit(); }
+void EoDlgTextStyleManager::OnEndEditKillFocus() {
+  CommitInPlaceEdit();
+}
 
 BOOL EoDlgTextStyleManager::PreTranslateMessage(MSG* msg) {
   if (m_inPlaceEdit.GetSafeHwnd() && m_inPlaceEdit.IsWindowVisible()) {

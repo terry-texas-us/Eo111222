@@ -82,7 +82,9 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
   // --- Resolve dimension style ---
   const auto* dimStyle = document->FindDimStyle(dimension.GetDimensionStyleName());
   if (dimStyle == nullptr) {
-    ATLTRACE2(traceGeneral, 1, L"DimLinear: dimension style '%s' not found, using defaults\n",
+    ATLTRACE2(traceGeneral,
+        1,
+        L"DimLinear: dimension style '%s' not found, using defaults\n",
         dimension.GetDimensionStyleName().c_str());
   }
 
@@ -112,26 +114,24 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
   // Both use the same value encoding: 1=Scientific, 2=Decimal, 3=Engineering, 4=Architectural, 5=Fractional.
   // dimunit (group 270) is obsolete in R2000+ but may be the only value set in older DXF files or converters.
   std::int16_t resolvedDimlunit = dimStyle != nullptr ? dimStyle->dimlunit : 2;
-  if (resolvedDimlunit <= 0 && dimStyle != nullptr) {
-    resolvedDimlunit = dimStyle->dimunit;
-  }
+  if (resolvedDimlunit <= 0 && dimStyle != nullptr) { resolvedDimlunit = dimStyle->dimunit; }
   if (resolvedDimlunit <= 0 || resolvedDimlunit > 6) {
     resolvedDimlunit = 2;  // Default to Decimal
   }
 
   // --- Extract definition points ---
-  const auto defPt = dimension.GetDefinitionPoint();      // On the dimension line (WCS)
+  const auto defPt = dimension.GetDefinitionPoint();  // On the dimension line (WCS)
   const auto extPt1 = dimension.GetExtensionLinePoint1();  // Feature point 1 (WCS)
   const auto extPt2 = dimension.GetExtensionLinePoint2();  // Feature point 2 (WCS)
-  const auto textPtOcs = dimension.GetTextPoint();          // Text midpoint (OCS per DXF spec)
+  const auto textPtOcs = dimension.GetTextPoint();  // Text midpoint (OCS per DXF spec)
 
   // Transform text midpoint from OCS → WCS using the entity's extrusion direction.
   // DXF DIMENSION group codes 11/21/31 are in OCS; other definition points (10,13,14) are WCS.
   const EoGeVector3d dimExtrusionDirection{
       dimension.m_extrusionDirection.x, dimension.m_extrusionDirection.y, dimension.m_extrusionDirection.z};
-  const bool dimNeedsOcsTransform = Eo::IsGeometricallyNonZero(dimExtrusionDirection.x) ||
-      Eo::IsGeometricallyNonZero(dimExtrusionDirection.y) ||
-      Eo::IsGeometricallyNonZero(dimExtrusionDirection.z - 1.0);
+  const bool dimNeedsOcsTransform = Eo::IsGeometricallyNonZero(dimExtrusionDirection.x)
+      || Eo::IsGeometricallyNonZero(dimExtrusionDirection.y)
+      || Eo::IsGeometricallyNonZero(dimExtrusionDirection.z - 1.0);
 
   EoDxfGeometryBase3d textPt = textPtOcs;
   if (dimNeedsOcsTransform) {
@@ -168,30 +168,23 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
 
   // Dimension line endpoint positions (projected feature points at dim line level)
   const EoGePoint3d dimLinePt1{
-      extPt1.x + extDir.x * (dimLineLevel - ext1Level),
-      extPt1.y + extDir.y * (dimLineLevel - ext1Level),
-      extPt1.z};
+      extPt1.x + extDir.x * (dimLineLevel - ext1Level), extPt1.y + extDir.y * (dimLineLevel - ext1Level), extPt1.z};
   const EoGePoint3d dimLinePt2{
-      extPt2.x + extDir.x * (dimLineLevel - ext2Level),
-      extPt2.y + extDir.y * (dimLineLevel - ext2Level),
-      extPt2.z};
+      extPt2.x + extDir.x * (dimLineLevel - ext2Level), extPt2.y + extDir.y * (dimLineLevel - ext2Level), extPt2.z};
 
   // --- Extension line geometry ---
   // Extension lines run from feature origin (offset by dimexo) toward the dimension line
   // (extended by dimexe past it). The direction is from the feature point toward the dim line.
-  auto buildExtensionLine = [&](const EoDxfGeometryBase3d& featurePoint, double featureLevel,
-                                 const EoGePoint3d& dimLinePoint) -> std::pair<EoGePoint3d, EoGePoint3d> {
+  auto buildExtensionLine = [&](const EoDxfGeometryBase3d& featurePoint,
+                                double featureLevel,
+                                const EoGePoint3d& dimLinePoint) -> std::pair<EoGePoint3d, EoGePoint3d> {
     const double totalRun = dimLineLevel - featureLevel;
     const double sign = totalRun >= 0.0 ? 1.0 : -1.0;
 
     const EoGePoint3d startPoint{
-        featurePoint.x + extDir.x * dimexo * sign,
-        featurePoint.y + extDir.y * dimexo * sign,
-        featurePoint.z};
+        featurePoint.x + extDir.x * dimexo * sign, featurePoint.y + extDir.y * dimexo * sign, featurePoint.z};
     const EoGePoint3d endPoint{
-        dimLinePoint.x + extDir.x * dimexe * sign,
-        dimLinePoint.y + extDir.y * dimexe * sign,
-        dimLinePoint.z};
+        dimLinePoint.x + extDir.x * dimexe * sign, dimLinePoint.y + extDir.y * dimexe * sign, dimLinePoint.z};
     return {startPoint, endPoint};
   };
 
@@ -216,13 +209,9 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
   // --- Create dimension line ---
   // When dimdle > 0, the dimension line extends past the extension lines
   const EoGePoint3d dimLineStart{
-      dimLinePt1.x - measureDir.x * dimdle,
-      dimLinePt1.y - measureDir.y * dimdle,
-      dimLinePt1.z};
+      dimLinePt1.x - measureDir.x * dimdle, dimLinePt1.y - measureDir.y * dimdle, dimLinePt1.z};
   const EoGePoint3d dimLineEnd{
-      dimLinePt2.x + measureDir.x * dimdle,
-      dimLinePt2.y + measureDir.y * dimdle,
-      dimLinePt2.z};
+      dimLinePt2.x + measureDir.x * dimdle, dimLinePt2.y + measureDir.y * dimdle, dimLinePt2.z};
 
   auto* dimLine = EoDbLine::CreateLine(dimLineStart, dimLineEnd);
   dimLine->SetBaseProperties(&dimension, document);
@@ -273,15 +262,18 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
     // Apply dimrnd rounding: rounds the measurement to the nearest dimrnd increment.
     // For example, dimrnd=0.25 rounds to nearest quarter unit; dimrnd=0.5 to nearest half.
     // dimrnd=0.0 (default) means no rounding — precision is controlled only by dimdec.
-    if (dimrnd > Eo::geometricTolerance) {
-      measurement = std::round(measurement / dimrnd) * dimrnd;
-    }
+    if (dimrnd > Eo::geometricTolerance) { measurement = std::round(measurement / dimrnd) * dimrnd; }
 
     const int decimalPlaces = dimStyle != nullptr ? dimStyle->dimdec : 4;
 
-    ATLTRACE2(traceGeneral, 2,
+    ATLTRACE2(traceGeneral,
+        2,
         L"  DimLinear text: dimlunit=%d (raw=%d, dimunit=%d), dimdec=%d, dimrnd=%.6f, measurement=%.10f\n",
-        resolvedDimlunit, dimStyle ? dimStyle->dimlunit : -1, dimStyle ? dimStyle->dimunit : -1, decimalPlaces, dimrnd,
+        resolvedDimlunit,
+        dimStyle ? dimStyle->dimlunit : -1,
+        dimStyle ? dimStyle->dimunit : -1,
+        decimalPlaces,
+        dimrnd,
         measurement);
 
     // Format based on resolvedDimlunit (linear unit format)
@@ -341,9 +333,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
             num /= 2;
             den /= 2;
           }
-          if (wholeInches != 0) {
-            result += std::to_wstring(wholeInches) + L' ';
-          }
+          if (wholeInches != 0) { result += std::to_wstring(wholeInches) + L' '; }
           result += std::to_wstring(num);
           result += L'/';
           result += std::to_wstring(den);
@@ -392,9 +382,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
             num /= 2;
             den /= 2;
           }
-          if (whole != 0) {
-            dimensionText = std::to_wstring(whole) + L' ';
-          }
+          if (whole != 0) { dimensionText = std::to_wstring(whole) + L' '; }
           dimensionText += std::to_wstring(num) + L'/' + std::to_wstring(den);
         }
         break;
@@ -428,8 +416,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
     auto textMeasureDir = measureDir;
     auto textExtDir = extDir;
     const double measureAngle = std::atan2(measureDir.y, measureDir.x);
-    if (measureAngle > Eo::HalfPi + Eo::geometricTolerance ||
-        measureAngle < -(Eo::HalfPi + Eo::geometricTolerance)) {
+    if (measureAngle > Eo::HalfPi + Eo::geometricTolerance || measureAngle < -(Eo::HalfPi + Eo::geometricTolerance)) {
       textMeasureDir = EoGeVector3d{-measureDir.x, -measureDir.y, -measureDir.z};
       textExtDir = EoGeVector3d{-extDir.x, -extDir.y, -extDir.z};
     }

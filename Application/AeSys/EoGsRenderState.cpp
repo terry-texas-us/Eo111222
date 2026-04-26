@@ -19,8 +19,13 @@ void EoGsRenderState::Restore(CDC* deviceContext, int saveIndex) {
   if (saveIndex >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
   if (psSav[saveIndex] != nullptr) {
-    SetPen(nullptr, deviceContext, psSav[saveIndex]->Color(), psSav[saveIndex]->LineTypeIndex(),
-        psSav[saveIndex]->LineTypeName(), psSav[saveIndex]->LineWeight(), psSav[saveIndex]->LineTypeScale());
+    SetPen(nullptr,
+        deviceContext,
+        psSav[saveIndex]->Color(),
+        psSav[saveIndex]->LineTypeIndex(),
+        psSav[saveIndex]->LineTypeName(),
+        psSav[saveIndex]->LineWeight(),
+        psSav[saveIndex]->LineTypeScale());
 
     m_fontDefinition = psSav[saveIndex]->m_fontDefinition;
 
@@ -38,8 +43,13 @@ void EoGsRenderState::Restore(EoGsRenderDevice* renderDevice, int saveIndex) {
   if (saveIndex >= static_cast<int>(sizeof(psSav) / sizeof(psSav[0]))) { return; }
 
   if (psSav[saveIndex] != nullptr) {
-    SetPen(nullptr, renderDevice, psSav[saveIndex]->Color(), psSav[saveIndex]->LineTypeIndex(),
-        psSav[saveIndex]->LineTypeName(), psSav[saveIndex]->LineWeight(), psSav[saveIndex]->LineTypeScale());
+    SetPen(nullptr,
+        renderDevice,
+        psSav[saveIndex]->Color(),
+        psSav[saveIndex]->LineTypeIndex(),
+        psSav[saveIndex]->LineTypeName(),
+        psSav[saveIndex]->LineWeight(),
+        psSav[saveIndex]->LineTypeScale());
 
     m_fontDefinition = psSav[saveIndex]->m_fontDefinition;
 
@@ -73,13 +83,21 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
   SetPen(view, deviceContext, color, lineTypeIndex, std::wstring{});
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t color, std::int16_t lineTypeIndex,
+void EoGsRenderState::SetPen(AeSysView* view,
+    CDC* deviceContext,
+    std::int16_t color,
+    std::int16_t lineTypeIndex,
     const std::wstring& lineTypeName) {
   SetPen(view, deviceContext, color, lineTypeIndex, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault, 1.0);
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t color, std::int16_t lineTypeIndex,
-    const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight, double lineTypeScale) {
+void EoGsRenderState::SetPen(AeSysView* view,
+    CDC* deviceContext,
+    std::int16_t color,
+    std::int16_t lineTypeIndex,
+    const std::wstring& lineTypeName,
+    EoDxfLineWeights::LineWeight lineWeight,
+    double lineTypeScale) {
   m_lineWeight = lineWeight;  // Store unresolved for UI readback
   if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
   if (color == EoDbPrimitive::COLOR_BYLAYER) { color = EoDbPrimitive::LayerColor(); }
@@ -119,18 +137,27 @@ void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t c
   if (deviceContext) { ManagePenResources(deviceContext, color, int(logicalWidth), lineTypeIndex); }
 }
 
-void EoGsRenderState::SetPen(
-    AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color, std::int16_t lineTypeIndex) {
+void EoGsRenderState::SetPen(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    std::int16_t color,
+    std::int16_t lineTypeIndex) {
   SetPen(view, renderDevice, color, lineTypeIndex, std::wstring{});
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color,
-    std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
+void EoGsRenderState::SetPen(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    std::int16_t color,
+    std::int16_t lineTypeIndex,
+    const std::wstring& lineTypeName) {
   SetPen(view, renderDevice, color, lineTypeIndex, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault, 1.0);
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t color,
-    std::int16_t lineTypeIndex, const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight,
+void EoGsRenderState::SetPen(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    std::int16_t color,
+    std::int16_t lineTypeIndex,
+    const std::wstring& lineTypeName,
+    EoDxfLineWeights::LineWeight lineWeight,
     double lineTypeScale) {
   m_lineWeight = lineWeight;  // Store unresolved for UI readback
   if (EoDbPrimitive::SpecialColor() != 0) { color = EoDbPrimitive::SpecialColor(); }
@@ -169,8 +196,10 @@ void EoGsRenderState::SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, st
   if (renderDevice) { ManagePenResources(renderDevice, color, int(logicalWidth), lineTypeIndex); }
 }
 
-void EoGsRenderState::ManagePenResources(
-    CDC* deviceContext, std::int16_t penColor, int penWidth, std::int16_t lineType) {
+void EoGsRenderState::ManagePenResources(CDC* deviceContext,
+    std::int16_t penColor,
+    int penWidth,
+    std::int16_t lineType) {
   static const int numberOfPens = 8;
   static HPEN hPen[numberOfPens] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
   static COLORREF crColRef[numberOfPens];
@@ -226,8 +255,10 @@ void EoGsRenderState::ManagePenResources(
   }
 }
 
-void EoGsRenderState::ManagePenResources(
-    EoGsRenderDevice* renderDevice, std::int16_t penColor, int penWidth, std::int16_t lineType) {
+void EoGsRenderState::ManagePenResources(EoGsRenderDevice* renderDevice,
+    std::int16_t penColor,
+    int penWidth,
+    std::int16_t lineType) {
   // Map internal lineType index to GDI pen style constant
   int penStyle;
   switch (lineType) {
@@ -310,14 +341,16 @@ int EoGsRenderState::SetROP2(EoGsRenderDevice* renderDevice, int drawMode) {
   return renderDevice->SetROP2(drawMode);
 }
 
-void EoGsRenderState::SetAlignment(
-    CDC* deviceContext, EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
+void EoGsRenderState::SetAlignment(CDC* deviceContext,
+    EoDb::HorizontalAlignment horizontalAlignment,
+    EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 
   deviceContext->SetTextAlign(TA_LEFT | TA_BASELINE);
 }
 
-void EoGsRenderState::SetAlignment(EoGsRenderDevice* renderDevice, EoDb::HorizontalAlignment horizontalAlignment,
+void EoGsRenderState::SetAlignment(EoGsRenderDevice* renderDevice,
+    EoDb::HorizontalAlignment horizontalAlignment,
     EoDb::VerticalAlignment verticalAlignment) {
   m_fontDefinition.SetAlignment(horizontalAlignment, verticalAlignment);
 

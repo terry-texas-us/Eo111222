@@ -46,8 +46,12 @@ typedef struct tagFilAreaEdgLis {
   };
 } pFilAreaEdgLis;
 
-void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTransformMatrix& transformMatrix,
-    const int iSets, const int* iPtLstsId, EoGePoint3d* pta) {
+void DisplayFilAreaHatch(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoGeTransformMatrix& transformMatrix,
+    const int iSets,
+    const int* iPtLstsId,
+    EoGePoint3d* pta) {
   double dCurStrLen{};
   double dEps1{};
   double dMaxY{};
@@ -107,7 +111,7 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
     }
 
     if (Eo::IsGeometricallyZero(dSpac) || Eo::IsGeometricallyZero(dTotStrLen) || iStrs <= 0) {
-      // Degenerate spacing, zero total stroke length, or non-positive stroke count would cause invalid looping or 
+      // Degenerate spacing, zero total stroke length, or non-positive stroke count would cause invalid looping or
       // modulo-by-zero behavior downstream.
       iTblId += iStrsInTable;  // skip ALL stroke entries to keep table pointer consistent
       continue;
@@ -145,8 +149,8 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
         ln.end = transformMatrix * ln.end;
         vEdg.x = ln.end.x - ln.begin.x;  // Determine x and y-components of edge
         vEdg.y = ln.end.y - ln.begin.y;
-        if (std::abs(vEdg.y) >
-            Eo::geometricTolerance * std::sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
+        if (std::abs(vEdg.y)
+            > Eo::geometricTolerance * std::sqrt(vEdg.x * vEdg.x + vEdg.y * vEdg.y)) {  // Edge is not horizontal
           dMaxY = std::max(ln.begin.y, ln.end.y);
           iCurEdg = iActEdgs + 1;
           // Find correct insertion point for edge in edge list using ymax as sort key
@@ -303,12 +307,46 @@ std::wstring MapFillStyleIndexToPatternName(std::int16_t fillStyleIndex) {
   static const struct {
     std::int16_t index;
     const wchar_t* name;
-  } patternTable[] = {{1, L"PEG1"}, {2, L"PEG2"}, {3, L"ANGLE"}, {4, L"ANSI31"}, {5, L"ANSI32"}, {6, L"ANSI33"},
-      {7, L"ANSI34"}, {8, L"ANSI35"}, {9, L"ANSI36"}, {10, L"ANSI37"}, {11, L"ANSI38"}, {12, L"BOX"}, {13, L"BRICK"},
-      {14, L"CLAY"}, {15, L"CORK"}, {16, L"CROSS"}, {17, L"DASH"}, {18, L"DOLMIT"}, {19, L"DOTS"}, {20, L"EARTH"},
-      {21, L"ESCHER"}, {22, L"FLEX"}, {23, L"GRASS"}, {24, L"GRATE"}, {25, L"HEX"}, {26, L"HONEY"}, {27, L"HOUND"},
-      {28, L"INSUL"}, {29, L"MUDST"}, {30, L"NET3"}, {31, L"PLAST"}, {32, L"PLASTI"}, {33, L"SACNCR"}, {34, L"SQUARE"},
-      {35, L"STARS"}, {36, L"SWAMP"}, {37, L"TRANS"}, {38, L"TRIAN"}, {39, L"ZIGZAG"}, {40, L"AR-CONC"},
+  } patternTable[] = {{1, L"PEG1"},
+      {2, L"PEG2"},
+      {3, L"ANGLE"},
+      {4, L"ANSI31"},
+      {5, L"ANSI32"},
+      {6, L"ANSI33"},
+      {7, L"ANSI34"},
+      {8, L"ANSI35"},
+      {9, L"ANSI36"},
+      {10, L"ANSI37"},
+      {11, L"ANSI38"},
+      {12, L"BOX"},
+      {13, L"BRICK"},
+      {14, L"CLAY"},
+      {15, L"CORK"},
+      {16, L"CROSS"},
+      {17, L"DASH"},
+      {18, L"DOLMIT"},
+      {19, L"DOTS"},
+      {20, L"EARTH"},
+      {21, L"ESCHER"},
+      {22, L"FLEX"},
+      {23, L"GRASS"},
+      {24, L"GRATE"},
+      {25, L"HEX"},
+      {26, L"HONEY"},
+      {27, L"HOUND"},
+      {28, L"INSUL"},
+      {29, L"MUDST"},
+      {30, L"NET3"},
+      {31, L"PLAST"},
+      {32, L"PLASTI"},
+      {33, L"SACNCR"},
+      {34, L"SQUARE"},
+      {35, L"STARS"},
+      {36, L"SWAMP"},
+      {37, L"TRANS"},
+      {38, L"TRIAN"},
+      {39, L"ZIGZAG"},
+      {40, L"AR-CONC"},
       {41, L"AR-SAND"}};
 
   for (const auto& entry : patternTable) {
@@ -388,8 +426,11 @@ EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices, EoGePoint3d* pt) {
 
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = pt[i]; }
 }
-EoDbPolygon::EoDbPolygon(
-    std::uint16_t numberOfVertices, EoGePoint3d origin, EoGeVector3d vXAx, EoGeVector3d vYAx, const EoGePoint3d* ppt) {
+EoDbPolygon::EoDbPolygon(std::uint16_t numberOfVertices,
+    EoGePoint3d origin,
+    EoGeVector3d vXAx,
+    EoGeVector3d vYAx,
+    const EoGePoint3d* ppt) {
   m_color = Gs::renderState.Color();
   m_polygonStyle = Gs::renderState.PolygonIntStyle();
   m_fillStyleIndex = Gs::renderState.PolygonIntStyleId();
@@ -402,8 +443,10 @@ EoDbPolygon::EoDbPolygon(
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = ppt[i]; }
 }
 
-EoDbPolygon::EoDbPolygon(
-    const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& pts) {
+EoDbPolygon::EoDbPolygon(const EoGePoint3d& origin,
+    const EoGeVector3d& xAxis,
+    const EoGeVector3d& yAxis,
+    EoGePoint3dArray& pts) {
   m_color = Gs::renderState.Color();
   m_polygonStyle = Gs::renderState.PolygonIntStyle();
   m_fillStyleIndex = Gs::renderState.PolygonIntStyleId();
@@ -416,8 +459,13 @@ EoDbPolygon::EoDbPolygon(
   for (auto i = 0; i < m_numberOfVertices; i++) { m_vertices[i] = pts[i]; }
 }
 
-EoDbPolygon::EoDbPolygon(std::int16_t color, EoDb::PolygonStyle style, std::int16_t styleIndex,
-    const EoGePoint3d& origin, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis, EoGePoint3dArray& points)
+EoDbPolygon::EoDbPolygon(std::int16_t color,
+    EoDb::PolygonStyle style,
+    std::int16_t styleIndex,
+    const EoGePoint3d& origin,
+    const EoGeVector3d& xAxis,
+    const EoGeVector3d& yAxis,
+    EoGePoint3dArray& points)
     : m_hatchOrigin(origin), m_positiveX(xAxis), m_positiveY(yAxis) {
   m_color = color;
   m_polygonStyle = style;
@@ -465,9 +513,13 @@ const EoDbPolygon& EoDbPolygon::operator=(const EoDbPolygon& other) {
   return *this;
 }
 
-EoDbPolygon::~EoDbPolygon() { delete[] m_vertices; }
+EoDbPolygon::~EoDbPolygon() {
+  delete[] m_vertices;
+}
 
-void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Polygon>", this); }
+void EoDbPolygon::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, L"<Polygon>", this);
+}
 
 EoDbPrimitive*& EoDbPolygon::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbPolygon(*this);
@@ -666,8 +718,9 @@ EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
   return (m_vertices[sm_pivotVertex]);
 }
 
-bool EoDbPolygon::SelectUsingLine(
-    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
+bool EoDbPolygon::SelectUsingLine([[maybe_unused]] AeSysView* view,
+    [[maybe_unused]] EoGeLine line,
+    [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 
@@ -742,8 +795,10 @@ void EoDbPolygon::GetAllPoints(EoGePoint3dArray& points) {
   for (auto i = 0; i < m_numberOfVertices; i++) { points.Add(m_vertices[i]); }
 }
 // Determines the extent.
-void EoDbPolygon::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbPolygon::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
   for (auto i = 0; i < m_numberOfVertices; i++) {

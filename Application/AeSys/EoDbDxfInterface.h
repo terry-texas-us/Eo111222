@@ -17,7 +17,6 @@
 #include "EoDxfMLeader.h"
 #include "EoDxfObjects.h"
 #include "EoDxfSpline.h"
-
 #include "EoDxfWrite.h"
 
 class EoDbAttrib;
@@ -230,12 +229,10 @@ class EoDbDxfInterface : public EoDxfInterface {
   }
 
   void AddSeqend(const EoDxfSeqend& seqend) override {
-    if (m_dxfWriter) {
-      m_dxfWriter->WriteSeqend(seqend);
-    }
+    if (m_dxfWriter) { m_dxfWriter->WriteSeqend(seqend); }
   }
 
-  void AddLeader([[maybe_unused]] const EoDxfLeader* leader) override {countOfLeader--;}
+  void AddLeader([[maybe_unused]] const EoDxfLeader* leader) override { countOfLeader--; }
 
   void AddLine(const EoDxfLine& line) override {
     if (m_dxfWriter) {
@@ -646,25 +643,21 @@ class EoDbDxfInterface : public EoDxfInterface {
               header.AddInt16(name, val ? 1 : 0, groupCode != 0 ? groupCode : 290);
             }
           },
-                   value);
-            }
+          value);
+    }
 
-            // Update $HANDSEED to reflect the document's current handle state.
-            // This ensures the exported DXF header advertises a seed above all entity handles.
-            header.AddHandle(L"$HANDSEED", m_document->HandleManager().NextHandleValue(), 5);
-          };
+    // Update $HANDSEED to reflect the document's current handle state.
+    // This ensures the exported DXF header advertises a seed above all entity handles.
+    header.AddHandle(L"$HANDSEED", m_document->HandleManager().NextHandleValue(), 5);
+  };
   void WriteObjects() override {};
   [[nodiscard]] bool HasUnsupportedObjects() const override {
     return m_document != nullptr && (!m_document->UnsupportedObjects().empty() || !m_document->Layouts().empty());
   }
   void WriteUnsupportedObjects() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
-    for (const auto& object : m_document->UnsupportedObjects()) {
-      m_dxfWriter->WriteUnsupportedObject(object);
-    }
-    for (const auto& layout : m_document->Layouts()) {
-      m_dxfWriter->WriteLayout(layout);
-    }
+    for (const auto& object : m_document->UnsupportedObjects()) { m_dxfWriter->WriteUnsupportedObject(object); }
+    for (const auto& layout : m_document->Layouts()) { m_dxfWriter->WriteLayout(layout); }
   };
   void WriteLayers() override {
     if (m_dxfWriter == nullptr || m_document == nullptr) { return; }
@@ -777,8 +770,9 @@ class EoDbDxfInterface : public EoDxfInterface {
     }
   };
 
-  void SetHeaderSectionVariable(
-      const EoDxfHeader* header, std::wstring_view keyToFind, EoDbHeaderSection& headerSection);
+  void SetHeaderSectionVariable(const EoDxfHeader* header,
+      std::wstring_view keyToFind,
+      EoDbHeaderSection& headerSection);
 
   void ConvertHeaderSection(const EoDxfHeader* header, AeSysDoc* document);
   void ConvertClassesSection(const EoDxfClass& class_, AeSysDoc* document);
@@ -845,7 +839,10 @@ class EoDbDxfInterface : public EoDxfInterface {
   void ConvertBlockSet(const int handle, AeSysDoc* document);
   void ConvertBlockEnd(AeSysDoc* document);
 
-  EoDbGroup* AddToDocument(EoDbPrimitive* primitive, AeSysDoc* document, EoDxf::Space space, std::uint64_t ownerHandle = EoDxf::NoHandle) const;
+  EoDbGroup* AddToDocument(EoDbPrimitive* primitive,
+      AeSysDoc* document,
+      EoDxf::Space space,
+      std::uint64_t ownerHandle = EoDxf::NoHandle) const;
 
   /** @brief Converts a DXF 3DFACE entity to an AeSys EoDbFace primitive.
    *

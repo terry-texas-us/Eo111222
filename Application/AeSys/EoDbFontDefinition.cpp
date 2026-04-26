@@ -23,33 +23,43 @@ CString EoDbFontDefinition::FormatPath() const {
 }
 
 CString EoDbFontDefinition::FormatHorizontalAlignment() const {
-  return (m_horizontalAlignment >= EoDb::HorizontalAlignment::Left &&
-             m_horizontalAlignment <= EoDb::HorizontalAlignment::Right)
-      ? CString{horizontalAlignmentText[static_cast<int>(m_horizontalAlignment) -
-            static_cast<int>(EoDb::HorizontalAlignment::Left)]}
+  return (m_horizontalAlignment >= EoDb::HorizontalAlignment::Left
+             && m_horizontalAlignment <= EoDb::HorizontalAlignment::Right)
+      ? CString{horizontalAlignmentText[static_cast<int>(m_horizontalAlignment)
+            - static_cast<int>(EoDb::HorizontalAlignment::Left)]}
       : CString{invalidText};
 }
 
 CString EoDbFontDefinition::FormatVerticalAlignment() const {
   return (m_verticalAlignment >= EoDb::VerticalAlignment::Top && m_verticalAlignment <= EoDb::VerticalAlignment::Bottom)
-      ? CString{verticalAlignmentText[static_cast<int>(m_verticalAlignment) -
-            static_cast<int>(EoDb::VerticalAlignment::Top)]}
+      ? CString{verticalAlignmentText[static_cast<int>(m_verticalAlignment)
+            - static_cast<int>(EoDb::VerticalAlignment::Top)]}
       : CString{invalidText};
 }
 
-void EoDbFontDefinition::SetAlignment(
-    EoDb::HorizontalAlignment horizontalAlignment, EoDb::VerticalAlignment verticalAlignment) {
+void EoDbFontDefinition::SetAlignment(EoDb::HorizontalAlignment horizontalAlignment,
+    EoDb::VerticalAlignment verticalAlignment) {
   m_horizontalAlignment = horizontalAlignment;
   m_verticalAlignment = verticalAlignment;
 }
-void EoDbFontDefinition::SetCharacterSpacing(double characterSpacing) { m_characterSpacing = characterSpacing; }
-void EoDbFontDefinition::SetFontName(const CString& fontName) { m_fontName = fontName; }
-void EoDbFontDefinition::SetFontName(const std::wstring& fontName) { m_fontName = fontName.c_str(); }
+void EoDbFontDefinition::SetCharacterSpacing(double characterSpacing) {
+  m_characterSpacing = characterSpacing;
+}
+void EoDbFontDefinition::SetFontName(const CString& fontName) {
+  m_fontName = fontName;
+}
+void EoDbFontDefinition::SetFontName(const std::wstring& fontName) {
+  m_fontName = fontName.c_str();
+}
 void EoDbFontDefinition::SetHorizontalAlignment(EoDb::HorizontalAlignment horizontalAlignment) {
   m_horizontalAlignment = horizontalAlignment;
 }
-void EoDbFontDefinition::SetPath(EoDb::Path path) { m_path = path; }
-void EoDbFontDefinition::SetPrecision(EoDb::Precision precision) { m_precision = precision; }
+void EoDbFontDefinition::SetPath(EoDb::Path path) {
+  m_path = path;
+}
+void EoDbFontDefinition::SetPrecision(EoDb::Precision precision) {
+  m_precision = precision;
+}
 void EoDbFontDefinition::SetVerticalAlignment(EoDb::VerticalAlignment verticalAlignment) {
   m_verticalAlignment = verticalAlignment;
 }

@@ -77,13 +77,13 @@ BOOL EoMfLayoutTabBar::CreateTabBar(CWnd* parentWindow, UINT controlId) {
   m_controlFont.CreateFontIndirectW(&ncm.lfMessageFont);
 
   // MODEL/PAPER toggle button — flat push-button style, always visible
-  m_spaceLabel.Create(L"MODEL", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT, CRect(0, 0, 0, 0), this,
-      IDC_LAYOUT_SPACE_LABEL);
+  m_spaceLabel.Create(
+      L"MODEL", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT, CRect(0, 0, 0, 0), this, IDC_LAYOUT_SPACE_LABEL);
   m_spaceLabel.SetFont(&m_controlFont);
 
   // Scale combo — hidden until a viewport is activated
-  m_scaleCombo.Create(WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, CRect(0, 0, 0, 0), this,
-      IDC_VIEWPORT_SCALE_COMBO);
+  m_scaleCombo.Create(
+      WS_CHILD | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, CRect(0, 0, 0, 0), this, IDC_VIEWPORT_SCALE_COMBO);
   m_scaleCombo.SetFont(&m_controlFont);
 
   // Lock button — hidden until a viewport is activated
@@ -122,14 +122,11 @@ BOOL EoMfLayoutTabBar::CreateTabBar(CWnd* parentWindow, UINT controlId) {
     srcDC.SelectObject(oldSrcBmp);
   }
 
-  m_blockEditSaveButton.Create(
-      L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_SAVE_BUTTON);
+  m_blockEditSaveButton.Create(L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_SAVE_BUTTON);
 
-  m_blockEditSaveAsButton.Create(
-      L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_SAVEAS_BUTTON);
+  m_blockEditSaveAsButton.Create(L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_SAVEAS_BUTTON);
 
-  m_blockEditCloseButton.Create(
-      L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_CLOSE_BUTTON);
+  m_blockEditCloseButton.Create(L"", WS_CHILD | BS_OWNERDRAW, CRect(0, 0, 0, 0), this, IDC_BLOCK_EDIT_CLOSE_BUTTON);
 
   // Tooltips for editor buttons
   m_toolTip.Create(this, TTS_ALWAYSTIP);
@@ -198,12 +195,11 @@ void EoMfLayoutTabBar::PopulateFromDocument(AeSysDoc* document) {
   for (const auto& layout : layouts) {
     if (!layout.IsModelLayout()) { paperLayouts.push_back(&layout); }
   }
-  std::sort(paperLayouts.begin(), paperLayouts.end(),
-      [](const EoDxfLayout* a, const EoDxfLayout* b) { return a->m_tabOrder < b->m_tabOrder; });
+  std::sort(paperLayouts.begin(), paperLayouts.end(), [](const EoDxfLayout* a, const EoDxfLayout* b) {
+    return a->m_tabOrder < b->m_tabOrder;
+  });
 
-  for (const auto* layout : paperLayouts) {
-    addTab(layout->m_layoutName.c_str(), layout->m_blockRecordHandle);
-  }
+  for (const auto* layout : paperLayouts) { addTab(layout->m_layoutName.c_str(), layout->m_blockRecordHandle); }
 
   // Select the tab matching the current active space and layout handle
   int selectedIndex = 0;
@@ -437,9 +433,13 @@ void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) 
   // Draw the bitmap centered
   CBitmap* bitmap{};
   const auto ctlId = drawItem->CtlID;
-  if (ctlId == IDC_BLOCK_EDIT_SAVE_BUTTON) { bitmap = &m_blockEditSaveBitmap; }
-  else if (ctlId == IDC_BLOCK_EDIT_SAVEAS_BUTTON) { bitmap = &m_blockEditSaveAsBitmap; }
-  else if (ctlId == IDC_BLOCK_EDIT_CLOSE_BUTTON) { bitmap = &m_blockEditCloseBitmap; }
+  if (ctlId == IDC_BLOCK_EDIT_SAVE_BUTTON) {
+    bitmap = &m_blockEditSaveBitmap;
+  } else if (ctlId == IDC_BLOCK_EDIT_SAVEAS_BUTTON) {
+    bitmap = &m_blockEditSaveAsBitmap;
+  } else if (ctlId == IDC_BLOCK_EDIT_CLOSE_BUTTON) {
+    bitmap = &m_blockEditCloseBitmap;
+  }
 
   if (bitmap != nullptr && bitmap->GetSafeHandle() != nullptr) {
     BITMAP bm{};

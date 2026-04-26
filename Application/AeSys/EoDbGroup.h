@@ -70,7 +70,8 @@ class EoDbGroup : public CObList {
   int GetLineTypeRefCount(const std::wstring& lineTypeName);
   void InsertBefore(POSITION position, EoDbGroup* group);
   bool IsInView(AeSysView* view);
-  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition,
+      const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);
   void ModifyColor(std::int16_t color);
   void ModifyLineType(const std::wstring& lineTypeName);
@@ -112,7 +113,6 @@ class EoDbGroup : public CObList {
    * information is included.
    */
   void Write(CFile& file, EoDb::PegFileVersion fileVersion);
-
 
   /** @brief Writes the group data to a buffer for file output.
    *

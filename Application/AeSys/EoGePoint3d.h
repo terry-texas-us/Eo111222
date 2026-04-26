@@ -125,8 +125,8 @@ class EoGePoint3d {
    *         8 - Left of the rectangle
    *         Combinations of these values indicate multiple relationships (e.g., 5 - above and right).
    */
-  [[nodiscard]] int RelationshipToRectangle(
-      const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const;
+  [[nodiscard]] int RelationshipToRectangle(const EoGePoint3d& lowerLeftPoint,
+      const EoGePoint3d& upperRightPoint) const;
   /**
    * Projects this point toward or beyond point p by the specified distance.
    *
@@ -142,8 +142,9 @@ class EoGePoint3d {
    * @param angle Rotation angle (ccw positive) in radians.
    * @return Point after rotation.
    */
-  [[nodiscard]] EoGePoint3d RotateAboutAxis(
-      const EoGePoint3d& referenceOrigin, const EoGeVector3d& referenceAxis, double angle);
+  [[nodiscard]] EoGePoint3d RotateAboutAxis(const EoGePoint3d& referenceOrigin,
+      const EoGeVector3d& referenceAxis,
+      double angle);
 
   [[nodiscard]] CString ToString() const;
 

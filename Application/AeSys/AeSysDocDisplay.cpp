@@ -87,8 +87,8 @@ void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderD
   for (const auto& layout : m_layouts) {
     if (layout.m_blockRecordHandle == m_activeLayoutHandle && !layout.IsModelLayout()) {
       // Use layout limits (DXF codes 10/20, 11/21) which represent the printable paper area
-      if (layout.m_limmaxX - layout.m_limminX > Eo::geometricTolerance &&
-          layout.m_limmaxY - layout.m_limminY > Eo::geometricTolerance) {
+      if (layout.m_limmaxX - layout.m_limminX > Eo::geometricTolerance
+          && layout.m_limmaxY - layout.m_limminY > Eo::geometricTolerance) {
         sheetMinX = layout.m_limminX;
         sheetMinY = layout.m_limminY;
         sheetMaxX = layout.m_limmaxX;
@@ -203,8 +203,8 @@ void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderD
 
   for (const auto& vp : viewports) {
     const bool isActive = (vp.primitive == activeViewport) && (activeViewport != nullptr);
-    renderDevice->SelectPen(PS_SOLID, isActive ? 2 : 1,
-        isActive ? Eo::chromeColors.captionActiveBackground : viewportBorderColor);
+    renderDevice->SelectPen(
+        PS_SOLID, isActive ? 2 : 1, isActive ? Eo::chromeColors.captionActiveBackground : viewportBorderColor);
 
     const CPoint vpCorners[5] = {
         projectToDevice(vp.center.x - vp.halfWidth, vp.center.y - vp.halfHeight),
@@ -232,9 +232,8 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
 
   // Compute the active viewport's device-coordinate bounding rectangle
   const auto* activeViewport = view->ActiveViewportPrimitive();
-  const bool hasValidViewport = activeViewport != nullptr &&
-      activeViewport->Width() >= Eo::geometricTolerance &&
-      activeViewport->Height() >= Eo::geometricTolerance;
+  const bool hasValidViewport = activeViewport != nullptr && activeViewport->Width() >= Eo::geometricTolerance
+      && activeViewport->Height() >= Eo::geometricTolerance;
 
   int vpLeft{}, vpTop{}, vpRight{}, vpBottom{};
   if (hasValidViewport) {
@@ -264,12 +263,14 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     renderDevice->GetClipBox(clipRectGdi);
     if (clipRectGdi.right <= clipRectGdi.left || clipRectGdi.bottom <= clipRectGdi.top) { return; }
 
-    const auto fullRect = D2D1::RectF(static_cast<float>(clipRectGdi.left), static_cast<float>(clipRectGdi.top),
-        static_cast<float>(clipRectGdi.right), static_cast<float>(clipRectGdi.bottom));
+    const auto fullRect = D2D1::RectF(static_cast<float>(clipRectGdi.left),
+        static_cast<float>(clipRectGdi.top),
+        static_cast<float>(clipRectGdi.right),
+        static_cast<float>(clipRectGdi.bottom));
 
     const auto bgColor = Eo::PaperSpaceBackgroundColor();
-    const auto dimColor = D2D1::ColorF(GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f,
-        GetBValue(bgColor) / 255.0f, 100.0f / 255.0f);
+    const auto dimColor = D2D1::ColorF(
+        GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f, GetBValue(bgColor) / 255.0f, 100.0f / 255.0f);
 
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> dimBrush;
     renderTarget->CreateSolidColorBrush(dimColor, &dimBrush);
@@ -282,9 +283,10 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
 
     // Create combined geometry: full clip area minus the active viewport rectangle.
     // This dims everything except the active viewport's model-space content.
-    const auto vpRect = D2D1::RectF(
-        static_cast<float>(vpLeft), static_cast<float>(vpTop),
-        static_cast<float>(vpRight), static_cast<float>(vpBottom));
+    const auto vpRect = D2D1::RectF(static_cast<float>(vpLeft),
+        static_cast<float>(vpTop),
+        static_cast<float>(vpRight),
+        static_cast<float>(vpBottom));
 
     Microsoft::WRL::ComPtr<ID2D1RectangleGeometry> fullGeometry;
     Microsoft::WRL::ComPtr<ID2D1RectangleGeometry> vpGeometry;
@@ -300,8 +302,8 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     combinedGeometry->Open(&sink);
     if (!sink) { return; }
 
-    const HRESULT hr = fullGeometry->CombineWithGeometry(
-        vpGeometry.Get(), D2D1_COMBINE_MODE_EXCLUDE, nullptr, sink.Get());
+    const HRESULT hr =
+        fullGeometry->CombineWithGeometry(vpGeometry.Get(), D2D1_COMBINE_MODE_EXCLUDE, nullptr, sink.Get());
     sink->Close();
     if (FAILED(hr)) { return; }
 
@@ -319,17 +321,21 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
   const int savedDC = dc->SaveDC();
 
   // Exclude the active viewport's device rectangle from the dim overlay
-  if (hasValidViewport) {
-    dc->ExcludeClipRect(vpLeft, vpTop, vpRight, vpBottom);
-  }
+  if (hasValidViewport) { dc->ExcludeClipRect(vpLeft, vpTop, vpRight, vpBottom); }
 
   // Create a 1x1 memory bitmap filled with the paper-space table background color,
   // then alpha-blend it over everything EXCEPT the active viewport.
   CDC memDC;
-  if (!memDC.CreateCompatibleDC(dc)) { dc->RestoreDC(savedDC); return; }
+  if (!memDC.CreateCompatibleDC(dc)) {
+    dc->RestoreDC(savedDC);
+    return;
+  }
 
   CBitmap bitmap;
-  if (!bitmap.CreateCompatibleBitmap(dc, 1, 1)) { dc->RestoreDC(savedDC); return; }
+  if (!bitmap.CreateCompatibleBitmap(dc, 1, 1)) {
+    dc->RestoreDC(savedDC);
+    return;
+  }
   auto* oldBitmap = memDC.SelectObject(&bitmap);
 
   memDC.SetPixel(0, 0, Eo::PaperSpaceBackgroundColor());
@@ -340,8 +346,17 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
   blend.SourceConstantAlpha = 100;  // ~40% opacity — dims without obscuring
   blend.AlphaFormat = 0;
 
-  ::GdiAlphaBlend(dc->GetSafeHdc(), clipRect.left, clipRect.top, clipRect.Width(), clipRect.Height(),
-      memDC.GetSafeHdc(), 0, 0, 1, 1, blend);
+  ::GdiAlphaBlend(dc->GetSafeHdc(),
+      clipRect.left,
+      clipRect.top,
+      clipRect.Width(),
+      clipRect.Height(),
+      memDC.GetSafeHdc(),
+      0,
+      0,
+      1,
+      1,
+      blend);
 
   memDC.SelectObject(oldBitmap);
   dc->RestoreDC(savedDC);
@@ -372,8 +387,8 @@ EoDbViewport* AeSysDoc::HitTestViewport(const EoGePoint3d& worldPoint) {
         const double halfW = viewport->Width() / 2.0;
         const double halfH = viewport->Height() / 2.0;
 
-        if (worldPoint.x >= center.x - halfW && worldPoint.x <= center.x + halfW &&
-            worldPoint.y >= center.y - halfH && worldPoint.y <= center.y + halfH) {
+        if (worldPoint.x >= center.x - halfW && worldPoint.x <= center.x + halfW && worldPoint.y >= center.y - halfH
+            && worldPoint.y <= center.y + halfH) {
           return viewport;
         }
       }
@@ -441,8 +456,11 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         // Skip the overall paper-space viewport (id 1) and viewports with no model-space view
         if (viewport->ViewportId() == 1) { continue; }
         if (viewport->ViewHeight() < Eo::geometricTolerance) {
-          ATLTRACE2(traceGeneral, 3, L"DisplayModelSpaceThroughViewports: VP id=%d SKIPPED (viewHeight=%.6f)\n",
-              viewport->ViewportId(), viewport->ViewHeight());
+          ATLTRACE2(traceGeneral,
+              3,
+              L"DisplayModelSpaceThroughViewports: VP id=%d SKIPPED (viewHeight=%.6f)\n",
+              viewport->ViewportId(),
+              viewport->ViewHeight());
           continue;
         }
 
@@ -466,10 +484,14 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         }
 
         // Compute the bounding device rectangle for the GDI clip
-        const int clipLeft = (std::min)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
-        const int clipTop = (std::min)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
-        const int clipRight = (std::max)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
-        const int clipBottom = (std::max)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+        const int clipLeft =
+            (std::min)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+        const int clipTop =
+            (std::min)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
+        const int clipRight =
+            (std::max)({deviceCorners[0].x, deviceCorners[1].x, deviceCorners[2].x, deviceCorners[3].x});
+        const int clipBottom =
+            (std::max)({deviceCorners[0].y, deviceCorners[1].y, deviceCorners[2].y, deviceCorners[3].y});
 
         // Skip if the clip rectangle is degenerate
         if (clipRight <= clipLeft || clipBottom <= clipTop) { continue; }
@@ -516,7 +538,9 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         const double windowCenterU = halfExtentU * (1.0 - 2.0 * clipCenterX / deviceWidth);
         const double windowCenterV = halfExtentV * (2.0 * clipCenterY / deviceHeight - 1.0);
 
-        view->SetViewWindow(windowCenterU - halfExtentU, windowCenterV - halfExtentV, windowCenterU + halfExtentU,
+        view->SetViewWindow(windowCenterU - halfExtentU,
+            windowCenterV - halfExtentV,
+            windowCenterU + halfExtentU,
             windowCenterV + halfExtentV);
 
         // Render model-space layers through this viewport
@@ -610,10 +634,16 @@ void AeSysDoc::CreateDefaultPaperSpaceViewport(AeSysView* view) {
   }
   paperLayer0->AddTail(viewportGroup);
 
-  ATLTRACE2(traceGeneral, 1,
+  ATLTRACE2(traceGeneral,
+      1,
       L"AeSysDoc<%p>::CreateDefaultPaperSpaceViewport() — created viewport id=2 "
       L"sheet=(%.2f x %.2f) view center=(%.2f, %.2f) viewHeight=%.2f\n",
-      this, sheetWidth, sheetHeight, viewCenter.x, viewCenter.y, viewHeight);
+      this,
+      sheetWidth,
+      sheetHeight,
+      viewCenter.x,
+      viewCenter.y,
+      viewHeight);
 }
 
 void AeSysDoc::AddGroupToAllViews(EoDbGroup* group) {

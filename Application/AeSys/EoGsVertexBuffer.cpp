@@ -1,7 +1,5 @@
 #include "Stdafx.h"
 
-#include "EoGsVertexBuffer.h"
-
 #include <algorithm>
 #include <cmath>
 
@@ -17,6 +15,7 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
+#include "EoGsVertexBuffer.h"
 
 namespace {
 constexpr unsigned int defaultDpi = 96;
@@ -58,8 +57,10 @@ bool EoGsVertexBuffer::AnyPointsInView(EoGePoint4dArray& pointsArray) {
  * @param pointsArray   Array of 4D points representing the polyline vertices.
  * @param lineType      Pointer to the EoDbLineType defining the dash pattern.
  */
-void EoGsVertexBuffer::DisplayDashPattern(
-    AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4dArray& pointsArray, EoDbLineType* lineType) {
+void EoGsVertexBuffer::DisplayDashPattern(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoGePoint4dArray& pointsArray,
+    EoDbLineType* lineType) {
   const auto numberOfDashElements = lineType->GetNumberOfDashes();
   if (numberOfDashElements == 0 || pointsArray.GetSize() < 2) { return; }
 
@@ -130,8 +131,10 @@ void EoGsVertexBuffer::DisplayDashPattern(
   }
 }
 
-void EoGsVertexBuffer::End(
-    AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
+void EoGsVertexBuffer::End(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    std::int16_t lineTypeIndex,
+    const std::wstring& lineTypeName) {
   // Try name-based lookup first for non-Continuous linetypes
   if (!lineTypeName.empty() && _wcsicmp(lineTypeName.c_str(), L"CONTINUOUS") != 0
       && _wcsicmp(lineTypeName.c_str(), L"ByLayer") != 0 && _wcsicmp(lineTypeName.c_str(), L"ByBlock") != 0) {

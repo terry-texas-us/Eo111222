@@ -40,7 +40,9 @@ namespace App {
 [[nodiscard]] CString ResourceFolderPath();
 
 /// @brief Returns a text color that contrasts with the active model-space background.
-[[nodiscard]] inline COLORREF ViewTextColor() { return (~(Eo::ModelSpaceBackgroundColor() | 0xff000000)); }
+[[nodiscard]] inline COLORREF ViewTextColor() {
+  return (~(Eo::ModelSpaceBackgroundColor() | 0xff000000));
+}
 }  // namespace App
 
 class AeSys : public CWinAppEx {
@@ -152,8 +154,11 @@ class AeSys : public CWinAppEx {
    * All other units formatted using floating decimal.
    * @endverbatim
    */
-  void FormatLength(
-      CString& lengthAsString, Eo::Units units, double length, const int minWidth = 0, const int precision = 4);
+  void FormatLength(CString& lengthAsString,
+      Eo::Units units,
+      double length,
+      const int minWidth = 0,
+      const int precision = 4);
 
   /** @brief Formats a length value as an architectural measurement string in feet and inches with fractional inches.
    * @param lengthAsBuffer The output buffer to receive the formatted architectural length string.
@@ -172,8 +177,11 @@ class AeSys : public CWinAppEx {
    * @remarks The formatted string will include feet and inches, with optional fractional inches based on the specified
    * precision. The function handles negative lengths and scales the input length by the active view's world scale.
    */
-  void FormatLengthEngineering(
-      wchar_t* lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision);
+  void FormatLengthEngineering(wchar_t* lengthAsBuffer,
+      const size_t bufSize,
+      double length,
+      const int width,
+      const int precision);
 
   /** @brief Formats a length value as a string with the specified units, width, and precision.
    * @param lengthAsBuffer Output buffer that receives the formatted length string.
@@ -183,7 +191,11 @@ class AeSys : public CWinAppEx {
    * @param width The minimum field width for the formatted number.
    * @param precision The number of decimal places to display in the formatted number.
    */
-  void FormatLengthSimple(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length, const int width,
+  void FormatLengthSimple(wchar_t* lengthAsBuffer,
+      const size_t bufSize,
+      Eo::Units units,
+      double length,
+      const int width,
       const int precision);
 
   [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return m_ArchitecturalUnitsFractionPrecision; }
@@ -231,7 +243,7 @@ class AeSys : public CWinAppEx {
    * No checks are performed to ensure that the color values are within the valid range (0-255) for RGB components.
    */
   void LoadPenColorsFromFile(const CString& pathName);
-  
+
   [[nodiscard]] double LineWeight(std::int16_t penIndex) { return (penWidthsTable[penIndex]); }
 
   /** Loads the pen widths from a file.

@@ -56,7 +56,9 @@ EoDbSpline& EoDbSpline::operator=(const EoDbSpline& src) {
   return *this;
 }
 
-void EoDbSpline::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Spline>", this); }
+void EoDbSpline::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, L"<Spline>", this);
+}
 
 EoDbPrimitive*& EoDbSpline::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbSpline(*this);
@@ -129,7 +131,10 @@ void EoDbSpline::AddReportToMessageList(const EoGePoint3d& point) {
 
   CString detailLine;
   detailLine.Format(L"  Degree: %d  Flags: 0x%04X  Control Points: %d  Knots: %zu  Weights: %zu",
-      static_cast<int>(m_degree), static_cast<int>(m_flags), static_cast<int>(m_pts.GetSize()), m_knots.size(),
+      static_cast<int>(m_degree),
+      static_cast<int>(m_flags),
+      static_cast<int>(m_pts.GetSize()),
+      m_knots.size(),
       m_weights.size());
   app.AddStringToMessageList(detailLine);
 }
@@ -140,8 +145,12 @@ void EoDbSpline::FormatGeometry(CString& str) {
 
 void EoDbSpline::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tDegree;%d\tFlags;0x%04X\tControl Points;%d\tKnots;%zu\tWeights;%zu", static_cast<int>(m_degree),
-      static_cast<int>(m_flags), static_cast<int>(m_pts.GetSize()), m_knots.size(), m_weights.size());
+  str.AppendFormat(L"\tDegree;%d\tFlags;0x%04X\tControl Points;%d\tKnots;%zu\tWeights;%zu",
+      static_cast<int>(m_degree),
+      static_cast<int>(m_flags),
+      static_cast<int>(m_pts.GetSize()),
+      m_knots.size(),
+      m_weights.size());
   str += L'\t';
 }
 
@@ -156,8 +165,10 @@ EoGePoint3d EoDbSpline::GetControlPoint() {
   return point;
 }
 
-void EoDbSpline::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbSpline::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt;
 
   for (auto i = 0; i < m_pts.GetSize(); i++) {
@@ -217,8 +228,9 @@ EoGePoint3d EoDbSpline::SelectAtControlPoint(AeSysView*, const EoGePoint4d& poin
   return EoGePoint3d{point};
 }
 
-bool EoDbSpline::SelectUsingLine(
-    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
+bool EoDbSpline::SelectUsingLine([[maybe_unused]] AeSysView* view,
+    [[maybe_unused]] EoGeLine line,
+    [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 

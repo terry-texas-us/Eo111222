@@ -105,7 +105,9 @@ const EoDbText& EoDbText::operator=(const EoDbText& other) {
   return (*this);
 }
 
-void EoDbText::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Text>", this); }
+void EoDbText::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, L"<Text>", this);
+}
 
 EoDbPrimitive*& EoDbText::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbText(*this);
@@ -137,10 +139,8 @@ void EoDbText::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
   const auto lineTypeIndex = Gs::renderState.LineTypeIndex();
   Gs::renderState.SetLineType(renderDevice, 1);
 
-  if (m_mtextProperties.has_value()
-      && m_mtextProperties->referenceRectangleWidth > Eo::geometricTolerance) {
-    DisplayMTextWithWordWrap(
-        view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText, *m_mtextProperties);
+  if (m_mtextProperties.has_value() && m_mtextProperties->referenceRectangleWidth > Eo::geometricTolerance) {
+    DisplayMTextWithWordWrap(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText, *m_mtextProperties);
   } else {
     DisplayText(view, renderDevice, m_fontDefinition, m_ReferenceSystem, m_strText);
   }
@@ -215,8 +215,8 @@ void EoDbText::ExportToDxf(EoDxfInterface* writer) const {
   const auto origin = m_ReferenceSystem.Origin();
 
   // DXF TEXT: Left+Baseline uses first alignment point; all other alignments use second alignment point
-  const bool isDefaultAlignment = (text.m_horizontalAlignment == EoDxfText::HorizontalAlignment::Left &&
-      text.m_verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
+  const bool isDefaultAlignment = (text.m_horizontalAlignment == EoDxfText::HorizontalAlignment::Left
+      && text.m_verticalAlignment == EoDxfText::VerticalAlignment::BaseLine);
   if (isDefaultAlignment) {
     text.m_firstAlignmentPoint = {origin.x, origin.y, origin.z};
   } else {
@@ -266,9 +266,9 @@ void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
   EoDbPrimitive::AddReportToMessageList(point);
 
   CString message;
-  message = L"  Font: " + m_fontDefinition.FontName() + L" Precision: " + m_fontDefinition.FormatPrecision() +
-      L" Path: " + m_fontDefinition.FormatPath() + L" Alignment: (" + m_fontDefinition.FormatHorizontalAlignment() +
-      L"," + m_fontDefinition.FormatVerticalAlignment() + L")";
+  message = L"  Font: " + m_fontDefinition.FontName() + L" Precision: " + m_fontDefinition.FormatPrecision()
+      + L" Path: " + m_fontDefinition.FormatPath() + L" Alignment: (" + m_fontDefinition.FormatHorizontalAlignment()
+      + L"," + m_fontDefinition.FormatVerticalAlignment() + L")";
   app.AddStringToMessageList(message);
 
   if (m_mtextProperties.has_value()) {
@@ -276,8 +276,11 @@ void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
     CString mtextMessage;
     mtextMessage.Format(
         L"  MTEXT: AttachmentPoint=%d  DrawingDirection=%d  LineSpacing=%.3f (style %d)  RectWidth=%.4f",
-        properties.attachmentPoint, properties.drawingDirection, properties.lineSpacingFactor,
-        properties.lineSpacingStyle, properties.referenceRectangleWidth);
+        properties.attachmentPoint,
+        properties.drawingDirection,
+        properties.lineSpacingFactor,
+        properties.lineSpacingStyle,
+        properties.referenceRectangleWidth);
     app.AddStringToMessageList(mtextMessage);
   }
 }
@@ -285,10 +288,15 @@ void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
 void EoDbText::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
   str.AppendFormat(L"\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tSource;%s\tText;%s",
-      m_fontDefinition.FontName().GetString(), m_fontDefinition.FormatPrecision().GetString(),
-      m_fontDefinition.FormatPath().GetString(), m_fontDefinition.FormatHorizontalAlignment().GetString(),
-      m_fontDefinition.FormatVerticalAlignment().GetString(), m_fontDefinition.CharacterSpacing(),
-      m_strText.GetLength(), m_mtextProperties.has_value() ? L"MTEXT" : L"TEXT", m_strText.GetString());
+      m_fontDefinition.FontName().GetString(),
+      m_fontDefinition.FormatPrecision().GetString(),
+      m_fontDefinition.FormatPath().GetString(),
+      m_fontDefinition.FormatHorizontalAlignment().GetString(),
+      m_fontDefinition.FormatVerticalAlignment().GetString(),
+      m_fontDefinition.CharacterSpacing(),
+      m_strText.GetLength(),
+      m_mtextProperties.has_value() ? L"MTEXT" : L"TEXT",
+      m_strText.GetString());
   str += L'\t';
 }
 
@@ -311,9 +319,13 @@ void EoDbText::GetAllPoints(EoGePoint3dArray& points) {
   points.Add(origin);
 }
 
-EoGePoint3d EoDbText::GetControlPoint() { return m_ReferenceSystem.Origin(); }
-void EoDbText::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+EoGePoint3d EoDbText::GetControlPoint() {
+  return m_ReferenceSystem.Origin();
+}
+void EoDbText::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3dArray pts;
 
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_strText, 0.0, pts);
@@ -364,7 +376,8 @@ void EoDbText::ModifyState() {
 }
 
 void EoDbText::ModifyNotes(const EoDbFontDefinition& fontDefinition,
-    const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+    const EoDbCharacterCellDefinition& characterCellDefinition,
+    int attributes) {
   if (attributes == TM_TEXT_ALL) {
     m_color = Gs::renderState.Color();
     m_fontDefinition = fontDefinition;
@@ -384,8 +397,9 @@ EoGePoint3d EoDbText::SelectAtControlPoint(AeSysView*, const EoGePoint4d& point)
   return EoGePoint3d{point};
 }
 
-bool EoDbText::SelectUsingLine(
-    [[maybe_unused]] AeSysView* view, [[maybe_unused]] EoGeLine line, [[maybe_unused]] EoGePoint3dArray&) {
+bool EoDbText::SelectUsingLine([[maybe_unused]] AeSysView* view,
+    [[maybe_unused]] EoGeLine line,
+    [[maybe_unused]] EoGePoint3dArray&) {
   return false;
 }
 
@@ -409,7 +423,9 @@ bool EoDbText::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&
 
   return true;
 }
-void EoDbText::Transform(const EoGeTransformMatrix& transformMatrix) { m_ReferenceSystem.Transform(transformMatrix); }
+void EoDbText::Transform(const EoGeTransformMatrix& transformMatrix) {
+  m_ReferenceSystem.Transform(transformMatrix);
+}
 
 void EoDbText::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if (mask != 0) { m_ReferenceSystem.SetOrigin(m_ReferenceSystem.Origin() + v); }
@@ -442,8 +458,11 @@ bool EoDbText::Write(CFile& file) {
   return true;
 }
 
-void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem_, const CString& text) {
+void DisplayText(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem_,
+    const CString& text) {
   if (text.IsEmpty()) { return; }
 
   if (HasFormattingCharacters(text)) {
@@ -481,8 +500,13 @@ void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefini
   DisplayTextSegment(view, renderDevice, fd, referenceSystem, startPosition, numberOfCharactersToDisplay, text);
 }
 
-void DisplayTextSegment(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text) {
+void DisplayTextSegment(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    int startPosition,
+    int numberOfCharacters,
+    const CString& text) {
   if (renderDevice != nullptr && fd.Precision() == EoDb::Precision::TrueType && view->ViewTrueTypeFonts()) {
     EoGeVector3d xDirection(referenceSystem.XDirection());
     EoGeVector3d yDirection(referenceSystem.YDirection());
@@ -503,8 +527,12 @@ void DisplayTextSegment(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFon
   DisplayTextSegmentUsingStrokeFont(view, renderDevice, fd, referenceSystem, startPosition, numberOfCharacters, text);
 }
 
-void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters,
+void DisplayTextSegmentUsingStrokeFont(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fontDefinition,
+    EoGeReferenceSystem& referenceSystem,
+    int startPosition,
+    int numberOfCharacters,
     const CString& text) {
   if (numberOfCharacters == 0) { return; }
 
@@ -603,8 +631,12 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* render
   }
 }
 
-bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters,
+bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fontDefinition,
+    EoGeReferenceSystem& referenceSystem,
+    int startPosition,
+    int numberOfCharacters,
     const CString& text) {
   if (numberOfCharacters <= 0) { return true; }
 
@@ -658,8 +690,11 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
   return true;
 }
 
-void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem_, const CString& text) {
+void DisplayTextWithFormattingCharacters(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem_,
+    const CString& text) {
   EoGeReferenceSystem referenceSystem{referenceSystem_};
 
   EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
@@ -702,7 +737,9 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* rend
                     view, renderDevice, fd, referenceSystem, startPosition, numberOfCharactersToDisplay, text);
 
                 // Offset the line position left of current position
-                referenceSystem.SetOrigin(text_GetNewLinePos(fd, referenceSystem_, 0.0,
+                referenceSystem.SetOrigin(text_GetNewLinePos(fd,
+                    referenceSystem_,
+                    0.0,
                     numberOfCharactersToDisplay * (1 + 0.32 / Eo::defaultCharacterCellAspectRatio)));
                 bottomLeftCorner = referenceSystem.Origin();
               }
@@ -732,7 +769,9 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* rend
               startPosition += numberOfCharactersToDisplay;
             }
             // Offset the line position up and conditionally left of current position
-            referenceSystem.SetOrigin(text_GetNewLinePos(fd, referenceSystem, -0.35,
+            referenceSystem.SetOrigin(text_GetNewLinePos(fd,
+                referenceSystem,
+                -0.35,
                 numberOfCharactersToDisplay * (1 + 0.32 / Eo::defaultCharacterCellAspectRatio)));
             bottomLeftCorner = referenceSystem.Origin();
             startPosition += 2;  // skip the formatting characters
@@ -743,7 +782,9 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* rend
               startPosition += numberOfCharactersToDisplay;
             }
             // Offset the line position back down left
-            referenceSystem.SetOrigin(text_GetNewLinePos(fd, referenceSystem, 0.35,
+            referenceSystem.SetOrigin(text_GetNewLinePos(fd,
+                referenceSystem,
+                0.35,
                 numberOfCharactersToDisplay * (1 + 0.32 / Eo::defaultCharacterCellAspectRatio) - 0.72));
             bottomLeftCorner = referenceSystem.Origin();
 
@@ -761,7 +802,9 @@ void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* rend
                   view, renderDevice, fd, referenceSystem, startPosition, numberOfCharactersToDisplay, text);
               startPosition += numberOfCharactersToDisplay;
             }
-            referenceSystem.SetOrigin(text_GetNewLinePos(fd, referenceSystem, -0.35,
+            referenceSystem.SetOrigin(text_GetNewLinePos(fd,
+                referenceSystem,
+                -0.35,
                 numberOfCharactersToDisplay * (1 + 0.32 / Eo::defaultCharacterCellAspectRatio)));
             bottomLeftCorner = referenceSystem.Origin();
 
@@ -943,8 +986,11 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3
   pt.z = 0.;
 }
 
-void text_GetBoundingBox(EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem, const CString& text,
-    double spaceFactor, EoGePoint3dArray& ptsBox) {
+void text_GetBoundingBox(EoDbFontDefinition& fontDefinition,
+    EoGeReferenceSystem& referenceSystem,
+    const CString& text,
+    double spaceFactor,
+    EoGePoint3dArray& ptsBox) {
   ptsBox.SetSize(4);
 
   double textExtent = ComputeStrokeFontTextExtent(fontDefinition, text);
@@ -998,8 +1044,10 @@ void text_GetBoundingBox(EoDbFontDefinition& fontDefinition, EoGeReferenceSystem
   }
 }
 
-EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem,
-    double lineSpaceFactor, double characterSpaceFactor) {
+EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition,
+    EoGeReferenceSystem& referenceSystem,
+    double lineSpaceFactor,
+    double characterSpaceFactor) {
   auto position = referenceSystem.Origin();
   auto path = referenceSystem.XDirection();
   const auto yDirection = referenceSystem.YDirection();
@@ -1015,8 +1063,12 @@ EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition, EoGeRef
   return (position + (path * 1.5));
 }
 
-void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem, const CString& text, const EoDbMTextProperties& mtextProperties) {
+void DisplayMTextWithWordWrap(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    const CString& text,
+    const EoDbMTextProperties& mtextProperties) {
   if (text.IsEmpty()) { return; }
 
   // Resolve stroke font advance width table for per-character width measurement
@@ -1046,9 +1098,9 @@ void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, E
   std::vector<CString> wrappedLines;
 
   int lineStart = 0;
-  int lastSpaceInLine = -1;       // Index of the last space character in the current line
+  int lastSpaceInLine = -1;  // Index of the last space character in the current line
   double accumulatedWidth = 0.0;  // Accumulated normalized width of the current line
-  int displayableCount = 0;       // Number of displayable characters on the current line
+  int displayableCount = 0;  // Number of displayable characters on the current line
 
   int pos = 0;
   while (pos < text.GetLength()) {
@@ -1136,12 +1188,9 @@ void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, E
   // Render each wrapped line, advancing the origin downward by lineSpacingFactor per line
   EoGeReferenceSystem lineReferenceSystem = referenceSystem;
   for (size_t i = 0; i < wrappedLines.size(); i++) {
-    if (!wrappedLines[i].IsEmpty()) {
-      DisplayText(view, renderDevice, fd, lineReferenceSystem, wrappedLines[i]);
-    }
+    if (!wrappedLines[i].IsEmpty()) { DisplayText(view, renderDevice, fd, lineReferenceSystem, wrappedLines[i]); }
     if (i + 1 < wrappedLines.size()) {
-      lineReferenceSystem.SetOrigin(
-          text_GetNewLinePos(fd, lineReferenceSystem, mtextProperties.lineSpacingFactor, 0));
+      lineReferenceSystem.SetOrigin(text_GetNewLinePos(fd, lineReferenceSystem, mtextProperties.lineSpacingFactor, 0));
     }
   }
 }

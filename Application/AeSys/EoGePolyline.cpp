@@ -22,11 +22,17 @@ namespace polyline {
 
 // ── Thin wrappers delegating to the global EoGsVertexBuffer ───────────
 
-void BeginLineLoop() { vertexBuffer_.BeginLineLoop(); }
+void BeginLineLoop() {
+  vertexBuffer_.BeginLineLoop();
+}
 
-void BeginLineStrip() { vertexBuffer_.BeginLineStrip(); }
+void BeginLineStrip() {
+  vertexBuffer_.BeginLineStrip();
+}
 
-void SetVertex(const EoGePoint3d& point) { vertexBuffer_.SetVertex(point); }
+void SetVertex(const EoGePoint3d& point) {
+  vertexBuffer_.SetVertex(point);
+}
 
 void End(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t lineType, const std::wstring& lineTypeName) {
   vertexBuffer_.End(view, renderDevice, lineType, lineTypeName);
@@ -47,8 +53,10 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint
 // ── Standalone geometry helpers (no vertex-buffer dependency) ──────────
 
 // Not considering possible closure
-bool SelectUsingRectangle(
-    AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint, const EoGePoint3dArray& pts) {
+bool SelectUsingRectangle(AeSysView* view,
+    EoGePoint3d lowerLeftPoint,
+    EoGePoint3d upperRightPoint,
+    const EoGePoint3dArray& pts) {
   EoGePoint4d begin(pts[0]);
   view->ModelViewTransformPoint(begin);
 
@@ -64,8 +72,11 @@ bool SelectUsingRectangle(
   return false;
 }
 
-void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, EoGeVector3d minorAxis,
-    int numberOfPoints, EoGePoint3dArray& pts) {
+void GeneratePointsForNPoly(EoGePoint3d& centerPoint,
+    EoGeVector3d majorAxis,
+    EoGeVector3d minorAxis,
+    int numberOfPoints,
+    EoGePoint3dArray& pts) {
   EoGeTransformMatrix transformMatrix(centerPoint, majorAxis, minorAxis);
 
   transformMatrix.Inverse();
@@ -85,8 +96,10 @@ void GeneratePointsForNPoly(EoGePoint3d& centerPoint, EoGeVector3d majorAxis, Eo
   for (int i = 0; i < numberOfPoints; i++) { pts[i] = transformMatrix * pts[i]; }
 }
 
-void TessellateArcSegment(
-    const EoGePoint3d& startPoint, const EoGePoint3d& endPoint, double bulge, std::vector<EoGePoint3d>& arcPoints) {
+void TessellateArcSegment(const EoGePoint3d& startPoint,
+    const EoGePoint3d& endPoint,
+    double bulge,
+    std::vector<EoGePoint3d>& arcPoints) {
   arcPoints.clear();
 
   // Zero bulge — straight segment: just emit the end point
@@ -158,8 +171,7 @@ void TessellateArcSegment(
   if (bulge < 0.0) { sweepAngle = -sweepAngle; }
 
   // Adaptive tessellation: scale with included angle, minimum 2 segments per arc
-  const int numberOfSegments = std::max(
-      Eo::arcTessellationMinimumSegments,
+  const int numberOfSegments = std::max(Eo::arcTessellationMinimumSegments,
       static_cast<int>(std::ceil(std::abs(sweepAngle) / Eo::TwoPi * Eo::arcTessellationSegmentsPerFullCircle)));
 
   arcPoints.reserve(static_cast<size_t>(numberOfSegments));

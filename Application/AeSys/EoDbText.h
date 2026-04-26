@@ -22,10 +22,10 @@ class EoDbCharacterCellDefinition;
 /// and should be exported as MTEXT rather than TEXT.
 struct EoDbMTextProperties {
   double referenceRectangleWidth{};  ///< DXF group 41 (wrapping box width)
-  double lineSpacingFactor{1.0};     ///< DXF group 44 (clamped to [0.25, 4.0])
+  double lineSpacingFactor{1.0};  ///< DXF group 44 (clamped to [0.25, 4.0])
   std::int16_t lineSpacingStyle{1};  ///< DXF group 73 (1 = AtLeast, 2 = Exact)
   std::int16_t drawingDirection{1};  ///< DXF group 72 (1 = LeftToRight, 3 = TopToBottom, 5 = ByStyle)
-  std::int16_t attachmentPoint{1};   ///< DXF group 71 (1–9, maps to 3×3 alignment grid)
+  std::int16_t attachmentPoint{1};  ///< DXF group 71 (1–9, maps to 3×3 alignment grid)
 };
 
 class EoDbText : public EoDbPrimitive {
@@ -66,7 +66,8 @@ class EoDbText : public EoDbPrimitive {
   bool Is(std::uint16_t type) noexcept override { return type == EoDb::kTextPrimitive; }
   bool IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   void ModifyState() override;
-  void ModifyNotes(const EoDbFontDefinition& fontDefinition, const EoDbCharacterCellDefinition& characterCellDefinition,
+  void ModifyNotes(const EoDbFontDefinition& fontDefinition,
+      const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes);
   EoGePoint3d SelectAtControlPoint(AeSysView* view, const EoGePoint4d& point) override;
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
@@ -114,16 +115,34 @@ class EoDbText : public EoDbPrimitive {
   void ExportAsMText(EoDxfInterface* writer) const;
 };
 
-void DisplayText(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem,
+void DisplayText(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
     const CString& text);
-void DisplayTextSegment(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
+void DisplayTextSegment(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    int startPosition,
+    int numberOfCharacters,
+    const CString& text);
 /// @brief Displays a text string using a stroke font.
-void DisplayTextSegmentUsingStrokeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
+void DisplayTextSegmentUsingStrokeFont(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    int startPosition,
+    int numberOfCharacters,
+    const CString& text);
 /// @brief Attempts to display text is using true type font.
-bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem, int startPosition, int numberOfCharacters, const CString& text);
+bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    int startPosition,
+    int numberOfCharacters,
+    const CString& text);
 
 /**
  * Displays text with embedded formatting characters for line breaks, alignment changes, and stacking.
@@ -139,16 +158,23 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view, EoGsRenderDevice* rend
  * The function processes the input text sequentially, displaying segments of regular text and applying formatting as it
  * encounters the special characters.
  */
-void DisplayTextWithFormattingCharacters(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem, const CString& text);
+void DisplayTextWithFormattingCharacters(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    const CString& text);
 
 /// @brief Renders MTEXT text with automatic word-wrapping based on the reference rectangle width.
 /// Lines are broken at word boundaries (spaces) when the accumulated line width exceeds the
 /// wrap threshold derived from EoDbMTextProperties::referenceRectangleWidth. Hard paragraph
 /// breaks (\P) are honored. Formatting codes (\A, \S) are skipped during width measurement
 /// and passed through to DisplayTextWithFormattingCharacters for each wrapped line segment.
-void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem, const CString& text, const EoDbMTextProperties& mtextProperties);
+void DisplayMTextWithWordWrap(AeSysView* view,
+    EoGsRenderDevice* renderDevice,
+    EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    const CString& text,
+    const EoDbMTextProperties& mtextProperties);
 
 /// @brief Determines the count of characters in string excluding formatting characters.
 [[nodiscard]] int LengthSansFormattingCharacters(const CString& text);
@@ -156,7 +182,12 @@ void DisplayMTextWithWordWrap(AeSysView* view, EoGsRenderDevice* renderDevice, E
 /// using per-character advance widths (v2) or fixed cell width (v1) in the z=0 plane.
 void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt);
 /// @brief Returns the region boundaries of a text string applying an optional inflation factor.
-void text_GetBoundingBox(
-    EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text, double spaceFactor, EoGePoint3dArray& ptsBox);
-EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontdefinition, EoGeReferenceSystem& referenceSystem,
-    double dLineSpaceFac, double dChrSpaceFac);
+void text_GetBoundingBox(EoDbFontDefinition& fd,
+    EoGeReferenceSystem& referenceSystem,
+    const CString& text,
+    double spaceFactor,
+    EoGePoint3dArray& ptsBox);
+EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontdefinition,
+    EoGeReferenceSystem& referenceSystem,
+    double dLineSpaceFac,
+    double dChrSpaceFac);

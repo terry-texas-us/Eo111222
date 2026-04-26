@@ -46,8 +46,11 @@ const EoDbFace& EoDbFace::operator=(const EoDbFace& other) {
 
 // ── Factory Methods ──────────────────────────────────────────────────────────
 
-EoDbFace* EoDbFace::CreateFrom3dFace(const EoGePoint3d& v0, const EoGePoint3d& v1, const EoGePoint3d& v2,
-    const EoGePoint3d& v3, std::uint8_t edgeFlags) {
+EoDbFace* EoDbFace::CreateFrom3dFace(const EoGePoint3d& v0,
+    const EoGePoint3d& v1,
+    const EoGePoint3d& v2,
+    const EoGePoint3d& v3,
+    std::uint8_t edgeFlags) {
   auto* face = new EoDbFace();
   face->m_vertices[0] = v0;
   face->m_vertices[1] = v1;
@@ -59,8 +62,10 @@ EoDbFace* EoDbFace::CreateFrom3dFace(const EoGePoint3d& v0, const EoGePoint3d& v
   return face;
 }
 
-EoDbFace* EoDbFace::CreateTriangleFrom3dFace(
-    const EoGePoint3d& v0, const EoGePoint3d& v1, const EoGePoint3d& v2, std::uint8_t edgeFlags) {
+EoDbFace* EoDbFace::CreateTriangleFrom3dFace(const EoGePoint3d& v0,
+    const EoGePoint3d& v1,
+    const EoGePoint3d& v2,
+    std::uint8_t edgeFlags) {
   auto* face = new EoDbFace();
   face->m_vertices[0] = v0;
   face->m_vertices[1] = v1;
@@ -71,8 +76,11 @@ EoDbFace* EoDbFace::CreateTriangleFrom3dFace(
   return face;
 }
 
-EoDbFace* EoDbFace::CreateFromSolid(const EoGePoint3d& v0, const EoGePoint3d& v1, const EoGePoint3d& v2,
-    const EoGePoint3d& v3, const EoGeVector3d& extrusion) {
+EoDbFace* EoDbFace::CreateFromSolid(const EoGePoint3d& v0,
+    const EoGePoint3d& v1,
+    const EoGePoint3d& v2,
+    const EoGePoint3d& v3,
+    const EoGeVector3d& extrusion) {
   auto* face = new EoDbFace();
   face->m_vertices[0] = v0;
   face->m_vertices[1] = v1;
@@ -85,8 +93,10 @@ EoDbFace* EoDbFace::CreateFromSolid(const EoGePoint3d& v0, const EoGePoint3d& v1
   return face;
 }
 
-EoDbFace* EoDbFace::CreateTriangleFromSolid(
-    const EoGePoint3d& v0, const EoGePoint3d& v1, const EoGePoint3d& v2, const EoGeVector3d& extrusion) {
+EoDbFace* EoDbFace::CreateTriangleFromSolid(const EoGePoint3d& v0,
+    const EoGePoint3d& v1,
+    const EoGePoint3d& v2,
+    const EoGeVector3d& extrusion) {
   auto* face = new EoDbFace();
   face->m_vertices[0] = v0;
   face->m_vertices[1] = v1;
@@ -98,8 +108,11 @@ EoDbFace* EoDbFace::CreateTriangleFromSolid(
   return face;
 }
 
-EoDbFace* EoDbFace::CreateFromTrace(const EoGePoint3d& v0, const EoGePoint3d& v1, const EoGePoint3d& v2,
-    const EoGePoint3d& v3, const EoGeVector3d& extrusion) {
+EoDbFace* EoDbFace::CreateFromTrace(const EoGePoint3d& v0,
+    const EoGePoint3d& v1,
+    const EoGePoint3d& v2,
+    const EoGePoint3d& v3,
+    const EoGeVector3d& extrusion) {
   auto* face = new EoDbFace();
   face->m_vertices[0] = v0;
   face->m_vertices[1] = v1;
@@ -291,14 +304,14 @@ void EoDbFace::GetAllPoints(EoGePoint3dArray& points) {
 }
 
 EoGePoint3d EoDbFace::GetControlPoint() {
-  if (sm_controlPointIndex >= 0 && sm_controlPointIndex < m_vertexCount) {
-    return m_vertices[sm_controlPointIndex];
-  }
+  if (sm_controlPointIndex >= 0 && sm_controlPointIndex < m_vertexCount) { return m_vertices[sm_controlPointIndex]; }
   return m_vertices[0];
 }
 
-void EoDbFace::GetExtents(
-    AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint, const EoGeTransformMatrix& transformMatrix) {
+void EoDbFace::GetExtents(AeSysView* view,
+    EoGePoint3d& minPoint,
+    EoGePoint3d& maxPoint,
+    const EoGeTransformMatrix& transformMatrix) {
   for (int i = 0; i < m_vertexCount; ++i) {
     EoGePoint3d point = m_vertices[i];
     view->ModelTransformPoint(point);
@@ -315,9 +328,9 @@ EoGePoint3d EoDbFace::GoToNextControlPoint() {
     // Initial engagement: pick the vertex at lower-left
     sm_controlPointIndex = 0;
     for (int i = 1; i < m_vertexCount; ++i) {
-      if (m_vertices[i].x < m_vertices[sm_controlPointIndex].x ||
-          (m_vertices[i].x == m_vertices[sm_controlPointIndex].x &&
-              m_vertices[i].y < m_vertices[sm_controlPointIndex].y)) {
+      if (m_vertices[i].x < m_vertices[sm_controlPointIndex].x
+          || (m_vertices[i].x == m_vertices[sm_controlPointIndex].x
+              && m_vertices[i].y < m_vertices[sm_controlPointIndex].y)) {
         sm_controlPointIndex = i;
       }
     }

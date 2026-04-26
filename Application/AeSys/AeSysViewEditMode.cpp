@@ -15,7 +15,8 @@ void AeSysView::OnEditModeOptions() {
       editOptions.m_EditModeRotationAngleX, editOptions.m_EditModeRotationAngleY, editOptions.m_EditModeRotationAngleZ);
 
   if (editOptions.DoModal() == IDOK) {
-    m_editModeRotationAngles.Set(editOptions.m_EditModeRotationAngleX, editOptions.m_EditModeRotationAngleY,
+    m_editModeRotationAngles.Set(editOptions.m_EditModeRotationAngleX,
+        editOptions.m_EditModeRotationAngleY,
         editOptions.m_EditModeRotationAngleZ);
     m_EditModeScale.Set(editOptions.m_EditModeScaleX, editOptions.m_EditModeScaleY, editOptions.m_EditModeScaleZ);
   }

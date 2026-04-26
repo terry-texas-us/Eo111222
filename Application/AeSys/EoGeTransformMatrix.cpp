@@ -22,8 +22,9 @@
  *  | ax*az*(1-ca)+ay*sa | ay*az*(1-ca)-ax*sa | az*az+(1-az*az)*ca | and
  *  [t] translation of reference point back to initial position
  */
-EoGeTransformMatrix::EoGeTransformMatrix(
-    const EoGePoint3d& referencePoint, const EoGeVector3d& referenceAxis, double angle) {
+EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& referencePoint,
+    const EoGeVector3d& referenceAxis,
+    double angle) {
   const double axisLength = referenceAxis.Length();
   if (axisLength < Eo::geometricTolerance) {
     Identity();
@@ -41,20 +42,20 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   m_4X4[0][0] = (xSquared + (1.0 - xSquared) * cosAngle);
   m_4X4[0][1] = (normalizedAxis.x * normalizedAxis.y * (1.0 - cosAngle) - normalizedAxis.z * sinAngle);
   m_4X4[0][2] = (normalizedAxis.x * normalizedAxis.z * (1.0 - cosAngle) + normalizedAxis.y * sinAngle);
-  m_4X4[0][3] = -m_4X4[0][0] * referencePoint.x - m_4X4[0][1] * referencePoint.y - m_4X4[0][2] * referencePoint.z +
-                referencePoint.x;
+  m_4X4[0][3] = -m_4X4[0][0] * referencePoint.x - m_4X4[0][1] * referencePoint.y - m_4X4[0][2] * referencePoint.z
+      + referencePoint.x;
 
   m_4X4[1][0] = (normalizedAxis.x * normalizedAxis.y * (1.0 - cosAngle) + normalizedAxis.z * sinAngle);
   m_4X4[1][1] = (ySquared + (1.0 - ySquared) * cosAngle);
   m_4X4[1][2] = (normalizedAxis.y * normalizedAxis.z * (1.0 - cosAngle) - normalizedAxis.x * sinAngle);
-  m_4X4[1][3] = -m_4X4[1][0] * referencePoint.x - m_4X4[1][1] * referencePoint.y - m_4X4[1][2] * referencePoint.z +
-                referencePoint.y;
+  m_4X4[1][3] = -m_4X4[1][0] * referencePoint.x - m_4X4[1][1] * referencePoint.y - m_4X4[1][2] * referencePoint.z
+      + referencePoint.y;
 
   m_4X4[2][0] = (normalizedAxis.x * normalizedAxis.z * (1.0 - cosAngle) - normalizedAxis.y * sinAngle);
   m_4X4[2][1] = (normalizedAxis.y * normalizedAxis.z * (1.0 - cosAngle) + normalizedAxis.x * sinAngle);
   m_4X4[2][2] = (zSquared + (1.0 - zSquared) * cosAngle);
-  m_4X4[2][3] = -m_4X4[2][0] * referencePoint.x - m_4X4[2][1] * referencePoint.y - m_4X4[2][2] * referencePoint.z +
-                referencePoint.z;
+  m_4X4[2][3] = -m_4X4[2][0] * referencePoint.x - m_4X4[2][1] * referencePoint.y - m_4X4[2][2] * referencePoint.z
+      + referencePoint.z;
 
   m_4X4[3][0] = 0.0;
   m_4X4[3][1] = 0.0;
@@ -76,8 +77,9 @@ EoGeTransformMatrix::EoGeTransformMatrix(
  *
  * @note The x and y reference axis vectors do not need to be normalized; appropriate scaling is applied as needed.
  */
-EoGeTransformMatrix::EoGeTransformMatrix(
-    const EoGePoint3d& referencePoint, const EoGeVector3d& xAxis, const EoGeVector3d& yAxis) {
+EoGeTransformMatrix::EoGeTransformMatrix(const EoGePoint3d& referencePoint,
+    const EoGeVector3d& xAxis,
+    const EoGeVector3d& yAxis) {
   auto normal = CrossProduct(xAxis, yAxis);
   if (normal.Length() < Eo::geometricTolerance) {
     // Degenerate cross product - axes are parallel
@@ -92,7 +94,8 @@ EoGeTransformMatrix::EoGeTransformMatrix(
   EoGeVector3d xAxisTransformed = xAxis;
   xAxisTransformed = *this * xAxisTransformed;
 
-  const double xyMagnitude = std::sqrt(xAxisTransformed.x * xAxisTransformed.x + xAxisTransformed.y * xAxisTransformed.y);
+  const double xyMagnitude =
+      std::sqrt(xAxisTransformed.x * xAxisTransformed.x + xAxisTransformed.y * xAxisTransformed.y);
   if (xyMagnitude < Eo::geometricTolerance) { return; }
   EoGeVector3d scaleVector(1.0 / xyMagnitude, 1.0, 1.0);
 
@@ -162,8 +165,8 @@ void EoGeTransformMatrix::AppendZAxisRotation(double angle) {
  *  @note Assumes plane normal is a unit vector. Uses right handed convention. See Rodgers, 3-9 Rotation about an
  * arbitrary axis in space.
  */
-void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(
-    const EoGePoint3d& referencePoint, const EoGeVector3d& normal) {
+void EoGeTransformMatrix::ConstructUsingReferencePointAndNormal(const EoGePoint3d& referencePoint,
+    const EoGeVector3d& normal) {
   Identity();
   Translate(EoGeVector3d(referencePoint, EoGePoint3d::kOrigin));
 

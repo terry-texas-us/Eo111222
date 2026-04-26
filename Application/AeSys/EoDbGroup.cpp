@@ -27,10 +27,16 @@
 EoDbPrimitive* EoDbGroup::sm_PrimitiveToIgnore = static_cast<EoDbPrimitive*>(nullptr);
 
 EoDbGroup::EoDbGroup() {}
-EoDbGroup::EoDbGroup(EoDbPrimitive* primitive) { AddTail(primitive); }
+EoDbGroup::EoDbGroup(EoDbPrimitive* primitive) {
+  AddTail(primitive);
+}
 
 EoDbGroup::EoDbGroup(const EoDbGroup& group) {
-  ATLTRACE2(traceGeneral, 3, L"EoDbGroup(copy from group): this=%p, source=%p, count=%d\n", this, &group,
+  ATLTRACE2(traceGeneral,
+      3,
+      L"EoDbGroup(copy from group): this=%p, source=%p, count=%d\n",
+      this,
+      &group,
       static_cast<int>(group.GetCount()));
 
   EoDbPrimitive* primitive{};
@@ -39,10 +45,16 @@ EoDbGroup::EoDbGroup(const EoDbGroup& group) {
   while (position != nullptr) { AddTail((group.GetNext(position))->Copy(primitive)); }
 }
 
-EoDbPrimitive* EoDbGroup::GetAt(POSITION position) { return static_cast<EoDbPrimitive*>(CObList::GetAt(position)); }
+EoDbPrimitive* EoDbGroup::GetAt(POSITION position) {
+  return static_cast<EoDbPrimitive*>(CObList::GetAt(position));
+}
 
 EoDbGroup::EoDbGroup(const EoDbBlock& block) {
-  ATLTRACE2(traceGeneral, 3, L"EoDbGroup(copy from block): this=%p, source=%p, count=%d\n", this, &block,
+  ATLTRACE2(traceGeneral,
+      3,
+      L"EoDbGroup(copy from block): this=%p, source=%p, count=%d\n",
+      this,
+      &block,
       static_cast<int>(block.GetCount()));
 
   EoDbPrimitive* primitive{};
@@ -87,8 +99,8 @@ void EoDbGroup::BreakPolylines() {
         }
 
         if (static_cast<EoDbPolyline*>(primitive)->IsLooped()) {
-          auto* line =
-              EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])->WithProperties(color, lineTypeName, lineWeight);
+          auto* line = EoDbLine::CreateLine(points[points.GetUpperBound()], points[0])
+                           ->WithProperties(color, lineTypeName, lineWeight);
           document->RegisterHandle(line);
           CObList::InsertBefore(primitivePosition, line);
         }
@@ -216,8 +228,10 @@ int EoDbGroup::GetBlockRefCount(const CString& blockName) {
   return count;
 }
 
-void EoDbGroup::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbGroup::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
@@ -275,7 +289,8 @@ bool EoDbGroup::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
   return false;
 }
 void EoDbGroup::ModifyNotes(const EoDbFontDefinition& fontDefinition,
-    const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+    const EoDbCharacterCellDefinition& characterCellDefinition,
+    int attributes) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
@@ -352,8 +367,10 @@ int EoDbGroup::RemoveEmptyNotesAndDelete() {
   return count;
 }
 
-EoDbPrimitive* EoDbGroup::SelPrimUsingPoint(
-    AeSysView* view, const EoGePoint4d& point, double& selectionDistance, EoGePoint3d& selectionPoint) {
+EoDbPrimitive* EoDbGroup::SelPrimUsingPoint(AeSysView* view,
+    const EoGePoint4d& point,
+    double& selectionDistance,
+    EoGePoint3d& selectionPoint) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);

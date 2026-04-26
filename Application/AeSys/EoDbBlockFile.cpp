@@ -6,7 +6,9 @@
 #include "EoDbPrimitive.h"
 #include "EoGePoint3d.h"
 
-EoDbBlockFile::EoDbBlockFile(const CString& pathName) { CFile::Open(pathName, modeReadWrite | shareDenyNone); }
+EoDbBlockFile::EoDbBlockFile(const CString& pathName) {
+  CFile::Open(pathName, modeReadWrite | shareDenyNone);
+}
 
 void EoDbBlockFile::ReadBlocks(EoDbBlocks& blocks) {
   if (EoDb::ReadUInt16(*this) != EoDb::kBlocksSection) {
@@ -21,7 +23,7 @@ void EoDbBlockFile::ReadBlocks(EoDbBlocks& blocks) {
     const auto numberOfPrimitives = EoDb::ReadUInt16(*this);
 
     EoDb::Read(*this, strName);
-    
+
     const auto blockTypeFlags = EoDb::ReadUInt16(*this);
     auto* block = new EoDbBlock(blockTypeFlags, EoGePoint3d::kOrigin);
 

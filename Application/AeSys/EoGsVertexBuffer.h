@@ -12,10 +12,10 @@
 /// transitional period. Phase 8 (batch geometry submission) will introduce
 /// per-batch or per-primitive vertex buffers.
 
-#include "EoGePoint4d.h"
-
 #include <cstdint>
 #include <string>
+
+#include "EoGePoint4d.h"
 
 class AeSysView;
 class EoDbLineType;
@@ -53,7 +53,9 @@ class EoGsVertexBuffer {
   /// @param renderDevice  Abstract rendering device (GDI or D2D backend).
   /// @param lineType  Internal linetype index.
   /// @param lineTypeName  Linetype name for name-based lookup (empty = use index).
-  void End(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t lineType,
+  void End(AeSysView* view,
+      EoGsRenderDevice* renderDevice,
+      std::int16_t lineType,
       const std::wstring& lineTypeName = {});
 
   /// @brief Tests polyline segments for intersection with a line.
@@ -79,6 +81,8 @@ class EoGsVertexBuffer {
   ///
   /// Processes the dash/gap pattern from the linetype definition and draws
   /// individual line segments via renderDevice->Polyline().
-  void DisplayDashPattern(
-      AeSysView* view, EoGsRenderDevice* renderDevice, EoGePoint4dArray& pointsArray, EoDbLineType* lineType);
+  void DisplayDashPattern(AeSysView* view,
+      EoGsRenderDevice* renderDevice,
+      EoGePoint4dArray& pointsArray,
+      EoDbLineType* lineType);
 };

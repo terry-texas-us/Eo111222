@@ -28,16 +28,20 @@
  *    (deferred to Phase 4).
  */
 class EoDbAttrib : public EoDbText {
-  std::wstring m_tagString;               ///< Attribute tag name (DXF group code 2)
-  std::int16_t m_attributeFlags{};        ///< Attribute flags (DXF group code 70: 1=Invisible, 2=Constant, 4=Verify, 8=Preset)
-  std::uint64_t m_insertHandle{};         ///< Handle of the parent INSERT (EoDbBlockReference) — session-only link
+  std::wstring m_tagString;  ///< Attribute tag name (DXF group code 2)
+  std::int16_t
+      m_attributeFlags{};  ///< Attribute flags (DXF group code 70: 1=Invisible, 2=Constant, 4=Verify, 8=Preset)
+  std::uint64_t m_insertHandle{};  ///< Handle of the parent INSERT (EoDbBlockReference) — session-only link
 
  public:  // Constructors and destructor
   EoDbAttrib() = default;
 
   /// @brief Constructs an EoDbAttrib from text properties and attribute identity.
-  EoDbAttrib(const EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem,
-      const std::wstring& text, std::wstring tagString, std::int16_t attributeFlags);
+  EoDbAttrib(const EoDbFontDefinition& fontDefinition,
+      EoGeReferenceSystem& referenceSystem,
+      const std::wstring& text,
+      std::wstring tagString,
+      std::int16_t attributeFlags);
 
   EoDbAttrib(const EoDbAttrib&);
 

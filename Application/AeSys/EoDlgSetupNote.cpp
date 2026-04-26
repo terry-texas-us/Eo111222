@@ -37,9 +37,11 @@ BOOL EoDlgSetupNote::OnInitDialog() {
   spacing.Format(L"%8.4f", m_FontDefinition->CharacterSpacing());
   SetDlgItemTextW(IDC_TEXT_SPACING, spacing);
 
-  CheckRadioButton(IDC_TEXT_ALIGN_HOR_LEFT, IDC_TEXT_ALIGN_HOR_RIGHT,
+  CheckRadioButton(IDC_TEXT_ALIGN_HOR_LEFT,
+      IDC_TEXT_ALIGN_HOR_RIGHT,
       IDC_TEXT_ALIGN_HOR_LEFT + static_cast<int>(m_FontDefinition->HorizontalAlignment()) - 1);
-  CheckRadioButton(IDC_TEXT_ALIGN_VER_BOT, IDC_TEXT_ALIGN_VER_TOP,
+  CheckRadioButton(IDC_TEXT_ALIGN_VER_BOT,
+      IDC_TEXT_ALIGN_VER_TOP,
       IDC_TEXT_ALIGN_VER_BOT - static_cast<int>(m_FontDefinition->VerticalAlignment()) + 4);
   CheckRadioButton(IDC_PATH_RIGHT, IDC_PATH_DOWN, IDC_PATH_RIGHT + static_cast<int>(m_FontDefinition->Path()));
 
@@ -68,7 +70,7 @@ void EoDlgSetupNote::OnOK() {
     m_MfcFontComboControl.GetLBText(fontsIndex, fontsItemName);
     m_FontDefinition->SetFontName(fontsItemName);
     const auto precision = fontsItemName.CompareNoCase(Eo::defaultStrokeFont) != 0 ? EoDb::Precision::TrueType
-                                                                             : EoDb::Precision::StrokeType;
+                                                                                   : EoDb::Precision::StrokeType;
     m_FontDefinition->SetPrecision(precision);
   }
   CDialog::OnOK();

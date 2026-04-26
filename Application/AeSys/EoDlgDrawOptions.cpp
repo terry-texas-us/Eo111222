@@ -2,7 +2,6 @@
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-
 #include "EoDlgDrawOptions.h"
 #include "Resource.h"
 
@@ -16,7 +15,9 @@ END_MESSAGE_MAP()
 
 EoDlgDrawOptions::EoDlgDrawOptions(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgDrawOptions::IDD, pParent) {}
 EoDlgDrawOptions::~EoDlgDrawOptions() {}
-void EoDlgDrawOptions::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
+void EoDlgDrawOptions::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+}
 BOOL EoDlgDrawOptions::OnInitDialog() {
   CDialog::OnInitDialog();
 

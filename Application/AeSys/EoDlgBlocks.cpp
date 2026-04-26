@@ -8,7 +8,7 @@
 #include "WndProcPreview.h"
 
 namespace {
-constexpr UINT kContextMenuRename   = 1;
+constexpr UINT kContextMenuRename = 1;
 constexpr UINT kContextMenuEditBlock = 2;
 }  // namespace
 
@@ -25,8 +25,7 @@ ON_WM_CONTEXTMENU()
 ON_EN_KILLFOCUS(IDC_BLOCKS_RENAME_EDIT, &EoDlgBlocks::OnEnKillfocusInPlaceEdit)
 END_MESSAGE_MAP()
 
-EoDlgBlocks::EoDlgBlocks(AeSysDoc* document, CWnd* parent)
-    : CDialog(EoDlgBlocks::IDD, parent), m_document(document) {}
+EoDlgBlocks::EoDlgBlocks(AeSysDoc* document, CWnd* parent) : CDialog(EoDlgBlocks::IDD, parent), m_document(document) {}
 
 EoDlgBlocks::~EoDlgBlocks() {}
 
@@ -68,9 +67,7 @@ BOOL EoDlgBlocks::OnInitDialog() {
   if (m_previewWindowHandle) { WndProcPreviewClear(m_previewWindowHandle); }
 
   // Disable "Edit Block..." when already in an editor session
-  if (GetDlgItem(IDC_EDIT_BLOCK)) {
-    GetDlgItem(IDC_EDIT_BLOCK)->EnableWindow(!m_document->IsInEditor());
-  }
+  if (GetDlgItem(IDC_EDIT_BLOCK)) { GetDlgItem(IDC_EDIT_BLOCK)->EnableWindow(!m_document->IsInEditor()); }
 
   if (m_blocksList.GetCount() > 0) {
     m_blocksList.SetCurSel(0);
@@ -130,9 +127,7 @@ void EoDlgBlocks::OnBnClickedEditBlock() {
 
   EndDialog(IDOK);
 
-  if (!m_document->EnterBlockEditMode(blockName)) {
-    app.AddStringToMessageList(L"Failed to enter block edit mode.");
-  }
+  if (!m_document->EnterBlockEditMode(blockName)) { app.AddStringToMessageList(L"Failed to enter block edit mode."); }
 }
 
 void EoDlgBlocks::OnUpdateEditBlock(CCmdUI* cmdUI) {
@@ -257,7 +252,8 @@ void EoDlgBlocks::CommitRename() {
 
   if (!m_document->RenameBlock(oldName, newName)) {
     CString message;
-    message.Format(L"Cannot rename '%s' to '%s'. The name may already be in use.", oldName.GetString(), newName.GetString());
+    message.Format(
+        L"Cannot rename '%s' to '%s'. The name may already be in use.", oldName.GetString(), newName.GetString());
     AfxMessageBox(message, MB_ICONWARNING);
     return;
   }
@@ -288,8 +284,14 @@ BOOL EoDlgBlocks::PreTranslateMessage(MSG* message) {
   }
   if (m_inPlaceEdit.GetSafeHwnd() && m_inPlaceEdit.IsWindowVisible()) {
     if (message->message == WM_KEYDOWN && message->hwnd == m_inPlaceEdit.GetSafeHwnd()) {
-      if (message->wParam == VK_RETURN) { CommitRename(); return TRUE; }
-      if (message->wParam == VK_ESCAPE) { CancelRename(); return TRUE; }
+      if (message->wParam == VK_RETURN) {
+        CommitRename();
+        return TRUE;
+      }
+      if (message->wParam == VK_ESCAPE) {
+        CancelRename();
+        return TRUE;
+      }
     }
   }
   return CDialog::PreTranslateMessage(message);
@@ -318,11 +320,14 @@ void EoDlgBlocks::OnContextMenu(CWnd* window, CPoint point) {
   popupMenu.AppendMenu(MF_SEPARATOR);
   popupMenu.AppendMenu(MF_STRING, kContextMenuRename, L"Rename\tF2");
 
-  const auto commandId = static_cast<UINT>(popupMenu.TrackPopupMenu(
-      TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, point.x, point.y, this));
+  const auto commandId = static_cast<UINT>(
+      popupMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, point.x, point.y, this));
 
-  if (commandId == kContextMenuRename) { BeginInPlaceRename(); }
-  else if (commandId == kContextMenuEditBlock) { OnBnClickedEditBlock(); }
+  if (commandId == kContextMenuRename) {
+    BeginInPlaceRename();
+  } else if (commandId == kContextMenuEditBlock) {
+    OnBnClickedEditBlock();
+  }
 }
 
 void EoDlgBlocks::OnEnKillfocusInPlaceEdit() {

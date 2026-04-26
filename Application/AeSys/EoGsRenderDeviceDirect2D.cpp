@@ -6,8 +6,9 @@ using Microsoft::WRL::ComPtr;
 
 // ── Construction / Destruction ──────────────────────────────────────────
 
-EoGsRenderDeviceDirect2D::EoGsRenderDeviceDirect2D(
-    ID2D1RenderTarget* renderTarget, ID2D1Factory* d2dFactory, IDWriteFactory* dwriteFactory)
+EoGsRenderDeviceDirect2D::EoGsRenderDeviceDirect2D(ID2D1RenderTarget* renderTarget,
+    ID2D1Factory* d2dFactory,
+    IDWriteFactory* dwriteFactory)
     : m_renderTarget(renderTarget), m_d2dFactory(d2dFactory), m_dwriteFactory(dwriteFactory) {
   if (m_renderTarget != nullptr) {
     m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &m_brush);
@@ -34,11 +35,20 @@ ComPtr<ID2D1StrokeStyle> EoGsRenderDeviceDirect2D::CreateStrokeStyleForPenStyle(
 
   D2D1_DASH_STYLE dashStyle = D2D1_DASH_STYLE_SOLID;
   switch (penStyle) {
-    case PS_DOT: dashStyle = D2D1_DASH_STYLE_DOT; break;
-    case PS_DASH: dashStyle = D2D1_DASH_STYLE_DASH; break;
-    case PS_DASHDOT: dashStyle = D2D1_DASH_STYLE_DASH_DOT; break;
-    case PS_DASHDOTDOT: dashStyle = D2D1_DASH_STYLE_DASH_DOT_DOT; break;
-    default: return nullptr;
+    case PS_DOT:
+      dashStyle = D2D1_DASH_STYLE_DOT;
+      break;
+    case PS_DASH:
+      dashStyle = D2D1_DASH_STYLE_DASH;
+      break;
+    case PS_DASHDOT:
+      dashStyle = D2D1_DASH_STYLE_DASH_DOT;
+      break;
+    case PS_DASHDOTDOT:
+      dashStyle = D2D1_DASH_STYLE_DASH_DOT_DOT;
+      break;
+    default:
+      return nullptr;
   }
 
   D2D1_STROKE_STYLE_PROPERTIES strokeProps = D2D1::StrokeStyleProperties();
@@ -114,9 +124,7 @@ void EoGsRenderDeviceDirect2D::Polyline(const POINT* points, int count) {
 
   sink->BeginFigure(PixelCenterPoint(points[0].x, points[0].y), D2D1_FIGURE_BEGIN_HOLLOW);
 
-  for (int i = 1; i < count; ++i) {
-    sink->AddLine(PixelCenterPoint(points[i].x, points[i].y));
-  }
+  for (int i = 1; i < count; ++i) { sink->AddLine(PixelCenterPoint(points[i].x, points[i].y)); }
 
   sink->EndFigure(D2D1_FIGURE_END_OPEN);
   if (FAILED(sink->Close())) { return; }
@@ -178,8 +186,8 @@ void EoGsRenderDeviceDirect2D::Ellipse(int left, int top, int right, int bottom)
 void EoGsRenderDeviceDirect2D::Rectangle(int left, int top, int right, int bottom) {
   if (m_renderTarget == nullptr) { return; }
 
-  const auto rect =
-      D2D1::RectF(static_cast<float>(left), static_cast<float>(top), static_cast<float>(right), static_cast<float>(bottom));
+  const auto rect = D2D1::RectF(
+      static_cast<float>(left), static_cast<float>(top), static_cast<float>(right), static_cast<float>(bottom));
 
   if (!m_useNullBrush && m_fillBrush) { m_renderTarget->FillRectangle(rect, m_fillBrush.Get()); }
 
@@ -196,11 +204,14 @@ void EoGsRenderDeviceDirect2D::SetPixel(int x, int y, COLORREF color) {
 
   const auto d2dColor = ColorRefToD2D(color);
   EnsureBrush(d2dColor);
-  const auto rect = D2D1::RectF(static_cast<float>(x), static_cast<float>(y), static_cast<float>(x + 1), static_cast<float>(y + 1));
+  const auto rect =
+      D2D1::RectF(static_cast<float>(x), static_cast<float>(y), static_cast<float>(x + 1), static_cast<float>(y + 1));
   m_renderTarget->FillRectangle(rect, m_brush.Get());
 }
 
-void EoGsRenderDeviceDirect2D::SetPixel(POINT point, COLORREF color) { SetPixel(point.x, point.y, color); }
+void EoGsRenderDeviceDirect2D::SetPixel(POINT point, COLORREF color) {
+  SetPixel(point.x, point.y, color);
+}
 
 // ── Pen / Brush State ───────────────────────────────────────────────────
 
@@ -291,7 +302,8 @@ void EoGsRenderDeviceDirect2D::TextOut(int x, int y, const wchar_t* text, int le
   if (hasRotation) {
     m_renderTarget->GetTransform(&savedTransform);
     float angleDegrees = -m_escapement / 10.0f;
-    const auto rotation = D2D1::Matrix3x2F::Rotation(angleDegrees, D2D1::Point2F(static_cast<float>(x), static_cast<float>(y)));
+    const auto rotation =
+        D2D1::Matrix3x2F::Rotation(angleDegrees, D2D1::Point2F(static_cast<float>(x), static_cast<float>(y)));
     m_renderTarget->SetTransform(rotation * savedTransform);
   }
 
@@ -309,16 +321,21 @@ void EoGsRenderDeviceDirect2D::TextOut(int x, int y, const wchar_t* text, int le
   if (hasRotation) { m_renderTarget->SetTransform(savedTransform); }
 }
 
-void EoGsRenderDeviceDirect2D::ExtTextOut(
-    int x, int y, UINT options, const RECT* rect, const wchar_t* text, UINT length) {
+void EoGsRenderDeviceDirect2D::ExtTextOut(int x,
+    int y,
+    UINT options,
+    const RECT* rect,
+    const wchar_t* text,
+    UINT length) {
   if (m_renderTarget == nullptr) { return; }
 
   // Handle opaque background rectangle
   if ((options & ETO_OPAQUE) && rect != nullptr) {
     EnsureFillBrush(m_bkColor);
-    const auto bgRect = D2D1::RectF(
-        static_cast<float>(rect->left), static_cast<float>(rect->top),
-        static_cast<float>(rect->right), static_cast<float>(rect->bottom));
+    const auto bgRect = D2D1::RectF(static_cast<float>(rect->left),
+        static_cast<float>(rect->top),
+        static_cast<float>(rect->right),
+        static_cast<float>(rect->bottom));
     m_renderTarget->FillRectangle(bgRect, m_fillBrush.Get());
   }
 
@@ -379,12 +396,13 @@ void EoGsRenderDeviceDirect2D::SelectFont(const LOGFONT* logFont) {
   // The LOGFONT lfHeight in device units maps directly to DIPs for 96 DPI
   // For other DPIs, the render target's DPI scaling handles it
 
-  const auto fontWeight = static_cast<DWRITE_FONT_WEIGHT>(logFont->lfWeight > 0 ? logFont->lfWeight : DWRITE_FONT_WEIGHT_NORMAL);
+  const auto fontWeight =
+      static_cast<DWRITE_FONT_WEIGHT>(logFont->lfWeight > 0 ? logFont->lfWeight : DWRITE_FONT_WEIGHT_NORMAL);
   const auto fontStyle = logFont->lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
 
   m_textFormat.Reset();
-  m_dwriteFactory->CreateTextFormat(logFont->lfFaceName, nullptr, fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL,
-      fontSize, L"", &m_textFormat);
+  m_dwriteFactory->CreateTextFormat(
+      logFont->lfFaceName, nullptr, fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL, fontSize, L"", &m_textFormat);
 }
 
 void EoGsRenderDeviceDirect2D::RestoreFont() {
@@ -415,14 +433,22 @@ int EoGsRenderDeviceDirect2D::GetDeviceCaps(int index) const {
   m_renderTarget->GetDpi(&dpiX, &dpiY);
 
   switch (index) {
-    case HORZRES: return static_cast<int>(size.width);
-    case VERTRES: return static_cast<int>(size.height);
-    case LOGPIXELSX: return static_cast<int>(dpiX);
-    case LOGPIXELSY: return static_cast<int>(dpiY);
-    case BITSPIXEL: return 32;
-    case HORZSIZE: return static_cast<int>(size.width * 25.4f / dpiX);
-    case VERTSIZE: return static_cast<int>(size.height * 25.4f / dpiY);
-    default: return 0;
+    case HORZRES:
+      return static_cast<int>(size.width);
+    case VERTRES:
+      return static_cast<int>(size.height);
+    case LOGPIXELSX:
+      return static_cast<int>(dpiX);
+    case LOGPIXELSY:
+      return static_cast<int>(dpiY);
+    case BITSPIXEL:
+      return 32;
+    case HORZSIZE:
+      return static_cast<int>(size.width * 25.4f / dpiX);
+    case VERTSIZE:
+      return static_cast<int>(size.height * 25.4f / dpiY);
+    default:
+      return 0;
   }
 }
 
@@ -458,8 +484,15 @@ void EoGsRenderDeviceDirect2D::PopClipRect() {
 
 // ── Bitmap Operations ───────────────────────────────────────────────────
 
-void EoGsRenderDeviceDirect2D::StretchBlt(int /*destX*/, int /*destY*/, int /*destWidth*/, int /*destHeight*/,
-    EoGsRenderDevice* /*sourceDevice*/, int /*srcX*/, int /*srcY*/, int /*srcWidth*/, int /*srcHeight*/,
+void EoGsRenderDeviceDirect2D::StretchBlt(int /*destX*/,
+    int /*destY*/,
+    int /*destWidth*/,
+    int /*destHeight*/,
+    EoGsRenderDevice* /*sourceDevice*/,
+    int /*srcX*/,
+    int /*srcY*/,
+    int /*srcWidth*/,
+    int /*srcHeight*/,
     DWORD /*rop*/) {
   // No-op for Direct2D — the D2D render target is inherently double-buffered.
   // Cross-device blitting would require ID2D1Bitmap interop.

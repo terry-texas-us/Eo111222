@@ -32,8 +32,11 @@ class EoDbLabeledLine : public EoDbPrimitive {
 
   ~EoDbLabeledLine() override = default;
 
-  EoDbLabeledLine(EoGeLine line, const EoDbFontDefinition& fontDefinition, const EoGeReferenceSystem& referenceSystem,
-      const CString& text, std::int16_t textColor);
+  EoDbLabeledLine(EoGeLine line,
+      const EoDbFontDefinition& fontDefinition,
+      const EoGeReferenceSystem& referenceSystem,
+      const CString& text,
+      std::int16_t textColor);
 
   EoDbLabeledLine(std::uint8_t* buffer);
 
@@ -67,8 +70,10 @@ class EoDbLabeledLine : public EoDbPrimitive {
   /// @return A pointer to the constructed EoDbLabeledLine.
   static EoDbLabeledLine* ReadFromPeg(CFile& file);
 
-  void CutAt2Points(
-      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*) override;
+  void CutAt2Points(const EoGePoint3d& firstPoint,
+      const EoGePoint3d& secondPoint,
+      EoDbGroupList*,
+      EoDbGroupList*) override;
   void CutAtPoint(const EoGePoint3d& point, EoDbGroup* group) override;
   void ModifyState() override;
 

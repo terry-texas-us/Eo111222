@@ -102,8 +102,10 @@ class EoDbPrimitive : public CObject {
   /// @brief Reads per-primitive AE2026 V2 extension data after the generic V2 block.
   virtual void ReadV2Extension(CFile& file);
 
-  virtual void CutAt2Points(
-      const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList*, EoDbGroupList*);
+  virtual void CutAt2Points(const EoGePoint3d& firstPoint,
+      const EoGePoint3d& secondPoint,
+      EoDbGroupList*,
+      EoDbGroupList*);
   virtual void CutAtPoint(const EoGePoint3d& point, EoDbGroup*);
   virtual int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d*);
   virtual void ModifyState();
@@ -165,7 +167,7 @@ class EoDbPrimitive : public CObject {
   [[nodiscard]] EoDbPrimitive* WithProperties(const EoGsRenderState& renderState);
 
   /** @brief Fluent setter for properties from explicit parameters.
-  * 
+   *
    * This method allows chaining by returning a pointer to this instance after applying the properties.
    * It applies the provided color, line type name, and line weight to this primitive.
    * The legacy line type index is derived internally from the name.
@@ -175,7 +177,8 @@ class EoDbPrimitive : public CObject {
    * @param lineWeight The line weight enum value (e.g., kLnWtByLayer, kLnWt025).
    * @return Pointer to this primitive for method chaining.
    */
-  [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color, const std::wstring& lineTypeName,
+  [[nodiscard]] EoDbPrimitive* WithProperties(std::int16_t color,
+      const std::wstring& lineTypeName,
       EoDxfLineWeights::LineWeight lineWeight = EoDxfLineWeights::LineWeight::kLnWtByLwDefault);
 
   static int ControlPointIndex() noexcept;

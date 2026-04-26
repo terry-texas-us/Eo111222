@@ -45,25 +45,28 @@ class EoDbPolyline : public EoDbPrimitive {
  public:
   /// @name Flag bit constants
   /// @{
-  static constexpr std::int16_t sm_Closed = 0x0001;    ///< Last vertex connects back to first
-  static constexpr std::int16_t sm_HasBulge = 0x0002;   ///< m_bulges contains per-vertex bulge values
-  static constexpr std::int16_t sm_HasWidth = 0x0004;   ///< m_startWidths / m_endWidths are populated
-  static constexpr std::int16_t sm_Plinegen = 0x0008;   ///< Generate linetype pattern across vertices
-  static constexpr std::int16_t sm_Is3D = 0x0010;       ///< 3D polyline (DXF heavy POLYLINE flag 0x08)
+  static constexpr std::int16_t sm_Closed = 0x0001;  ///< Last vertex connects back to first
+  static constexpr std::int16_t sm_HasBulge = 0x0002;  ///< m_bulges contains per-vertex bulge values
+  static constexpr std::int16_t sm_HasWidth = 0x0004;  ///< m_startWidths / m_endWidths are populated
+  static constexpr std::int16_t sm_Plinegen = 0x0008;  ///< Generate linetype pattern across vertices
+  static constexpr std::int16_t sm_Is3D = 0x0010;  ///< 3D polyline (DXF heavy POLYLINE flag 0x08)
   /// @}
 
  private:
   std::int16_t m_flags{};
   EoGePoint3dArray m_pts;
-  std::vector<double> m_bulges;       ///< Per-vertex bulge: tan(θ/4). Empty when all segments are straight.
+  std::vector<double> m_bulges;  ///< Per-vertex bulge: tan(θ/4). Empty when all segments are straight.
   std::vector<double> m_startWidths;  ///< Per-vertex start width. Empty when all widths are zero.
-  std::vector<double> m_endWidths;    ///< Per-vertex end width. Empty when all widths are zero.
-  double m_constantWidth{};            ///< DXF LWPOLYLINE constant width (group code 43). Zero when not set.
+  std::vector<double> m_endWidths;  ///< Per-vertex end width. Empty when all widths are zero.
+  double m_constantWidth{};  ///< DXF LWPOLYLINE constant width (group code 43). Zero when not set.
 
  public:
   EoDbPolyline();
-  EoDbPolyline(
-      std::int16_t penColor, std::int16_t lineType, EoGePoint3d& centerPoint, double radius, int numberOfSides);
+  EoDbPolyline(std::int16_t penColor,
+      std::int16_t lineType,
+      EoGePoint3d& centerPoint,
+      double radius,
+      int numberOfSides);
   EoDbPolyline(std::int16_t penColor, std::int16_t lineType, EoGePoint3dArray& pts);
   EoDbPolyline(EoGePoint3dArray& pts);
   EoDbPolyline(const EoDbPolyline& other);
@@ -182,9 +185,7 @@ class EoDbPolyline : public EoDbPrimitive {
   void SetNumberOfVertices(const size_t numberOfVertices) { m_pts.SetSize(static_cast<int64_t>(numberOfVertices)); }
 
   /// @brief Sets vertex coordinates from a 3D point (used by heavy POLYLINE 3D and 2D converters).
-  void SetVertex(size_t index, const EoGePoint3d& point) {
-    m_pts[static_cast<int64_t>(index)] = point;
-  }
+  void SetVertex(size_t index, const EoGePoint3d& point) { m_pts[static_cast<int64_t>(index)] = point; }
 
   /// @brief Sets vertex coordinates from a lightweight polyline vertex, including computed Z.
   void SetVertexFromLwVertex(size_t index, const EoDxfPolylineVertex2d& vertex) {

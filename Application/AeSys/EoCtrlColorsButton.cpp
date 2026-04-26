@@ -27,7 +27,9 @@ ON_WM_SETFOCUS()
 #pragma warning(pop)
 END_MESSAGE_MAP()
 
-static inline int ScaleInt(double scale, int value) { return static_cast<int>(std::lround(value * scale)); }
+static inline int ScaleInt(double scale, int value) {
+  return static_cast<int>(std::lround(value * scale));
+}
 
 EoCtrlColorsButton::EoCtrlColorsButton() {
   m_layout = SimpleSingleRow;
@@ -191,7 +193,9 @@ void EoCtrlColorsButton::OnDraw(CDC* deviceContext, const CRect& /*rectangle */,
   }
 }
 
-UINT EoCtrlColorsButton::OnGetDlgCode() { return DLGC_WANTARROWS; }
+UINT EoCtrlColorsButton::OnGetDlgCode() {
+  return DLGC_WANTARROWS;
+}
 
 void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
   if (keyCode >= VK_LEFT && keyCode <= VK_DOWN) {
@@ -256,7 +260,9 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
       NMHDR notifyStructure{};
       notifyStructure.hwndFrom = GetSafeHwnd();
       notifyStructure.idFrom = static_cast<uint64_t>(GetDlgCtrlID());
-      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, static_cast<WPARAM>(notifyStructure.idFrom),
+      ::SendMessageW(GetParent()->GetSafeHwnd(),
+          WM_NOTIFY,
+          static_cast<WPARAM>(notifyStructure.idFrom),
           reinterpret_cast<LPARAM>(&notifyStructure));
     }
   }
@@ -290,7 +296,9 @@ void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
       notifyStructure.hwndFrom = GetSafeHwnd();
       notifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
 
-      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, static_cast<WPARAM>(notifyStructure.idFrom),
+      ::SendMessageW(GetParent()->GetSafeHwnd(),
+          WM_NOTIFY,
+          static_cast<WPARAM>(notifyStructure.idFrom),
           reinterpret_cast<LPARAM>(&notifyStructure));
     }
     ReleaseDC(deviceContext);
@@ -298,7 +306,9 @@ void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
   CMFCButton::OnMouseMove(flags, point);
 }
 
-void EoCtrlColorsButton::OnPaint() { CMFCButton::OnPaint(); }
+void EoCtrlColorsButton::OnPaint() {
+  CMFCButton::OnPaint();
+}
 
 void EoCtrlColorsButton::OnSetFocus(CWnd* oldWindow) {
   CMFCButton::OnSetFocus(oldWindow);

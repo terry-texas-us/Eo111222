@@ -22,17 +22,27 @@ EoGsRenderDeviceGdi::~EoGsRenderDeviceGdi() {
 
 // ── Line Drawing ────────────────────────────────────────────────────────
 
-void EoGsRenderDeviceGdi::MoveTo(int x, int y) { m_dc->MoveTo(x, y); }
+void EoGsRenderDeviceGdi::MoveTo(int x, int y) {
+  m_dc->MoveTo(x, y);
+}
 
-void EoGsRenderDeviceGdi::LineTo(int x, int y) { m_dc->LineTo(x, y); }
+void EoGsRenderDeviceGdi::LineTo(int x, int y) {
+  m_dc->LineTo(x, y);
+}
 
-void EoGsRenderDeviceGdi::Polyline(const POINT* points, int count) { m_dc->Polyline(points, count); }
+void EoGsRenderDeviceGdi::Polyline(const POINT* points, int count) {
+  m_dc->Polyline(points, count);
+}
 
 // ── Filled Shapes ───────────────────────────────────────────────────────
 
-void EoGsRenderDeviceGdi::Polygon(const POINT* points, int count) { m_dc->Polygon(points, count); }
+void EoGsRenderDeviceGdi::Polygon(const POINT* points, int count) {
+  m_dc->Polygon(points, count);
+}
 
-void EoGsRenderDeviceGdi::Ellipse(int left, int top, int right, int bottom) { m_dc->Ellipse(left, top, right, bottom); }
+void EoGsRenderDeviceGdi::Ellipse(int left, int top, int right, int bottom) {
+  m_dc->Ellipse(left, top, right, bottom);
+}
 
 void EoGsRenderDeviceGdi::Rectangle(int left, int top, int right, int bottom) {
   m_dc->Rectangle(left, top, right, bottom);
@@ -40,9 +50,13 @@ void EoGsRenderDeviceGdi::Rectangle(int left, int top, int right, int bottom) {
 
 // ── Pixel Operations ────────────────────────────────────────────────────
 
-void EoGsRenderDeviceGdi::SetPixel(int x, int y, COLORREF color) { m_dc->SetPixel(x, y, color); }
+void EoGsRenderDeviceGdi::SetPixel(int x, int y, COLORREF color) {
+  m_dc->SetPixel(x, y, color);
+}
 
-void EoGsRenderDeviceGdi::SetPixel(POINT point, COLORREF color) { m_dc->SetPixel(point, color); }
+void EoGsRenderDeviceGdi::SetPixel(POINT point, COLORREF color) {
+  m_dc->SetPixel(point, color);
+}
 
 // ── Pen / Brush State ───────────────────────────────────────────────────
 
@@ -95,13 +109,21 @@ void EoGsRenderDeviceGdi::ExtTextOut(int x, int y, UINT options, const RECT* rec
   m_dc->ExtTextOutW(x, y, options, rect, text, length, nullptr);
 }
 
-COLORREF EoGsRenderDeviceGdi::SetTextColor(COLORREF color) { return m_dc->SetTextColor(color); }
+COLORREF EoGsRenderDeviceGdi::SetTextColor(COLORREF color) {
+  return m_dc->SetTextColor(color);
+}
 
-UINT EoGsRenderDeviceGdi::SetTextAlign(UINT align) { return m_dc->SetTextAlign(align); }
+UINT EoGsRenderDeviceGdi::SetTextAlign(UINT align) {
+  return m_dc->SetTextAlign(align);
+}
 
-int EoGsRenderDeviceGdi::SetBkMode(int mode) { return m_dc->SetBkMode(mode); }
+int EoGsRenderDeviceGdi::SetBkMode(int mode) {
+  return m_dc->SetBkMode(mode);
+}
 
-COLORREF EoGsRenderDeviceGdi::SetBkColor(COLORREF color) { return m_dc->SetBkColor(color); }
+COLORREF EoGsRenderDeviceGdi::SetBkColor(COLORREF color) {
+  return m_dc->SetBkColor(color);
+}
 
 // ── Font Selection ──────────────────────────────────────────────────────
 
@@ -124,15 +146,21 @@ void EoGsRenderDeviceGdi::RestoreFont() {
 
 // ── Drawing Mode ────────────────────────────────────────────────────────
 
-int EoGsRenderDeviceGdi::SetROP2(int drawMode) { return m_dc->SetROP2(drawMode); }
+int EoGsRenderDeviceGdi::SetROP2(int drawMode) {
+  return m_dc->SetROP2(drawMode);
+}
 
 // ── Device Capabilities ─────────────────────────────────────────────────
 
-int EoGsRenderDeviceGdi::GetDeviceCaps(int index) const { return m_dc->GetDeviceCaps(index); }
+int EoGsRenderDeviceGdi::GetDeviceCaps(int index) const {
+  return m_dc->GetDeviceCaps(index);
+}
 
 // ── Clipping ────────────────────────────────────────────────────────────
 
-int EoGsRenderDeviceGdi::GetClipBox(RECT& rect) const { return m_dc->GetClipBox(&rect); }
+int EoGsRenderDeviceGdi::GetClipBox(RECT& rect) const {
+  return m_dc->GetClipBox(&rect);
+}
 
 void EoGsRenderDeviceGdi::PushClipRect(int left, int top, int right, int bottom) {
   m_savedDC = m_dc->SaveDC();
@@ -148,8 +176,16 @@ void EoGsRenderDeviceGdi::PopClipRect() {
 
 // ── Bitmap Operations ───────────────────────────────────────────────────
 
-void EoGsRenderDeviceGdi::StretchBlt(int destX, int destY, int destWidth, int destHeight,
-    EoGsRenderDevice* sourceDevice, int srcX, int srcY, int srcWidth, int srcHeight, DWORD rop) {
+void EoGsRenderDeviceGdi::StretchBlt(int destX,
+    int destY,
+    int destWidth,
+    int destHeight,
+    EoGsRenderDevice* sourceDevice,
+    int srcX,
+    int srcY,
+    int srcWidth,
+    int srcHeight,
+    DWORD rop) {
   auto* gdiSource = dynamic_cast<EoGsRenderDeviceGdi*>(sourceDevice);
   if (gdiSource && gdiSource->m_dc) {
     m_dc->StretchBlt(destX, destY, destWidth, destHeight, gdiSource->m_dc, srcX, srcY, srcWidth, srcHeight, rop);
@@ -164,8 +200,12 @@ void* EoGsRenderDeviceGdi::SelectPalette(void* palette, bool forceBackground) {
   return previous;
 }
 
-void EoGsRenderDeviceGdi::RealizePalette() { m_dc->RealizePalette(); }
+void EoGsRenderDeviceGdi::RealizePalette() {
+  m_dc->RealizePalette();
+}
 
 // ── Underlying Device Access ────────────────────────────────────────────
 
-CDC* EoGsRenderDeviceGdi::GetCDC() const { return m_dc; }
+CDC* EoGsRenderDeviceGdi::GetCDC() const {
+  return m_dc;
+}

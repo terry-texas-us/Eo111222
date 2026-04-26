@@ -36,8 +36,10 @@ void IdleState::OnDraw(AeSysView* context, CDC* deviceContext) {
   document->DisplayUniquePoints();
 }
 
-bool IdleState::OnUpdate([[maybe_unused]] AeSysView* context, [[maybe_unused]] CView* sender,
-    [[maybe_unused]] LPARAM hint, [[maybe_unused]] CObject* objectHint) {
+bool IdleState::OnUpdate([[maybe_unused]] AeSysView* context,
+    [[maybe_unused]] CView* sender,
+    [[maybe_unused]] LPARAM hint,
+    [[maybe_unused]] CObject* objectHint) {
   ATLTRACE2(traceGeneral, 2, L"IdleState::OnUpdate\n");
   // Idle-specific if any (e.g., no previews)
   return false;  // Fallback to AeSysView switch for drawing

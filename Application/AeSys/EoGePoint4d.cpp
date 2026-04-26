@@ -36,8 +36,8 @@ bool EoGePoint4d::operator!=(const EoGePoint4d& point) const noexcept {
 }
 
 bool EoGePoint4d::IsEqualTo(const EoGePoint4d& p, double tolerance) const noexcept {
-  return std::abs(x - p.x) <= tolerance && std::abs(y - p.y) <= tolerance && std::abs(z - p.z) <= tolerance &&
-      std::abs(w - p.w) <= tolerance;
+  return std::abs(x - p.x) <= tolerance && std::abs(y - p.y) <= tolerance && std::abs(z - p.z) <= tolerance
+      && std::abs(w - p.w) <= tolerance;
 }
 
 bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
@@ -80,12 +80,19 @@ bool EoGePoint4d::ClipLine(EoGePoint4d& ptA, EoGePoint4d& ptB) {
 }
 
 void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
-  static EoGePoint4d ptPln[] = {EoGePoint4d(-1.0, 0.0, 0.0, 1.0), EoGePoint4d(1.0, 0.0, 0.0, 1.0),
-      EoGePoint4d(0.0, -1.0, 0.0, 1.0), EoGePoint4d(0.0, 1.0, 0.0, 1.0), EoGePoint4d(0.0, 0.0, -1.0, 1.0),
+  static EoGePoint4d ptPln[] = {EoGePoint4d(-1.0, 0.0, 0.0, 1.0),
+      EoGePoint4d(1.0, 0.0, 0.0, 1.0),
+      EoGePoint4d(0.0, -1.0, 0.0, 1.0),
+      EoGePoint4d(0.0, 1.0, 0.0, 1.0),
+      EoGePoint4d(0.0, 0.0, -1.0, 1.0),
       EoGePoint4d(0.0, 0.0, 1.0, 1.0)};
 
-  static EoGeVector3d vPln[] = {EoGeVector3d(1.0, 0.0, 0.0), EoGeVector3d(-1.0, 0.0, 0.0), EoGeVector3d(0.0, 1.0, 0.0),
-      EoGeVector3d(0.0, -1.0, 0.0), EoGeVector3d(0.0, 0.0, 1.0), EoGeVector3d(0.0, 0.0, -1.0)};
+  static EoGeVector3d vPln[] = {EoGeVector3d(1.0, 0.0, 0.0),
+      EoGeVector3d(-1.0, 0.0, 0.0),
+      EoGeVector3d(0.0, 1.0, 0.0),
+      EoGeVector3d(0.0, -1.0, 0.0),
+      EoGeVector3d(0.0, 0.0, 1.0),
+      EoGeVector3d(0.0, 0.0, -1.0)};
 
   EoGePoint4dArray pointsArrayOut;
 
@@ -102,16 +109,19 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
   }
 }
 
-void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoGePoint4d& pointOnClipPlane,
-    EoGeVector3d& clipPlaneNormal, EoGePoint4dArray& pointsArrayOut) {
+void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn,
+    const EoGePoint4d& pointOnClipPlane,
+    EoGeVector3d& clipPlaneNormal,
+    EoGePoint4dArray& pointsArrayOut) {
   if (pointsArrayIn.IsEmpty()) { return; }
 
   EoGePoint4d pt;
   EoGePoint4d ptEdge[2]{};
   bool bEdgeVis[2]{};
 
-  const bool bVisVer0 = DotProduct(EoGeVector3d(EoGePoint3d{pointOnClipPlane}, EoGePoint3d{pointsArrayIn[0]}),
-                            clipPlaneNormal) >= -Eo::geometricTolerance
+  const bool bVisVer0 =
+      DotProduct(EoGeVector3d(EoGePoint3d{pointOnClipPlane}, EoGePoint3d{pointsArrayIn[0]}), clipPlaneNormal)
+          >= -Eo::geometricTolerance
       ? true
       : false;
 
@@ -122,8 +132,8 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
   const auto iPtsIn = static_cast<int>(pointsArrayIn.GetSize());
   for (int i = 1; i < iPtsIn; i++) {
     ptEdge[1] = pointsArrayIn[i];
-    bEdgeVis[1] = DotProduct(EoGeVector3d(EoGePoint3d{pointOnClipPlane}, EoGePoint3d{ptEdge[1]}), clipPlaneNormal) >=
-            -Eo::geometricTolerance
+    bEdgeVis[1] = DotProduct(EoGeVector3d(EoGePoint3d{pointOnClipPlane}, EoGePoint3d{ptEdge[1]}), clipPlaneNormal)
+            >= -Eo::geometricTolerance
         ? true
         : false;
 
@@ -135,8 +145,8 @@ void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoG
     ptEdge[0] = ptEdge[1];
     bEdgeVis[0] = bEdgeVis[1];
   }
-  if (pointsArrayOut.GetSize() != 0 &&
-      bEdgeVis[0] != bVisVer0) {  // first and last vertices on opposite sides of clip plane
+  if (pointsArrayOut.GetSize() != 0
+      && bEdgeVis[0] != bVisVer0) {  // first and last vertices on opposite sides of clip plane
     pt = EoGeLine::IntersectionWithPlane(ptEdge[0], pointsArrayIn[0], pointOnClipPlane, clipPlaneNormal);
     pointsArrayOut.Add(pt);
   }

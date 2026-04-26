@@ -4,14 +4,13 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "Resource.h"
-
-#include "ddeCmds.h"
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbJobFile.h"
 #include "EoDbText.h"
 #include "EoGeReferenceSystem.h"
 #include "EoGsRenderState.h"
+#include "Resource.h"
+#include "ddeCmds.h"
 
 using namespace dde;
 
@@ -54,7 +53,7 @@ bool dde::ExecDA(PTOPICINFO, LPTSTR, UINT, UINT, LPTSTR *ppArgs) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::DimAng);
   return true;
 }
-/// @brief 
+/// @brief
 bool dde::ExecTracingBlank(PTOPICINFO, LPTSTR, UINT, UINT uiNargs, LPTSTR *ppArgs) {
   int PathKey = uiNargs - 1;
 

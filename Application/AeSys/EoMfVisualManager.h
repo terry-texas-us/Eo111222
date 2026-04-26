@@ -16,22 +16,39 @@ class EoMfVisualManager : public CMFCVisualManagerOffice2007 {
   void RefreshColors();
 
   // --- Bar / toolbar background ---
-  void OnFillBarBackground(CDC* deviceContext, CBasePane* bar, CRect rectClient, CRect rectClip,
+  void OnFillBarBackground(CDC* deviceContext,
+      CBasePane* bar,
+      CRect rectClient,
+      CRect rectClip,
       BOOL ncArea = FALSE) override;
   void OnDrawBarGripper(CDC* deviceContext, CRect rectGripper, BOOL isHorz, CBasePane* bar) override;
 
   // --- Docking pane caption ---
-  COLORREF OnDrawPaneCaption(CDC* deviceContext, CDockablePane* bar, BOOL active, CRect rectCaption,
+  COLORREF OnDrawPaneCaption(CDC* deviceContext,
+      CDockablePane* bar,
+      BOOL active,
+      CRect rectCaption,
       CRect rectButtons) override;
 
   // --- Tabs (MDI and docking pane) ---
   void OnEraseTabsArea(CDC* deviceContext, CRect rect, const CMFCBaseTabCtrl* tabWnd) override;
   BOOL OnEraseTabsFrame(CDC* deviceContext, CRect rect, const CMFCBaseTabCtrl* tabWnd) override;
-  void OnDrawTab(CDC* deviceContext, CRect rectTab, int tabIndex, BOOL isActive,
+  void OnDrawTab(CDC* deviceContext,
+      CRect rectTab,
+      int tabIndex,
+      BOOL isActive,
       const CMFCBaseTabCtrl* tabWnd) override;
-  void OnDrawTabCloseButton(CDC* deviceContext, CRect rect, const CMFCBaseTabCtrl* tabWnd, BOOL isHighlighted,
-      BOOL isPressed, BOOL isDisabled) override;
-  void OnFillTab(CDC* deviceContext, CRect rectFill, CBrush* brFill, int tabIndex, BOOL isActive,
+  void OnDrawTabCloseButton(CDC* deviceContext,
+      CRect rect,
+      const CMFCBaseTabCtrl* tabWnd,
+      BOOL isHighlighted,
+      BOOL isPressed,
+      BOOL isDisabled) override;
+  void OnFillTab(CDC* deviceContext,
+      CRect rectFill,
+      CBrush* brFill,
+      int tabIndex,
+      BOOL isActive,
       const CMFCBaseTabCtrl* tabWnd) override;
   COLORREF GetTabTextColor(const CMFCBaseTabCtrl* tabWnd, int tabIndex, BOOL isActive) override;
 
@@ -43,18 +60,35 @@ class EoMfVisualManager : public CMFCVisualManagerOffice2007 {
   COLORREF GetToolbarButtonTextColor(CMFCToolBarButton* button, CMFCVisualManager::AFX_BUTTON_STATE state) override;
 
   // --- Toolbar / caption buttons ---
-  void OnFillButtonInterior(CDC* deviceContext, CMFCToolBarButton* button, CRect rect,
+  void OnFillButtonInterior(CDC* deviceContext,
+      CMFCToolBarButton* button,
+      CRect rect,
       CMFCVisualManager::AFX_BUTTON_STATE state) override;
-  void OnDrawButtonBorder(CDC* deviceContext, CMFCToolBarButton* button, CRect rect,
+  void OnDrawButtonBorder(CDC* deviceContext,
+      CMFCToolBarButton* button,
+      CRect rect,
       CMFCVisualManager::AFX_BUTTON_STATE state) override;
-  void OnDrawCaptionButton(CDC* deviceContext, CMFCCaptionButton* button, BOOL active, BOOL isHorz,
-      BOOL isMaximized, BOOL isDisabled, int imageId = -1) override;
+  void OnDrawCaptionButton(CDC* deviceContext,
+      CMFCCaptionButton* button,
+      BOOL active,
+      BOOL isHorz,
+      BOOL isMaximized,
+      BOOL isDisabled,
+      int imageId = -1) override;
 
   // --- Toolbar combo boxes ---
-  void OnDrawComboBorder(CDC* deviceContext, CRect rect, BOOL isDisabled, BOOL isDropped,
-      BOOL isHighlighted, CMFCToolBarComboBoxButton* button) override;
-  void OnDrawComboDropButton(CDC* deviceContext, CRect rect, BOOL isDisabled, BOOL isDropped,
-      BOOL isHighlighted, CMFCToolBarComboBoxButton* button) override;
+  void OnDrawComboBorder(CDC* deviceContext,
+      CRect rect,
+      BOOL isDisabled,
+      BOOL isDropped,
+      BOOL isHighlighted,
+      CMFCToolBarComboBoxButton* button) override;
+  void OnDrawComboDropButton(CDC* deviceContext,
+      CRect rect,
+      BOOL isDisabled,
+      BOOL isDropped,
+      BOOL isHighlighted,
+      CMFCToolBarComboBoxButton* button) override;
 
   // --- Menu ---
   COLORREF GetMenuItemTextColor(CMFCToolBarMenuButton* button, BOOL isHighlighted, BOOL isDisabled) override;
@@ -67,9 +101,13 @@ class EoMfVisualManager : public CMFCVisualManagerOffice2007 {
 
   // --- Menu ---
   void OnDrawMenuBorder(CDC* deviceContext, CMFCPopupMenu* menu, CRect rect) override;
-  void OnFillMenuImageRect(CDC* deviceContext, CMFCToolBarButton* button, CRect rect,
+  void OnFillMenuImageRect(CDC* deviceContext,
+      CMFCToolBarButton* button,
+      CRect rect,
       CMFCVisualManager::AFX_BUTTON_STATE state) override;
-  void OnHighlightMenuItem(CDC* deviceContext, CMFCToolBarMenuButton* button, CRect rect,
+  void OnHighlightMenuItem(CDC* deviceContext,
+      CMFCToolBarMenuButton* button,
+      CRect rect,
       COLORREF& highlightTextColor) override;
   COLORREF OnDrawMenuLabel(CDC* deviceContext, CRect rect) override;
 

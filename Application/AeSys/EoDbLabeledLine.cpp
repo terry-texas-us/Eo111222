@@ -50,8 +50,11 @@ const EoDbLabeledLine& EoDbLabeledLine::operator=(const EoDbLabeledLine& other) 
   return (*this);
 }
 
-EoDbLabeledLine::EoDbLabeledLine(EoGeLine line, const EoDbFontDefinition& fontDefinition,
-    const EoGeReferenceSystem& referenceSystem, const CString& text, std::int16_t textColor)
+EoDbLabeledLine::EoDbLabeledLine(EoGeLine line,
+    const EoDbFontDefinition& fontDefinition,
+    const EoGeReferenceSystem& referenceSystem,
+    const CString& text,
+    std::int16_t textColor)
     : m_line{line},
       m_fontDefinition{fontDefinition},
       m_ReferenceSystem{referenceSystem},
@@ -66,8 +69,10 @@ EoDbPrimitive*& EoDbLabeledLine::Copy(EoDbPrimitive*& primitive) {
   return primitive;
 }
 
-void EoDbLabeledLine::CutAt2Points(
-    const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+void EoDbLabeledLine::CutAt2Points(const EoGePoint3d& firstPoint,
+    const EoGePoint3d& secondPoint,
+    EoDbGroupList* groups,
+    EoDbGroupList* newGroups) {
   double dRel[2]{};
   if (!m_line.ComputeParametricRelation(firstPoint, dRel[0])) { return; }
   if (!m_line.ComputeParametricRelation(secondPoint, dRel[1])) { return; }
@@ -173,8 +178,10 @@ void EoDbLabeledLine::GetAllPoints(EoGePoint3dArray& points) {
 void EoDbLabeledLine::GetBoundingBox(EoGePoint3dArray& ptsBox, double dSpacFac) {
   text_GetBoundingBox(m_fontDefinition, m_ReferenceSystem, m_text, dSpacFac, ptsBox);
 }
-void EoDbLabeledLine::GetExtents(
-    AeSysView* view, EoGePoint3d& ptMin, EoGePoint3d& ptMax, const EoGeTransformMatrix& transformMatrix) {
+void EoDbLabeledLine::GetExtents(AeSysView* view,
+    EoGePoint3d& ptMin,
+    EoGePoint3d& ptMax,
+    const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d pt[2] = {m_line.begin, m_line.end};
 
   for (auto i = 0; i < 2; i++) {
@@ -344,8 +351,12 @@ void EoDbLabeledLine::SetDefaultNote() {
   if (cText0 == 'R' || cText0 == 'D') { m_text = cText0 + m_text; }
 }
 
-void EoDbLabeledLine::SetBeginPoint(const EoGePoint3d& begin) { m_line.begin = begin; }
-void EoDbLabeledLine::SetEndPoint(const EoGePoint3d& end) { m_line.end = end; }
+void EoDbLabeledLine::SetBeginPoint(const EoGePoint3d& begin) {
+  m_line.begin = begin;
+}
+void EoDbLabeledLine::SetEndPoint(const EoGePoint3d& end) {
+  m_line.end = end;
+}
 void EoDbLabeledLine::SetPoints(const EoGePoint3d& begin, const EoGePoint3d& end) {
   m_line.begin = begin;
   m_line.end = end;

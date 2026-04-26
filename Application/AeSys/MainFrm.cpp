@@ -1,6 +1,7 @@
 ﻿
 #include "Stdafx.h"
 
+#include <algorithm>
 #include <cassert>
 
 #include "AeSys.h"
@@ -12,7 +13,6 @@
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
-#include <algorithm>
 
 namespace {
 
@@ -29,7 +29,15 @@ constexpr unsigned int indicators[] = {
     ID_INDICATOR_LENGTH,  // 1: dimension length display
     ID_INDICATOR_ANGLE,  // 2: dimension angle display
     ID_OP0,  // 3–12: mode key-command help panes
-    ID_OP1, ID_OP2, ID_OP3, ID_OP4, ID_OP5, ID_OP6, ID_OP7, ID_OP8, ID_OP9,
+    ID_OP1,
+    ID_OP2,
+    ID_OP3,
+    ID_OP4,
+    ID_OP5,
+    ID_OP6,
+    ID_OP7,
+    ID_OP8,
+    ID_OP9,
     ID_INDICATOR_SCALE,  // 13: world scale display
     ID_INDICATOR_ZOOM,  // 14: zoom ratio display
     ID_SEPARATOR,  // 15: stretch filler — absorbs remaining space
@@ -116,8 +124,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   const CSize imageSize(24, 24);
   const CSize buttonSize(32, 32);
 
-  if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle, CRect(1, 1, 1, 1), IDR_MAINFRAME_24) ||
-      !m_standardToolBar.LoadToolBar(IDR_MAINFRAME_24, 0, 0, TRUE)) {
+  if (!m_standardToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle, CRect(1, 1, 1, 1), IDR_MAINFRAME_24)
+      || !m_standardToolBar.LoadToolBar(IDR_MAINFRAME_24, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create toolbar\n");
     return -1;
   }
@@ -126,8 +134,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   CMFCToolBar::SetSizes(buttonSize, imageSize);
   m_standardToolBar.SetWindowTextW(L"Standard");
 
-  if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle) ||
-      !m_renderPropertiesToolBar.LoadToolBar(IDR_RENDER_PROPERTIES, 0, 0, TRUE)) {
+  if (!m_renderPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle)
+      || !m_renderPropertiesToolBar.LoadToolBar(IDR_RENDER_PROPERTIES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create render properties toolbar\n");
     return -1;
   }
@@ -136,8 +144,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   EoMfStatelessToolBar::SetSizes(buttonSize, imageSize);
   m_renderPropertiesToolBar.SetWindowTextW(L"Properties");
 
-  if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle) ||
-      !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
+  if (!m_stylesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle)
+      || !m_stylesToolBar.LoadToolBar(IDR_STYLES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create styles toolbar\n");
     return -1;
   }
@@ -145,8 +153,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   EoMfStatelessToolBar::SetSizes(buttonSize, imageSize);
   m_stylesToolBar.SetWindowTextW(L"Styles");
 
-  if (!m_layerPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle) ||
-      !m_layerPropertiesToolBar.LoadToolBar(IDR_LAYER_PROPERTIES, 0, 0, TRUE)) {
+  if (!m_layerPropertiesToolBar.CreateEx(this, TBSTYLE_FLAT, controlStyle)
+      || !m_layerPropertiesToolBar.LoadToolBar(IDR_LAYER_PROPERTIES, 0, 0, TRUE)) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create layer properties toolbar\n");
     return -1;
   }
@@ -276,7 +284,9 @@ void CMainFrame::SetDockablePanesIcons() {
   UpdateMDITabbedBarsIcons();
 }
 
-void CMainFrame::OnWindowManager() { ShowWindowsDialog(); }
+void CMainFrame::OnWindowManager() {
+  ShowWindowsDialog();
+}
 
 void CMainFrame::OnViewCustomize() {
   auto* dialog = new CMFCToolBarsCustomizeDialog(this, TRUE);
@@ -466,28 +476,40 @@ void CMainFrame::OnMdiTabbed() {
   TabbedDocumentToControlBar(pMDIChild);
 }
 
-void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) { pCmdUI->SetCheck(); }
+void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck();
+}
 void CMainFrame::OnDestroy() {
   ATLTRACE2(traceGeneral, 3, L"CMainFrame::OnDestroy() - Entering\n");
   PostQuitMessage(0);  // Force WM_QUIT message to terminate message loop
 }
-CString CMainFrame::GetPaneText(int index) { return m_statusBar.GetPaneText(index); }
+CString CMainFrame::GetPaneText(int index) {
+  return m_statusBar.GetPaneText(index);
+}
 
 void CMainFrame::SetPaneInfo(int index, UINT newId, UINT style, int width) {
   m_statusBar.SetPaneInfo(index, newId, style, width);
 }
 
-BOOL CMainFrame::SetPaneText(int index, const wchar_t* newText) { return m_statusBar.SetPaneText(index, newText); }
+BOOL CMainFrame::SetPaneText(int index, const wchar_t* newText) {
+  return m_statusBar.SetPaneText(index, newText);
+}
 
-void CMainFrame::SetPaneStyle(int index, UINT style) { m_statusBar.SetPaneStyle(index, style); }
+void CMainFrame::SetPaneStyle(int index, UINT style) {
+  m_statusBar.SetPaneStyle(index, style);
+}
 
-void CMainFrame::SetPaneTextColor(int index, COLORREF textColor) { m_statusBar.SetPaneTextColor(index, textColor); }
+void CMainFrame::SetPaneTextColor(int index, COLORREF textColor) {
+  m_statusBar.SetPaneTextColor(index, textColor);
+}
 
 void CMainFrame::SetPaneBackgroundColor(int index, COLORREF backgroundColor) {
   m_statusBar.SetPaneBackgroundColor(index, backgroundColor);
 }
 
-void CMainFrame::OnViewFullScreen() { ShowFullScreen(); }
+void CMainFrame::OnViewFullScreen() {
+  ShowFullScreen();
+}
 
 void CMainFrame::EnsureToolbarsVisible() {
   // Safety net: after LoadMDIState() restores docking state from the registry,
@@ -522,8 +544,12 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
         constexpr int comboVertMargin = 4;  // CMFCToolBarComboBoxButton::m_nVertMargin
         const int targetHeight = std::max(32, static_cast<int>(comboRect.Height()) + 2 * comboVertMargin);
         const CSize adjustedSize(std::max(32, targetHeight), targetHeight);
-        ATLTRACE2(traceGeneral, 3, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n", comboRect.Height(),
-            adjustedSize.cx, adjustedSize.cy);
+        ATLTRACE2(traceGeneral,
+            3,
+            L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n",
+            comboRect.Height(),
+            adjustedSize.cx,
+            adjustedSize.cy);
         EoMfStatelessToolBar::SetSizes(adjustedSize, kImageSize);
         m_standardToolBar.SetLockedSizes(adjustedSize, kImageSize, TRUE);
         m_renderPropertiesToolBar.SetSizesAll(adjustedSize, kImageSize);
@@ -551,7 +577,9 @@ void CMainFrame::ApplyColorScheme() {
   RedrawWindow(nullptr, nullptr, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 }
 
-void CMainFrame::OnUpdatePenColorCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+void CMainFrame::OnUpdatePenColorCombo(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(TRUE);
+}
 
 void CMainFrame::SyncColorCombo(std::int16_t aciIndex) {
   CObList buttonsList;
@@ -566,7 +594,9 @@ void CMainFrame::SyncColorCombo(std::int16_t aciIndex) {
   }
 }
 
-void CMainFrame::OnUpdateLineTypeCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+void CMainFrame::OnUpdateLineTypeCombo(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(TRUE);
+}
 
 void CMainFrame::SyncLineTypeCombo(std::int16_t lineTypeIndex, const std::wstring& lineTypeName) {
   CObList buttonsList;
@@ -581,7 +611,9 @@ void CMainFrame::SyncLineTypeCombo(std::int16_t lineTypeIndex, const std::wstrin
   }
 }
 
-void CMainFrame::OnUpdateLineWeightCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+void CMainFrame::OnUpdateLineWeightCombo(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(TRUE);
+}
 
 void CMainFrame::SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight) {
   CObList buttonsList;
@@ -596,7 +628,9 @@ void CMainFrame::SyncLineWeightCombo(EoDxfLineWeights::LineWeight lineWeight) {
   }
 }
 
-void CMainFrame::OnUpdateTextStyleCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+void CMainFrame::OnUpdateTextStyleCombo(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(TRUE);
+}
 
 void CMainFrame::SyncTextStyleCombo(const std::wstring& textStyleName) {
   CObList buttonsList;
@@ -611,7 +645,9 @@ void CMainFrame::SyncTextStyleCombo(const std::wstring& textStyleName) {
   }
 }
 
-void CMainFrame::OnUpdateLayerCombo(CCmdUI* pCmdUI) { pCmdUI->Enable(TRUE); }
+void CMainFrame::OnUpdateLayerCombo(CCmdUI* pCmdUI) {
+  pCmdUI->Enable(TRUE);
+}
 
 void CMainFrame::SyncLayerCombo(const CString& layerName) {
   CObList buttonsList;

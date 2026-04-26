@@ -272,4 +272,6 @@ void EoMfStatusBar::CancelEdit() {
   m_editingPane = -1;
 }
 
-void EoMfStatusBar::OnEditKillFocus() { CancelEdit(); }
+void EoMfStatusBar::OnEditKillFocus() {
+  CancelEdit();
+}

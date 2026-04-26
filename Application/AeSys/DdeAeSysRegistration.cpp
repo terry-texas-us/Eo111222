@@ -3,7 +3,6 @@
 #ifdef USING_DDE
 #include "AeSys.h"
 #include "Resource.h"
-
 #include "dde.h"
 #include "ddeCmds.h"
 #include "ddeGItms.h"

@@ -13,7 +13,9 @@ EoDlgTrapModify::EoDlgTrapModify(CWnd* pParent /*=nullptr*/) : CDialog(EoDlgTrap
 EoDlgTrapModify::EoDlgTrapModify(AeSysDoc* document, CWnd* pParent /*=nullptr*/)
     : CDialog(EoDlgTrapModify::IDD, pParent), m_Document(document) {}
 EoDlgTrapModify::~EoDlgTrapModify() {}
-void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
+void EoDlgTrapModify::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+}
 
 void EoDlgTrapModify::OnOK() {
   if (IsDlgButtonChecked(IDC_MOD_PEN)) { m_Document->ModifyTrappedGroupsColor(Gs::renderState.Color()); }

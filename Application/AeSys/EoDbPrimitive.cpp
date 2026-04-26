@@ -42,7 +42,7 @@ EoDbPrimitive::EoDbPrimitive(const EoDbPrimitive& other)
   if (sm_handleManager != nullptr) { m_handle = sm_handleManager->AssignHandle(); }
 }
 
-  EoDbPrimitive& EoDbPrimitive::operator=(const EoDbPrimitive& other) {
+EoDbPrimitive& EoDbPrimitive::operator=(const EoDbPrimitive& other) {
   if (this != &other) {
     m_color = other.m_color;
     m_lineType = other.m_lineType;
@@ -71,8 +71,9 @@ EoDbPrimitive* EoDbPrimitive::WithProperties(const EoGsRenderState& renderState)
   return this;
 }
 
-EoDbPrimitive* EoDbPrimitive::WithProperties(
-    std::int16_t color, const std::wstring& lineTypeName, EoDxfLineWeights::LineWeight lineWeight) {
+EoDbPrimitive* EoDbPrimitive::WithProperties(std::int16_t color,
+    const std::wstring& lineTypeName,
+    EoDxfLineWeights::LineWeight lineWeight) {
   m_color = color;
   SetLineTypeName(lineTypeName);
   m_lineWeight = lineWeight;
@@ -84,11 +85,16 @@ void EoDbPrimitive::SetLineTypeName(std::wstring name) {
 }
 
 void EoDbPrimitive::CutAt2Points([[maybe_unused]] const EoGePoint3d& firstPoint,
-    [[maybe_unused]] const EoGePoint3d& secondPoint, [[maybe_unused]] EoDbGroupList*, [[maybe_unused]] EoDbGroupList*) {
-}
+    [[maybe_unused]] const EoGePoint3d& secondPoint,
+    [[maybe_unused]] EoDbGroupList*,
+    [[maybe_unused]] EoDbGroupList*) {}
 void EoDbPrimitive::CutAtPoint([[maybe_unused]] const EoGePoint3d& point, [[maybe_unused]] EoDbGroup* group) {}
-int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoint3d*) { return 0; }
-bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) { return false; }
+int EoDbPrimitive::IsWithinArea(const EoGePoint3d&, const EoGePoint3d&, EoGePoint3d*) {
+  return 0;
+}
+bool EoDbPrimitive::PivotOnControlPoint(AeSysView*, const EoGePoint4d&) {
+  return false;
+}
 
 void EoDbPrimitive::SetBaseProperties(const EoDxfGraphic* entity, [[maybe_unused]] AeSysDoc* document) {
   m_color = static_cast<std::int16_t>(entity->m_color);
@@ -152,9 +158,7 @@ std::int16_t EoDbPrimitive::LogicalColor() const noexcept {
 }
 
 std::int16_t EoDbPrimitive::LogicalLineType() const {
-  if (IsLineTypeByLayer()) {
-    return sm_layerLineTypeIndex;
-  }
+  if (IsLineTypeByLayer()) { return sm_layerLineTypeIndex; }
   if (IsLineTypeByBlock()) {
     return 1;  // CONTINUOUS
   }
@@ -196,39 +200,77 @@ void EoDbPrimitive::ModifyState() {
 }
 
 void EoDbPrimitive::FormatExtra(CString& extra) {
-  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s\tLineWeight;%hd\tLineTypeScale;%g", m_handle, m_ownerHandle,
-      m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(), FormatLineType().GetString(),
-      static_cast<std::int16_t>(m_lineWeight), m_lineTypeScale);
+  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s\tLineWeight;%hd\tLineTypeScale;%g",
+      m_handle,
+      m_ownerHandle,
+      m_layerName.empty() ? L"" : m_layerName.c_str(),
+      FormatPenColor().GetString(),
+      FormatLineType().GetString(),
+      static_cast<std::int16_t>(m_lineWeight),
+      m_lineTypeScale);
 }
 
 void EoDbPrimitive::AddReportToMessageList(const EoGePoint3d&) {
   CString message;
-  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s  LineWeight: %hd  LineTypeScale: %g", m_handle,
-      m_ownerHandle, m_layerName.empty() ? L"" : m_layerName.c_str(), FormatPenColor().GetString(),
-      FormatLineType().GetString(), static_cast<std::int16_t>(m_lineWeight), m_lineTypeScale);
+  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s  LineWeight: %hd  LineTypeScale: %g",
+      m_handle,
+      m_ownerHandle,
+      m_layerName.empty() ? L"" : m_layerName.c_str(),
+      FormatPenColor().GetString(),
+      FormatLineType().GetString(),
+      static_cast<std::int16_t>(m_lineWeight),
+      m_lineTypeScale);
   app.AddStringToMessageList(message);
 }
 
-int EoDbPrimitive::ControlPointIndex() noexcept { return sm_controlPointIndex; }
-bool EoDbPrimitive::IsSupportedTyp(int type) noexcept { return (type <= 7 && type != 4 && type != 5); }
-std::int16_t EoDbPrimitive::LayerColor() noexcept { return sm_layerColor; }
-void EoDbPrimitive::SetLayerColor(std::int16_t layerColor) noexcept { sm_layerColor = layerColor; }
-std::int16_t EoDbPrimitive::LayerLineTypeIndex() noexcept { return sm_layerLineTypeIndex; }
+int EoDbPrimitive::ControlPointIndex() noexcept {
+  return sm_controlPointIndex;
+}
+bool EoDbPrimitive::IsSupportedTyp(int type) noexcept {
+  return (type <= 7 && type != 4 && type != 5);
+}
+std::int16_t EoDbPrimitive::LayerColor() noexcept {
+  return sm_layerColor;
+}
+void EoDbPrimitive::SetLayerColor(std::int16_t layerColor) noexcept {
+  sm_layerColor = layerColor;
+}
+std::int16_t EoDbPrimitive::LayerLineTypeIndex() noexcept {
+  return sm_layerLineTypeIndex;
+}
 void EoDbPrimitive::SetLayerLineTypeIndex(std::int16_t lineTypeIndex) noexcept {
   sm_layerLineTypeIndex = lineTypeIndex;
 }
-const std::wstring& EoDbPrimitive::LayerLineTypeName() noexcept { return sm_layerLineType; }
-void EoDbPrimitive::SetLayerLineTypeName(const std::wstring& lineTypeName) { sm_layerLineType = lineTypeName; }
-EoDxfLineWeights::LineWeight EoDbPrimitive::LayerLineWeight() noexcept { return sm_layerLineWeight; }
+const std::wstring& EoDbPrimitive::LayerLineTypeName() noexcept {
+  return sm_layerLineType;
+}
+void EoDbPrimitive::SetLayerLineTypeName(const std::wstring& lineTypeName) {
+  sm_layerLineType = lineTypeName;
+}
+EoDxfLineWeights::LineWeight EoDbPrimitive::LayerLineWeight() noexcept {
+  return sm_layerLineWeight;
+}
 void EoDbPrimitive::SetLayerLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept {
   sm_layerLineWeight = lineWeight;
 }
-double EoDbPrimitive::LayerLineTypeScale() noexcept { return sm_layerLineTypeScale; }
-void EoDbPrimitive::SetLayerLineTypeScale(double lineTypeScale) noexcept { sm_layerLineTypeScale = lineTypeScale; }
-double& EoDbPrimitive::Rel() noexcept { return sm_RelationshipOfPoint; }
-std::int16_t EoDbPrimitive::SpecialColor() noexcept { return sm_specialColor; }
-void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) noexcept { sm_specialColor = specialColor; }
-void EoDbPrimitive::SetHandleManager(EoDbHandleManager* handleManager) noexcept { sm_handleManager = handleManager; }
+double EoDbPrimitive::LayerLineTypeScale() noexcept {
+  return sm_layerLineTypeScale;
+}
+void EoDbPrimitive::SetLayerLineTypeScale(double lineTypeScale) noexcept {
+  sm_layerLineTypeScale = lineTypeScale;
+}
+double& EoDbPrimitive::Rel() noexcept {
+  return sm_RelationshipOfPoint;
+}
+std::int16_t EoDbPrimitive::SpecialColor() noexcept {
+  return sm_specialColor;
+}
+void EoDbPrimitive::SetSpecialColor(std::int16_t specialColor) noexcept {
+  sm_specialColor = specialColor;
+}
+void EoDbPrimitive::SetHandleManager(EoDbHandleManager* handleManager) noexcept {
+  sm_handleManager = handleManager;
+}
 
 EoDbHandleManager* EoDbPrimitive::SuspendHandleAssignment() noexcept {
   auto* saved = sm_handleManager;
@@ -236,4 +278,6 @@ EoDbHandleManager* EoDbPrimitive::SuspendHandleAssignment() noexcept {
   return saved;
 }
 
-void EoDbPrimitive::ResumeHandleAssignment(EoDbHandleManager* saved) noexcept { sm_handleManager = saved; }
+void EoDbPrimitive::ResumeHandleAssignment(EoDbHandleManager* saved) noexcept {
+  sm_handleManager = saved;
+}

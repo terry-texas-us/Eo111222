@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <winspool.h>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -21,8 +22,6 @@
 #include "EoGeVector3d.h"
 #include "MainFrm.h"
 #include "Resource.h"
-
-#include <winspool.h>
 
 #ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
@@ -49,13 +48,19 @@ void AeSysView::OnFilePlot() {
   {
     HANDLE hPrinter{};
     if (::OpenPrinterW(const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), &hPrinter, nullptr)) {
-      DWORD needed = ::DocumentPropertiesW(GetSafeHwnd(), hPrinter, const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), nullptr, nullptr, 0);
+      DWORD needed = ::DocumentPropertiesW(
+          GetSafeHwnd(), hPrinter, const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), nullptr, nullptr, 0);
       if (needed > 0) {
         HGLOBAL hDevMode = ::GlobalAlloc(GHND, needed);
         if (hDevMode != nullptr) {
           auto* devMode = static_cast<DEVMODE*>(::GlobalLock(hDevMode));
           if (devMode != nullptr) {
-            ::DocumentPropertiesW(GetSafeHwnd(), hPrinter, const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), devMode, nullptr, DM_OUT_BUFFER);
+            ::DocumentPropertiesW(GetSafeHwnd(),
+                hPrinter,
+                const_cast<wchar_t*>(m_plotSettings.printerName.c_str()),
+                devMode,
+                nullptr,
+                DM_OUT_BUFFER);
 
             // Apply orientation
             devMode->dmFields |= DM_ORIENTATION;
@@ -237,7 +242,9 @@ void AeSysView::OnViewDirect2D() {
   InvalidateScene();
 }
 
-void AeSysView::OnUpdateViewDirect2D(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_useD2D); }
+void AeSysView::OnUpdateViewDirect2D(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_useD2D);
+}
 
 void AeSysView::OnViewAliased() {
   m_d2dAliased = !m_d2dAliased;
@@ -250,8 +257,8 @@ void AeSysView::OnUpdateViewAliased(CCmdUI* pCmdUI) {
 }
 
 void AeSysView::OnViewBackgroundToggle() {
-  Eo::activeViewBackground = (Eo::activeViewBackground == Eo::ViewBackground::Dark) ? Eo::ViewBackground::White
-                                                                                     : Eo::ViewBackground::Dark;
+  Eo::activeViewBackground =
+      (Eo::activeViewBackground == Eo::ViewBackground::Dark) ? Eo::ViewBackground::White : Eo::ViewBackground::Dark;
   Eo::SyncViewBackgroundColor();
   Eo::SyncAci7WithBackground();
   app.m_Options.m_viewBackground = Eo::activeViewBackground;
@@ -279,11 +286,17 @@ void AeSysView::OnViewWindowKeyplan() {
   if (dlg.DoModal() == IDOK) { InvalidateScene(); }
 }
 
-void AeSysView::OnViewRefresh() { InvalidateScene(); }
+void AeSysView::OnViewRefresh() {
+  InvalidateScene();
+}
 
-void AeSysView::OnUpdateViewRendered(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewRendered); }
+void AeSysView::OnUpdateViewRendered(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_ViewRendered);
+}
 
-void AeSysView::OnUpdateViewWireframe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewWireframe); }
+void AeSysView::OnUpdateViewWireframe(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_ViewWireframe);
+}
 
 void AeSysView::OnSetupDimLength() {
   EoDlgSetLength dialog;
@@ -487,7 +500,9 @@ void AeSysView::OnRelativeMovesDownRotate() {
   SetCursorPosition(cursorPosition);
 }
 
-void AeSysView::OnHelpKey() { ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY")); }
+void AeSysView::OnHelpKey() {
+  ::WinHelpW(GetSafeHwnd(), L"peg.hlp", HELP_KEY, reinterpret_cast<DWORD_PTR>(L"READY"));
+}
 
 void AeSysView::OnInsertBlock() {
   auto* document = GetDocument();
@@ -501,9 +516,12 @@ void AeSysView::OnInsertTracing() {
   auto* document = GetDocument();
   if (document == nullptr) { return; }
 
-  CFileDialog dialog(TRUE, L"tra", nullptr,
+  CFileDialog dialog(TRUE,
+      L"tra",
+      nullptr,
       OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
-      L"Tracing Files (*.tra)|*.tra|All Files (*.*)|*.*||", this);
+      L"Tracing Files (*.tra)|*.tra|All Files (*.*)|*.*||",
+      this);
   if (dialog.DoModal() != IDOK) { return; }
 
   document->InsertTracingLayer(dialog.GetPathName().GetString());
@@ -531,13 +549,15 @@ AeSysView* AeSysView::GetActiveView() {
 
   auto* activeView = dynamic_cast<AeSysView*>(view);
 #ifdef _DEBUG
-  assert(activeView != nullptr &&
-         "Active view is not an AeSysView (possible splitter windows or multi-view configuration");
+  assert(activeView != nullptr
+      && "Active view is not an AeSysView (possible splitter windows or multi-view configuration");
 #endif
   return activeView;
 }
 
-void AeSysView::OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewTrueTypeFonts); }
+void AeSysView::OnUpdateViewTrueTypeFonts(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_ViewTrueTypeFonts);
+}
 
 void AeSysView::OnBackgroundImageLoad() {
   CFileDialog dialog(TRUE, L"bmp", L"*.bmp");
@@ -579,7 +599,9 @@ void AeSysView::OnUpdateBackgroundimageRemove(CCmdUI* pCmdUI) {
   pCmdUI->Enable(static_cast<HBITMAP>(m_backgroundImageBitmap) != nullptr);
 }
 
-void AeSysView::OnUpdateViewPenwidths(CCmdUI* pCmdUI) { pCmdUI->SetCheck(m_ViewPenWidths); }
+void AeSysView::OnUpdateViewPenwidths(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(m_ViewPenWidths);
+}
 
 void AeSysView::OnOp0() {
   switch (app.CurrentMode()) {
@@ -810,26 +832,50 @@ void AeSysView::OnTrapCommandsAddGroups() {
 }
 
 // Update UI handlers
-void AeSysView::OnUpdateModeAnnotate(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_ANNOTATE); }
+void AeSysView::OnUpdateModeAnnotate(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_ANNOTATE);
+}
 
-void AeSysView::OnUpdateModeCut(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_CUT); }
+void AeSysView::OnUpdateModeCut(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_CUT);
+}
 
-void AeSysView::OnUpdateModeDimension(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DIMENSION); }
+void AeSysView::OnUpdateModeDimension(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DIMENSION);
+}
 
-void AeSysView::OnUpdateModeDraw(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DRAW); }
+void AeSysView::OnUpdateModeDraw(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DRAW);
+}
 
-void AeSysView::OnUpdateModeDraw2(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DRAW2); }
+void AeSysView::OnUpdateModeDraw2(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_DRAW2);
+}
 
-void AeSysView::OnUpdateModeEdit(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_EDIT); }
+void AeSysView::OnUpdateModeEdit(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_EDIT);
+}
 
-void AeSysView::OnUpdateModeFixup(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_FIXUP); }
+void AeSysView::OnUpdateModeFixup(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_FIXUP);
+}
 
-void AeSysView::OnUpdateModeLpd(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_LPD); }
+void AeSysView::OnUpdateModeLpd(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_LPD);
+}
 
-void AeSysView::OnUpdateModeNodal(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_NODAL); }
+void AeSysView::OnUpdateModeNodal(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_NODAL);
+}
 
-void AeSysView::OnUpdateModePipe(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_PIPE); }
+void AeSysView::OnUpdateModePipe(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_PIPE);
+}
 
-void AeSysView::OnUpdateModePower(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_POWER); }
+void AeSysView::OnUpdateModePower(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_POWER);
+}
 
-void AeSysView::OnUpdateModeTrap(CCmdUI* pCmdUI) { pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_TRAP); }
+void AeSysView::OnUpdateModeTrap(CCmdUI* pCmdUI) {
+  pCmdUI->SetCheck(app.CurrentMode() == ID_MODE_TRAP);
+}

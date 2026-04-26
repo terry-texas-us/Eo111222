@@ -135,13 +135,33 @@ void EoDlgViewParameters::OnOK() {
 
   CDialog::OnOK();
 }
-void EoDlgViewParameters::OnEnChangePositionX() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangePositionY() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangePositionZ() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangeTargetX() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangeTargetY() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangeTargetZ() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangeFrontClipDistance() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangeBackClipDistance() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnEnChangeLensLength() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
-void EoDlgViewParameters::OnBnClickedPerspectiveProjection() { GetDlgItem(IDC_APPLY)->EnableWindow(TRUE); }
+void EoDlgViewParameters::OnEnChangePositionX() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangePositionY() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangePositionZ() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangeTargetX() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangeTargetY() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangeTargetZ() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangeFrontClipDistance() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangeBackClipDistance() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnEnChangeLensLength() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}
+void EoDlgViewParameters::OnBnClickedPerspectiveProjection() {
+  GetDlgItem(IDC_APPLY)->EnableWindow(TRUE);
+}

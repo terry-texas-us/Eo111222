@@ -66,13 +66,21 @@ void AeSysView::OnPowerModeCircuit() {
   }
 }
 
-void AeSysView::OnPowerModeGround() { DoPowerModeConductor(ID_OP4); }
+void AeSysView::OnPowerModeGround() {
+  DoPowerModeConductor(ID_OP4);
+}
 
-void AeSysView::OnPowerModeHot() { DoPowerModeConductor(ID_OP5); }
+void AeSysView::OnPowerModeHot() {
+  DoPowerModeConductor(ID_OP5);
+}
 
-void AeSysView::OnPowerModeSwitch() { DoPowerModeConductor(ID_OP6); }
+void AeSysView::OnPowerModeSwitch() {
+  DoPowerModeConductor(ID_OP6);
+}
 
-void AeSysView::OnPowerModeNeutral() { DoPowerModeConductor(ID_OP7); }
+void AeSysView::OnPowerModeNeutral() {
+  DoPowerModeConductor(ID_OP7);
+}
 
 void AeSysView::OnPowerModeHome() {
   static EoGePoint3d pointOnCircuit;
@@ -181,7 +189,9 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
   pointOnCircuit = cursorPosition;
 }
 
-void AeSysView::OnPowerModeReturn() { OnPowerModeEscape(); }
+void AeSysView::OnPowerModeReturn() {
+  OnPowerModeEscape();
+}
 
 void AeSysView::OnPowerModeEscape() {
   m_PowerArrow = false;
@@ -215,8 +225,9 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
-void AeSysView::GeneratePowerConductorSymbol(
-    std::uint16_t conductorType, EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
+void AeSysView::GeneratePowerConductorSymbol(std::uint16_t conductorType,
+    EoGePoint3d& pointOnCircuit,
+    EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3d points[5]{};
 

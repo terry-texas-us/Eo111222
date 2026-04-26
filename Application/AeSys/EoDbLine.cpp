@@ -30,9 +30,13 @@
 
 EoDbLine::EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end) : EoDbPrimitive(), m_line{begin, end} {}
 
-EoDbLine* EoDbLine::CreateLine(const EoGePoint3d& begin, const EoGePoint3d& end) { return new EoDbLine(begin, end); }
+EoDbLine* EoDbLine::CreateLine(const EoGePoint3d& begin, const EoGePoint3d& end) {
+  return new EoDbLine(begin, end);
+}
 
-EoDbLine* EoDbLine::CreateLine(const EoGeLine& line) { return new EoDbLine(line.begin, line.end); }
+EoDbLine* EoDbLine::CreateLine(const EoGeLine& line) {
+  return new EoDbLine(line.begin, line.end);
+}
 
 EoDbLine::EoDbLine(const EoDbLine& other) : EoDbPrimitive(other), m_line{other.m_line} {}
 
@@ -44,7 +48,9 @@ const EoDbLine& EoDbLine::operator=(const EoDbLine& other) {
   return (*this);
 }
 
-void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) { tvAddItem(tree, parent, L"<Line>", this); }
+void EoDbLine::AddToTreeViewControl(HWND tree, HTREEITEM parent) {
+  tvAddItem(tree, parent, L"<Line>", this);
+}
 
 EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
   primitive = new EoDbLine(*this);
@@ -57,8 +63,10 @@ EoDbPrimitive*& EoDbLine::Copy(EoDbPrimitive*& primitive) {
  * @param newGroups Group list to receive the new line segments.
  * @note Line segment between two points goes in groups.
  */
-void EoDbLine::CutAt2Points(
-    const EoGePoint3d& firstPoint, const EoGePoint3d& secondPoint, EoDbGroupList* groups, EoDbGroupList* newGroups) {
+void EoDbLine::CutAt2Points(const EoGePoint3d& firstPoint,
+    const EoGePoint3d& secondPoint,
+    EoDbGroupList* groups,
+    EoDbGroupList* newGroups) {
   EoDbLine* line{};
   double relation[2]{};
 
@@ -70,8 +78,8 @@ void EoDbLine::CutAt2Points(
     line = this;
   } else {  // Something gets cut
     line = new EoDbLine(*this);
-    if (relation[0] > Eo::geometricTolerance &&
-        relation[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
+    if (relation[0] > Eo::geometricTolerance
+        && relation[1] < 1.0 - Eo::geometricTolerance) {  // Cut section out of middle
       line->SetBeginPoint(secondPoint);
       groups->AddTail(new EoDbGroup(line));
       line = new EoDbLine(*this);
@@ -152,7 +160,8 @@ void EoDbLine::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
   CString formattedLength;
   app.FormatLength(formattedLength, app.GetUnits(), Length());
-  str.AppendFormat(L"\tLength;%s\tZ-Angle;%f", formattedLength.TrimLeft().GetString(),
+  str.AppendFormat(L"\tLength;%s\tZ-Angle;%f",
+      formattedLength.TrimLeft().GetString(),
       Eo::RadianToDegree(m_line.AngleFromXAxisXY()));
   str += L'\t';
 }
@@ -167,8 +176,10 @@ void EoDbLine::GetAllPoints(EoGePoint3dArray& points) {
   points.Add(m_line.end);
 }
 
-void EoDbLine::GetExtents(
-    AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint, const EoGeTransformMatrix& transformMatrix) {
+void EoDbLine::GetExtents(AeSysView* view,
+    EoGePoint3d& minPoint,
+    EoGePoint3d& maxPoint,
+    const EoGeTransformMatrix& transformMatrix) {
   EoGePoint3d points[2]{m_line.begin, m_line.end};
 
   for (auto i = 0; i < 2; i++) {
@@ -201,7 +212,9 @@ EoGePoint3d EoDbLine::GoToNextControlPoint() {
   return (sm_controlPointIndex == 0 ? m_line.begin : m_line.end);
 }
 
-bool EoDbLine::Identical(EoDbPrimitive* primitive) { return m_line == static_cast<EoDbLine*>(primitive)->Line(); }
+bool EoDbLine::Identical(EoDbPrimitive* primitive) {
+  return m_line == static_cast<EoDbLine*>(primitive)->Line();
+}
 bool EoDbLine::IsInView(AeSysView* view) {
   EoGePoint4d pt[] = {EoGePoint4d(m_line.begin), EoGePoint4d(m_line.end)};
   view->ModelViewTransformPoints(2, &pt[0]);
@@ -246,16 +259,24 @@ int EoDbLine::IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& uppe
 
     i = (iLoc[0] != 0) ? 0 : 1;
     if ((iLoc[i] & 1) != 0) {  // Clip against top
-      clippedPoints[i].x = clippedPoints[i].x + (clippedPoints[1].x - clippedPoints[0].x) * (upperRight.y - clippedPoints[i].y) / (clippedPoints[1].y - clippedPoints[0].y);
+      clippedPoints[i].x = clippedPoints[i].x
+          + (clippedPoints[1].x - clippedPoints[0].x) * (upperRight.y - clippedPoints[i].y)
+              / (clippedPoints[1].y - clippedPoints[0].y);
       clippedPoints[i].y = upperRight.y;
     } else if ((iLoc[i] & 2) != 0) {  // Clip against bottom
-      clippedPoints[i].x = clippedPoints[i].x + (clippedPoints[1].x - clippedPoints[0].x) * (lowerLeft.y - clippedPoints[i].y) / (clippedPoints[1].y - clippedPoints[0].y);
+      clippedPoints[i].x = clippedPoints[i].x
+          + (clippedPoints[1].x - clippedPoints[0].x) * (lowerLeft.y - clippedPoints[i].y)
+              / (clippedPoints[1].y - clippedPoints[0].y);
       clippedPoints[i].y = lowerLeft.y;
     } else if ((iLoc[i] & 4) != 0) {  // Clip against right
-      clippedPoints[i].y = clippedPoints[i].y + (clippedPoints[1].y - clippedPoints[0].y) * (upperRight.x - clippedPoints[i].x) / (clippedPoints[1].x - clippedPoints[0].x);
+      clippedPoints[i].y = clippedPoints[i].y
+          + (clippedPoints[1].y - clippedPoints[0].y) * (upperRight.x - clippedPoints[i].x)
+              / (clippedPoints[1].x - clippedPoints[0].x);
       clippedPoints[i].x = upperRight.x;
     } else if ((iLoc[i] & 8) != 0) {  // Clip against left
-      clippedPoints[i].y = clippedPoints[i].y + (clippedPoints[1].y - clippedPoints[0].y) * (lowerLeft.x - clippedPoints[i].x) / (clippedPoints[1].x - clippedPoints[0].x);
+      clippedPoints[i].y = clippedPoints[i].y
+          + (clippedPoints[1].y - clippedPoints[0].y) * (lowerLeft.x - clippedPoints[i].x)
+              / (clippedPoints[1].x - clippedPoints[0].x);
       clippedPoints[i].x = lowerLeft.x;
     }
     iLoc[i] = clippedPoints[i].RelationshipToRectangle(lowerLeft, upperRight);

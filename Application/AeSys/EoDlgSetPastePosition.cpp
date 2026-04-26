@@ -9,7 +9,9 @@ EoDlgSetPastePosition::EoDlgSetPastePosition(CWnd* pParent /*=nullptr*/)
 
 EoDlgSetPastePosition::~EoDlgSetPastePosition() {}
 
-void EoDlgSetPastePosition::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
+void EoDlgSetPastePosition::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+}
 
 void EoDlgSetPastePosition::OnOK() {
   AeSysDoc::GetDoc()->SetTrapPivotPoint(AeSys::GetCursorPosition());

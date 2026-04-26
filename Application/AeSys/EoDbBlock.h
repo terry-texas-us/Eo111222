@@ -79,8 +79,9 @@ class EoDbBlock : public EoDbGroup {
 
     if (blockName.size() < prefix.size()) { return false; }
 
-    return std::equal(prefix.cbegin(), prefix.cend(), blockName.cbegin(),
-        [](wchar_t a, wchar_t b) noexcept { return std::towlower(a) == std::towlower(b); });
+    return std::equal(prefix.cbegin(), prefix.cend(), blockName.cbegin(), [](wchar_t a, wchar_t b) noexcept {
+      return std::towlower(a) == std::towlower(b);
+    });
   }
 
   /** @brief Checks if the given block name corresponds to a paper space block.
@@ -97,8 +98,9 @@ class EoDbBlock : public EoDbGroup {
 
     if (blockName.size() < prefix.size()) { return false; }
 
-    return std::equal(prefix.cbegin(), prefix.cend(), blockName.cbegin(),
-        [](wchar_t a, wchar_t b) noexcept { return std::towlower(a) == std::towlower(b); });
+    return std::equal(prefix.cbegin(), prefix.cend(), blockName.cbegin(), [](wchar_t a, wchar_t b) noexcept {
+      return std::towlower(a) == std::towlower(b);
+    });
   }
 
   /// @brief Appends an attribute definition to this block's ATTDEF catalog.

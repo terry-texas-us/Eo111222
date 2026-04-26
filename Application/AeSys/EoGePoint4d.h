@@ -125,8 +125,10 @@ class EoGePoint4d {
    * @param pointsArrayOut An array that will receive the intersection points calculated by this function. The caller is
    * responsible for managing this array and ensuring it has sufficient capacity to hold the results.
    */
-  static void IntersectionWithPln(EoGePoint4dArray& pointsArrayIn, const EoGePoint4d& pointOnClipPlane,
-      EoGeVector3d& clipPlaneNormal, EoGePoint4dArray& pointsArrayOut);
+  static void IntersectionWithPln(EoGePoint4dArray& pointsArrayIn,
+      const EoGePoint4d& pointOnClipPlane,
+      EoGeVector3d& clipPlaneNormal,
+      EoGePoint4dArray& pointsArrayOut);
 
   [[nodiscard]] static constexpr EoGePoint4d Max(const EoGePoint4d& a, const EoGePoint4d& b) noexcept {
     return {std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z), std::max(a.w, b.w)};

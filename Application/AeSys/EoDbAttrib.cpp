@@ -17,8 +17,11 @@
 #include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
 
-EoDbAttrib::EoDbAttrib(const EoDbFontDefinition& fontDefinition, EoGeReferenceSystem& referenceSystem,
-    const std::wstring& text, std::wstring tagString, std::int16_t attributeFlags)
+EoDbAttrib::EoDbAttrib(const EoDbFontDefinition& fontDefinition,
+    EoGeReferenceSystem& referenceSystem,
+    const std::wstring& text,
+    std::wstring tagString,
+    std::int16_t attributeFlags)
     : EoDbText(fontDefinition, referenceSystem, text),
       m_tagString(std::move(tagString)),
       m_attributeFlags(attributeFlags) {}
@@ -59,8 +62,8 @@ void EoDbAttrib::FormatExtra(CString& extra) {
   EoDbText::FormatExtra(extra);
   // FormatExtra Terminator Rule: EoDbText::FormatExtra already ends with '\t'.
   // Append attribute-specific Name;Value pairs. Each ends with '\t'.
-  extra.AppendFormat(L"Tag;%s\tAttribFlags;%d\tInsertHandle;%I64X\t", m_tagString.c_str(), m_attributeFlags,
-      m_insertHandle);
+  extra.AppendFormat(
+      L"Tag;%s\tAttribFlags;%d\tInsertHandle;%I64X\t", m_tagString.c_str(), m_attributeFlags, m_insertHandle);
 }
 
 void EoDbAttrib::FormatGeometry(CString& str) {
@@ -71,9 +74,7 @@ void EoDbAttrib::FormatGeometry(CString& str) {
 void EoDbAttrib::ExportToDxf(EoDxfInterface* writer) const {
   // When owned by an INSERT, the parent EoDbBlockReference::ExportToDxf handles
   // the INSERT → ATTRIB → SEQEND sequence. Skip to prevent double-export.
-  if (m_insertHandle != 0) {
-    return;
-  }
+  if (m_insertHandle != 0) { return; }
   // Build an EoDxfAttrib and export it via the writer.
   // This mirrors ConvertAttribEntity in reverse — recovering DXF properties from the reference system
   // using the same logic as EoDbText::ExportToDxf for TEXT entities.
@@ -145,7 +146,8 @@ void EoDbAttrib::ExportToDxf(EoDxfInterface* writer) const {
   const auto origin = referenceSystem.Origin();
 
   // DXF ATTRIB: Left+Baseline uses first alignment point; other alignments use second alignment point
-  const bool isDefaultAlignment = (attrib.m_horizontalTextJustification == 0 && attrib.m_verticalTextJustification == 0);
+  const bool isDefaultAlignment =
+      (attrib.m_horizontalTextJustification == 0 && attrib.m_verticalTextJustification == 0);
   if (isDefaultAlignment) {
     attrib.m_firstAlignmentPoint = {origin.x, origin.y, origin.z};
   } else {
@@ -215,9 +217,11 @@ EoDbAttrib* EoDbAttrib::ReadFromPeg(CFile& file) {
   const auto attributeFlags = EoDb::ReadInt16(file);
   const auto insertHandle = EoDb::ReadUInt64(file);
 
-  auto* attribPrimitive =
-      new EoDbAttrib(fontDefinition, referenceSystem, std::wstring(text.GetString()),
-          std::wstring(tagString.GetString()), attributeFlags);
+  auto* attribPrimitive = new EoDbAttrib(fontDefinition,
+      referenceSystem,
+      std::wstring(text.GetString()),
+      std::wstring(tagString.GetString()),
+      attributeFlags);
   attribPrimitive->SetInsertHandle(insertHandle);
   attribPrimitive->ConvertFormattingCharacters();
   return attribPrimitive;

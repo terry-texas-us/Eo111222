@@ -2,17 +2,15 @@
 #ifdef USING_STATE_PATTERN
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-
 #include "DrawModeState.h"
-
 #include "EoDb.h"  // For EoDbGroup, EoDbPrimitive, etc.
 #include "EoDbGroup.h"
 #include "EoDbLine.h"
 #include "EoDbPoint.h"
 #include "EoDbPolyline.h"
 #include "EoGePoint3d.h"
-#include "EoGsRenderState.h"  // state if global; consider migrating to member
 #include "EoGsRenderDeviceGdi.h"
+#include "EoGsRenderState.h"  // state if global; consider migrating to member
 #include "Resource.h"  // For command IDs
 
 void DrawModeState::OnEnter(AeSysView* context) {
@@ -89,8 +87,9 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT flags,
   // Add cases for other primitives (e.g., arc preview with handles for future DXF)
 }
 
-void DrawModeState::OnLButtonDown(
-    [[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+void DrawModeState::OnLButtonDown([[maybe_unused]] AeSysView* context,
+    [[maybe_unused]] UINT flags,
+    [[maybe_unused]] CPoint point) {
   // If draw mode uses clicks for points
   auto cursorPosition = context->GetCursorPosition();
   // e.g., Add to m_pts and trigger command logic

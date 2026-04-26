@@ -63,7 +63,7 @@ constexpr int OpenParenthesesToken = 29;
 constexpr int CloseParenthesesToken = 30;
 
 //* Static array of TokenProperties structures that defines a mapping of various tokens, their precedence, and types
-//used in a lexical analysis context. */
+// used in a lexical analysis context. */
 static TokenProperties TokenPropertiesTable[] = {
     {0, 0, PlaceHolderForZero},  // unused
     {110, 85, Other},  // AbsoluteValue
@@ -115,8 +115,11 @@ void BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typeOfTo
  * @param[out] resultDefinition definition of the resulting value (dimension and length)
  * @param[out] resultValue buffer to store the resulting value
  */
-void ConvertStringToVal(
-    int desiredType, long tokenDefinition, const wchar_t* inputLine, long* resultDefinition, void* resultValue);
+void ConvertStringToVal(int desiredType,
+    long tokenDefinition,
+    const wchar_t* inputLine,
+    long* resultDefinition,
+    void* resultValue);
 
 /** @brief Converts an internal representation of a value to its string representation.
  * @param valueBuffer buffer containing value to convert
@@ -124,8 +127,10 @@ void ConvertStringToVal(
  * @param[out] stringBuffer output buffer for string representation
  * @param[out] stringLength length of resulting string
  */
-void ConvertValToString(
-    void* valueBuffer, ValueMetaInformation* valueMetaInformation, wchar_t* stringbuffer, int* stringLength);
+void ConvertValToString(void* valueBuffer,
+    ValueMetaInformation* valueMetaInformation,
+    wchar_t* stringbuffer,
+    int* stringLength);
 
 /** @brief Does value type conversion
  * @param currentType current type of value

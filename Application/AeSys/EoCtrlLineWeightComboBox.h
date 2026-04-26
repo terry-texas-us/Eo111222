@@ -26,15 +26,22 @@ class EoCtrlLineWeightComboBox : public CMFCToolBarComboBoxButton {
   static CString LineWeightToName(EoDxfLineWeights::LineWeight lineWeight);
 
   /// @brief Draws a thickness-proportional line preview into the given rectangle.
-  static void DrawWeightPreview(CDC* deviceContext, const CRect& rect,
-      EoDxfLineWeights::LineWeight lineWeight, COLORREF lineColor);
+  static void DrawWeightPreview(CDC* deviceContext,
+      const CRect& rect,
+      EoDxfLineWeights::LineWeight lineWeight,
+      COLORREF lineColor);
 
  protected:
   CComboBox* CreateCombo(CWnd* parentWindow, const CRect& rect) override;
   BOOL NotifyCommand(int notifyCode) override;
   void Serialize(CArchive& ar) override;
-  void OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz = TRUE,
-      BOOL isCustomizeMode = FALSE, BOOL isHighlighted = FALSE, BOOL drawBorder = TRUE,
+  void OnDraw(CDC* deviceContext,
+      const CRect& rect,
+      CMFCToolBarImages* images,
+      BOOL isHorz = TRUE,
+      BOOL isCustomizeMode = FALSE,
+      BOOL isHighlighted = FALSE,
+      BOOL drawBorder = TRUE,
       BOOL grayDisabledButtons = TRUE) override;
 
  private:

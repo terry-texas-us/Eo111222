@@ -290,7 +290,8 @@ class AeSysDoc : public CDocument {
   EoDxf::Space m_savedEditorSpace{EoDxf::Space::ModelSpace};  ///< Saved active space to restore on exit
   CString m_savedEditorTitle;  ///< Saved document title to restore on exit
   std::vector<std::pair<EoDbPrimitive*, EoDbGroup*>> m_blockEditSnapshot{};  ///< Snapshot for cancel
-  std::vector<std::pair<EoDbLayer*, std::uint16_t>> m_savedTracingLayerVisibility{};  ///< Layers hidden during tracing ed
+  std::vector<std::pair<EoDbLayer*, std::uint16_t>>
+      m_savedTracingLayerVisibility{};  ///< Layers hidden during tracing ed
 
  public:
   void LayerBlank(const CString& strName);
@@ -664,7 +665,8 @@ class AeSysDoc : public CDocument {
   void ModifyTrappedGroupsColor(std::int16_t color) { m_trappedGroups.ModifyColor(color); }
   void ModifyTrappedGroupsLineType(const std::wstring& lineTypeName) { m_trappedGroups.ModifyLineType(lineTypeName); }
   void ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
-      const EoDbCharacterCellDefinition& characterCellDefinition, int attributes);
+      const EoDbCharacterCellDefinition& characterCellDefinition,
+      int attributes);
   void RemoveAllTrappedGroups();
   EoDbGroup* RemoveLastTrappedGroup() { return m_trappedGroups.RemoveTail(); }
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_trappedGroups.Remove(group); }

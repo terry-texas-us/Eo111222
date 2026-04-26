@@ -98,8 +98,12 @@ void EoDbDxfInterface::ConvertCircleEntity(const EoDxfCircle& circle, AeSysDoc* 
  *  @param document The AeSys document receiving the created primitive.
  */
 void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDoc* document) const {
-  ATLTRACE2(traceGeneral, 3, L"Ellipse entity conversion (ratio=%.4f, startParam=%.4f, endParam=%.4f)\n",
-      ellipse.m_ratio, ellipse.m_startParam, ellipse.m_endParam);
+  ATLTRACE2(traceGeneral,
+      3,
+      L"Ellipse entity conversion (ratio=%.4f, startParam=%.4f, endParam=%.4f)\n",
+      ellipse.m_ratio,
+      ellipse.m_startParam,
+      ellipse.m_endParam);
 
   if (ellipse.m_ratio <= 0.0 || ellipse.m_ratio > 1.0) {
     ATLTRACE2(
@@ -121,9 +125,22 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   }
   const EoGePoint3d center = EoGePoint3d(ellipse.m_centerPoint.x, ellipse.m_centerPoint.y, ellipse.m_centerPoint.z);
 
-  ATLTRACE2(traceGeneral, 3, L"  center=(%.4f, %.4f, %.4f) majorAxis=(%.4f, %.4f, %.4f) majorLen=%.4f\n", center.x,
-      center.y, center.z, majorAxis.x, majorAxis.y, majorAxis.z, majorAxis.Length());
-  ATLTRACE2(traceGeneral, 3, L"  extrusion=(%.4f, %.4f, %.4f) ratio=%.4f\n", extrusion.x, extrusion.y, extrusion.z,
+  ATLTRACE2(traceGeneral,
+      3,
+      L"  center=(%.4f, %.4f, %.4f) majorAxis=(%.4f, %.4f, %.4f) majorLen=%.4f\n",
+      center.x,
+      center.y,
+      center.z,
+      majorAxis.x,
+      majorAxis.y,
+      majorAxis.z,
+      majorAxis.Length());
+  ATLTRACE2(traceGeneral,
+      3,
+      L"  extrusion=(%.4f, %.4f, %.4f) ratio=%.4f\n",
+      extrusion.x,
+      extrusion.y,
+      extrusion.z,
       ellipse.m_ratio);
 
   auto* conic =
@@ -135,10 +152,14 @@ void EoDbDxfInterface::ConvertEllipseEntity(const EoDxfEllipse& ellipse, AeSysDo
   conic->SetBaseProperties(&ellipse, document);
   AddToDocument(conic, document, ellipse.m_space, ellipse.m_ownerHandle);
 
-  const bool isFullEllipse = Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi) ||
-      Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam);
-  ATLTRACE2(traceGeneral, 2, L"  → EoDbConic %s (majorLen=%.4f, minorLen=%.4f)\n",
-      isFullEllipse ? L"Ellipse" : L"EllipticalArc", majorAxis.Length(), majorAxis.Length() * ellipse.m_ratio);
+  const bool isFullEllipse = Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam - Eo::TwoPi)
+      || Eo::IsGeometricallyZero(ellipse.m_endParam - ellipse.m_startParam);
+  ATLTRACE2(traceGeneral,
+      2,
+      L"  → EoDbConic %s (majorLen=%.4f, minorLen=%.4f)\n",
+      isFullEllipse ? L"Ellipse" : L"EllipticalArc",
+      majorAxis.Length(),
+      majorAxis.Length() * ellipse.m_ratio);
 }
 
 EoDbBlockReference* EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blockReference, AeSysDoc* document) {
@@ -147,7 +168,8 @@ EoDbBlockReference* EoDbDxfInterface::ConvertInsertEntity(const EoDxfInsert& blo
   insertPrimitive->SetBaseProperties(&blockReference, document);
   insertPrimitive->SetName(CString(blockReference.m_blockName.c_str()));
   insertPrimitive->SetInsertionPoint(blockReference.m_insertionPoint);
-  insertPrimitive->SetNormal(EoGeVector3d(blockReference.m_extrusionDirection.x, blockReference.m_extrusionDirection.y,
+  insertPrimitive->SetNormal(EoGeVector3d(blockReference.m_extrusionDirection.x,
+      blockReference.m_extrusionDirection.y,
       blockReference.m_extrusionDirection.z));
   insertPrimitive->SetScaleFactors(
       EoGeVector3d(blockReference.m_xScaleFactor, blockReference.m_yScaleFactor, blockReference.m_zScaleFactor));
@@ -196,7 +218,8 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
   polylinePrimitive->SetConstantWidth(polyline.m_constantWidth);
 
   // Populate per-vertex bulge values when any vertex has a non-zero bulge
-  const bool hasAnyBulge = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+  const bool hasAnyBulge = std::any_of(polyline.m_vertices.begin(),
+      polyline.m_vertices.end(),
       [](const EoDxfPolylineVertex2d& vertex) noexcept { return vertex.bulge != 0.0; });
   if (hasAnyBulge) {
     std::vector<double> bulges(numVerts);
@@ -208,7 +231,8 @@ void EoDbDxfInterface::ConvertLWPolylineEntity(const EoDxfLwPolyline& polyline, 
   // DXF convention: per-vertex width 0 means "use the constant width" when a constant width is set.
   // When any vertex has an explicit non-zero width, we still fill zero-width vertices with the
   // constant width as fallback (mixed usage).
-  const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+  const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(),
+      polyline.m_vertices.end(),
       [](const EoDxfPolylineVertex2d& vertex) { return vertex.stawidth != 0.0 || vertex.endwidth != 0.0; });
   if (hasAnyPerVertexWidth) {
     std::vector<double> startWidths(numVerts);
@@ -279,8 +303,8 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
   } else {
     extrusionDirection.Unitize();
   }
-  const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x) ||
-      Eo::IsGeometricallyNonZero(extrusionDirection.y) || Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
+  const bool needsOcsTransform = Eo::IsGeometricallyNonZero(extrusionDirection.x)
+      || Eo::IsGeometricallyNonZero(extrusionDirection.y) || Eo::IsGeometricallyNonZero(extrusionDirection.z - 1.0);
   const EoGeOcsTransform transformOcs{extrusionDirection};
 
   for (std::uint16_t index = 0; index < numVerts; ++index) {
@@ -294,7 +318,8 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
   if (polyline.m_polylineFlag & 0x80) { polylinePrimitive->SetPlinegen(true); }
 
   // Populate per-vertex bulge values when any vertex has a non-zero bulge
-  const bool hasAnyBulge = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+  const bool hasAnyBulge = std::any_of(polyline.m_vertices.begin(),
+      polyline.m_vertices.end(),
       [](const EoDxfVertex* vertex) { return vertex->m_bulge != 0.0; });
   if (hasAnyBulge) {
     std::vector<double> bulges(numVerts);
@@ -304,7 +329,8 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
 
   // Populate per-vertex width values: use per-vertex widths if present, else expand default widths.
   // DXF convention: per-vertex width 0 means "use default width" when default widths are set.
-  const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(), polyline.m_vertices.end(),
+  const bool hasAnyPerVertexWidth = std::any_of(polyline.m_vertices.begin(),
+      polyline.m_vertices.end(),
       [](const EoDxfVertex* vertex) { return vertex->m_startingWidth != 0.0 || vertex->m_endingWidth != 0.0; });
   if (hasAnyPerVertexWidth) {
     std::vector<double> startWidths(numVerts);
@@ -317,8 +343,8 @@ void EoDbDxfInterface::ConvertPolyline2DEntity(const EoDxfPolyline& polyline, Ae
           (Eo::IsGeometricallyNonZero(vertex->m_endingWidth)) ? vertex->m_endingWidth : polyline.m_defaultEndWidth;
     }
     polylinePrimitive->SetWidths(std::move(startWidths), std::move(endWidths));
-  } else if (Eo::IsGeometricallyNonZero(polyline.m_defaultStartWidth) ||
-      Eo::IsGeometricallyNonZero(polyline.m_defaultEndWidth)) {
+  } else if (Eo::IsGeometricallyNonZero(polyline.m_defaultStartWidth)
+      || Eo::IsGeometricallyNonZero(polyline.m_defaultEndWidth)) {
     // Expand default widths into per-vertex start/end widths
     std::vector<double> startWidths(numVerts, polyline.m_defaultStartWidth);
     std::vector<double> endWidths(numVerts, polyline.m_defaultEndWidth);
@@ -365,10 +391,14 @@ void EoDbDxfInterface::ConvertPointEntity(const EoDxfPoint& point, AeSysDoc* doc
  *  @param document The AeSys document receiving the created primitive.
  */
 void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* document) const {
-  ATLTRACE2(traceGeneral, 3,
+  ATLTRACE2(traceGeneral,
+      3,
       L"Spline entity conversion (degree=%d, controlPts=%d, fitPts=%d, knots=%d, flags=0x%04X)\n",
-      spline.m_degreeOfTheSplineCurve, spline.m_numberOfControlPoints, spline.m_numberOfFitPoints,
-      spline.m_numberOfKnots, spline.m_splineFlag);
+      spline.m_degreeOfTheSplineCurve,
+      spline.m_numberOfControlPoints,
+      spline.m_numberOfFitPoints,
+      spline.m_numberOfKnots,
+      spline.m_splineFlag);
 
   // Determine which point set to use: control points preferred, fit points as fallback
   const auto& controlPoints = spline.m_controlPoints;
@@ -425,12 +455,20 @@ void EoDbDxfInterface::ConvertSplineEntity(const EoDxfSpline& spline, AeSysDoc* 
 
   AddToDocument(splinePrimitive, document, spline.m_space, spline.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 2, L"  Spline \u2192 EoDbSpline (%d pts, degree=%d, flags=0x%04X, knots=%zu)\n", pointCount,
-      splinePrimitive->Degree(), splinePrimitive->Flags(), splinePrimitive->Knots().size());
+  ATLTRACE2(traceGeneral,
+      2,
+      L"  Spline \u2192 EoDbSpline (%d pts, degree=%d, flags=0x%04X, knots=%zu)\n",
+      pointCount,
+      splinePrimitive->Degree(),
+      splinePrimitive->Flags(),
+      splinePrimitive->Knots().size());
 }
 
 void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSysDoc* document) const {
-  ATLTRACE2(traceGeneral, 2, L"Viewport entity conversion (id=%d, status=%d)\n", viewport.m_viewportId,
+  ATLTRACE2(traceGeneral,
+      2,
+      L"Viewport entity conversion (id=%d, status=%d)\n",
+      viewport.m_viewportId,
       viewport.m_viewportStatus);
 
   auto* viewportPrimitive = new EoDbViewport();
@@ -464,6 +502,12 @@ void EoDbDxfInterface::ConvertViewportEntity(const EoDxfViewport& viewport, AeSy
 
   AddToDocument(viewportPrimitive, document, viewport.m_space, viewport.m_ownerHandle);
 
-  ATLTRACE2(traceGeneral, 2, L"  Viewport id=%d size=(%.2f x %.2f) center=(%.2f, %.2f)\n", viewport.m_viewportId,
-      viewport.m_width, viewport.m_height, viewport.m_centerPoint.x, viewport.m_centerPoint.y);
+  ATLTRACE2(traceGeneral,
+      2,
+      L"  Viewport id=%d size=(%.2f x %.2f) center=(%.2f, %.2f)\n",
+      viewport.m_viewportId,
+      viewport.m_width,
+      viewport.m_height,
+      viewport.m_centerPoint.x,
+      viewport.m_centerPoint.y);
 }

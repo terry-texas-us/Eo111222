@@ -13,11 +13,11 @@
 #include "EoGeVector3d.h"
 
 class EoDbSpline : public EoDbPrimitive {
-  std::int16_t m_degree{3};           ///< Spline degree (default 3 = cubic). Order = degree + 1.
-  std::int16_t m_flags{};             ///< DXF spline flags (0x01=Closed, 0x02=Periodic, 0x04=Rational, 0x08=Planar).
-  EoGePoint3dArray m_pts;             ///< Control points (WCS).
-  std::vector<double> m_knots;        ///< Knot vector. Empty = uniform (regenerated at render/export time).
-  std::vector<double> m_weights;      ///< Per-control-point weights. Empty = non-rational (all weights 1.0).
+  std::int16_t m_degree{3};  ///< Spline degree (default 3 = cubic). Order = degree + 1.
+  std::int16_t m_flags{};  ///< DXF spline flags (0x01=Closed, 0x02=Periodic, 0x04=Rational, 0x08=Planar).
+  EoGePoint3dArray m_pts;  ///< Control points (WCS).
+  std::vector<double> m_knots;  ///< Knot vector. Empty = uniform (regenerated at render/export time).
+  std::vector<double> m_weights;  ///< Per-control-point weights. Empty = non-rational (all weights 1.0).
 
  public:  // Constructors and destructor
   EoDbSpline() {}

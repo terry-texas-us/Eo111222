@@ -231,7 +231,9 @@ void AeSysView::OnNodalModeToPolygon() {
   }
 }
 
-void AeSysView::OnNodalModeEmpty() { OnNodalModeEscape(); }
+void AeSysView::OnNodalModeEmpty() {
+  OnNodalModeEscape();
+}
 
 void AeSysView::OnNodalModeEngage() {
   if (GroupIsEngaged()) {

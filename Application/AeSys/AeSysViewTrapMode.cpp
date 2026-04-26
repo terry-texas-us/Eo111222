@@ -7,7 +7,9 @@
 #include "EoDlgTrapModify.h"
 #include "Resource.h"
 
-void AeSysView::OnTrapModeRemoveAdd() { OnTrapCommandsAddGroups(); }
+void AeSysView::OnTrapModeRemoveAdd() {
+  OnTrapCommandsAddGroups();
+}
 
 void AeSysView::OnTrapModePoint() {
   auto* document = GetDocument();
@@ -150,7 +152,9 @@ void AeSysView::OnTrapModeEscape() {
   ModeLineUnhighlightOp(m_PreviousOp);
 }
 
-void AeSysView::OnTraprModeRemoveAdd() { OnTrapCommandsAddGroups(); }
+void AeSysView::OnTraprModeRemoveAdd() {
+  OnTrapCommandsAddGroups();
+}
 
 void AeSysView::OnTraprModePoint() {
   auto* document = GetDocument();

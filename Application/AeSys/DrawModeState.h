@@ -3,7 +3,6 @@
 #include <cstdint>
 
 #include "AeSysState.h"
-
 #include "EoGePoint3d.h"  // For m_pts
 
 class AeSysView;

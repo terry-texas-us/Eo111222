@@ -111,7 +111,9 @@ void EoDlgSetupColor::DrawSelectionInformation(std::uint16_t index) {
   m_SelectionButton.Invalidate();
 
   CString colorRgbDescription;
-  colorRgbDescription.Format(L"(%i,%i,%i)", GetRValue(Eo::ColorPalette[index]), GetGValue(Eo::ColorPalette[index]),
+  colorRgbDescription.Format(L"(%i,%i,%i)",
+      GetRValue(Eo::ColorPalette[index]),
+      GetGValue(Eo::ColorPalette[index]),
       GetBValue(Eo::ColorPalette[index]));
   SetDlgItemTextW(IDC_RGBNUMBERS, colorRgbDescription);
 }

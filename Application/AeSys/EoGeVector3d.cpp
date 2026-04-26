@@ -15,9 +15,13 @@ const EoGeVector3d EoGeVector3d::positiveUnitZ(0.0, 0.0, 1.0);
 EoGeVector3d::EoGeVector3d(const EoGePoint3d& p, const EoGePoint3d& q) noexcept
     : x(q.x - p.x), y(q.y - p.y), z(q.z - p.z) {}
 
-bool EoGeVector3d::operator==(const EoGeVector3d& v) const noexcept { return IsNearEqual(*this, v); }
+bool EoGeVector3d::operator==(const EoGeVector3d& v) const noexcept {
+  return IsNearEqual(*this, v);
+}
 
-bool EoGeVector3d::operator!=(const EoGeVector3d& v) const noexcept { return !IsNearEqual(*this, v); }
+bool EoGeVector3d::operator!=(const EoGeVector3d& v) const noexcept {
+  return !IsNearEqual(*this, v);
+}
 
 /** @brief Divides the vector by a scalar value.
  * @param t The scalar value to divide the vector by.
@@ -49,7 +53,9 @@ bool EoGeVector3d::IsEqualTo(const EoGeVector3d& other, double tolerance) const 
   return std::abs(x - other.x) <= tolerance && std::abs(y - other.y) <= tolerance && std::abs(z - other.z) <= tolerance;
 }
 
-double EoGeVector3d::Length() const { return std::sqrt(SquaredLength()); }
+double EoGeVector3d::Length() const {
+  return std::sqrt(SquaredLength());
+}
 
 void EoGeVector3d::Read(CFile& file) {
   file.Read(&x, sizeof(double));
@@ -105,13 +111,11 @@ EoGeVector3d RotateVectorAboutZAxis(const EoGeVector3d& vector, double angle) {
 
   if (Eo::IsGeometricallyZero(angle) || Eo::IsGeometricallyZero(angle - Eo::TwoPi)) {
     cosAngle = 1.0;
-  } else if (Eo::IsGeometricallyZero(angle - Eo::HalfPi) ||
-             Eo::IsGeometricallyZero(angle + Eo::Pi + Eo::HalfPi)) {
+  } else if (Eo::IsGeometricallyZero(angle - Eo::HalfPi) || Eo::IsGeometricallyZero(angle + Eo::Pi + Eo::HalfPi)) {
     sinAngle = 1.0;
   } else if (Eo::IsGeometricallyZero(angle - Eo::Pi)) {
     cosAngle = -1.0;
-  } else if (Eo::IsGeometricallyZero(angle - Eo::Pi - Eo::HalfPi) ||
-             Eo::IsGeometricallyZero(angle + Eo::HalfPi)) {
+  } else if (Eo::IsGeometricallyZero(angle - Eo::Pi - Eo::HalfPi) || Eo::IsGeometricallyZero(angle + Eo::HalfPi)) {
     sinAngle = -1.0;
   } else {
     sinAngle = std::sin(angle);

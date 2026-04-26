@@ -22,7 +22,9 @@
 namespace {
 std::uint16_t previousDrawCommand{};
 }
-void AeSysView::OnDrawModeOptions() { AeSysDoc::GetDoc()->OnSetupOptionsDraw(); }
+void AeSysView::OnDrawModeOptions() {
+  AeSysDoc::GetDoc()->OnSetupOptionsDraw();
+}
 
 void AeSysView::OnDrawModePoint() {
   const auto cursorPosition = GetCursorPosition();

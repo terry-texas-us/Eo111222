@@ -28,8 +28,9 @@
 /// @param attributeValue  The user-entered attribute value string.
 /// @param insertTransform The INSERT's combined transform (block space → WCS).
 /// @return Newly allocated EoDbAttrib, or nullptr on degenerate input.
-static EoDbAttrib* CreateAttribFromAttDef(
-    const EoDxfAttDef& attdef, const std::wstring& attributeValue, const EoGeTransformMatrix& insertTransform) {
+static EoDbAttrib* CreateAttribFromAttDef(const EoDxfAttDef& attdef,
+    const std::wstring& attributeValue,
+    const EoGeTransformMatrix& insertTransform) {
   if (attdef.m_textHeight < Eo::geometricTolerance || attributeValue.empty()) { return nullptr; }
 
   // --- Alignment mapping (same logic as ConvertAttribEntity) ---

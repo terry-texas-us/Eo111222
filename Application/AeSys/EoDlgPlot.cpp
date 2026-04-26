@@ -1,10 +1,9 @@
 #include "Stdafx.h"
 
-#include "EoDlgPlot.h"
-
 #include <winspool.h>
 
 #include "Eo.h"
+#include "EoDlgPlot.h"
 
 #pragma comment(lib, "winspool.lib")
 
@@ -12,7 +11,9 @@ IMPLEMENT_DYNAMIC(EoDlgPlot, CDialog)
 
 EoDlgPlot::EoDlgPlot(CWnd* parent) : CDialog(IDD, parent) {}
 
-void EoDlgPlot::DoDataExchange(CDataExchange* dataExchange) { CDialog::DoDataExchange(dataExchange); }
+void EoDlgPlot::DoDataExchange(CDataExchange* dataExchange) {
+  CDialog::DoDataExchange(dataExchange);
+}
 
 BEGIN_MESSAGE_MAP(EoDlgPlot, CDialog)
 ON_CBN_SELCHANGE(IDC_PLOT_PRINTER_COMBO, OnPrinterSelectionChanged)
@@ -36,16 +37,25 @@ BOOL EoDlgPlot::OnInitDialog() {
   PopulateScaleCombo();
 
   // Orientation
-  CheckRadioButton(IDC_PLOT_ORIENTATION_LANDSCAPE, IDC_PLOT_ORIENTATION_PORTRAIT,
+  CheckRadioButton(IDC_PLOT_ORIENTATION_LANDSCAPE,
+      IDC_PLOT_ORIENTATION_PORTRAIT,
       m_settings.landscape ? IDC_PLOT_ORIENTATION_LANDSCAPE : IDC_PLOT_ORIENTATION_PORTRAIT);
 
   // Plot area
   int plotAreaId = IDC_PLOT_AREA_LAYOUT;
   switch (m_settings.plotArea) {
-    case PlotArea::Layout: plotAreaId = IDC_PLOT_AREA_LAYOUT; break;
-    case PlotArea::Extents: plotAreaId = IDC_PLOT_AREA_EXTENTS; break;
-    case PlotArea::Display: plotAreaId = IDC_PLOT_AREA_DISPLAY; break;
-    case PlotArea::Window: plotAreaId = IDC_PLOT_AREA_WINDOW; break;
+    case PlotArea::Layout:
+      plotAreaId = IDC_PLOT_AREA_LAYOUT;
+      break;
+    case PlotArea::Extents:
+      plotAreaId = IDC_PLOT_AREA_EXTENTS;
+      break;
+    case PlotArea::Display:
+      plotAreaId = IDC_PLOT_AREA_DISPLAY;
+      break;
+    case PlotArea::Window:
+      plotAreaId = IDC_PLOT_AREA_WINDOW;
+      break;
   }
   CheckRadioButton(IDC_PLOT_AREA_LAYOUT, IDC_PLOT_AREA_WINDOW, plotAreaId);
 
@@ -190,8 +200,13 @@ void EoDlgPlot::PopulatePrinterCombo() {
 
   if (needed > 0) {
     std::vector<BYTE> buffer(needed);
-    if (::EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, nullptr, 2, buffer.data(),
-            static_cast<DWORD>(buffer.size()), &needed, &returned)) {
+    if (::EnumPrintersW(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+            nullptr,
+            2,
+            buffer.data(),
+            static_cast<DWORD>(buffer.size()),
+            &needed,
+            &returned)) {
       auto* const printers = reinterpret_cast<PRINTER_INFO_2*>(buffer.data());
       int defaultIndex = -1;
       for (DWORD i = 0; i < returned; ++i) {
@@ -243,13 +258,11 @@ void EoDlgPlot::PopulatePaperSizeCombo() {
 
   // Paper IDs
   std::vector<WORD> paperIds(count);
-  ::DeviceCapabilitiesW(
-      printerName, nullptr, DC_PAPERS, reinterpret_cast<wchar_t*>(paperIds.data()), nullptr);
+  ::DeviceCapabilitiesW(printerName, nullptr, DC_PAPERS, reinterpret_cast<wchar_t*>(paperIds.data()), nullptr);
 
   // Paper sizes (tenths of mm)
   std::vector<POINT> paperSizes(count);
-  ::DeviceCapabilitiesW(
-      printerName, nullptr, DC_PAPERSIZE, reinterpret_cast<wchar_t*>(paperSizes.data()), nullptr);
+  ::DeviceCapabilitiesW(printerName, nullptr, DC_PAPERSIZE, reinterpret_cast<wchar_t*>(paperSizes.data()), nullptr);
 
   int selectIndex = 0;
   for (int i = 0; i < count; ++i) {
@@ -326,8 +339,11 @@ void EoDlgPlot::UpdatePrintableAreaLabel() {
   if (!landscape) { std::swap(widthInches, heightInches); }
 
   CString label;
-  label.Format(L"%.2f \x00D7 %.2f in  (%.0f \x00D7 %.0f mm)", widthInches, heightInches,
-      landscape ? ps.widthMm : ps.heightMm, landscape ? ps.heightMm : ps.widthMm);
+  label.Format(L"%.2f \x00D7 %.2f in  (%.0f \x00D7 %.0f mm)",
+      widthInches,
+      heightInches,
+      landscape ? ps.widthMm : ps.heightMm,
+      landscape ? ps.heightMm : ps.widthMm);
   SetDlgItemText(IDC_PLOT_PRINTABLE_AREA, label);
 }
 
@@ -360,35 +376,43 @@ void EoDlgPlot::OnPrinterProperties() {
   PopulatePaperSizeCombo();
 }
 
-void EoDlgPlot::OnFitToPaperClicked() { UpdateControlStates(); }
+void EoDlgPlot::OnFitToPaperClicked() {
+  UpdateControlStates();
+}
 
-void EoDlgPlot::OnCenterPlotClicked() { UpdateControlStates(); }
+void EoDlgPlot::OnCenterPlotClicked() {
+  UpdateControlStates();
+}
 
-void EoDlgPlot::OnOrientationChanged() { UpdatePrintableAreaLabel(); }
+void EoDlgPlot::OnOrientationChanged() {
+  UpdatePrintableAreaLabel();
+}
 
-void EoDlgPlot::OnPaperSizeSelectionChanged() { UpdatePrintableAreaLabel(); }
+void EoDlgPlot::OnPaperSizeSelectionChanged() {
+  UpdatePrintableAreaLabel();
+}
 
 void EoDlgPlot::OnScaleSelectionChanged() {
-    auto* const combo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_SCALE_COMBO));
-    if (combo == nullptr) { return; }
-    const int sel = combo->GetCurSel();
-    if (sel == CB_ERR) { return; }
+  auto* const combo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_SCALE_COMBO));
+  if (combo == nullptr) { return; }
+  const int sel = combo->GetCurSel();
+  if (sel == CB_ERR) { return; }
 
-    if (sel == 0) {
-        // "Fit to paper" preset — mirror what the checkbox does
-        CheckDlgButton(IDC_PLOT_FIT_TO_PAPER, BST_CHECKED);
-        UpdateControlStates();
-        return;
-    }
-
-    CheckDlgButton(IDC_PLOT_FIT_TO_PAPER, BST_UNCHECKED);
-    if (sel < static_cast<int>(std::size(kScalePresets))) {
-        const auto& preset = kScalePresets[sel];
-        CString text;
-        text.Format(L"%.4f", preset.paperUnits);
-        SetDlgItemText(IDC_PLOT_CUSTOM_SCALE_EDIT, text);
-        text.Format(L"%.4f", preset.drawingUnits);
-        SetDlgItemText(IDC_PLOT_CUSTOM_UNITS_EDIT, text);
-    }
+  if (sel == 0) {
+    // "Fit to paper" preset — mirror what the checkbox does
+    CheckDlgButton(IDC_PLOT_FIT_TO_PAPER, BST_CHECKED);
     UpdateControlStates();
+    return;
+  }
+
+  CheckDlgButton(IDC_PLOT_FIT_TO_PAPER, BST_UNCHECKED);
+  if (sel < static_cast<int>(std::size(kScalePresets))) {
+    const auto& preset = kScalePresets[sel];
+    CString text;
+    text.Format(L"%.4f", preset.paperUnits);
+    SetDlgItemText(IDC_PLOT_CUSTOM_SCALE_EDIT, text);
+    text.Format(L"%.4f", preset.drawingUnits);
+    SetDlgItemText(IDC_PLOT_CUSTOM_UNITS_EDIT, text);
+  }
+  UpdateControlStates();
 }

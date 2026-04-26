@@ -371,8 +371,10 @@ void AeSysView::OnAnnotateModeEscape() {
   m_PreviousOp = 0;
 }
 
-bool AeSysView::CorrectLeaderEndpoints(
-    int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const {
+bool AeSysView::CorrectLeaderEndpoints(int beginType,
+    int endType,
+    EoGePoint3d& beginPoint,
+    EoGePoint3d& endPoint) const {
   const double lineSegmentLength = EoGeVector3d(beginPoint, endPoint).Length();
 
   double beginDistance{};
@@ -440,8 +442,11 @@ void AeSysView::DoAnnotateModeMouseMove() {
   pts.SetSize(numberOfPoints);
 }
 
-void AeSysView::GenerateLineEndItem(
-    int type, double size, EoGePoint3d& beginPoint, EoGePoint3d& endPoint, EoDbGroup* group) const {
+void AeSysView::GenerateLineEndItem(int type,
+    double size,
+    EoGePoint3d& beginPoint,
+    EoGePoint3d& endPoint,
+    EoDbGroup* group) const {
   const auto cameraDirection = CameraDirection();
 
   EoGePoint3dArray itemPoints;

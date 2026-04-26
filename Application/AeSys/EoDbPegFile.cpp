@@ -57,9 +57,7 @@ void EoDbPegFile::Load(AeSysDoc* document) {
   const auto* aesVerVariable = document->HeaderSection().SetVariable(L"$AESVER");
   if (aesVerVariable != nullptr) {
     const auto* versionString = std::get_if<std::wstring>(aesVerVariable);
-    if (versionString != nullptr && *versionString == L"AE2026") {
-      fileVersion = EoDb::PegFileVersion::AE2026;
-    }
+    if (versionString != nullptr && *versionString == L"AE2026") { fileVersion = EoDb::PegFileVersion::AE2026; }
   }
   ReadTablesSection(document, fileVersion);
   ReadBlocksSection(document, fileVersion);
@@ -255,8 +253,10 @@ void EoDbPegFile::ReadLinetypesTable(AeSysDoc* document, EoDb::PegFileVersion fi
   }
 }
 
-void EoDbPegFile::ReadLinetypeDefinition(
-    std::vector<double>& dashLength, CString& name, CString& description, std::uint16_t& definitionLength) {
+void EoDbPegFile::ReadLinetypeDefinition(std::vector<double>& dashLength,
+    CString& name,
+    CString& description,
+    std::uint16_t& definitionLength) {
   EoDb::Read(*this, name);
   const auto flags = EoDb::ReadUInt16(*this);
   (void)flags;  // currently unused, but may be used in the future to indicate properties of the linetype
@@ -285,8 +285,8 @@ void EoDbPegFile::ReadLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVe
 
     state |= std::to_underlying(EoDbLayer::State::isResident);
 
-    if ((state & std::to_underlying(EoDbLayer::State::isInternal)) !=
-        std::to_underlying(EoDbLayer::State::isInternal)) {
+    if ((state & std::to_underlying(EoDbLayer::State::isInternal))
+        != std::to_underlying(EoDbLayer::State::isInternal)) {
       if (layerName.Find('.') == -1) { layerName += L".jb1"; }
     }
     const auto colorIndex = EoDb::ReadInt16(*this);
@@ -500,8 +500,9 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
   }
 }
 
-void EoDbPegFile::ReadPaperSpaceLayoutLayers(
-    AeSysDoc* document, EoDb::PegFileVersion fileVersion, std::uint64_t layoutHandle) {
+void EoDbPegFile::ReadPaperSpaceLayoutLayers(AeSysDoc* document,
+    EoDb::PegFileVersion fileVersion,
+    std::uint64_t layoutHandle) {
   if (EoDb::ReadUInt16(*this) != EoDb::kLayerTable) {
     throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kLayerTable in paper-space section.");
   }
@@ -516,8 +517,8 @@ void EoDbPegFile::ReadPaperSpaceLayoutLayers(
     auto state = static_cast<std::uint16_t>(EoDb::ReadUInt16(*this));
     state |= std::to_underlying(EoDbLayer::State::isResident);
 
-    if ((state & std::to_underlying(EoDbLayer::State::isInternal)) !=
-        std::to_underlying(EoDbLayer::State::isInternal)) {
+    if ((state & std::to_underlying(EoDbLayer::State::isInternal))
+        != std::to_underlying(EoDbLayer::State::isInternal)) {
       if (layerName.Find('.') == -1) { layerName += L".jb1"; }
     }
     const auto colorIndex = EoDb::ReadInt16(*this);
@@ -563,11 +564,11 @@ void EoDbPegFile::ReadPaperSpaceLayoutLayers(
   }
 }
 
-void EoDbPegFile::ReadPaperSpaceLayoutEntities(
-    AeSysDoc* document, EoDb::PegFileVersion fileVersion, std::uint64_t layoutHandle) {
+void EoDbPegFile::ReadPaperSpaceLayoutEntities(AeSysDoc* document,
+    EoDb::PegFileVersion fileVersion,
+    std::uint64_t layoutHandle) {
   if (EoDb::ReadUInt16(*this) != EoDb::kGroupsSection) {
-    throw std::runtime_error(
-        "Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection in paper-space section.");
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kGroupsSection in paper-space section.");
   }
 
   EoDbPrimitive* primitive{};
@@ -601,8 +602,7 @@ void EoDbPegFile::ReadPaperSpaceLayoutEntities(
   }
 
   if (EoDb::ReadUInt16(*this) != EoDb::kEndOfSection) {
-    throw std::runtime_error(
-        "Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space entities.");
+    throw std::runtime_error("Exception EoDbPegFile: Expecting sentinel EoDb::kEndOfSection for paper-space entities.");
   }
 }
 
@@ -628,8 +628,9 @@ void EoDbPegFile::Unload(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
  *   - value          (type-specific payload)
  *
  * The sentinel kEndOfSection (0x01ff) cannot collide with the first two bytes of a tab-terminated variable name
- * (which starts with '$' = 0x24), so ReadHeaderSection can distinguish legacy the files sentinel kEndOfSection immediately
- * after kHeaderSection) from V2 files (variable triples followed by kEndOfSection) by peeking at the next uint16_t.
+ * (which starts with '$' = 0x24), so ReadHeaderSection can distinguish legacy the files sentinel kEndOfSection
+ * immediately after kHeaderSection) from V2 files (variable triples followed by kEndOfSection) by peeking at the next
+ * uint16_t.
  *
  * @param document Pointer to the AeSysDoc that owns the header section.
  * @param fileVersion The PEG file version to write.
@@ -756,7 +757,7 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
   for (INT_PTR n = 0; n < layers.GetSize(); n++) {
     EoDbLayer* layer = layers.GetAt(n);
     if (layer->IsResident()) {
-      // V1 save: revert '|stem' tracing layer names back to 'stem.tra' and clear isInternal so the V1 reader 
+      // V1 save: revert '|stem' tracing layer names back to 'stem.tra' and clear isInternal so the V1 reader
       // recognises them as external tracing references.
       CString nameToWrite = layer->Name();
       std::uint16_t stateToWrite = layer->GetState();
@@ -861,9 +862,7 @@ void EoDbPegFile::ReadLayoutTable(AeSysDoc* document, [[maybe_unused]] EoDb::Peg
     // Reactor handles
     const auto reactorCount = EoDb::ReadUInt16(*this);
     layout.m_reactorHandles.clear();
-    for (std::uint16_t r = 0; r < reactorCount; r++) {
-      layout.m_reactorHandles.push_back(EoDb::ReadUInt64(*this));
-    }
+    for (std::uint16_t r = 0; r < reactorCount; r++) { layout.m_reactorHandles.push_back(EoDb::ReadUInt64(*this)); }
 
     // AcDbPlotSettings
     CString tempString;
@@ -1008,9 +1007,7 @@ void EoDbPegFile::WriteLayoutTable(AeSysDoc* document, [[maybe_unused]] EoDb::Pe
 
     // Reactor handles
     EoDb::WriteUInt16(*this, static_cast<std::uint16_t>(layout.m_reactorHandles.size()));
-    for (const auto reactorHandle : layout.m_reactorHandles) {
-      EoDb::WriteUInt64(*this, reactorHandle);
-    }
+    for (const auto reactorHandle : layout.m_reactorHandles) { EoDb::WriteUInt64(*this, reactorHandle); }
 
     // AcDbPlotSettings
     EoDb::Write(*this, CString(layout.m_pageSetupName.c_str()));
@@ -1369,8 +1366,12 @@ void EoDb::Read(CFile& file, CString& string) {
   }
 }
 
-void EoDb::Read(CFile& file, double& number) { file.Read(&number, sizeof(double)); }
-void EoDb::Read(CFile& file, std::int16_t& number) { file.Read(&number, sizeof(std::int16_t)); }
+void EoDb::Read(CFile& file, double& number) {
+  file.Read(&number, sizeof(double));
+}
+void EoDb::Read(CFile& file, std::int16_t& number) {
+  file.Read(&number, sizeof(std::int16_t));
+}
 
 EoGePoint3d EoDb::ReadPoint3d(CFile& file) {
   EoGePoint3d point;
@@ -1384,7 +1385,9 @@ EoGeVector3d EoDb::ReadVector3d(CFile& file) {
   return vector;
 }
 
-void EoDb::Read(CFile& file, std::uint16_t& number) { file.Read(&number, sizeof(std::uint16_t)); }
+void EoDb::Read(CFile& file, std::uint16_t& number) {
+  file.Read(&number, sizeof(std::uint16_t));
+}
 
 double EoDb::ReadDouble(CFile& file) {
   double number;
@@ -1437,12 +1440,21 @@ void EoDb::Write(CFile& file, const CString& string, UINT codePage) {
   file.Write("\t", 1);
 }
 
-void EoDb::WriteDouble(CFile& file, double number) { file.Write(&number, sizeof(double)); }
-void EoDb::WriteInt8(CFile& file, std::int8_t number) { file.Write(&number, sizeof(std::int8_t)); }
-void EoDb::WriteInt16(CFile& file, std::int16_t number) { file.Write(&number, sizeof(std::int16_t)); }
-void EoDb::WriteInt32(CFile& file, std::int32_t number) { file.Write(&number, sizeof(std::int32_t)); }
-void EoDb::WriteUInt16(CFile& file, std::uint16_t number) { file.Write(&number, sizeof(std::uint16_t)); }
-
+void EoDb::WriteDouble(CFile& file, double number) {
+  file.Write(&number, sizeof(double));
+}
+void EoDb::WriteInt8(CFile& file, std::int8_t number) {
+  file.Write(&number, sizeof(std::int8_t));
+}
+void EoDb::WriteInt16(CFile& file, std::int16_t number) {
+  file.Write(&number, sizeof(std::int16_t));
+}
+void EoDb::WriteInt32(CFile& file, std::int32_t number) {
+  file.Write(&number, sizeof(std::int32_t));
+}
+void EoDb::WriteUInt16(CFile& file, std::uint16_t number) {
+  file.Write(&number, sizeof(std::uint16_t));
+}
 
 std::uint64_t EoDb::ReadUInt64(CFile& file) {
   std::uint64_t number;
@@ -1450,4 +1462,6 @@ std::uint64_t EoDb::ReadUInt64(CFile& file) {
   return number;
 }
 
-void EoDb::WriteUInt64(CFile& file, std::uint64_t number) { file.Write(&number, sizeof(std::uint64_t)); }
+void EoDb::WriteUInt64(CFile& file, std::uint64_t number) {
+  file.Write(&number, sizeof(std::uint64_t));
+}

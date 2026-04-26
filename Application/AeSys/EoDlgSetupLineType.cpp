@@ -7,8 +7,8 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
-#include "EoGsRenderState.h"
 #include "EoGsRenderDeviceGdi.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 BEGIN_MESSAGE_MAP(EoDlgSetupLineType, CDialog)
@@ -73,7 +73,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
         const int item = static_cast<int>(drawItemStruct->itemID);
         if (item != -1) {
           const COLORREF rgbText = (drawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
-                                                                        : ::GetSysColor(COLOR_WINDOWTEXT);
+                                                                              : ::GetSysColor(COLOR_WINDOWTEXT);
           deviceContext.SetBkColor(backgroundColor);
           deviceContext.SetTextColor(rgbText);
 
@@ -82,8 +82,13 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           CRect subItemRectangle;
           m_LineTypesListControl.GetSubItemRect(item, Name, LVIR_LABEL, subItemRectangle);
           const CString name = lineType->Name();
-          deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
-              name, static_cast<UINT>(name.GetLength()), nullptr);
+          deviceContext.ExtTextOutW(subItemRectangle.left + 6,
+              subItemRectangle.top + 1,
+              ETO_CLIPPED,
+              &subItemRectangle,
+              name,
+              static_cast<UINT>(name.GetLength()),
+              nullptr);
 
           m_LineTypesListControl.GetSubItemRect(item, Appearance, LVIR_LABEL, subItemRectangle);
 
@@ -97,10 +102,10 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           activeView->SetViewportSize(
               subItemRectangle.right + subItemRectangle.left, subItemRectangle.bottom + subItemRectangle.top);
 
-          const double uExtent = static_cast<double>(subItemRectangle.right + subItemRectangle.left) /
-              static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
-          const double vExtent = static_cast<double>(subItemRectangle.bottom + subItemRectangle.top) /
-              static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSY));
+          const double uExtent = static_cast<double>(subItemRectangle.right + subItemRectangle.left)
+              / static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
+          const double vExtent = static_cast<double>(subItemRectangle.bottom + subItemRectangle.top)
+              / static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSY));
           activeView->ModelViewInitialize();
 
           activeView->SetViewWindow(0.0, 0.0, uExtent, vExtent);
@@ -108,8 +113,8 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           activeView->SetCameraPosition(EoGeVector3d::positiveUnitZ);
           const double uMin =
               static_cast<double>(subItemRectangle.left) / static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
-          const double uMax = static_cast<double>(subItemRectangle.right) /
-              static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
+          const double uMax = static_cast<double>(subItemRectangle.right)
+              / static_cast<double>(deviceContext.GetDeviceCaps(LOGPIXELSX));
 
           const EoGeLine line(EoGePoint3d(uMin, vExtent / 2.0, 0.0), EoGePoint3d(uMax, vExtent / 2.0, 0.0));
           EoGsRenderDeviceGdi renderDevice(&deviceContext);
@@ -120,8 +125,13 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
 
           m_LineTypesListControl.GetSubItemRect(item, Description, LVIR_LABEL, subItemRectangle);
           const CString description = lineType->Description();
-          deviceContext.ExtTextOutW(subItemRectangle.left + 6, subItemRectangle.top + 1, ETO_CLIPPED, &subItemRectangle,
-              description, static_cast<UINT>(description.GetLength()), nullptr);
+          deviceContext.ExtTextOutW(subItemRectangle.left + 6,
+              subItemRectangle.top + 1,
+              ETO_CLIPPED,
+              &subItemRectangle,
+              description,
+              static_cast<UINT>(description.GetLength()),
+              nullptr);
         }
         deviceContext.Detach();
       } break;

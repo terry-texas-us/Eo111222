@@ -34,8 +34,10 @@ class EoGeMatrix {
  public:
   EoGeMatrix() : m_4X4{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}} {}
 
-  EoGeMatrix(
-      const EoGeMatrixRow& row0, const EoGeMatrixRow& row1, const EoGeMatrixRow& row2, const EoGeMatrixRow& row3);
+  EoGeMatrix(const EoGeMatrixRow& row0,
+      const EoGeMatrixRow& row1,
+      const EoGeMatrixRow& row2,
+      const EoGeMatrixRow& row3);
 
  public:
   EoGeMatrix& operator*=(const EoGeMatrix& m);

@@ -21,7 +21,10 @@ class EoDbPoint : public EoDbPrimitive {
   EoDbPoint();
   EoDbPoint(const EoGePoint3d& point);
   EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point);
-  EoDbPoint(std::int16_t penColor, std::int16_t pointStyle, const EoGePoint3d& point, std::uint16_t numberOfDatums,
+  EoDbPoint(std::int16_t penColor,
+      std::int16_t pointStyle,
+      const EoGePoint3d& point,
+      std::uint16_t numberOfDatums,
       double* data);
 
   EoDbPoint(const EoDbPoint& src);

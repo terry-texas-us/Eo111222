@@ -28,15 +28,19 @@ class EoCtrlLineTypeComboBox : public CMFCToolBarComboBoxButton {
 
   /// @brief Draws a dash pattern preview into the given rectangle.
   /// @param lineType If null, draws a continuous line (solid).
-  static void DrawDashPreview(CDC* deviceContext, const CRect& rect, const EoDbLineType* lineType,
-      COLORREF lineColor);
+  static void DrawDashPreview(CDC* deviceContext, const CRect& rect, const EoDbLineType* lineType, COLORREF lineColor);
 
  protected:
   CComboBox* CreateCombo(CWnd* parentWindow, const CRect& rect) override;
   BOOL NotifyCommand(int notifyCode) override;
   void Serialize(CArchive& ar) override;
-  void OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz = TRUE,
-      BOOL isCustomizeMode = FALSE, BOOL isHighlighted = FALSE, BOOL drawBorder = TRUE,
+  void OnDraw(CDC* deviceContext,
+      const CRect& rect,
+      CMFCToolBarImages* images,
+      BOOL isHorz = TRUE,
+      BOOL isCustomizeMode = FALSE,
+      BOOL isHighlighted = FALSE,
+      BOOL drawBorder = TRUE,
       BOOL grayDisabledButtons = TRUE) override;
 
  private:

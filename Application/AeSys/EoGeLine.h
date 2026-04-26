@@ -125,7 +125,10 @@ class EoGeLine {
   rel = -[(Begx - Px)(Endx - Begx) + (Begy - Py)(Endy - Begy)] / [(Endx - Begx)² + (Endy - Begy)²]
     @endcode
   */
-  bool IsSelectedByPointXY(const EoGePoint3d& point, double aperture, EoGePoint3d& projectedPoint, double* relationship) const;
+  bool IsSelectedByPointXY(const EoGePoint3d& point,
+      double aperture,
+      EoGePoint3d& projectedPoint,
+      double* relationship) const;
 
   [[nodiscard]] double Length() const;
 
@@ -221,8 +224,10 @@ class EoGeLine {
    * point.
    * @note Should only be used if the endpoints of the line segment are known to be on opposite sides of the plane.
    */
-  [[nodiscard]] static EoGePoint4d IntersectionWithPlane(
-      const EoGePoint4d& begin, const EoGePoint4d& end, const EoGePoint4d& point, const EoGeVector3d& normal);
+  [[nodiscard]] static EoGePoint4d IntersectionWithPlane(const EoGePoint4d& begin,
+      const EoGePoint4d& end,
+      const EoGePoint4d& point,
+      const EoGeVector3d& normal);
 
   /** @brief Computes the intersection point between a line and a plane.
    * @param beginPoint The starting point of the line.
@@ -234,8 +239,11 @@ class EoGeLine {
    * @note Line is defined using parametric representation. Plane is defined by its normal vector and any point on
    * plane.
    */
-  static bool IntersectionWithPln(EoGePoint3d& beginPoint, EoGeVector3d lineVector, EoGePoint3d pointOnPlane,
-      EoGeVector3d planeNormal, EoGePoint3d* intersection);
+  static bool IntersectionWithPln(EoGePoint3d& beginPoint,
+      EoGeVector3d lineVector,
+      EoGePoint3d pointOnPlane,
+      EoGeVector3d planeNormal,
+      EoGePoint3d* intersection);
 
   /** @brief Computes the intersection point of two 3D line segments, if it exists.
    * @param firstLine The first line segment.
@@ -244,8 +252,9 @@ class EoGeLine {
    * @return TRUE if the line segments intersect, FALSE otherwise. Returns FALSE if either line segment is degenerate
    * (endpoints coincide), if the lines are parallel, or if the line segments are skew (not coplanar).
    */
-  [[nodiscard]] static bool Intersection(
-      const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
+  [[nodiscard]] static bool Intersection(const EoGeLine& firstLine,
+      const EoGeLine& secondLine,
+      EoGePoint3d& intersection);
 
   /** @brief Computes the intersection point of two lines in the XY plane.
    * @param firstLine The first line.
@@ -253,5 +262,7 @@ class EoGeLine {
    * @param intersection Output parameter that receives the intersection point if one exists.
    * @return True if the lines intersect (are not parallel), false otherwise.
    */
-  [[nodiscard]] static bool Intersection_xy(const EoGeLine& firstLine, const EoGeLine& secondLine, EoGePoint3d& intersection);
+  [[nodiscard]] static bool Intersection_xy(const EoGeLine& firstLine,
+      const EoGeLine& secondLine,
+      EoGePoint3d& intersection);
 };

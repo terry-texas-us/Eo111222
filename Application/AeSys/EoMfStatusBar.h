@@ -64,6 +64,6 @@ class EoMfStatusBar : public CMFCStatusBar {
   /// @brief Hides the edit control without applying changes.
   void CancelEdit();
 
-  CEdit m_edit;           ///< Shared inline edit control for pane editing.
+  CEdit m_edit;  ///< Shared inline edit control for pane editing.
   int m_editingPane{-1};  ///< Pane index currently being edited, or -1 if not editing.
 };

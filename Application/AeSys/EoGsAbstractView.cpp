@@ -71,20 +71,36 @@ EoGsAbstractView& EoGsAbstractView::operator=(const EoGsAbstractView& other) {
 
   return *this;
 }
-double EoGsAbstractView::FarClipDistance() const { return m_FarClipDistance; }
+double EoGsAbstractView::FarClipDistance() const {
+  return m_FarClipDistance;
+}
 EoGeVector3d EoGsAbstractView::Direction() const {
   return EoGeVector3d(mx_Direction.x, mx_Direction.y, mx_Direction.z);
 }
-double EoGsAbstractView::NearClipDistance() const { return m_NearClipDistance; }
-double EoGsAbstractView::Height() const { return m_Height; }
-bool EoGsAbstractView::IsNearClipOn() const { return ((m_ViewMode & AV_NEARCLIPPING) == AV_NEARCLIPPING); }
+double EoGsAbstractView::NearClipDistance() const {
+  return m_NearClipDistance;
+}
+double EoGsAbstractView::Height() const {
+  return m_Height;
+}
+bool EoGsAbstractView::IsNearClipOn() const {
+  return ((m_ViewMode & AV_NEARCLIPPING) == AV_NEARCLIPPING);
+}
 bool EoGsAbstractView::IsNearClipAtEyeOn() const {
   return ((m_ViewMode & AV_NEARCLIPPINGATEYE) == AV_NEARCLIPPINGATEYE);
 }
-bool EoGsAbstractView::IsFarClipOn() const { return ((m_ViewMode & AV_FARCLIPPING) == AV_FARCLIPPING); }
-bool EoGsAbstractView::IsPerspectiveOn() const { return ((m_ViewMode & AV_PERSPECTIVE) == AV_PERSPECTIVE); }
-double EoGsAbstractView::LensLength() const { return m_LensLength; }
-void EoGsAbstractView::SetFarClipDistance(double distance) { m_FarClipDistance = distance; }
+bool EoGsAbstractView::IsFarClipOn() const {
+  return ((m_ViewMode & AV_FARCLIPPING) == AV_FARCLIPPING);
+}
+bool EoGsAbstractView::IsPerspectiveOn() const {
+  return ((m_ViewMode & AV_PERSPECTIVE) == AV_PERSPECTIVE);
+}
+double EoGsAbstractView::LensLength() const {
+  return m_LensLength;
+}
+void EoGsAbstractView::SetFarClipDistance(double distance) {
+  m_FarClipDistance = distance;
+}
 void EoGsAbstractView::EnableFarClipping(bool enabled) {
   if (enabled) {
     m_ViewMode |= AV_FARCLIPPING;
@@ -101,7 +117,9 @@ void EoGsAbstractView::SetDirection(const EoGeVector3d& direction_) {
     mx_Direction.z = static_cast<float>(direction.z);
   }
 }
-void EoGsAbstractView::SetNearClipDistance(double distance) { m_NearClipDistance = distance; }
+void EoGsAbstractView::SetNearClipDistance(double distance) {
+  m_NearClipDistance = distance;
+}
 void EoGsAbstractView::EnableNearClipping(bool enabled) {
   if (enabled) {
     m_ViewMode |= AV_NEARCLIPPING;
@@ -109,7 +127,9 @@ void EoGsAbstractView::EnableNearClipping(bool enabled) {
     m_ViewMode &= ~AV_NEARCLIPPING;
   }
 }
-void EoGsAbstractView::SetLensLength(double length) { m_LensLength = length; }
+void EoGsAbstractView::SetLensLength(double length) {
+  m_LensLength = length;
+}
 void EoGsAbstractView::EnablePerspective(bool enabled) {
   if (enabled) {
     m_ViewMode |= AV_PERSPECTIVE;

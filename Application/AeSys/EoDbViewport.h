@@ -45,7 +45,9 @@ class EoDbViewport : public EoDbPrimitive {
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() noexcept override { return m_centerPoint; }
-  void GetExtents(AeSysView* view, EoGePoint3d& minPoint, EoGePoint3d& maxPoint,
+  void GetExtents(AeSysView* view,
+      EoGePoint3d& minPoint,
+      EoGePoint3d& maxPoint,
       const EoGeTransformMatrix& transformMatrix) override;
   EoGePoint3d GoToNextControlPoint() noexcept override { return m_centerPoint; }
   bool Identical(EoDbPrimitive* primitive) override;

@@ -84,8 +84,16 @@ class EoGsRenderDeviceGdi : public EoGsRenderDevice {
   void PopClipRect() override;
 
   // ── Bitmap Operations ─────────────────────────────────────────────────
-  void StretchBlt(int destX, int destY, int destWidth, int destHeight, EoGsRenderDevice* sourceDevice, int srcX,
-      int srcY, int srcWidth, int srcHeight, DWORD rop) override;
+  void StretchBlt(int destX,
+      int destY,
+      int destWidth,
+      int destHeight,
+      EoGsRenderDevice* sourceDevice,
+      int srcX,
+      int srcY,
+      int srcWidth,
+      int srcHeight,
+      DWORD rop) override;
 
   // ── Palette ───────────────────────────────────────────────────────────
   void* SelectPalette(void* palette, bool forceBackground) override;

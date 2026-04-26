@@ -30,7 +30,8 @@ void AeSysDoc::AddGroupsToTrap(EoDbGroupList* groups) {
 }
 
 void AeSysDoc::ModifyTrappedGroupsNoteAttributes(const EoDbFontDefinition& fontDefinition,
-    const EoDbCharacterCellDefinition& characterCellDefinition, int attributes) {
+    const EoDbCharacterCellDefinition& characterCellDefinition,
+    int attributes) {
   m_trappedGroups.ModifyNotes(fontDefinition, characterCellDefinition, attributes);
 }
 

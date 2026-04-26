@@ -30,12 +30,46 @@ static std::int16_t MapHatchPatternNameToIndex(const std::wstring& patternName) 
   static const struct {
     const wchar_t* name;
     std::int16_t index;
-  } patternTable[] = {{L"PEG1", 1}, {L"PEG2", 2}, {L"ANGLE", 3}, {L"ANSI31", 4}, {L"ANSI32", 5}, {L"ANSI33", 6},
-      {L"ANSI34", 7}, {L"ANSI35", 8}, {L"ANSI36", 9}, {L"ANSI37", 10}, {L"ANSI38", 11}, {L"BOX", 12}, {L"BRICK", 13},
-      {L"CLAY", 14}, {L"CORK", 15}, {L"CROSS", 16}, {L"DASH", 17}, {L"DOLMIT", 18}, {L"DOTS", 19}, {L"EARTH", 20},
-      {L"ESCHER", 21}, {L"FLEX", 22}, {L"GRASS", 23}, {L"GRATE", 24}, {L"HEX", 25}, {L"HONEY", 26}, {L"HOUND", 27},
-      {L"INSUL", 28}, {L"MUDST", 29}, {L"NET3", 30}, {L"PLAST", 31}, {L"PLASTI", 32}, {L"SACNCR", 33}, {L"SQUARE", 34},
-      {L"STARS", 35}, {L"SWAMP", 36}, {L"TRANS", 37}, {L"TRIAN", 38}, {L"ZIGZAG", 39}, {L"AR-CONC", 40},
+  } patternTable[] = {{L"PEG1", 1},
+      {L"PEG2", 2},
+      {L"ANGLE", 3},
+      {L"ANSI31", 4},
+      {L"ANSI32", 5},
+      {L"ANSI33", 6},
+      {L"ANSI34", 7},
+      {L"ANSI35", 8},
+      {L"ANSI36", 9},
+      {L"ANSI37", 10},
+      {L"ANSI38", 11},
+      {L"BOX", 12},
+      {L"BRICK", 13},
+      {L"CLAY", 14},
+      {L"CORK", 15},
+      {L"CROSS", 16},
+      {L"DASH", 17},
+      {L"DOLMIT", 18},
+      {L"DOTS", 19},
+      {L"EARTH", 20},
+      {L"ESCHER", 21},
+      {L"FLEX", 22},
+      {L"GRASS", 23},
+      {L"GRATE", 24},
+      {L"HEX", 25},
+      {L"HONEY", 26},
+      {L"HOUND", 27},
+      {L"INSUL", 28},
+      {L"MUDST", 29},
+      {L"NET3", 30},
+      {L"PLAST", 31},
+      {L"PLASTI", 32},
+      {L"SACNCR", 33},
+      {L"SQUARE", 34},
+      {L"STARS", 35},
+      {L"SWAMP", 36},
+      {L"TRANS", 37},
+      {L"TRIAN", 38},
+      {L"ZIGZAG", 39},
+      {L"AR-CONC", 40},
       {L"AR-SAND", 41}};
 
   for (const auto& entry : patternTable) {
@@ -45,8 +79,12 @@ static std::int16_t MapHatchPatternNameToIndex(const std::wstring& patternName) 
 }
 
 void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* document) const {
-  ATLTRACE2(traceGeneral, 2, L"Hatch entity conversion - Pattern: %s, Loops: %d, Solid: %d\n",
-      hatch.m_hatchPatternName.c_str(), static_cast<int>(hatch.HatchLoops().size()), hatch.m_solidFillFlag);
+  ATLTRACE2(traceGeneral,
+      2,
+      L"Hatch entity conversion - Pattern: %s, Loops: %d, Solid: %d\n",
+      hatch.m_hatchPatternName.c_str(),
+      static_cast<int>(hatch.HatchLoops().size()),
+      hatch.m_solidFillFlag);
 
   if (hatch.HatchLoops().empty()) { return; }
 
@@ -69,7 +107,9 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     polygonStyle = EoDb::PolygonStyle::Hatch;
     fillStyleIndex = MapHatchPatternNameToIndex(hatch.m_hatchPatternName);
     if (fillStyleIndex == 0) {
-      ATLTRACE2(traceGeneral, 1, L"  Unrecognized hatch pattern name \"%s\" — falling back to Hollow\n",
+      ATLTRACE2(traceGeneral,
+          1,
+          L"  Unrecognized hatch pattern name \"%s\" — falling back to Hollow\n",
           hatch.m_hatchPatternName.c_str());
       polygonStyle = EoDb::PolygonStyle::Hollow;
     }
@@ -121,11 +161,17 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     EoDb::PolygonStyle loopPolygonStyle = polygonStyle;
     if (isIslandLoop && polygonStyle == EoDb::PolygonStyle::Solid) {
       loopPolygonStyle = EoDb::PolygonStyle::Hollow;
-      ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — rendered as Hollow\n", loopIndex,
+      ATLTRACE2(traceGeneral,
+          2,
+          L"  Loop %d: island boundary (type 0x%X) — rendered as Hollow\n",
+          loopIndex,
           hatchLoop->m_boundaryPathType);
     } else if (isIslandLoop) {
-      ATLTRACE2(traceGeneral, 2, L"  Loop %d: island boundary (type 0x%X) — converted as independent polygon\n",
-          loopIndex, hatchLoop->m_boundaryPathType);
+      ATLTRACE2(traceGeneral,
+          2,
+          L"  Loop %d: island boundary (type 0x%X) — converted as independent polygon\n",
+          loopIndex,
+          hatchLoop->m_boundaryPathType);
     }
 
     EoGePoint3dArray boundaryPoints;
@@ -145,7 +191,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
       const double elevation = hatch.m_elevationPoint.z;
 
       // Check if any vertex has a non-zero bulge
-      const bool hasAnyBulge = std::any_of(vertices.begin(), vertices.end(),
+      const bool hasAnyBulge = std::any_of(vertices.begin(),
+          vertices.end(),
           [](const EoDxfPolylineVertex2d& vertex) noexcept { return Eo::IsGeometricallyNonZero(vertex.bulge); });
 
       if (hasAnyBulge) {
@@ -178,7 +225,10 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
         }
       }
 
-      ATLTRACE2(traceGeneral, 2, L"  Loop %d: polyline boundary → %d tessellated vertices\n", loopIndex,
+      ATLTRACE2(traceGeneral,
+          2,
+          L"  Loop %d: polyline boundary → %d tessellated vertices\n",
+          loopIndex,
           static_cast<int>(boundaryPoints.GetSize()));
     } else {
       // ── Edge-type boundary ───────────────────────────────
@@ -231,8 +281,13 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
                   EoGePoint3d{centerX + radius * std::cos(angle), centerY + radius * std::sin(angle), elevation});
             }
 
-            ATLTRACE2(traceGeneral, 3, L"    Arc edge: center=(%.4f,%.4f) r=%.4f → %d segments\n", centerX, centerY,
-                radius, numberOfSegments);
+            ATLTRACE2(traceGeneral,
+                3,
+                L"    Arc edge: center=(%.4f,%.4f) r=%.4f → %d segments\n",
+                centerX,
+                centerY,
+                radius,
+                numberOfSegments);
             break;
           }
           case EoDxf::ELLIPSE: {
@@ -279,27 +334,40 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
                   cx + majorX * cosParam + minorX * sinParam, cy + majorY * cosParam + minorY * sinParam, elevation});
             }
 
-            ATLTRACE2(traceGeneral, 3, L"    Ellipse edge: center=(%.4f,%.4f) ratio=%.4f → %d segments\n", cx, cy,
-                ratio, numberOfSegments);
+            ATLTRACE2(traceGeneral,
+                3,
+                L"    Ellipse edge: center=(%.4f,%.4f) ratio=%.4f → %d segments\n",
+                cx,
+                cy,
+                ratio,
+                numberOfSegments);
             break;
           }
           case EoDxf::SPLINE:
             ATLTRACE2(traceGeneral, 1, L"    Spline edge in hatch boundary — skipped (not supported in PEG V1)\n");
             break;
           default:
-            ATLTRACE2(traceGeneral, 1, L"    Unknown edge type %d in hatch boundary — skipped\n",
+            ATLTRACE2(traceGeneral,
+                1,
+                L"    Unknown edge type %d in hatch boundary — skipped\n",
                 static_cast<int>(edgeEntity->m_entityType));
             break;
         }
       }
 
-      ATLTRACE2(traceGeneral, 2, L"  Loop %d: edge boundary → %d tessellated vertices\n", loopIndex,
+      ATLTRACE2(traceGeneral,
+          2,
+          L"  Loop %d: edge boundary → %d tessellated vertices\n",
+          loopIndex,
           static_cast<int>(boundaryPoints.GetSize()));
     }
 
     // Need at least 3 points for a valid polygon
     if (boundaryPoints.GetSize() < 3) {
-      ATLTRACE2(traceGeneral, 1, L"  Loop %d: insufficient vertices (%d), skipping\n", loopIndex,
+      ATLTRACE2(traceGeneral,
+          1,
+          L"  Loop %d: insufficient vertices (%d), skipping\n",
+          loopIndex,
           static_cast<int>(boundaryPoints.GetSize()));
       continue;
     }
@@ -308,13 +376,16 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
     const auto lastIndex = boundaryPoints.GetSize() - 1;
     const auto& firstPt = boundaryPoints[0];
     const auto& lastPt = boundaryPoints[lastIndex];
-    if (Eo::IsGeometricallyZero(firstPt.x - lastPt.x) && Eo::IsGeometricallyZero(firstPt.y - lastPt.y) &&
-        Eo::IsGeometricallyZero(firstPt.z - lastPt.z)) {
+    if (Eo::IsGeometricallyZero(firstPt.x - lastPt.x) && Eo::IsGeometricallyZero(firstPt.y - lastPt.y)
+        && Eo::IsGeometricallyZero(firstPt.z - lastPt.z)) {
       boundaryPoints.SetSize(lastIndex);
     }
 
     if (boundaryPoints.GetSize() < 3) {
-      ATLTRACE2(traceGeneral, 1, L"  Loop %d: degenerate after dedup (%d vertices), skipping\n", loopIndex,
+      ATLTRACE2(traceGeneral,
+          1,
+          L"  Loop %d: degenerate after dedup (%d vertices), skipping\n",
+          loopIndex,
           static_cast<int>(boundaryPoints.GetSize()));
       continue;
     }
@@ -324,8 +395,13 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
       for (INT_PTR i = 0; i < boundaryPoints.GetSize(); ++i) { boundaryPoints[i] = ocsToWcs * boundaryPoints[i]; }
     }
 
-    auto* polygon = new EoDbPolygon(static_cast<std::int16_t>(hatch.m_color), loopPolygonStyle, fillStyleIndex,
-        hatchOrigin, xAxis, yAxis, boundaryPoints);
+    auto* polygon = new EoDbPolygon(static_cast<std::int16_t>(hatch.m_color),
+        loopPolygonStyle,
+        fillStyleIndex,
+        hatchOrigin,
+        xAxis,
+        yAxis,
+        boundaryPoints);
 
     // Passthrough: preserve DXF pattern definition lines and double flag for round-trip export
     polygon->SetHatchPatternDoubleFlag(hatch.m_hatchPatternDoubleFlag);
@@ -336,10 +412,13 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
 
     AddToDocument(polygon, document, hatch.m_space, hatch.m_ownerHandle);
 
-    ATLTRACE2(traceGeneral, 2, L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n", loopIndex,
+    ATLTRACE2(traceGeneral,
+        2,
+        L"  Loop %d: created EoDbPolygon (%s, %d vertices)\n",
+        loopIndex,
         loopPolygonStyle == EoDb::PolygonStyle::Solid       ? L"Solid"
             : loopPolygonStyle == EoDb::PolygonStyle::Hatch ? L"Hatch"
-                                                             : L"Hollow",
+                                                            : L"Hollow",
         static_cast<int>(boundaryPoints.GetSize()));
   }
 }
