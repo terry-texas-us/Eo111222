@@ -10,6 +10,20 @@ AllowShortFunctionsOnASingleLine: Inline
 
 SortIncludes: true
 IncludeBlocks: Regroup
+IncludeIsMainRegex: ''
+
+IncludeCategories:
+  # Precompiled Header - MUST ALWAYS BE FIRST
+  - Regex:    '"Stdafx\.h"'
+    Priority: -1
+
+  # System / Standard library headers (<...>)
+  - Regex:    '<.*>'
+    Priority: 1
+
+  # Your project headers ("...")
+  - Regex:    '".*"'
+    Priority: 2
 
 # Pointers & References (modern C++ preference)
 PointerAlignment: Left	

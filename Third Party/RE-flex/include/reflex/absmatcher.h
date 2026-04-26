@@ -1106,7 +1106,7 @@ class AbstractMatcher {
     /// @returns pointer to the end of line
   {
     if (chr_ == '\n' || (txt_ + len_ < buf_ + end_ && txt_[len_] == '\n'))
-      return txt_ + len_ + inclusive;
+      return txt_ + len_ + static_cast<size_t>(inclusive);
     size_t loc = pos_;
     while (true)
     {
@@ -1114,7 +1114,7 @@ class AbstractMatcher {
       {
         char *s = static_cast<char*>(std::memchr(buf_ + loc, '\n', end_ - loc));
         if (s != NULL)
-          return s + inclusive;
+          return s + static_cast<size_t>(inclusive);
       }
       if (eof_)
         break;

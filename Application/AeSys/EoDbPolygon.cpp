@@ -106,8 +106,9 @@ void DisplayFilAreaHatch(AeSysView* view, EoGsRenderDevice* renderDevice, EoGeTr
       dShift = -dShift;
     }
 
-    if (Eo::IsGeometricallyZero(dSpac) || Eo::IsGeometricallyZero(dTotStrLen)) {
-      // Degenerate spacing or zero total stroke length would cause infinite loop or fmod by zero
+    if (Eo::IsGeometricallyZero(dSpac) || Eo::IsGeometricallyZero(dTotStrLen) || iStrs <= 0) {
+      // Degenerate spacing, zero total stroke length, or non-positive stroke count would cause invalid looping or 
+      // modulo-by-zero behavior downstream.
       iTblId += iStrsInTable;  // skip ALL stroke entries to keep table pointer consistent
       continue;
     }

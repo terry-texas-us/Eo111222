@@ -221,7 +221,7 @@ void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderD
 }
 
 void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  if (view == nullptr || !view->IsViewportActive()) { return; }
+  if (view == nullptr || renderDevice == nullptr || !view->IsViewportActive()) { return; }
 
   // Helper: project a viewport paper-space corner to device coordinates
   auto projectViewportCorner = [&](double wx, double wy) -> CPoint {
@@ -309,7 +309,6 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     return;
   }
 
-  // ── GDI path ──────────────────────────────────────────────────────────
   auto* dc = renderDevice->GetCDC();
   if (dc == nullptr) { return; }
 

@@ -20,7 +20,7 @@ class EoDbLineType : public CObject {
 
   CString IndexToString() const {
     CString indexAsString;
-    indexAsString.Format(L"%03u", m_Index);
+    indexAsString.Format(L"%03d", static_cast<int>(m_Index));
     return indexAsString;
   }
 
