@@ -82,19 +82,14 @@ BOOL EoDlgPlot::OnInitDialog() {
   return TRUE;
 }
 
-// ---------------------------------------------------------------------------
-// OnOK — harvest all controls into m_settings
-// ---------------------------------------------------------------------------
-
 void EoDlgPlot::OnOK() {
-  // Printer
   auto* printerCombo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
   if (printerCombo != nullptr) {
     CString name;
     int sel = printerCombo->GetCurSel();
     if (sel != CB_ERR) {
       printerCombo->GetLBText(sel, name);
-      m_settings.printerName = static_cast<LPCWSTR>(name);
+      m_settings.printerName = static_cast<const wchar_t*>(name);
     }
   }
 

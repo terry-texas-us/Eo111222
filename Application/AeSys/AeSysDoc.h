@@ -190,7 +190,7 @@ class AeSysDoc : public CDocument {
    *
    * @param textBlock A pointer to a wide string containing the text to add. Lines should be separated by "\r\n".
    */
-  void AddTextBlock(LPWSTR textBlock);
+  void AddTextBlock(wchar_t* textBlock);
 
   // Block Table interface
   [[nodiscard]] EoDbBlocks* BlocksTable() { return (&m_BlocksTable); }

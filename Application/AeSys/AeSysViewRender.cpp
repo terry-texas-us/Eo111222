@@ -382,7 +382,7 @@ void AeSysView::OnInitialUpdate() {
   // apply the tab bar editor state now that the view and tab bar are ready.
   if (auto* doc = GetDocument()) {
     if (doc->IsEditingTracing()) {
-      const std::filesystem::path filePath(static_cast<LPCWSTR>(doc->EditingTracingPath()));
+      const std::filesystem::path filePath(static_cast<const wchar_t*>(doc->EditingTracingPath()));
       const CString tracingName = filePath.stem().wstring().c_str();
       LayoutTabBar().UpdateBlockEditState(true, tracingName, L"TRACING");
 

@@ -36,7 +36,7 @@ void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
 }
 void EoDbLayer::Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool identifyTrap) {
   ATLTRACE2(traceGeneral, 3, L"EoDbLayer<%p>::Display(%p, %p, %i) + Name: %ls\n", this, view, renderDevice,
-      identifyTrap, static_cast<LPCWSTR>(this->Name()));
+      identifyTrap, static_cast<const wchar_t*>(this->Name()));
 
   auto* document = AeSysDoc::GetDoc();
 

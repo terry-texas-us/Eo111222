@@ -105,7 +105,7 @@ class CMainFrame : public CMDIFrameWndEx {
  public:
   CString GetPaneText(int index);
   void SetPaneInfo(int index, UINT newId, UINT nStyle, int width);
-  BOOL SetPaneText(int index, LPCWSTR newText);
+  BOOL SetPaneText(int index, const wchar_t* newText);
   void SetPaneStyle(int index, UINT style);
   void SetPaneTextColor(int index, COLORREF textColor = COLORREF(-1));
   void SetPaneBackgroundColor(int index, COLORREF backgroundColor = COLORREF(-1));

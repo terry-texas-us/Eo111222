@@ -229,7 +229,7 @@ void EoDbLineTypeTable::RemoveUnused() {
   // int i = m_LineTypes.GetSize();
   // while (--i != 0) {
   //	EoDbLineType* LineType = m_LineTypes[i];
-  //	std::int16_t LineTypeIndex = LookupName((LPCWSTR) LineType->Name());
+  //	std::int16_t LineTypeIndex = LookupName((const wchar_t*) LineType->Name());
   //	if (ReferenceCount(LineTypeIndex) != 0 || i < 10) {
   //		m_LineTypes.SetSize(i + 1);
   //		break;

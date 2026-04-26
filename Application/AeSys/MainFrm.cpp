@@ -477,7 +477,7 @@ void CMainFrame::SetPaneInfo(int index, UINT newId, UINT style, int width) {
   m_statusBar.SetPaneInfo(index, newId, style, width);
 }
 
-BOOL CMainFrame::SetPaneText(int index, LPCWSTR newText) { return m_statusBar.SetPaneText(index, newText); }
+BOOL CMainFrame::SetPaneText(int index, const wchar_t* newText) { return m_statusBar.SetPaneText(index, newText); }
 
 void CMainFrame::SetPaneStyle(int index, UINT style) { m_statusBar.SetPaneStyle(index, style); }
 
@@ -500,7 +500,8 @@ void CMainFrame::EnsureToolbarsVisible() {
       toolbar->ShowPane(TRUE, FALSE, TRUE);
       CString name;
       toolbar->GetWindowText(name);
-      ATLTRACE2(traceGeneral, 1, L"EnsureToolbarsVisible: forced toolbar '%s' visible\n", static_cast<LPCWSTR>(name));
+      ATLTRACE2(
+          traceGeneral, 3, L"EnsureToolbarsVisible: forced toolbar '%s' visible\n", static_cast<const wchar_t*>(name));
     }
   }
 }

@@ -40,9 +40,7 @@ namespace App {
 [[nodiscard]] CString ResourceFolderPath();
 
 /// @brief Returns a text color that contrasts with the active model-space background.
-[[nodiscard]] inline COLORREF ViewTextColor() {
-  return (~(Eo::ModelSpaceBackgroundColor() | 0xff000000));
-}
+[[nodiscard]] inline COLORREF ViewTextColor() { return (~(Eo::ModelSpaceBackgroundColor() | 0xff000000)); }
 }  // namespace App
 
 class AeSys : public CWinAppEx {
@@ -112,7 +110,7 @@ class AeSys : public CWinAppEx {
   void AddStringToMessageList(UINT stringResourceIdentifier, const CString& string);
 
   void AddStringToReportsList(const std::wstring& string);
-  
+
   // Modifies the base accelerator table by defining the mode specific keys.
   void BuildModifiedAcceleratorTable() const;
 
@@ -163,30 +161,30 @@ class AeSys : public CWinAppEx {
    * @param units The architectural units style to use for formatting (e.g., ArchitecturalS for stacked fractions).
    * @param length The length value to format, in the internal unit system.
    */
-  void FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length);
+  void FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length);
 
- /** @brief Formats a length in engineering units (feet and inches) with optional fractional inches.
-  * @param lengthAsBuffer Buffer to receive the formatted length string.
-  * @param bufSize Size of the buffer in characters.
-  * @param length The length to format, in internal units.
-  * @param width Minimum field width for the formatted string.
-  * @param precision Number of decimal places for the fractional inches, if included.
-  * @remarks The formatted string will include feet and inches, with optional fractional inches based on the specified
-  * precision. The function handles negative lengths and scales the input length by the active view's world scale.
-  */
+  /** @brief Formats a length in engineering units (feet and inches) with optional fractional inches.
+   * @param lengthAsBuffer Buffer to receive the formatted length string.
+   * @param bufSize Size of the buffer in characters.
+   * @param length The length to format, in internal units.
+   * @param width Minimum field width for the formatted string.
+   * @param precision Number of decimal places for the fractional inches, if included.
+   * @remarks The formatted string will include feet and inches, with optional fractional inches based on the specified
+   * precision. The function handles negative lengths and scales the input length by the active view's world scale.
+   */
   void FormatLengthEngineering(
-      LPWSTR lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision);
+      wchar_t* lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision);
 
   /** @brief Formats a length value as a string with the specified units, width, and precision.
-   * @param lengthAsString Output buffer that receives the formatted length string.
+   * @param lengthAsBuffer Output buffer that receives the formatted length string.
    * @param bufSize The size of the output buffer in characters.
    * @param units The units to use for formatting the length (e.g., feet, inches, meters, millimeters).
    * @param length The length value to format, in the base measurement system.
    * @param width The minimum field width for the formatted number.
    * @param precision The number of decimal places to display in the formatted number.
    */
-  void FormatLengthSimple(
-      LPWSTR lengthAsBuffr, const size_t bufSize, Eo::Units units, double length, const int width, const int precision);
+  void FormatLengthSimple(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length, const int width,
+      const int precision);
 
   [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return m_ArchitecturalUnitsFractionPrecision; }
   [[nodiscard]] static EoGePoint3d GetCursorPosition();

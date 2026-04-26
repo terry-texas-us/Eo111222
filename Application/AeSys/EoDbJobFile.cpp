@@ -856,7 +856,7 @@ void EoDbLabeledLine::Write(CFile& file, std::uint8_t* buffer) {
   ((CVaxVec*)&buffer[55])->Convert(referenceSystem.XDirection());
   ((CVaxVec*)&buffer[67])->Convert(referenceSystem.YDirection());
   *((std::int16_t*)&buffer[79]) = static_cast<std::int16_t>(textLength);
-  memcpy(&buffer[81], (LPCWSTR)m_text, textLength);
+  memcpy(&buffer[81], static_cast<const wchar_t*>(m_text), textLength);
 
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }
@@ -951,7 +951,7 @@ void EoDbText::Write(CFile& file, std::uint8_t* buffer) {
   ((CVaxVec*)&buffer[41])->Convert(referenceSystem.YDirection());
 
   *((std::uint16_t*)&buffer[53]) = textLength;
-  memcpy(&buffer[55], (LPCWSTR)m_strText, textLength);
+  memcpy(&buffer[55], (const wchar_t*)m_strText, textLength);
 
   file.Write(buffer, static_cast<UINT>(buffer[3] * 32));
 }

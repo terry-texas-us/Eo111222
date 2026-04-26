@@ -441,8 +441,8 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
       iTblId += 2;
       iNmbEnts = 0;
       dTotStrsLen = 0.;
-      LPWSTR nextToken = nullptr;
-      LPWSTR pTok = wcstok_s(line, szValDel, &nextToken);
+      wchar_t* nextToken{};
+      wchar_t* pTok = wcstok_s(line, szValDel, &nextToken);
       while (pTok != nullptr) {
         if (iTblId >= hatch::maxTableValues) {
           ATLTRACE(traceGeneral, 0, L"LoadHatchesFromFile: table value overflow at pattern %d\n", iHatId);
@@ -683,7 +683,7 @@ void AeSys::FormatLength(
   lengthAsString.ReleaseBuffer();
 }
 
-void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) {
+void AeSys::FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) {
   wchar_t szBuf[16]{};
 
   double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -727,7 +727,7 @@ void AeSys::FormatLengthArchitectural(LPWSTR lengthAsBuffer, const size_t bufSiz
 }
 
 void AeSys::FormatLengthEngineering(
-    LPWSTR lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision) {
+    wchar_t* lengthAsBuffer, const size_t bufSize, double length, const int width, const int precision) {
   wchar_t szBuf[16]{};
 
   double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
@@ -760,8 +760,8 @@ void AeSys::FormatLengthEngineering(
   }
 }
 
-void AeSys::FormatLengthSimple(
-    LPWSTR lengthAsBuffer, const size_t bufSize, Eo::Units units, double length, const int width, const int precision) {
+void AeSys::FormatLengthSimple(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length,
+    const int width, const int precision) {
   const double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();
 
   CString formatSpecification;

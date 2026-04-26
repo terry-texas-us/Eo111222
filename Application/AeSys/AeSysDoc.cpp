@@ -22,11 +22,11 @@
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
-UINT AFXAPI HashKey(CString& str) {
-  LPCWSTR pStr = (LPCWSTR)str;
-  UINT nHash = 0;
-  while (*pStr) { nHash = (nHash << 5) + nHash + *pStr++; }
-  return nHash;
+UINT AFXAPI HashKey(CString& string_) {
+  auto string = static_cast<const wchar_t*>(string_);
+  UINT hash{};
+  while (*string) { hash = (hash << 5) + hash + *string++; }
+  return hash;
 }
 
 // AeSysDoc
@@ -114,7 +114,6 @@ ON_COMMAND(ID_HELP_KEY, OnHelpKey)
 ON_COMMAND(ID_VIEW_MODELSPACE, OnViewModelSpace)
 ON_UPDATE_COMMAND_UI(ID_VIEW_MODELSPACE, OnUpdateViewModelSpace)
 END_MESSAGE_MAP()
-
 
 AeSysDoc::AeSysDoc() { EoDbPrimitive::SetHandleManager(&m_handleManager); }
 
@@ -260,23 +259,22 @@ void AeSysDoc::DeleteContents() {
   CDocument::DeleteContents();
 }
 
-void AeSysDoc::AddTextBlock(LPWSTR textBlock) {
+void AeSysDoc::AddTextBlock(wchar_t* textBlock) {
   const auto cursorPosition = app.GetCursorPosition();
 
   const auto& fontDefinition = Gs::renderState.FontDefinition();
   const auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
 
-  EoGeReferenceSystem ReferenceSystem(cursorPosition, characterCellDefinition);
-
-  LPWSTR nextToken = nullptr;
-  LPWSTR text = wcstok_s(textBlock, L"\r", &nextToken);
+  EoGeReferenceSystem referenceSystem(cursorPosition, characterCellDefinition);
+  wchar_t* nextToken = nullptr;
+  wchar_t* text = wcstok_s(textBlock, L"\r", &nextToken);
   while (text != nullptr) {
     if (wcslen(text) > 0) {
-      auto* group = new EoDbGroup(new EoDbText(fontDefinition, ReferenceSystem, std::wstring(text)));
+      auto* group = new EoDbGroup(new EoDbText(fontDefinition, referenceSystem, std::wstring(text)));
       AddWorkLayerGroup(group);
       UpdateAllViews(nullptr, EoDb::kGroup, group);
     }
-    ReferenceSystem.SetOrigin(text_GetNewLinePos(fontDefinition, ReferenceSystem, 1.0, 0));
+    referenceSystem.SetOrigin(text_GetNewLinePos(fontDefinition, referenceSystem, 1.0, 0));
     text = wcstok_s(nullptr, L"\r", &nextToken);
     if (text == nullptr) { break; }
     text++;
@@ -284,11 +282,10 @@ void AeSysDoc::AddTextBlock(LPWSTR textBlock) {
 }
 
 void AeSysDoc::DeletedGroupsRestore() {
-  if (!DeletedGroupsIsEmpty()) {
-    auto* Group = DeletedGroupsRemoveTail();
-    AddWorkLayerGroup(Group);
-    UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
-  }
+  if (DeletedGroupsIsEmpty()) { return; }
+  auto* group = DeletedGroupsRemoveTail();
+  AddWorkLayerGroup(group);
+  UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
 // Returns a pointer to the currently active document.
@@ -299,7 +296,6 @@ AeSysDoc* AeSysDoc::GetDoc() {
 
   return (child == nullptr) ? nullptr : static_cast<AeSysDoc*>(child->GetActiveDocument());
 }
-
 
 bool AeSysDoc::EnterBlockEditMode(const CString& blockName) {
   EoDbBlock* block{};
@@ -426,8 +422,6 @@ void AeSysDoc::OnToolsEditBlockDefinition() {
   dlg.DoModal();
 }
 
-
-
 void AeSysDoc::OnToolsSaveAsBlockEdit() {
   if (m_editorMode != EditorMode::Block || m_blockEditLayer == nullptr) { return; }
 
@@ -476,8 +470,6 @@ void AeSysDoc::OnToolsSaveAsBlockEdit() {
   app.AddStringToMessageList(message);
 }
 
-
-
 // --- Tracing Editor ---
 
 bool AeSysDoc::EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer) {
@@ -516,7 +508,7 @@ bool AeSysDoc::EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer) {
   }
 
   // Update document title to reflect tracing edit mode
-  std::filesystem::path filePath(static_cast<LPCWSTR>(m_editingTracingPath));
+  std::filesystem::path filePath(static_cast<const wchar_t*>(m_editingTracingPath));
   const CString tracingName = filePath.stem().wstring().c_str();
   CString editTitle;
   editTitle.Format(L"[|%s]", tracingName.GetString());
@@ -565,7 +557,7 @@ bool AeSysDoc::EnterTracingEditMode(const CString& pathName) {
 
   // Update document title to indicate tracing edit mode
   m_savedEditorTitle = GetTitle();
-  const std::filesystem::path filePath(static_cast<LPCWSTR>(pathName));
+  const std::filesystem::path filePath(static_cast<const wchar_t*>(pathName));
   const CString tracingName = filePath.stem().wstring().c_str();
   CString editTitle;
   editTitle.Format(L"[|%s]", tracingName.GetString());
@@ -650,18 +642,14 @@ void AeSysDoc::ExitTracingEditMode(bool commit) {
     // a stale TRACING state if the tab bar is briefly repainted during teardown
     // or inherited by the next activated document's view.
     auto* closingView = AeSysView::GetActiveView();
-    if (closingView != nullptr) {
-      closingView->LayoutTabBar().UpdateBlockEditState(false);
-    }
+    if (closingView != nullptr) { closingView->LayoutTabBar().UpdateBlockEditState(false); }
     m_isTracingSession = false;
     m_workLayer = nullptr;  // Prevent dangling access during async close teardown
     SetModifiedFlag(FALSE);  // Prevent "Save changes?" prompt on close
     auto pos = GetFirstViewPosition();
     if (pos != nullptr) {
       auto* view = GetNextView(pos);
-      if (view != nullptr && view->GetParentFrame() != nullptr) {
-        view->GetParentFrame()->PostMessageW(WM_CLOSE);
-      }
+      if (view != nullptr && view->GetParentFrame() != nullptr) { view->GetParentFrame()->PostMessageW(WM_CLOSE); }
     }
     return;
   }
@@ -762,7 +750,7 @@ void AeSysDoc::OnToolsExitTracingEdit() { ExitTracingEditMode(true); }
 
 void AeSysDoc::OnToolsCancelTracingEdit() {
   if (m_tracingEditDirty) {
-    const std::filesystem::path filePath(static_cast<LPCWSTR>(m_editingTracingPath));
+    const std::filesystem::path filePath(static_cast<const wchar_t*>(m_editingTracingPath));
     const CString tracingName = filePath.stem().wstring().c_str();
     CString prompt;
     prompt.Format(L"Save changes to '%s'?", tracingName.GetString());
@@ -777,8 +765,4 @@ void AeSysDoc::OnToolsCancelTracingEdit() {
   ExitTracingEditMode(false);
 }
 
-void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) {
-  cmdUI->Enable(!IsInEditor() && !BlockTableIsEmpty());
-}
-
-
+void AeSysDoc::OnUpdateToolsEditBlockDefinition(CCmdUI* cmdUI) { cmdUI->Enable(!IsInEditor() && !BlockTableIsEmpty()); }

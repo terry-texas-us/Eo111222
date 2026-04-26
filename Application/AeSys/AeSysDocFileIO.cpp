@@ -136,7 +136,7 @@ static DWORD FilterIndexFromFileType(EoDb::FileTypes fileType) noexcept {
 }
 
 /** @brief Returns the default file extension (without dot) for a given file type. */
-static LPCWSTR DefaultExtensionForFileType(EoDb::FileTypes fileType) noexcept {
+static const wchar_t* DefaultExtensionForFileType(EoDb::FileTypes fileType) noexcept {
   switch (fileType) {
     case EoDb::FileTypes::Peg:
     case EoDb::FileTypes::Peg11:
@@ -162,7 +162,7 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
 
   if (!needsDialog && !selectedPath.IsEmpty() && m_saveAsType != EoDb::FileTypes::Unknown) {
     const auto* expectedExtension = DefaultExtensionForFileType(m_saveAsType);
-    std::filesystem::path currentPath(static_cast<LPCWSTR>(selectedPath));
+    std::filesystem::path currentPath(static_cast<const wchar_t*>(selectedPath));
     auto currentExtension = currentPath.extension().wstring();
     if (!currentExtension.empty() && currentExtension[0] == L'.') {
       currentExtension = currentExtension.substr(1);
@@ -183,7 +183,7 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     // Replace the extension to match the target save type so the dialog pre-fills correctly.
     // This ensures switching from DXF to PEG (or vice versa) shows the right filename.
     if (!defaultFileName.IsEmpty() && m_saveAsType != EoDb::FileTypes::Unknown) {
-      std::filesystem::path defaultPath(static_cast<LPCWSTR>(defaultFileName));
+      std::filesystem::path defaultPath(static_cast<const wchar_t*>(defaultFileName));
       defaultPath.replace_extension(DefaultExtensionForFileType(m_saveAsType));
       defaultFileName = defaultPath.wstring().c_str();
     }
@@ -221,8 +221,8 @@ BOOL AeSysDoc::DoSave(LPCWSTR pathName, BOOL replace) {
     }
 
     if (m_saveAsType == EoDb::FileTypes::Unknown) {
-      ATLTRACE2(
-          traceGeneral, 1, L"DoSave: unable to determine file type for '%s'\n", static_cast<LPCWSTR>(selectedPath));
+      ATLTRACE2(traceGeneral, 1, L"DoSave: unable to determine file type for '%s'\n",
+          static_cast<const wchar_t*>(selectedPath));
       return FALSE;
     }
   }

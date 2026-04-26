@@ -13,7 +13,7 @@ HTREEITEM tvAddItem(HWND tree, HTREEITEM parent, const wchar_t* text, LPCVOID ob
   tvIS.hParent = parent;
   tvIS.hInsertAfter = TVI_LAST;
   tvIS.item.mask = TVIF_TEXT | TVIF_PARAM;
-  tvIS.item.pszText = const_cast<LPWSTR>(text);
+  tvIS.item.pszText = const_cast<wchar_t*>(text);
   tvIS.item.lParam = reinterpret_cast<LPARAM>(object);
 
   return TreeView_InsertItem(tree, &tvIS);

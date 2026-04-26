@@ -15,7 +15,7 @@ void RegisterAeSysTopics();
 using namespace dde;
 
 /// @brief Error callback for DDE initialization failure — displays a warning and destroys the main window.
-static void OnDdeInitError(LPCWSTR serviceNameForDisplay, HWND hMainWindow) {
+static void OnDdeInitError(const wchar_t* serviceNameForDisplay, HWND hMainWindow) {
   app.WarningMessageBox(IDS_MSG_DDE_INIT_FAILURE, serviceNameForDisplay);
   if (hMainWindow) { ::DestroyWindow(hMainWindow); }
 }

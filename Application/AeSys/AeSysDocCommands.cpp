@@ -490,9 +490,9 @@ void AeSysDoc::OnEditTrapPaste() {
     } else if (IsClipboardFormatAvailable(CF_TEXT)) {
       HGLOBAL const clipboardDataHandle = GetClipboardData(CF_TEXT);
 
-      LPWSTR const clipboardText = new wchar_t[GlobalSize(clipboardDataHandle)];
+      wchar_t* const clipboardText = new wchar_t[GlobalSize(clipboardDataHandle)];
 
-      LPCWSTR clipboardData = (LPCWSTR)GlobalLock(clipboardDataHandle);
+      auto clipboardData = static_cast<const wchar_t*>(GlobalLock(clipboardDataHandle));
       if (clipboardData != nullptr) {
         lstrcpyW(clipboardText, clipboardData);
       } else {
@@ -924,11 +924,11 @@ void AeSysDoc::OnPensTranslate() {
 
       fl.SeekToBegin();
 
-      LPWSTR NextToken;
+      wchar_t* nextToken{};
       while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != nullptr) {
-        NextToken = nullptr;
-        pCol[w] = std::int16_t(_wtoi(wcstok_s(pBuf, L",", &NextToken)));
-        pColNew[w++] = std::int16_t(_wtoi(wcstok_s(nullptr, L"\n", &NextToken)));
+        nextToken = nullptr;
+        pCol[w] = std::int16_t(_wtoi(wcstok_s(pBuf, L",", &nextToken)));
+        pColNew[w++] = std::int16_t(_wtoi(wcstok_s(nullptr, L"\n", &nextToken)));
       }
       PenTranslation(wCols, pColNew, pCol);
 
