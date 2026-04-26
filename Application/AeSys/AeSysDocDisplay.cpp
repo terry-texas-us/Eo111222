@@ -73,7 +73,7 @@ void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice)
 }
 
 void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto& paperLayers = PaperSpaceLayers();
+  const auto& paperLayers = PaperSpaceLayers();
 
   // Collect all viewport primitives and compute the overall sheet bounding box
   // from the layout extents or the union of viewport boundaries.
@@ -168,7 +168,7 @@ void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderD
   constexpr COLORREF shadowColor = RGB(64, 63, 58);  // Drop shadow behind sheet
   constexpr COLORREF viewportBorderColor = RGB(140, 140, 134);  // Viewport outline gray
 
-  CPoint sheetCorners[4] = {
+  const CPoint sheetCorners[4] = {
       projectToDevice(sheetMinX, sheetMinY),
       projectToDevice(sheetMaxX, sheetMinY),
       projectToDevice(sheetMaxX, sheetMaxY),
@@ -176,8 +176,8 @@ void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderD
   };
 
   // Drop shadow — offset +4px right, +4px down from the sheet
-  constexpr int shadowOffset = 4;
-  CPoint shadowCorners[4] = {
+  constexpr int shadowOffset{4};
+  const CPoint shadowCorners[4] = {
       {sheetCorners[0].x + shadowOffset, sheetCorners[0].y + shadowOffset},
       {sheetCorners[1].x + shadowOffset, sheetCorners[1].y + shadowOffset},
       {sheetCorners[2].x + shadowOffset, sheetCorners[2].y + shadowOffset},
@@ -206,7 +206,7 @@ void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderD
     renderDevice->SelectPen(PS_SOLID, isActive ? 2 : 1,
         isActive ? Eo::chromeColors.captionActiveBackground : viewportBorderColor);
 
-    CPoint vpCorners[5] = {
+    const CPoint vpCorners[5] = {
         projectToDevice(vp.center.x - vp.halfWidth, vp.center.y - vp.halfHeight),
         projectToDevice(vp.center.x + vp.halfWidth, vp.center.y - vp.halfHeight),
         projectToDevice(vp.center.x + vp.halfWidth, vp.center.y + vp.halfHeight),
@@ -242,7 +242,7 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     const double halfW = activeViewport->Width() / 2.0;
     const double halfH = activeViewport->Height() / 2.0;
 
-    CPoint vpDeviceCorners[4] = {
+    const CPoint vpDeviceCorners[4] = {
         projectViewportCorner(center.x - halfW, center.y - halfH),
         projectViewportCorner(center.x + halfW, center.y - halfH),
         projectViewportCorner(center.x + halfW, center.y + halfH),
@@ -254,7 +254,6 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     vpBottom = (std::max)({vpDeviceCorners[0].y, vpDeviceCorners[1].y, vpDeviceCorners[2].y, vpDeviceCorners[3].y});
   }
 
-  // ── D2D path ──────────────────────────────────────────────────────────
   auto* d2dDevice = dynamic_cast<EoGsRenderDeviceDirect2D*>(renderDevice);
   if (d2dDevice != nullptr) {
     auto* renderTarget = d2dDevice->RenderTarget();
@@ -265,7 +264,7 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     renderDevice->GetClipBox(clipRectGdi);
     if (clipRectGdi.right <= clipRectGdi.left || clipRectGdi.bottom <= clipRectGdi.top) { return; }
 
-    auto fullRect = D2D1::RectF(static_cast<float>(clipRectGdi.left), static_cast<float>(clipRectGdi.top),
+    const auto fullRect = D2D1::RectF(static_cast<float>(clipRectGdi.left), static_cast<float>(clipRectGdi.top),
         static_cast<float>(clipRectGdi.right), static_cast<float>(clipRectGdi.bottom));
 
     const auto bgColor = Eo::PaperSpaceBackgroundColor();
@@ -350,7 +349,7 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
 }
 
 EoDbViewport* AeSysDoc::HitTestViewport(const EoGePoint3d& worldPoint) {
-  auto& paperLayers = PaperSpaceLayers();
+  const auto& paperLayers = PaperSpaceLayers();
 
   for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
     auto* layer = paperLayers.GetAt(layerIndex);

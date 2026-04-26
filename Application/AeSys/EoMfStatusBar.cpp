@@ -164,7 +164,7 @@ void EoMfStatusBar::BeginScaleEdit() {
     m_edit.MoveWindow(&paneRect);
   }
 
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
   const double worldScale = (activeView != nullptr) ? activeView->GetWorldScale() : 1.0;
   CString scaleText;
   scaleText.Format(L"%.2f", worldScale);
@@ -209,7 +209,7 @@ void EoMfStatusBar::BeginZoomEdit() {
   auto* activeView = AeSysView::GetActiveView();
   double zoomRatio = 1.0;
   if (activeView != nullptr) {
-    double uExtent = activeView->UExtent();
+    const double uExtent = activeView->UExtent();
     if (uExtent > 0.0) { zoomRatio = activeView->WidthInInches() / uExtent; }
   }
   CString zoomText;

@@ -432,7 +432,7 @@ void AeSysView::UpdateLayoutTabs() {
 
 LRESULT AeSysView::OnLayoutTabChange(WPARAM wParam, LPARAM lParam) {
   // Verify this notification is from our layout tab bar (not another CMFCTabCtrl)
-  auto* tabCtrl = reinterpret_cast<CMFCBaseTabCtrl*>(lParam);
+  const auto* tabCtrl = reinterpret_cast<CMFCBaseTabCtrl*>(lParam);
   if (tabCtrl != &m_layoutTabBar) { return 0; }
 
   // Ignore notifications fired internally by AddTab/SetActiveTab during PopulateFromDocument

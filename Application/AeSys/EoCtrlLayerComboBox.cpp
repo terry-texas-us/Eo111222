@@ -378,7 +378,7 @@ static LRESULT CALLBACK ListboxSubclassProc(
     const CPoint point(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
     // Hit-test which item
-    LRESULT hitResult = ::SendMessage(hwnd, LB_ITEMFROMPOINT, 0, MAKELPARAM(point.x, point.y));
+    const LRESULT hitResult = ::SendMessageW(hwnd, LB_ITEMFROMPOINT, 0, MAKELPARAM(point.x, point.y));
     const int itemIndex = LOWORD(hitResult);
     if (HIWORD(hitResult) == 0 && itemIndex >= 0 && itemIndex < combo->GetCount()) {
       auto* layer = reinterpret_cast<EoDbLayer*>(combo->GetItemData(itemIndex));
@@ -396,7 +396,7 @@ static LRESULT CALLBACK ListboxSubclassProc(
           auto* document = AeSysDoc::GetDoc();
           if (document != nullptr) {
             // Close the dropdown before entering editor
-            ::SendMessage(::GetParent(hwnd), CB_SHOWDROPDOWN, FALSE, 0);
+            ::SendMessageW(::GetParent(hwnd), CB_SHOWDROPDOWN, FALSE, 0);
             document->EnterEmbeddedTracingEditMode(layer);
           }
         }

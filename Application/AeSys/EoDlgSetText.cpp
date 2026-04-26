@@ -1,4 +1,5 @@
 ﻿#include "Stdafx.h"
+
 #include "EoDlgSetText.h"
 #include "Resource.h"
 

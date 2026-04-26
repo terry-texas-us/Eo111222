@@ -406,7 +406,7 @@ void AeSysDoc::OnEditTrace() {
 
           auto clipboardData = (LPCSTR)GlobalLock(clipboardDataHandle);
           if (clipboardData != nullptr) {
-            DWORD dwSizeOfBuffer = *((DWORD*)clipboardData);
+            const DWORD dwSizeOfBuffer = *((DWORD*)clipboardData);
             memFile.Write(clipboardData, UINT(dwSizeOfBuffer));
             GlobalUnlock(clipboardDataHandle);
 
@@ -446,7 +446,7 @@ void AeSysDoc::OnEditTrapCut() {
 
 void AeSysDoc::OnEditTrapPaste() {
   if (::OpenClipboard(nullptr)) {
-    UINT clipboardFormat = app.ClipboardFormatIdentifierForEoGroups();
+    const auto clipboardFormat = app.ClipboardFormatIdentifierForEoGroups();
 
     if (IsClipboardFormatAvailable(clipboardFormat)) {
       EoDlgSetPastePosition dialog;
@@ -723,7 +723,7 @@ void AeSysDoc::OnToolsGroupBreak() {
 
 void AeSysDoc::OnToolsGroupDelete() {
   auto* activeView = AeSysView::GetActiveView();
-  auto cursorPosition = activeView->GetCursorPosition();
+  const auto cursorPosition = activeView->GetCursorPosition();
 
   auto* group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
@@ -899,7 +899,7 @@ void AeSysDoc::OnPensLoadColors() {
       app.WarningMessageBox(IDS_MSG_FILE_TYPE_ERROR);
     }
   } else {
-    auto error = CommDlgExtendedError();
+    const auto error = CommDlgExtendedError();
     if (error != 0) { app.WarningMessageBox(IDS_MSG_OPENFILE_DIALOG_ERROR); }
   }
 }
@@ -947,7 +947,7 @@ void AeSysDoc::OnFile() {
 void AeSysDoc::OnPrimExtractNum() {
   auto* activeView = AeSysView::GetActiveView();
 
-  auto cursorPosition = activeView->GetCursorPosition();
+  const auto cursorPosition = activeView->GetCursorPosition();
 
   if (activeView->SelectGroupAndPrimitive(cursorPosition)) {
     auto* primitive = activeView->EngagedPrimitive();
@@ -992,7 +992,7 @@ void AeSysDoc::OnPrimExtractNum() {
 void AeSysDoc::OnPrimExtractStr() {
   auto* activeView = AeSysView::GetActiveView();
 
-  auto cursorPosition = activeView->GetCursorPosition();
+  const auto cursorPosition = activeView->GetCursorPosition();
 
   if (activeView->SelectGroupAndPrimitive(cursorPosition)) {
     auto* primitive = activeView->EngagedPrimitive();

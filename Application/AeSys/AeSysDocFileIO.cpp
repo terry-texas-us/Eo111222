@@ -337,7 +337,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
         EoDbDxfInterface dxfInterface(this);
         EoDxfRead dxfReader(dxfPath.c_str());
         SetCommonTableEntries();
-        bool success = dxfReader.Read(&dxfInterface, true);
+        const bool success = dxfReader.Read(&dxfInterface, true);
         if (!success) {
           EoOdaConverter::DeleteTempFolder(tempDwgFolder);
           EoOdaConverter::DeleteTempFolder(tempDxfFolder);
@@ -360,7 +360,7 @@ BOOL AeSysDoc::OnOpenDocument(LPCWSTR pathName) {
       EoDbDxfInterface dxfInterface(this);
       EoDxfRead dxfReader(pathName);
       SetCommonTableEntries();
-      bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
+      const bool success = dxfReader.Read(&dxfInterface, true);  // true for verbose output, false for silent
       if (success) {
         app.AddStringToReportsList(std::format(L"DXF file `{}` opened successfully", pathName));
         ReportDxfImportStatistics(dxfInterface);
@@ -425,7 +425,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
   switch (m_saveAsType) {
     case EoDb::FileTypes::Peg:
     case EoDb::FileTypes::Peg11: {
-      auto fileVersion =
+      const auto fileVersion =
           (m_saveAsType == EoDb::FileTypes::Peg) ? EoDb::PegFileVersion::AE2026 : EoDb::PegFileVersion::AE2011;
       WriteShadowFile(fileVersion);
       EoDbPegFile file;
@@ -605,7 +605,7 @@ void AeSysDoc::ResolveDynamicBlockReferences() {
       const auto* entryHexString = value.GetIf<std::wstring>();
       if (entryHexString == nullptr) { continue; }
 
-      auto entryHandle = std::wcstoull(entryHexString->c_str(), nullptr, 16);
+      const auto entryHandle = std::wcstoull(entryHexString->c_str(), nullptr, 16);
       if (entryHandle == 0) { continue; }
 
       // Step C: Follow to the referenced object.

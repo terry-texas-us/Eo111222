@@ -271,7 +271,7 @@ bool AeSysDoc::LayerMelt(CString& strName) {
   return bRetVal;
 }
 void AeSysDoc::RemoveLayerTableLayer(const CString& name) {
-  auto i = FindLayerTableLayer(name);
+  const auto i = FindLayerTableLayer(name);
 
   if (i >= 0) { RemoveLayerTableLayerAt(i); }
 }
@@ -470,7 +470,7 @@ void AeSysDoc::MoveTrappedGroupsToSpace(EoDxf::Space targetSpace) {
     CString targetLayerName(L"0");
     auto primPosition = group->GetHeadPosition();
     if (primPosition != nullptr) {
-      auto* primitive = group->GetNext(primPosition);
+      const auto* primitive = group->GetNext(primPosition);
       if (primitive != nullptr && !primitive->LayerName().empty()) {
         targetLayerName = primitive->LayerName().c_str();
       }
@@ -630,7 +630,7 @@ bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
 }
 
 bool AeSysDoc::TracingMap(const CString& pathName) {
-  auto fileType = App::FileTypeFromPath(pathName);
+  const auto fileType = App::FileTypeFromPath(pathName);
   if (fileType != EoDb::FileTypes::Tracing && fileType != EoDb::FileTypes::Job) { return false; }
   bool fileOpen{};
 
@@ -663,7 +663,7 @@ bool AeSysDoc::TracingMap(const CString& pathName) {
 bool AeSysDoc::TracingOpen(const CString& pathName) {
   EoDbLayer* layer{};
 
-  auto index = FindLayerTableLayer(pathName);
+  const auto index = FindLayerTableLayer(pathName);
 
   if (index > 0) {  // already loaded
     layer = GetLayerTableLayerAt(index);
@@ -696,7 +696,7 @@ bool AeSysDoc::TracingOpen(const CString& pathName) {
 }
 
 bool AeSysDoc::TracingView(const CString& pathName) {
-  EoDb::FileTypes fileType = App::FileTypeFromPath(pathName);
+  const EoDb::FileTypes fileType = App::FileTypeFromPath(pathName);
   if (fileType != EoDb::FileTypes::Tracing && fileType != EoDb::FileTypes::Job) { return false; }
   bool fileOpen{};
 

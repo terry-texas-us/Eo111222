@@ -101,7 +101,7 @@ CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
   if (!calculateOnly) {
     CRect clientRectangle;
     GetWindowRect(clientRectangle);
-    CWnd* parent = GetParent();
+    CWnd* const parent = GetParent();
     if (parent) {
       parent->ScreenToClient(clientRectangle);
       clientRectangle.right = clientRectangle.left + size.cx;
@@ -256,14 +256,15 @@ void EoCtrlColorsButton::OnKeyDown(UINT keyCode, UINT repeatCount, UINT flags) {
       NMHDR notifyStructure{};
       notifyStructure.hwndFrom = GetSafeHwnd();
       notifyStructure.idFrom = static_cast<uint64_t>(GetDlgCtrlID());
-      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)notifyStructure.idFrom, (LPARAM)&notifyStructure);
+      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, static_cast<WPARAM>(notifyStructure.idFrom),
+          reinterpret_cast<LPARAM>(&notifyStructure));
     }
   }
   CMFCButton::OnKeyDown(keyCode, repeatCount, flags);
 }
 
 void EoCtrlColorsButton::OnLButtonUp(UINT flags, CPoint point) {
-  auto currentSubItem = SubItemByPoint(point);
+  const auto currentSubItem = SubItemByPoint(point);
   if (currentSubItem != 0) { m_subItem = currentSubItem; }
   CMFCButton::OnLButtonUp(flags, point);
 }
@@ -289,7 +290,8 @@ void EoCtrlColorsButton::OnMouseMove(UINT flags, CPoint point) {
       notifyStructure.hwndFrom = GetSafeHwnd();
       notifyStructure.idFrom = static_cast<std::uint64_t>(GetDlgCtrlID());
 
-      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, (WPARAM)notifyStructure.idFrom, (LPARAM)&notifyStructure);
+      ::SendMessageW(GetParent()->GetSafeHwnd(), WM_NOTIFY, static_cast<WPARAM>(notifyStructure.idFrom),
+          reinterpret_cast<LPARAM>(&notifyStructure));
     }
     ReleaseDC(deviceContext);
   }

@@ -413,7 +413,7 @@ void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) 
 
   // Hover state tracked by PreTranslateMessage; pressed state from itemState
   const bool isHovered = m_hoveredButton == drawItem->hwndItem;
-  bool isPressed = (drawItem->itemState & ODS_SELECTED) != 0;
+  const bool isPressed = (drawItem->itemState & ODS_SELECTED) != 0;
 
   // Draw hover/press highlight matching toolbar style
   if (isPressed) {
@@ -435,8 +435,8 @@ void EoMfLayoutTabBar::OnDrawItem(int /*controlId*/, LPDRAWITEMSTRUCT drawItem) 
   }
 
   // Draw the bitmap centered
-  CBitmap* bitmap = nullptr;
-  UINT ctlId = drawItem->CtlID;
+  CBitmap* bitmap{};
+  const auto ctlId = drawItem->CtlID;
   if (ctlId == IDC_BLOCK_EDIT_SAVE_BUTTON) { bitmap = &m_blockEditSaveBitmap; }
   else if (ctlId == IDC_BLOCK_EDIT_SAVEAS_BUTTON) { bitmap = &m_blockEditSaveAsBitmap; }
   else if (ctlId == IDC_BLOCK_EDIT_CLOSE_BUTTON) { bitmap = &m_blockEditCloseBitmap; }
@@ -497,7 +497,7 @@ void EoMfLayoutTabBar::OnSpaceLabelClicked() {
 
     // Validate the last-active viewport is still reachable
     if (viewportToActivate != nullptr) {
-      auto* found = document->HitTestViewport(viewportToActivate->CenterPoint());
+      const auto* found = document->HitTestViewport(viewportToActivate->CenterPoint());
       if (found != viewportToActivate) { viewportToActivate = nullptr; }
     }
 
@@ -561,7 +561,7 @@ void EoMfLayoutTabBar::UpdateSpaceTransferButton() {
     return;
   }
 
-  auto* const parentView = static_cast<AeSysView*>(GetParent());
+  const auto* const parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
@@ -615,7 +615,7 @@ void EoMfLayoutTabBar::UpdateBlockEditState(bool isEditing, const CString& /*edi
 }
 
 void EoMfLayoutTabBar::OnBlockEditSaveClicked() {
-  auto* const parentView = static_cast<AeSysView*>(GetParent());
+  const auto* parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
@@ -627,7 +627,7 @@ void EoMfLayoutTabBar::OnBlockEditSaveClicked() {
 }
 
 void EoMfLayoutTabBar::OnBlockEditSaveAsClicked() {
-  auto* parentView = static_cast<AeSysView*>(GetParent());
+  const auto* parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
@@ -639,7 +639,7 @@ void EoMfLayoutTabBar::OnBlockEditSaveAsClicked() {
 }
 
 void EoMfLayoutTabBar::OnBlockEditCloseClicked() {
-  auto* parentView = static_cast<AeSysView*>(GetParent());
+  const auto* parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
   auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }

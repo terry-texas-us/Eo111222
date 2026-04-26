@@ -389,7 +389,7 @@ BOOL CMainFrame::OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) {
     CMenu menu;
     VERIFY(menu.LoadMenu(IDR_POPUP_TOOLBAR));
 
-    auto* const popupSubMenu = menu.GetSubMenu(0);
+    const auto* const popupSubMenu = menu.GetSubMenu(0);
     assert(popupSubMenu != nullptr);
 
     if (popupSubMenu) { pMenuPopup->GetMenuBar()->ImportFromMenu(*popupSubMenu, TRUE); }

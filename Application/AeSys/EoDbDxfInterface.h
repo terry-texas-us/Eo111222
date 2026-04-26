@@ -455,7 +455,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       dxfBlock.m_blockName = std::wstring(name);
       dxfBlock.m_blockTypeFlags = static_cast<std::int16_t>(block->BlockTypeFlags());
       dxfBlock.m_handle = block->Handle();
-      auto basePoint = block->BasePoint();
+      const auto basePoint = block->BasePoint();
       dxfBlock.m_basePoint = {basePoint.x, basePoint.y, basePoint.z};
       m_dxfWriter->WriteBlock(dxfBlock);
 

@@ -76,10 +76,10 @@ void AeSysView::OnAnnotateModeBubble() {
   static CString currentText;
   auto cursorPosition = GetCursorPosition();
 
-  EoDlgSetText dlg;
-  dlg.m_strTitle = L"Set Bubble Text";
-  dlg.m_sText = currentText;
-  if (dlg.DoModal() == IDOK) { currentText = dlg.m_sText; }
+  EoDlgSetText dialog;
+  dialog.m_strTitle = L"Set Bubble Text";
+  dialog.m_sText = currentText;
+  if (dialog.DoModal() == IDOK) { currentText = dialog.m_sText; }
   auto* group = new EoDbGroup;
   document->AddWorkLayerGroup(group);
   if (m_PreviousOp == 0) {  // No operation pending

@@ -18,7 +18,7 @@ void EoCtrlLineWeightComboBox::PopulateItems() {
   BuildItemList();
 
   // Select item matching current render state
-  auto currentWeight = Gs::renderState.LineWeight();
+  const auto currentWeight = Gs::renderState.LineWeight();
   SelectItem(static_cast<DWORD_PTR>(currentWeight));
 }
 
@@ -66,16 +66,17 @@ void EoCtrlLineWeightComboBox::BuildItemList() {
       {EoDxfLineWeights::LineWeight::kLnWt200, L"2.00 mm"},
       {EoDxfLineWeights::LineWeight::kLnWt211, L"2.11 mm"},
   };
-  for (const auto& [weight, label] : standardWeights) {
-    AddItem(label, static_cast<DWORD_PTR>(weight));
-  }
+  for (const auto& [weight, label] : standardWeights) { AddItem(label, static_cast<DWORD_PTR>(weight)); }
 }
 
 CString EoCtrlLineWeightComboBox::LineWeightToName(EoDxfLineWeights::LineWeight lineWeight) {
   switch (lineWeight) {
-    case EoDxfLineWeights::LineWeight::kLnWtByLayer: return L"ByLayer";
-    case EoDxfLineWeights::LineWeight::kLnWtByBlock: return L"ByBlock";
-    case EoDxfLineWeights::LineWeight::kLnWtByLwDefault: return L"Default";
+    case EoDxfLineWeights::LineWeight::kLnWtByLayer:
+      return L"ByLayer";
+    case EoDxfLineWeights::LineWeight::kLnWtByBlock:
+      return L"ByBlock";
+    case EoDxfLineWeights::LineWeight::kLnWtByLwDefault:
+      return L"Default";
     default: {
       const auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
       CString text;
@@ -93,16 +94,14 @@ void EoCtrlLineWeightComboBox::DrawWeightPreview(
   if (xEnd <= xStart) { return; }
 
   // Determine pixel thickness for preview: special values draw as 1px
-  int thickness = 1;
-  auto enumIndex = static_cast<std::int8_t>(lineWeight);
+  int thickness{1};
+  const auto enumIndex = static_cast<std::int8_t>(lineWeight);
   if (enumIndex >= 0 && enumIndex <= 23) {
     const auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
     // Scale: 0.00mm→1px, 2.11mm→~8px, proportional to DXF code
     UINT dpi = ::GetDpiForSystem();
     if (dpi == 0) { dpi = 96; }
-    if (dxfCode > 0) {
-      thickness = std::max(1, ::MulDiv(dxfCode, static_cast<int>(dpi), 96 * 30));
-    }
+    if (dxfCode > 0) { thickness = std::max(1, ::MulDiv(dxfCode, static_cast<int>(dpi), 96 * 30)); }
   }
 
   CPen pen(PS_SOLID, thickness, lineColor);
@@ -175,9 +174,8 @@ void EoCtrlLineWeightComboBox::OnSelectionChanged() {
   Gs::renderState.SetLineWeight(newWeight);
 }
 
-void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images,
-    BOOL isHorz, BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder,
-    BOOL grayDisabledButtons) {
+void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCToolBarImages* images, BOOL isHorz,
+    BOOL isCustomizeMode, BOOL isHighlighted, BOOL drawBorder, BOOL grayDisabledButtons) {
   if (m_pWndCombo == nullptr || m_pWndCombo->GetSafeHwnd() == nullptr || !isHorz) {
     CMFCToolBarButton::OnDraw(
         deviceContext, rect, images, isHorz, isCustomizeMode, isHighlighted, drawBorder, grayDisabledButtons);
@@ -205,9 +203,9 @@ void EoCtrlLineWeightComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMF
           deviceContext, rectButton, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
     }
 
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
-      DWORD_PTR itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
+      const DWORD_PTR itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
       LPCTSTR itemText = CMFCToolBarComboBoxButton::GetItem(curSel);
       if (itemText == nullptr) { itemText = L""; }
 
@@ -272,7 +270,7 @@ void EoCtrlLineWeightOwnerDrawCombo::OnPaint() {
 
   dc.FillSolidRect(&clientRect, Eo::chromeColors.paneBackground);
 
-  int curSel = GetCurSel();
+  const int curSel = GetCurSel();
   if (curSel != CB_ERR) {
     DRAWITEMSTRUCT dis{};
     dis.CtlType = ODT_COMBOBOX;
@@ -311,7 +309,7 @@ void EoCtrlLineWeightOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   dc.Attach(drawItemStruct->hDC);
 
   CRect itemRect(drawItemStruct->rcItem);
-  auto itemData = drawItemStruct->itemData;
+  const auto itemData = drawItemStruct->itemData;
   const auto itemState = drawItemStruct->itemState;
 
   const auto& schemeColors = Eo::chromeColors;

@@ -99,7 +99,8 @@ void WndProcKeyPlanOnMouseMove(HWND hwnd, WPARAM nParam, LPARAM lParam) {
     } else if (currentPoint.y < EoDlgActiveViewKeyplan::m_rcWnd.top) {
       EoDlgActiveViewKeyplan::m_rcWnd.top += (currentPoint.y - point.y);
     }
-    ::SendMessage(::GetParent(hwnd), WM_COMMAND, (WPARAM)::GetWindowLong(hwnd, GWL_ID), (LPARAM)hwnd);
+    ::SendMessageW(::GetParent(hwnd), WM_COMMAND, static_cast<WPARAM>(::GetWindowLongPtrW(hwnd, GWL_ID)),
+        reinterpret_cast<LPARAM>(hwnd));
   }
   point = currentPoint;
   ::Rectangle(deviceContextHandle, EoDlgActiveViewKeyplan::m_rcWnd.left, EoDlgActiveViewKeyplan::m_rcWnd.top,

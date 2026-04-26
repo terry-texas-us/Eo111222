@@ -57,7 +57,7 @@ void AeSysDoc::DisplayUniquePoints() {
   EoDbGroup group;
   auto uniquePointPosition = GetFirstUniquePointPosition();
   while (uniquePointPosition != nullptr) {
-    EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
+    const EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
     group.AddTail(new EoDbPoint(252, 8, uniquePoint->m_Point));
   }
   UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &group);

@@ -23,8 +23,8 @@ static void OnDdeInitError(const wchar_t* serviceNameForDisplay, HWND hMainWindo
 /// @brief Fallback exec handler — posts the first character of the DDE data as a WM_CHAR message.
 static void OnDdeFallbackExec(HDDEDATA hData) {
   char sz[32]{};
-  DdeGetData(hData, (LPBYTE)sz, (DWORD)sizeof(sz), (DWORD)0);
-  ::PostMessage(app.GetSafeHwnd(), WM_CHAR, (WPARAM)sz[0], (LPARAM)1);
+  DdeGetData(hData, reinterpret_cast<LPBYTE>(sz), static_cast<DWORD>(sizeof(sz)), 0);
+  ::PostMessage(app.GetSafeHwnd(), WM_CHAR, static_cast<WPARAM>(sz[0]), static_cast<LPARAM>(1));
 }
 
 /// @brief Initialize DDE and register all AeSys-specific topics, items, and commands.

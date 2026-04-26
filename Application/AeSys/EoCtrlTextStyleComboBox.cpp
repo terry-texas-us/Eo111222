@@ -85,7 +85,7 @@ void EoCtrlTextStyleComboBox::Serialize(CArchive& ar) {
 
     // Save the current text style name — items are rebuilt from the document on load.
     CString currentName;
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
       LPCTSTR text = CMFCToolBarComboBoxButton::GetItem(curSel);
       if (text != nullptr) { currentName = text; }
@@ -195,7 +195,7 @@ BOOL EoCtrlTextStyleComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
   CPoint clientPoint = screenPoint;
   if (parentWindow != nullptr) { parentWindow->ScreenToClient(&clientPoint); }
 
-  int iconRight = m_rectCombo.left + kIconAreaWidth;
+  const int iconRight = m_rectCombo.left + kIconAreaWidth;
   if (clientPoint.x >= m_rectCombo.left && clientPoint.x < iconRight) {
     OpenTextStyleManager();
     return TRUE;
@@ -272,7 +272,7 @@ void EoCtrlTextStyleComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFC
           deviceContext, rectButton, isDisabled, m_pWndCombo->GetDroppedState(), isHighlighted, this);
     }
 
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
       LPCTSTR itemText = CMFCToolBarComboBoxButton::GetItem(curSel);
       if (itemText == nullptr) { itemText = L""; }
@@ -330,7 +330,7 @@ void EoCtrlTextStyleThemedCombo::OnPaint() {
   const auto& schemeColors = Eo::chromeColors;
   dc.FillSolidRect(&clientRect, schemeColors.paneBackground);
 
-  int curSel = GetCurSel();
+  const int curSel = GetCurSel();
   if (curSel != CB_ERR) {
     CString text;
     GetLBText(curSel, text);

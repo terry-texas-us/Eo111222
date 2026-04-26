@@ -481,7 +481,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   hatch::dYAxRefVecScal = 0.1;
   hatch::dOffAng = 0.0;
 
-  EoDbCharacterCellDefinition characterCellDefinition{};
+  const EoDbCharacterCellDefinition characterCellDefinition{};
   Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
   const EoDbFontDefinition fontDefinition;
