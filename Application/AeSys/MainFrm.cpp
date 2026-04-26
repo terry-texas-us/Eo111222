@@ -522,7 +522,7 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
         constexpr int comboVertMargin = 4;  // CMFCToolBarComboBoxButton::m_nVertMargin
         const int targetHeight = std::max(32, static_cast<int>(comboRect.Height()) + 2 * comboVertMargin);
         const CSize adjustedSize(std::max(32, targetHeight), targetHeight);
-        ATLTRACE2(traceGeneral, 1, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n", comboRect.Height(),
+        ATLTRACE2(traceGeneral, 3, L"AdjustToolbarSizesToMatchCombos: combo=%d, button=%dx%d\n", comboRect.Height(),
             adjustedSize.cx, adjustedSize.cy);
         EoMfStatelessToolBar::SetSizes(adjustedSize, kImageSize);
         m_standardToolBar.SetLockedSizes(adjustedSize, kImageSize, TRUE);
