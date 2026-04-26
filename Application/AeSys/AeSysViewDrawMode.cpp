@@ -59,7 +59,7 @@ void AeSysView::OnDrawModePolygon() {
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
-    auto numberOfPoints = pts.GetSize();
+    const auto numberOfPoints = pts.GetSize();
 
     if (pts[numberOfPoints - 1] != cursorPosition) {
       cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
@@ -143,7 +143,7 @@ void AeSysView::OnDrawModeReturn() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
-  auto numberOfPoints = pts.GetSize();
+  const auto numberOfPoints = pts.GetSize();
   EoDbGroup* group{};
 
   switch (previousDrawCommand) {

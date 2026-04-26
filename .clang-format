@@ -1,15 +1,37 @@
 BasedOnStyle: Google
-AlignTrailingComments: Never
-PointerAlignment: Left
+UseTab: Never
 ColumnLimit: 120
-SortIncludes: false
+
+# Brace style
+BreakBeforeBraces: Attach        # Braces on the same line (common in VS)
 AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Inline
+
+SortIncludes: true
+IncludeBlocks: Regroup
+
+# Pointers & References (modern C++ preference)
+PointerAlignment: Left	
+ReferenceAlignment: Pointer
+
+# Spacing preferences
+SpaceAfterLogicalNot: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+
+# Other useful modern settings
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: NonAssignment
+
 AllowShortBlocksOnASingleLine: true
-AllowShortFunctionsOnASingleLine: true
 AlignArrayOfStructures: None
 AlignAfterOpenBracket: DontAlign
 ContinuationIndentWidth: 4
 InsertBraces: true
-BreakBeforeBraces: Attach
 AlignOperands: DontAlign
 BreakBeforeTernaryOperators: true
+AlignTrailingComments: Never
