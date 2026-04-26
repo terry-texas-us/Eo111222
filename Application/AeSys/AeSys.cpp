@@ -372,18 +372,18 @@ void AeSys::LoadPenWidthsFromFile(const CString& fileName) {
   while (file.ReadString(inputLine, bufferSize - 1) != nullptr) {
     if (inputLine[0] == L'\0' || inputLine[0] == L'#' || inputLine[0] == L';') { continue; }
 
-    wchar_t* context = nullptr;
-    wchar_t* const penIndexText = wcstok_s(inputLine, L"=", &context);
+    wchar_t* context{};
+    const wchar_t* const penIndexText = wcstok_s(inputLine, L"=", &context);
     if (penIndexText == nullptr) { continue; }
 
-    wchar_t* penIndexEnd = nullptr;
+    wchar_t* penIndexEnd{};
     const unsigned long penIndex = std::wcstoul(penIndexText, &penIndexEnd, 10);
     if (penIndexEnd == penIndexText) { continue; }
 
-    wchar_t* const penWidthText = wcstok_s(nullptr, L",\n", &context);
+    const wchar_t* const penWidthText = wcstok_s(nullptr, L",\n", &context);
     if (penWidthText == nullptr) { continue; }
 
-    wchar_t* penValueEnd = nullptr;
+    wchar_t* penValueEnd{};
     const double penWidth = std::wcstod(penWidthText, &penValueEnd);
     if (penValueEnd == penWidthText) { continue; }
 
@@ -420,7 +420,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   int iNmbEnts{};
   int iNmbStrsId{};
 
-  wchar_t szValDel[] = L",\0";
+  const wchar_t szValDel[] = L",\0";
   int iHatId{};
   int iNmbHatLns{};
   int iTblId{1};  // Reserve position 0 as uninitialized sentinel for tableOffset
@@ -448,7 +448,7 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
           ATLTRACE(traceGeneral, 0, L"LoadHatchesFromFile: table value overflow at pattern %d\n", iHatId);
           break;
         }
-        volatile double tempValue = _wtof(pTok);
+        const volatile double tempValue = _wtof(pTok);
         hatch::tableValue[iTblId] = static_cast<float>(tempValue);
         iNmbEnts++;
         if (iNmbEnts >= 6) { dTotStrsLen = dTotStrsLen + hatch::tableValue[iTblId]; }
@@ -526,19 +526,19 @@ void AeSys::LoadPenColorsFromFile(const CString& fileName) {
 
     while (fl.ReadString(pBuf, sizeof(pBuf) / sizeof(wchar_t) - 1) != nullptr && *pBuf != '<') {
       wchar_t* nextToken = nullptr;
-      wchar_t* const index = wcstok_s(pBuf, L"=", &nextToken);
+      const wchar_t* index = wcstok_s(pBuf, L"=", &nextToken);
       const auto colorIndex = _wtoi(index);
 
       if (colorIndex < 0 || colorIndex >= static_cast<int>(std::size(Eo::ColorPalette))) { continue; }
-      wchar_t* const redColorPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* const greenColorPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* const blueColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      const wchar_t* redColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      const wchar_t* greenColorPalette = wcstok_s(nullptr, L",", &nextToken);
+      const wchar_t* blueColorPalette = wcstok_s(nullptr, L",", &nextToken);
       Eo::ColorPalette[colorIndex] = RGB(_wtoi(redColorPalette), _wtoi(greenColorPalette), _wtoi(blueColorPalette));
 
       if (colorIndex >= static_cast<int>(std::size(Eo::GrayPalette))) { continue; }
-      wchar_t* const redGrayPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* const greenGrayPalette = wcstok_s(nullptr, L",", &nextToken);
-      wchar_t* const blueGrayPalette = wcstok_s(nullptr, L"\n", &nextToken);
+      const wchar_t* redGrayPalette = wcstok_s(nullptr, L",", &nextToken);
+      const wchar_t* greenGrayPalette = wcstok_s(nullptr, L",", &nextToken);
+      const wchar_t* blueGrayPalette = wcstok_s(nullptr, L"\n", &nextToken);
       Eo::GrayPalette[colorIndex] = RGB(_wtoi(redGrayPalette), _wtoi(greenGrayPalette), _wtoi(blueGrayPalette));
     }
   }
@@ -589,7 +589,7 @@ void AeSys::LoadSimplexStrokeFont(const CString& pathName) {
     }
   }
   if (m_SimplexStrokeFont != nullptr) {
-    auto* const fontData = reinterpret_cast<long*>(m_SimplexStrokeFont);
+    const auto* fontData = reinterpret_cast<const long*>(m_SimplexStrokeFont);
     m_StrokeFontVersion = (fontData[0] == Eo::strokeFontV2MagicNumber) ? 2 : 1;
   }
 }
@@ -634,7 +634,7 @@ void AeSys::BuildModifiedAcceleratorTable() const {
 void AeSys::OnFileSaveAll() {
   POSITION templatePosition = GetFirstDocTemplatePosition();
   while (templatePosition != nullptr) {
-    auto* const docTemplate = GetNextDocTemplate(templatePosition);
+    const auto* docTemplate = GetNextDocTemplate(templatePosition);
     POSITION docPosition = docTemplate->GetFirstDocPosition();
     while (docPosition != nullptr) {
       auto* document = docTemplate->GetNextDoc(docPosition);
@@ -656,7 +656,7 @@ void AeSys::OnFileOpen() {
   auto title = App::LoadStringResource(AFX_IDS_OPENFILE);
   fileDialog.m_ofn.lpstrTitle = title;
 
-  auto result = fileDialog.DoModal();
+  const auto result = fileDialog.DoModal();
   fileName.ReleaseBuffer();
 
   if (result == IDOK) { OpenDocumentFile(fileName); }
@@ -694,7 +694,7 @@ void AeSys::FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufS
   int feet = static_cast<int>(scaledLength / 12.0);
   int inches = abs(static_cast<int>(fmod(scaledLength, 12.0)));
 
-  int fractionPrecision = GetArchitecturalUnitsFractionPrecision();
+  const int fractionPrecision = GetArchitecturalUnitsFractionPrecision();
   int numerator = static_cast<int>(std::abs(fmod(scaledLength, 1.0)) * (double)(fractionPrecision) + 0.5);
   if (numerator == fractionPrecision) {
     if (inches == 11) {
@@ -735,7 +735,8 @@ void AeSys::FormatLengthEngineering(
   wcscpy_s(lengthAsBuffer, bufSize, (length >= 0.0) ? L" " : L"-");
   scaledLength = std::abs(scaledLength);
 
-  int adjustedPrecision = (scaledLength >= 1.0) ? precision - static_cast<int>(log10(scaledLength)) - 1 : precision;
+  const int adjustedPrecision =
+      (scaledLength >= 1.0) ? precision - static_cast<int>(log10(scaledLength)) - 1 : precision;
 
   if (adjustedPrecision >= 0) {
     _itow_s(static_cast<int>(scaledLength / 12.0), szBuf, 16, 10);
@@ -817,7 +818,7 @@ void AeSys::FormatLengthSimple(wchar_t* lengthAsBuffer, const size_t bufSize, Eo
     @note Fraction is validated by lex::Scan typing token as AcrchitecturalUnitsLengthToken.
     @throws wchar_t* If an error occurs during parsing, an error message is thrown.
 */
-static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* end) {
+static double AddOptionalInches(const wchar_t* inputLine, double feetLength, wchar_t* end) {
   wchar_t token[32]{};
   int linePosition{};
   const int tokenType = lex::Scan(token, inputLine, linePosition);
@@ -854,7 +855,7 @@ static double AddOptionalInches(wchar_t* inputLine, double feetLength, wchar_t* 
   return totalLength;
 }
 
-double AeSys::ParseLength(wchar_t* inputLine) {
+double AeSys::ParseLength(const wchar_t* inputLine) {
   wchar_t* end{};
 
   // Parse the leading numeric portion of the string or possible the numerator of a fraction
@@ -905,7 +906,7 @@ double AeSys::ParseLength(wchar_t* inputLine) {
     @return The parsed length in internal units (inches).
     @throws wchar_t* If an error occurs during parsing, an error message is thrown.
 */
-double AeSys::ParseLength(Eo::Units units, wchar_t* inputLine) {
+double AeSys::ParseLength(Eo::Units units, const wchar_t* inputLine) {
   try {
     int iTokId{};
     long lDef{};
@@ -998,7 +999,7 @@ namespace App {
 EoDb::FileTypes FileTypeFromPath(const CString& pathName) {
   auto type(EoDb::FileTypes::Unknown);
 
-  int dotPosition = pathName.ReverseFind(L'.');
+  const int dotPosition = pathName.ReverseFind(L'.');
   if (dotPosition != -1 && dotPosition < pathName.GetLength() - 1) {
     CString extension = pathName.Mid(dotPosition + 1);
     extension.MakeLower();

@@ -7,8 +7,6 @@
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
-#include "AeSysView.h"
-#include "Eo.h"
 #include "EoDb.h"
 #include "EoDbBlock.h"
 #include "EoDbBlockReference.h"
@@ -18,7 +16,6 @@
 #include "EoDbLineType.h"
 #include "EoDbPegFile.h"
 #include "EoDbTracingFile.h"
-#include "EoDbVPortTableEntry.h"
 #include "EoDxfBase.h"
 #include "EoDxfObjects.h"
 #include "EoDxfRead.h"
@@ -475,7 +472,7 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
       auto dxfPath = std::filesystem::path(tempFolder) / dxfFileName;
 
       {
-        const bool isBinaryDxf = false;
+        constexpr bool isBinaryDxf{};
         EoDbDxfInterface dxfInterface(this);
         EoDxfWrite dxfWriter(dxfPath.c_str());
         dxfInterface.SetDxfWriter(&dxfWriter);

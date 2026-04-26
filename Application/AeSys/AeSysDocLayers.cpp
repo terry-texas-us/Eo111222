@@ -605,7 +605,7 @@ bool AeSysDoc::TracingLoadLayer(const CString& pathName, EoDbLayer* layer) {
   if (fileType != EoDb::FileTypes::Tracing && fileType != EoDb::FileTypes::Job) { return false; }
   if (layer == nullptr) { return false; }
 
-  const bool bFileOpen{};
+  constexpr bool bFileOpen{};
 
   if (fileType == EoDb::FileTypes::Tracing) {
     CFileException e;

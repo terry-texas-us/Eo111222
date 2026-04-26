@@ -579,9 +579,10 @@ class AeSysView : public CView {
   [[nodiscard]] double OverviewUMin() { return m_OverviewViewTransform.UMin(); }
   [[nodiscard]] double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
   [[nodiscard]] double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
+  
   [[nodiscard]] CPoint ProjectToClient(const EoGePoint4d& ndcPoint) { return m_Viewport.ProjectToClient(ndcPoint); }
 
-  void ProjectToClient(CPoint* clientPoints, int numberOfPoints, EoGePoint4d* ndcPoints) {
+  void ProjectToClient(CPoint* clientPoints, int numberOfPoints, const EoGePoint4d* ndcPoints) {
     m_Viewport.ProjectToClient(clientPoints, numberOfPoints, ndcPoints);
   }
 

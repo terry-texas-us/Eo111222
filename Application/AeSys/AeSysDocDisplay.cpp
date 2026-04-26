@@ -15,7 +15,6 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderDeviceDirect2D.h"
-#include "EoGsRenderDeviceGdi.h"
 #include "EoGsRenderState.h"
 
 void AeSysDoc::DisplayAllLayers(AeSysView* view, EoGsRenderDevice* renderDevice) {

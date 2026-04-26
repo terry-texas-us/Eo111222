@@ -447,7 +447,7 @@ void AeSysView::GenerateLineEndItem(
   EoGePoint3dArray itemPoints;
 
   if (type == 1 || type == 2) {
-    const double angle{0.244978663127};
+    constexpr double angle{0.244978663127};
     const double length{size / 0.970142500145};
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
@@ -458,7 +458,7 @@ void AeSysView::GenerateLineEndItem(
     if (type == 2) { polyline->SetClosed(true); }
     group->AddTail(polyline);
   } else if (type == 3) {
-    const double angle{9.96686524912e-2};
+    constexpr double angle{9.96686524912e-2};
     const double length{size / 0.99503719021};
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));
@@ -467,7 +467,7 @@ void AeSysView::GenerateLineEndItem(
 
     group->AddTail(new EoDbPolyline(1, 1, itemPoints));
   } else if (type == 4) {
-    const double angle{0.785398163397};
+    constexpr double angle{0.785398163397};
     const double length{0.5 * size / 0.707106781187};
 
     EoGePoint3d pt(endPoint.ProjectToward(beginPoint, length));

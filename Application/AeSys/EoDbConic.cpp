@@ -209,7 +209,7 @@ EoDbConic* EoDbConic::CreateRadialArcFrom3Points(
   }
 
   const EoGeVector3d extrusion = normal;
-  const double ratio{1.0};
+  constexpr double ratio{1.0};
 
   // Build transformation matrix which will get int and end points to z=0 plane with beg point as origin
   EoGeTransformMatrix transformMatrix(start, normal);

@@ -83,9 +83,10 @@ class EoGsRenderState {
   void SetTextStyleName(std::wstring name) { m_textStyleName = std::move(name); }
   [[nodiscard]] const std::wstring& TextStyleName() const { return m_textStyleName; }
 
-  void SetCharacterCellDefinition(EoDbCharacterCellDefinition& characterCellDefinition) {
+  void SetCharacterCellDefinition(const EoDbCharacterCellDefinition& characterCellDefinition) {
     m_characterCellDefinition = characterCellDefinition;
   }
+
   void SetFontDefinition(CDC* deviceContext, const EoDbFontDefinition& fontDefinition);
   void SetFontDefinition(EoGsRenderDevice* renderDevice, const EoDbFontDefinition& fontDefinition);
   [[nodiscard]] EoDbCharacterCellDefinition CharacterCellDefinition() const noexcept {

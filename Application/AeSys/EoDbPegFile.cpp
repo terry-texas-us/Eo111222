@@ -478,7 +478,7 @@ void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion
   } else if (peekedSentinel == EoDb::kPaperSpaceSection) {
     // --- Legacy single-layout paper-space section (old V2 format) ---
     // Route all layers/entities to the default layout (PaperSpaceBlockRecord 0x1E).
-    const auto layoutHandle = EoDxf::Handles::PaperSpaceBlockRecord;
+    constexpr auto layoutHandle{EoDxf::Handles::PaperSpaceBlockRecord};
 
     ReadPaperSpaceLayoutLayers(document, fileVersion, layoutHandle);
     ReadPaperSpaceLayoutEntities(document, fileVersion, layoutHandle);

@@ -282,9 +282,9 @@ void EoMfLayoutTabBar::RepositionControls() {
 
   const int barHeight = PreferredHeight();
   const int controlHeight = barHeight - 4;  // 2px top + 2px bottom margin
-  const int topMargin = 2;
-  const int rightMargin = 4;
-  const int controlGap = 4;
+  constexpr int topMargin{2};
+  constexpr int rightMargin{4};
+  constexpr int controlGap{4};
 
   // Measure the space label text width
   CClientDC dc(&m_spaceLabel);
@@ -332,7 +332,7 @@ void EoMfLayoutTabBar::RepositionControls() {
   }
 
   // Block edit buttons (if visible) — Save, SaveAs, Close with padding for hover highlight
-  const int blockButtonSize = 32;
+  constexpr int blockButtonSize{32};
   if (m_blockEditCloseButton.IsWindowVisible()) {
     xPosition -= blockButtonSize;
     m_blockEditCloseButton.MoveWindow(xPosition, topMargin, blockButtonSize, controlHeight);

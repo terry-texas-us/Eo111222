@@ -440,7 +440,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
     // Scale directions for the reference system
     // xDirection encodes: widthScale × height × defaultCharacterCellAspectRatio
     // yDirection encodes: text height
-    const double widthScale = 1.0;
+    constexpr double widthScale{1.0};
     yAxisDirection *= dimtxt;
     xAxisDirection *= widthScale * dimtxt * Eo::defaultCharacterCellAspectRatio;
 

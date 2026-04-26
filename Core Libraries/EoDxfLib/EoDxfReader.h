@@ -135,7 +135,7 @@ class EoDxfReaderAscii : public EoDxfReader {
     std::string text;
     if (!ReadEncodedText(&text)) { return false; }
 
-    std::string_view trimmedText = EoDxf::Detail::Trim(text);
+    const std::string_view trimmedText = EoDxf::Detail::Trim(text);
     if (trimmedText.empty()) { return false; }
 
     double value{};

@@ -106,7 +106,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
 
   // Prevent the menu bar from taking the focus on activation
   CMFCPopupMenu::SetForceMenuFocus(FALSE);
-  const DWORD controlStyle(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
+  constexpr DWORD controlStyle(WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
 
   // Default button/image sizes for initial toolbar creation. The actual button height
   // is adjusted after the first RecalcLayout, which creates the combo HWNDs via
@@ -245,7 +245,7 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) {
 BOOL CMainFrame::CreateDockablePanes() {
   const CSize defaultSize(200, 200);
 
-  const DWORD sharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
+  constexpr DWORD sharedStyles(WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_FLOAT_MULTI);
 
   auto windowName = App::LoadStringResource(IDS_OUTPUT);
   if (!m_outputPane.Create(windowName, this, defaultSize, TRUE, ID_VIEW_OUTPUTWND, sharedStyles | CBRS_BOTTOM)) {

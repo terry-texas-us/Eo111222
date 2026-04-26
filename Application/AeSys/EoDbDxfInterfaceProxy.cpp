@@ -189,7 +189,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
 
     switch (typeCode) {
       case 1: {  // Extents: 6 × double (48 bytes) — bounding box, skip for now
-        const std::size_t extentsSize = 48;
+        constexpr std::size_t extentsSize{48};
         if (offset + extentsSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated extents data at offset %zu\n", offset);
           offset = dataSize;
@@ -201,7 +201,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 2: {  // Circle: Point3d center, double radius, Vector3d normal (56 bytes)
-        const std::size_t circleSize = 24 + 8 + 24;
+        constexpr std::size_t circleSize{24 + 8 + 24};
         if (offset + circleSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated circle data at offset %zu\n", offset);
           offset = dataSize;
@@ -232,7 +232,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
 
       case 4: {  // CircularArc: Point3d center, double radius, Vector3d normal, Vector3d startVector,
                  //              double sweepAngle, int32 arcType (92 bytes)
-        const std::size_t circularArcSize = 24 + 8 + 24 + 24 + 8 + 4;
+        constexpr std::size_t circularArcSize{24 + 8 + 24 + 24 + 8 + 4};
         if (offset + circularArcSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated circular arc data at offset %zu\n", offset);
           offset = dataSize;
@@ -359,7 +359,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 3: {  // Circle (3pt): Point3d pt1, Point3d pt2, Point3d pt3 (72 bytes)
-        const std::size_t circle3ptSize = 72;
+        constexpr std::size_t circle3ptSize{72};
         if (offset + circle3ptSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated 3pt circle data at offset %zu\n", offset);
           offset = dataSize;
@@ -372,7 +372,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 5: {  // CircularArc (3pt): Point3d start, Point3d point, Point3d end (72 bytes)
-        const std::size_t arc3ptSize = 72;
+        constexpr std::size_t arc3ptSize{72};
         if (offset + arc3ptSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated 3pt arc data at offset %zu\n", offset);
           offset = dataSize;
@@ -452,7 +452,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
 
       case 10:
       case 11: {  // Text: Point3d position, Vector3d normal, Vector3d direction, string
-        const std::size_t textHeaderSize = 24 + 24 + 24;  // position + normal + direction = 72 bytes
+        constexpr std::size_t textHeaderSize{24 + 24 + 24};  // position + normal + direction = 72 bytes
         if (offset + textHeaderSize + 4 > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated text header at offset %zu\n", offset);
           offset = dataSize;
@@ -485,7 +485,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
 
       case 12:  // Xline: Point3d basePoint, Vector3d direction (48 bytes)
       case 13: {  // Ray: same layout as xline
-        const std::size_t xlineSize = 48;
+        constexpr std::size_t xlineSize{48};
         if (offset + xlineSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated xline/ray data at offset %zu\n", offset);
           offset = dataSize;
@@ -498,7 +498,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 14: {  // SUBENT: Color (int16 colorIndex = 2 bytes)
-        const std::size_t payloadSize = 2;
+        constexpr std::size_t payloadSize{2};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -543,7 +543,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 17: {  // SUBENT: Marker (int32 = 4 bytes)
-        const std::size_t payloadSize = 4;
+        constexpr std::size_t payloadSize{4};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -554,7 +554,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 18: {  // SUBENT: Fill (int16 = 2 bytes)
-        const std::size_t payloadSize = 2;
+        constexpr std::size_t payloadSize{2};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -565,7 +565,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 20: {  // SUBENT: True Color (int32 = 4 bytes)
-        const std::size_t payloadSize = 4;
+        constexpr std::size_t payloadSize{4};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -576,7 +576,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 21: {  // SUBENT: Lineweight (int16 = 2 bytes)
-        const std::size_t payloadSize = 2;
+        constexpr std::size_t payloadSize{2};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -587,7 +587,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 22: {  // SUBENT: Linetype Scale (double = 8 bytes)
-        const std::size_t payloadSize = 8;
+        constexpr std::size_t payloadSize{8};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -598,7 +598,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 23: {  // SUBENT: Thickness (double = 8 bytes)
-        const std::size_t payloadSize = 8;
+        constexpr std::size_t payloadSize{8};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -609,7 +609,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 24: {  // SUBENT: Plot Style Name (int32 = 4 bytes)
-        const std::size_t payloadSize = 4;
+        constexpr std::size_t payloadSize{4};
         if (offset + payloadSize > dataSize) {
           offset = dataSize;
           break;
@@ -633,7 +633,7 @@ void EoDbDxfInterface::ConvertAcadProxyEntity(const EoDxfAcadProxyEntity& proxyE
       }
 
       case 29: {  // Push Model Transform: 4×3 matrix (12 × double = 96 bytes)
-        const std::size_t xformSize = 96;
+        constexpr std::size_t xformSize{96};
         if (offset + xformSize > dataSize) {
           ATLTRACE2(traceGeneral, 1, L"  Proxy graphics: truncated model transform at offset %zu\n", offset);
           offset = dataSize;

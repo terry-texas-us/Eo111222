@@ -53,12 +53,12 @@ void EoCtrlLayerComboBox::PopulateItems() {
   m_rebuildPending = false;
   BuildItemList();
 
-  auto* document = AeSysDoc::GetDoc();
+  const auto* document = AeSysDoc::GetDoc();
   if (document == nullptr || document->IsClosing()) { return; }
 
   // Select the work layer
   for (int i = 0; i < GetCount(); i++) {
-    auto* layer = reinterpret_cast<EoDbLayer*>(GetItemData(i));
+    const auto* layer = reinterpret_cast<const EoDbLayer*>(GetItemData(i));
     if (layer != nullptr && layer->IsWork()) {
       SelectItem(i);
       return;
@@ -71,7 +71,7 @@ void EoCtrlLayerComboBox::SetCurrentLayer(const CString& layerName) {
   // Rebuild first to ensure items reference valid layer pointers from the current document
   BuildItemList();
   for (int i = 0; i < GetCount(); i++) {
-    auto* layer = reinterpret_cast<EoDbLayer*>(GetItemData(i));
+    const auto* layer = reinterpret_cast<const EoDbLayer*>(GetItemData(i));
     if (layer != nullptr && layer->Name().CompareNoCase(layerName) == 0) {
       SelectItem(i);
       return;
@@ -105,9 +105,9 @@ void EoCtrlLayerComboBox::Serialize(CArchive& ar) {
     ar << static_cast<DWORD>(m_dwStyle);
 
     CString currentName;
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
-      auto* layer = reinterpret_cast<EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
+      const auto* layer = reinterpret_cast<const EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
       if (layer != nullptr) { currentName = layer->Name(); }
     }
     ar << currentName;
@@ -123,7 +123,7 @@ void EoCtrlLayerComboBox::Serialize(CArchive& ar) {
     BuildItemList();
     // Try to select saved name
     for (int i = 0; i < GetCount(); i++) {
-      auto* layer = reinterpret_cast<EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(i));
+      const auto* layer = reinterpret_cast<const EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(i));
       if (layer != nullptr && layer->Name().CompareNoCase(savedName) == 0) {
         SelectItem(i);
         return;
@@ -198,7 +198,7 @@ BOOL EoCtrlLayerComboBox::OnClick(CWnd* parentWindow, BOOL delay) {
   CPoint clientPoint = screenPoint;
   if (parentWindow != nullptr) { parentWindow->ScreenToClient(&clientPoint); }
 
-  int iconRight = m_rectCombo.left + kIconAreaWidth;
+  const int iconRight = m_rectCombo.left + kIconAreaWidth;
   if (clientPoint.x >= m_rectCombo.left && clientPoint.x < iconRight) {
     OpenLayerManager();
     return TRUE;
@@ -277,11 +277,11 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
     auto* document = AeSysDoc::GetDoc();
     if (document == nullptr || document->IsClosing()) { return; }
 
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     // When a rebuild is pending (deferred to avoid modifying the item list from inside a paint
     // handler), skip both validation and content rendering for this cycle.
     if (!m_rebuildPending && curSel >= 0) {
-      auto* existingLayer = reinterpret_cast<EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
+      const auto* existingLayer = reinterpret_cast<const EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
       bool needsRebuild = (existingLayer == nullptr);
       if (!needsRebuild) {
         bool found = false;
@@ -300,7 +300,7 @@ void EoCtrlLayerComboBox::OnDraw(CDC* deviceContext, const CRect& rect, CMFCTool
       }
 
       // Layer pointer is valid — draw the closed combo content.
-      auto* layer = reinterpret_cast<EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
+      const auto* layer = reinterpret_cast<const EoDbLayer*>(CMFCToolBarComboBoxButton::GetItemData(curSel));
 
       CRect rectContent = rectCombo;
       rectContent.left += kIconAreaWidth;
@@ -476,7 +476,7 @@ void EoCtrlLayerOwnerDrawCombo::OnPaint() {
 
   dc.FillSolidRect(&clientRect, Eo::chromeColors.paneBackground);
 
-  int curSel = GetCurSel();
+  const int curSel = GetCurSel();
   if (curSel != CB_ERR) {
     DRAWITEMSTRUCT dis{};
     dis.CtlType = ODT_COMBOBOX;

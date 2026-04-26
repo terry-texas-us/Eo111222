@@ -219,8 +219,8 @@ class AeSys : public CWinAppEx {
   [[nodiscard]] bool IsTrapHighlighted() const { return m_TrapHighlighted; }
   void LoadModeResources(int mode, AeSysView* targetView = nullptr);
   void LoadSimplexStrokeFont(const CString& pathName);
-  [[nodiscard]] double ParseLength(wchar_t* lengthAsString);
-  [[nodiscard]] double ParseLength(Eo::Units units, wchar_t* inputLine);
+  [[nodiscard]] double ParseLength(const wchar_t* lengthAsString);
+  [[nodiscard]] double ParseLength(Eo::Units units, const wchar_t* inputLine);
   [[nodiscard]] auto PenColorsGetHot(std::int16_t color) { return (Eo::ColorPalette[color]); }
 
   /** @brief Loads pen colors from a specified file and updates the color palettes accordingly.
@@ -231,7 +231,7 @@ class AeSys : public CWinAppEx {
    * No checks are performed to ensure that the color values are within the valid range (0-255) for RGB components.
    */
   void LoadPenColorsFromFile(const CString& pathName);
-
+  
   [[nodiscard]] double LineWeight(std::int16_t penIndex) { return (penWidthsTable[penIndex]); }
 
   /** Loads the pen widths from a file.

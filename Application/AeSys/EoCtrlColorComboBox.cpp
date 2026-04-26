@@ -100,7 +100,7 @@ void EoCtrlColorComboBox::Serialize(CArchive& ar) {
     }
     ar << selectedColor;
   } else {
-    UINT schema = ar.GetObjectSchema();
+    const UINT schema = ar.GetObjectSchema();
     std::int16_t activeColor = Gs::renderState.Color();
 
     if (schema <= 1) {
@@ -307,7 +307,7 @@ void EoCtrlColorOwnerDrawCombo::OnPaint() {
 
   // Content area — the full client rect.  The dropdown arrow is drawn by the visual
   // manager's OnDrawComboDropButton in the toolbar button area adjacent to this window.
-  int curSel = GetCurSel();
+  const int curSel = GetCurSel();
   if (curSel != CB_ERR) {
     DRAWITEMSTRUCT dis{};
     dis.CtlType = ODT_COMBOBOX;
@@ -380,7 +380,7 @@ void EoCtrlColorOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   const bool isMoreColors = (itemData == EoCtrlColorComboBox::kMoreColors);
 
   if (!isMoreColors) {
-    auto aciIndex = static_cast<std::int16_t>(itemData);
+    const auto aciIndex = static_cast<std::int16_t>(itemData);
 
     if (aciIndex == EoDbPrimitive::COLOR_BYLAYER || aciIndex == EoDbPrimitive::COLOR_BYBLOCK) {
       // Hollow swatch with border for By Layer / By Block
