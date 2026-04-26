@@ -443,19 +443,19 @@ BOOL AeSysDoc::OnSaveDocument(LPCWSTR pathName) {
     case EoDb::FileTypes::Job: {
       auto* layer = GetLayerTableLayer(pathName);
       if (layer != nullptr) {
-        CFile File(pathName, CFile::modeCreate | CFile::modeWrite);
-        if (File == CFile::hFileNull) {
+        CFile file(pathName, CFile::modeCreate | CFile::modeWrite);
+        if (file == CFile::hFileNull) {
           app.WarningMessageBox(IDS_MSG_TRACING_WRITE_FAILURE, pathName);
           return FALSE;
         }
         if (m_saveAsType == EoDb::FileTypes::Job) {
-          EoDbJobFile JobFile;
-          JobFile.WriteHeader(File);
-          JobFile.WriteLayer(File, layer);
+          EoDbJobFile jobFile;
+          jobFile.WriteHeader(file);
+          jobFile.WriteLayer(file, layer);
         } else if (m_saveAsType == EoDb::FileTypes::Tracing) {
-          EoDbTracingFile TracingFile;
-          TracingFile.WriteHeader(File);
-          TracingFile.WriteLayer(File, layer);
+          EoDbTracingFile tracingFile;
+          tracingFile.WriteHeader(file);
+          tracingFile.WriteLayer(file, layer);
         }
         app.AddStringToMessageList(IDS_MSG_TRACING_SAVE_SUCCESS, pathName);
         returnStatus = TRUE;

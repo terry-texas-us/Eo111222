@@ -506,8 +506,8 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         view->ModelViewGetViewport(deviceViewport);
         const double deviceWidth = deviceViewport.Width();
         const double deviceHeight = deviceViewport.Height();
-        const double clipWidth = static_cast<double>(clipRight - clipLeft);
-        const double clipHeight = static_cast<double>(clipBottom - clipTop);
+        const auto clipWidth = static_cast<double>(clipRight - clipLeft);
+        const auto clipHeight = static_cast<double>(clipBottom - clipTop);
         const double clipCenterX = (clipLeft + clipRight) / 2.0;
         const double clipCenterY = (clipTop + clipBottom) / 2.0;
 

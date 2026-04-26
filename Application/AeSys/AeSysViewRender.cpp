@@ -606,16 +606,16 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
   ViewportPushActive();
   PushViewTransform();
 
-  const int HorizontalPixelWidth = deviceContext->GetDeviceCaps(HORZRES);
-  const int VerticalPixelWidth = deviceContext->GetDeviceCaps(VERTRES);
+  const int horizontalPixelWidth = deviceContext->GetDeviceCaps(HORZRES);
+  const int verticalPixelWidth = deviceContext->GetDeviceCaps(VERTRES);
 
-  SetViewportSize(HorizontalPixelWidth, VerticalPixelWidth);
+  SetViewportSize(horizontalPixelWidth, verticalPixelWidth);
 
-  const double HorizontalSize = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE));
-  const double VerticalSize = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE));
+  const auto horizontalSize = static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE));
+  const auto verticalSize = static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE));
 
-  SetDeviceWidthInInches(HorizontalSize / Eo::MmPerInch);
-  SetDeviceHeightInInches(VerticalSize / Eo::MmPerInch);
+  SetDeviceWidthInInches(horizontalSize / Eo::MmPerInch);
+  SetDeviceHeightInInches(verticalSize / Eo::MmPerInch);
 
   if (m_Plot) {
     // When fit-to-paper is active, compute the scale that maps the entire
@@ -630,8 +630,8 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
       const double extentWidth = ptMax.x - ptMin.x;
       const double extentHeight = ptMax.y - ptMin.y;
 
-      const double paperWidthInches = HorizontalSize / Eo::MmPerInch;
-      const double paperHeightInches = VerticalSize / Eo::MmPerInch;
+      const double paperWidthInches = horizontalSize / Eo::MmPerInch;
+      const double paperHeightInches = verticalSize / Eo::MmPerInch;
       if (extentWidth > Eo::geometricTolerance && extentHeight > Eo::geometricTolerance
           && paperWidthInches > Eo::geometricTolerance && paperHeightInches > Eo::geometricTolerance) {
         m_PlotScaleFactor = std::min(paperWidthInches / extentWidth, paperHeightInches / extentHeight);
@@ -640,11 +640,11 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
       }
     }
 
-    UINT HorizontalPages;
-    UINT VerticalPages;
-    pInfo->SetMaxPage(NumPages(deviceContext, m_PlotScaleFactor, HorizontalPages, VerticalPages));
+    UINT horizontalPages;
+    UINT verticalPages;
+    pInfo->SetMaxPage(NumPages(deviceContext, m_PlotScaleFactor, horizontalPages, verticalPages));
   } else {
-    m_ViewTransform.AdjustWindow(static_cast<double>(VerticalPixelWidth) / static_cast<double>(HorizontalPixelWidth));
+    m_ViewTransform.AdjustWindow(static_cast<double>(verticalPixelWidth) / static_cast<double>(horizontalPixelWidth));
   }
 }
 
@@ -683,10 +683,10 @@ BOOL AeSysView::OnPreparePrinting(CPrintInfo* pInfo) {
       if (hDC != nullptr) {
         UINT nHorzPages;
         UINT nVertPages;
-        CDC DeviceContext;
-        DeviceContext.Attach(hDC);
-        pInfo->SetMaxPage(NumPages(&DeviceContext, m_PlotScaleFactor, nHorzPages, nVertPages));
-        ::DeleteDC(DeviceContext.Detach());
+        CDC deviceContext;
+        deviceContext.Attach(hDC);
+        pInfo->SetMaxPage(NumPages(&deviceContext, m_PlotScaleFactor, nHorzPages, nVertPages));
+        ::DeleteDC(deviceContext.Detach());
       }
     }
   }
@@ -698,21 +698,21 @@ void AeSysView::OnPrepareDC(CDC* deviceContext, CPrintInfo* pInfo) {
 
   if (deviceContext->IsPrinting()) {
     if (m_Plot) {
-      const double HorizontalSizeInInches =
+      const double horizontalSizeInInches =
           static_cast<double>(deviceContext->GetDeviceCaps(HORZSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
-      const double VerticalSizeInInches =
+      const double verticalSizeInInches =
           static_cast<double>(deviceContext->GetDeviceCaps(VERTSIZE)) / Eo::MmPerInch / m_PlotScaleFactor;
 
       m_ViewTransform.Initialize(m_Viewport);
-      m_ViewTransform.SetWindow(0.0, 0.0, HorizontalSizeInInches, VerticalSizeInInches);
+      m_ViewTransform.SetWindow(0.0, 0.0, horizontalSizeInInches, verticalSizeInInches);
 
       UINT nHorzPages;
       UINT nVertPages;
 
       NumPages(deviceContext, m_PlotScaleFactor, nHorzPages, nVertPages);
 
-      const double dX = ((pInfo->m_nCurPage - 1) % nHorzPages) * HorizontalSizeInInches;
-      const double dY = ((pInfo->m_nCurPage - 1) / nHorzPages) * VerticalSizeInInches;
+      const double dX = ((pInfo->m_nCurPage - 1) % nHorzPages) * horizontalSizeInInches;
+      const double dY = ((pInfo->m_nCurPage - 1) / nHorzPages) * verticalSizeInInches;
 
       m_ViewTransform.SetTarget(EoGePoint3d(dX, dY, 0.0));
       m_ViewTransform.SetPosition(EoGeVector3d::positiveUnitZ);
@@ -868,10 +868,10 @@ void AeSysView::BackgroundImageDisplay(CDC* deviceContext) {
   CPalette* pPalette = deviceContext->SelectPalette(&m_backgroundImagePalette, FALSE);
   deviceContext->RealizePalette();
 
-  const auto Target = m_ViewTransform.Target();
+  const auto target = m_ViewTransform.Target();
   const auto ptTargetOver = m_OverviewViewTransform.Target();
-  const double dU = Target.x - ptTargetOver.x;
-  const double dV = Target.y - ptTargetOver.y;
+  const double dU = target.x - ptTargetOver.x;
+  const double dV = target.y - ptTargetOver.y;
 
   // Determine the region of the bitmap to tranfer to display
   CRect rcWnd;
@@ -916,11 +916,11 @@ void AeSysView::DisplayOdometer() {
   CString lengthText;
 
   app.FormatLength(lengthText, units, m_vRelPos.x);
-  CString Position = lengthText.TrimLeft();
+  CString position = lengthText.TrimLeft();
   app.FormatLength(lengthText, units, m_vRelPos.y);
-  Position.Append(L", " + lengthText.TrimLeft());
+  position.Append(L", " + lengthText.TrimLeft());
   app.FormatLength(lengthText, units, m_vRelPos.z);
-  Position.Append(L", " + lengthText.TrimLeft());
+  position.Append(L", " + lengthText.TrimLeft());
 
   if (m_rubberbandType == Lines) {
     const EoGeLine line(m_rubberbandBegin, cursorPosition);
@@ -931,9 +931,9 @@ void AeSysView::DisplayOdometer() {
 
     CString angle;
     app.FormatAngle(angle, angleInXYPlane, 8, 3);
-    Position.Append(L" [" + lengthText.TrimLeft() + L" @ " + angle + L"]");
+    position.Append(L" [" + lengthText.TrimLeft() + L" @ " + angle + L"]");
   }
-  if (auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd())) { mainFrame->SetPaneText(0, Position); }
+  if (auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd())) { mainFrame->SetPaneText(0, position); }
 
 #ifdef USING_DDE
   dde::PostAdvise(dde::RelPosXInfo);

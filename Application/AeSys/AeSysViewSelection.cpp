@@ -19,15 +19,15 @@ void AeSysView::DeleteLastGroup() {
     app.AddStringToMessageList(IDS_MSG_NO_DET_GROUPS_IN_VIEW);
   } else {
     auto* document = GetDocument();
-    auto* Group = m_VisibleGroupList.RemoveTail();
+    auto* group = m_VisibleGroupList.RemoveTail();
 
-    document->AnyLayerRemove(Group);
-    if (document->RemoveTrappedGroup(Group) != nullptr) {  // Display it normal color so the erase xor will work
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+    document->AnyLayerRemove(group);
+    if (document->RemoveTrappedGroup(group) != nullptr) {  // Display it normal color so the erase xor will work
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       UpdateStateInformation(TrapCount);
     }
-    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
-    document->DeletedGroupsAddHead(Group);
+    document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
+    document->DeletedGroupsAddHead(group);
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
 }
@@ -35,8 +35,8 @@ void AeSysView::DeleteLastGroup() {
 void AeSysView::BreakAllPolylines() {
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
-    auto* Group = GetNextVisibleGroup(position);
-    Group->BreakPolylines();
+    auto* group = GetNextVisibleGroup(position);
+    group->BreakPolylines();
   }
 }
 
@@ -136,8 +136,8 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) 
     while (primitivePosition != nullptr) {
       auto* primitive = group->GetNext(primitivePosition);
       if (primitive->Is(EoDb::kLinePrimitive)) {
-        EoGePoint3d PointOnLine;
-        if (primitive->SelectUsingPoint(this, ptView, PointOnLine)) {
+        EoGePoint3d pointOnLine;
+        if (primitive->SelectUsingPoint(this, ptView, pointOnLine)) {
           line = static_cast<EoDbLine*>(primitive);
           return group;
         }
@@ -160,12 +160,12 @@ EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& pt) {
 
   const EoGeTransformMatrix transformMatrix = ModelViewGetMatrixInverse();
 
-  auto GroupPosition = GetFirstVisibleGroupPosition();
-  while (GroupPosition != nullptr) {
-    auto* group = GetNextVisibleGroup(GroupPosition);
-    auto PrimitivePosition = group->GetHeadPosition();
-    while (PrimitivePosition != nullptr) {
-      EoDbPrimitive* primitive = group->GetNext(PrimitivePosition);
+  auto groupPosition = GetFirstVisibleGroupPosition();
+  while (groupPosition != nullptr) {
+    auto* group = GetNextVisibleGroup(groupPosition);
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      EoDbPrimitive* primitive = group->GetNext(primitivePosition);
       if (primitive->Is(EoDb::kLinePrimitive)) {
         if (primitive->SelectUsingPoint(this, ptView, engagedPoint)) {
           tol = ptView.DistanceToPointXY(EoGePoint4d(engagedPoint));

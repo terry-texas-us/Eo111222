@@ -7,9 +7,9 @@ EoGeVector3d AeSysView::CameraDirection() const { return m_ViewTransform.Directi
 EoGePoint3d AeSysView::CameraTarget() const { return m_ViewTransform.Target(); }
 void AeSysView::CopyActiveModelViewToPreviousModelView() { m_PreviousViewTransform = m_ViewTransform; }
 void AeSysView::ExchangeActiveAndPreviousModelViews() {
-  const EoGsViewTransform ModelView(m_ViewTransform);
+  const EoGsViewTransform modelView(m_ViewTransform);
   m_ViewTransform = m_PreviousViewTransform;
-  m_PreviousViewTransform = ModelView;
+  m_PreviousViewTransform = modelView;
 }
 EoGsViewTransform AeSysView::PreviousModelView() { return m_PreviousViewTransform; }
 void AeSysView::SetCameraPosition(const EoGeVector3d& direction) {

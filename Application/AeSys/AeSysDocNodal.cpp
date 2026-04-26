@@ -12,11 +12,11 @@
 #include "EoGeUniquePoint.h"
 
 void AeSysDoc::DeleteNodalResources() {
-  auto UniquePointPosition = GetFirstUniquePointPosition();
-  while (UniquePointPosition != nullptr) { delete GetNextUniquePoint(UniquePointPosition); }
+  auto uniquePointPosition = GetFirstUniquePointPosition();
+  while (uniquePointPosition != nullptr) { delete GetNextUniquePoint(uniquePointPosition); }
   RemoveAllUniquePoints();
-  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
-  while (MaskedPrimitivePosition != nullptr) { delete GetNextMaskedPrimitive(MaskedPrimitivePosition); }
+  auto maskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  while (maskedPrimitivePosition != nullptr) { delete GetNextMaskedPrimitive(maskedPrimitivePosition); }
   RemoveAllMaskedPrimitives();
   RemoveAllNodalGroups();
 }
@@ -26,8 +26,8 @@ void AeSysDoc::UpdateNodalList(EoDbGroup* group, EoDbPrimitive* primitive, DWORD
       if (!FindNodalGroup(group)) { AddNodalGroup(group); }
       AddPrimitiveBit(primitive, bit);
       if (AddUniquePoint(point) == 1) {
-        EoDbPoint PointPrimitive(252, 8, point);
-        UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, &PointPrimitive);
+        EoDbPoint pointPrimitive(252, 8, point);
+        UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, &pointPrimitive);
       }
     }
   } else {
@@ -35,97 +35,97 @@ void AeSysDoc::UpdateNodalList(EoDbGroup* group, EoDbPrimitive* primitive, DWORD
       RemovePrimitiveBit(primitive, bit);
 
       if (RemoveUniquePoint(point) == 0) {
-        EoDbPoint PointPrimitive(252, 8, point);
-        UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, &PointPrimitive);
+        EoDbPoint pointPrimitive(252, 8, point);
+        UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, &pointPrimitive);
       }
     }
   }
 }
 
 int AeSysDoc::AddUniquePoint(const EoGePoint3d& point) {
-  auto UniquePointPosition = GetFirstUniquePointPosition();
-  while (UniquePointPosition != nullptr) {
-    EoGeUniquePoint* UniquePoint = GetNextUniquePoint(UniquePointPosition);
-    if (point == UniquePoint->m_Point) {
-      (UniquePoint->m_References)++;
-      return (UniquePoint->m_References);
+  auto uniquePointPosition = GetFirstUniquePointPosition();
+  while (uniquePointPosition != nullptr) {
+    EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
+    if (point == uniquePoint->m_Point) {
+      (uniquePoint->m_References)++;
+      return (uniquePoint->m_References);
     }
   }
   AddUniquePoint(new EoGeUniquePoint(point, 1));
   return (1);
 }
 void AeSysDoc::DisplayUniquePoints() {
-  EoDbGroup Group;
-  auto UniquePointPosition = GetFirstUniquePointPosition();
-  while (UniquePointPosition != nullptr) {
-    EoGeUniquePoint* UniquePoint = GetNextUniquePoint(UniquePointPosition);
-    Group.AddTail(new EoDbPoint(252, 8, UniquePoint->m_Point));
+  EoDbGroup group;
+  auto uniquePointPosition = GetFirstUniquePointPosition();
+  while (uniquePointPosition != nullptr) {
+    EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
+    group.AddTail(new EoDbPoint(252, 8, uniquePoint->m_Point));
   }
-  UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &Group);
-  Group.DeletePrimitivesAndRemoveAll();
+  UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &group);
+  group.DeletePrimitivesAndRemoveAll();
 }
 int AeSysDoc::RemoveUniquePoint(const EoGePoint3d& point) {
-  int References = 0;
+  int references{};
 
-  auto UniquePointPosition = GetFirstUniquePointPosition();
-  while (UniquePointPosition != nullptr) {
-    auto position = UniquePointPosition;
-    EoGeUniquePoint* UniquePoint = GetNextUniquePoint(UniquePointPosition);
-    if (point == UniquePoint->m_Point) {
-      References = --(UniquePoint->m_References);
+  auto uniquePointPosition = GetFirstUniquePointPosition();
+  while (uniquePointPosition != nullptr) {
+    auto position = uniquePointPosition;
+    EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
+    if (point == uniquePoint->m_Point) {
+      references = --(uniquePoint->m_References);
 
-      if (References == 0) {
+      if (references == 0) {
         RemoveUniquePointAt(position);
-        delete UniquePoint;
+        delete uniquePoint;
       }
       break;
     }
   }
-  return References;
+  return references;
 }
 void AeSysDoc::AddPrimitiveBit(EoDbPrimitive* primitive, int bit) {
-  EoDbMaskedPrimitive* MaskedPrimitive{};
+  EoDbMaskedPrimitive* maskedPrimitive{};
 
-  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
-  while (MaskedPrimitivePosition != nullptr) {
-    auto posCur = MaskedPrimitivePosition;
-    MaskedPrimitive = GetNextMaskedPrimitive(MaskedPrimitivePosition);
-    if (MaskedPrimitive->GetPrimitive() == primitive) {
-      MaskedPrimitivePosition = posCur;
+  auto maskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  while (maskedPrimitivePosition != nullptr) {
+    auto posCur = maskedPrimitivePosition;
+    maskedPrimitive = GetNextMaskedPrimitive(maskedPrimitivePosition);
+    if (maskedPrimitive->GetPrimitive() == primitive) {
+      maskedPrimitivePosition = posCur;
       break;
     }
   }
-  if (MaskedPrimitivePosition == nullptr) {
-    MaskedPrimitive = new EoDbMaskedPrimitive(primitive, 0);
-    AddMaskedPrimitive(MaskedPrimitive);
+  if (maskedPrimitivePosition == nullptr) {
+    maskedPrimitive = new EoDbMaskedPrimitive(primitive, 0);
+    AddMaskedPrimitive(maskedPrimitive);
   }
-  MaskedPrimitive->SetMaskBit(bit);
+  maskedPrimitive->SetMaskBit(bit);
 }
 void AeSysDoc::RemovePrimitiveBit(EoDbPrimitive* primitive, int bit) {
-  EoDbMaskedPrimitive* MaskedPrimitive{};
+  EoDbMaskedPrimitive* maskedPrimitive{};
 
-  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
-  while (MaskedPrimitivePosition != nullptr) {
-    auto posCur = MaskedPrimitivePosition;
-    MaskedPrimitive = GetNextMaskedPrimitive(MaskedPrimitivePosition);
-    if (MaskedPrimitive->GetPrimitive() == primitive) {
-      MaskedPrimitivePosition = posCur;
+  auto maskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  while (maskedPrimitivePosition != nullptr) {
+    auto posCur = maskedPrimitivePosition;
+    maskedPrimitive = GetNextMaskedPrimitive(maskedPrimitivePosition);
+    if (maskedPrimitive->GetPrimitive() == primitive) {
+      maskedPrimitivePosition = posCur;
       break;
     }
   }
-  if (MaskedPrimitivePosition != nullptr) { MaskedPrimitive->ClearMaskBit(bit); }
+  if (maskedPrimitivePosition != nullptr) { maskedPrimitive->ClearMaskBit(bit); }
 }
 DWORD AeSysDoc::GetPrimitiveMask(EoDbPrimitive* primitive) {
-  EoDbMaskedPrimitive* MaskedPrimitive = nullptr;
+  EoDbMaskedPrimitive* maskedPrimitive = nullptr;
 
-  auto MaskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
-  while (MaskedPrimitivePosition != nullptr) {
-    auto posCur = MaskedPrimitivePosition;
-    MaskedPrimitive = GetNextMaskedPrimitive(MaskedPrimitivePosition);
-    if (MaskedPrimitive->GetPrimitive() == primitive) {
-      MaskedPrimitivePosition = posCur;
+  auto maskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
+  while (maskedPrimitivePosition != nullptr) {
+    auto posCur = maskedPrimitivePosition;
+    maskedPrimitive = GetNextMaskedPrimitive(maskedPrimitivePosition);
+    if (maskedPrimitive->GetPrimitive() == primitive) {
+      maskedPrimitivePosition = posCur;
       break;
     }
   }
-  return ((MaskedPrimitivePosition != nullptr) ? MaskedPrimitive->GetMask() : 0UL);
+  return ((maskedPrimitivePosition != nullptr) ? maskedPrimitive->GetMask() : 0UL);
 }

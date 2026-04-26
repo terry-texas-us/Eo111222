@@ -21,11 +21,11 @@ void AeSysView::OnTrapModePoint() {
 
   auto position = GetFirstVisibleGroupPosition();
   while (position != nullptr) {
-    auto* Group = GetNextVisibleGroup(position);
+    auto* group = GetNextVisibleGroup(position);
 
-    if (document->FindTrappedGroup(Group) != nullptr) { continue; }
+    if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
-    if (Group->SelectUsingPoint_(this, ptView)) { document->AddGroupToTrap(Group); }
+    if (group->SelectUsingPoint_(this, ptView)) { document->AddGroupToTrap(group); }
   }
   UpdateStateInformation(TrapCount);
 }
@@ -48,12 +48,12 @@ void AeSysView::OnTrapModeStitch() {
 
     auto position = GetFirstVisibleGroupPosition();
     while (position != nullptr) {
-      auto* Group = GetNextVisibleGroup(position);
+      auto* group = GetNextVisibleGroup(position);
 
-      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
+      if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
-      if (Group->SelectUsingLine(this, EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]})) {
-        document->AddGroupToTrap(Group);
+      if (group->SelectUsingLine(this, EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]})) {
+        document->AddGroupToTrap(group);
       }
     }
     RubberBandingDisable();
@@ -82,11 +82,11 @@ void AeSysView::OnTrapModeField() {
 
     auto position = GetFirstVisibleGroupPosition();
     while (position != nullptr) {
-      auto* Group = GetNextVisibleGroup(position);
+      auto* group = GetNextVisibleGroup(position);
 
-      if (document->FindTrappedGroup(Group) != nullptr) { continue; }
+      if (document->FindTrappedGroup(group) != nullptr) { continue; }
 
-      if (Group->SelectUsingRectangle(this, ptMin, ptMax)) { document->AddGroupToTrap(Group); }
+      if (group->SelectUsingRectangle(this, ptMin, ptMax)) { document->AddGroupToTrap(group); }
     }
     RubberBandingDisable();
     ModeLineUnhighlightOp(m_PreviousOp);
@@ -99,10 +99,10 @@ void AeSysView::OnTrapModeLast() {
 
   auto position = document->GetLastWorkLayerGroupPosition();
   while (position != nullptr) {
-    auto* Group = document->GetPreviousWorkLayerGroup(position);
+    auto* group = document->GetPreviousWorkLayerGroup(position);
 
-    if (!document->FindTrappedGroup(Group)) {
-      document->AddGroupToTrap(Group);
+    if (!document->FindTrappedGroup(group)) {
+      document->AddGroupToTrap(group);
       UpdateStateInformation(TrapCount);
       break;
     }
@@ -115,10 +115,10 @@ void AeSysView::OnTrapModeEngage() {
 
     auto position = document->FindWorkLayerGroup(EngagedGroup());
 
-    auto* Group = document->GetNextWorkLayerGroup(position);
+    auto* group = document->GetNextWorkLayerGroup(position);
 
-    if (document->FindTrappedGroup(Group) == nullptr) {
-      document->AddGroupToTrap(Group);
+    if (document->FindTrappedGroup(group) == nullptr) {
+      document->AddGroupToTrap(group);
       UpdateStateInformation(TrapCount);
     }
   } else {
@@ -138,8 +138,8 @@ void AeSysView::OnTrapModeMenu() {
 void AeSysView::OnTrapModeModify() {
   auto* document = GetDocument();
   if (!document->IsTrapEmpty()) {
-    EoDlgTrapModify Dialog(document);
-    if (Dialog.DoModal() == IDOK) { document->UpdateAllViews(nullptr, 0L, nullptr); }
+    EoDlgTrapModify dialog(document);
+    if (dialog.DoModal() == IDOK) { document->UpdateAllViews(nullptr, 0L, nullptr); }
   } else {
     app.AddModeInformationToMessageList();
   }
@@ -164,11 +164,11 @@ void AeSysView::OnTraprModePoint() {
 
   auto position = document->GetFirstTrappedGroupPosition();
   while (position != nullptr) {
-    auto* Group = document->GetNextTrappedGroup(position);
+    auto* group = document->GetNextTrappedGroup(position);
 
-    if (Group->SelectUsingPoint_(this, ptView)) {
-      document->RemoveTrappedGroupAt(document->FindTrappedGroup(Group));
-      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+    if (group->SelectUsingPoint_(this, ptView)) {
+      document->RemoveTrappedGroupAt(document->FindTrappedGroup(group));
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     }
   }
   UpdateStateInformation(TrapCount);
@@ -191,11 +191,11 @@ void AeSysView::OnTraprModeStitch() {
 
     auto position = document->GetFirstTrappedGroupPosition();
     while (position != nullptr) {
-      auto* Group = document->GetNextTrappedGroup(position);
+      auto* group = document->GetNextTrappedGroup(position);
 
-      if (Group->SelectUsingLine(this, EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]})) {
-        document->RemoveTrappedGroupAt(document->FindTrappedGroup(Group));
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      if (group->SelectUsingLine(this, EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]})) {
+        document->RemoveTrappedGroupAt(document->FindTrappedGroup(group));
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       }
     }
     RubberBandingDisable();
@@ -224,11 +224,11 @@ void AeSysView::OnTraprModeField() {
 
     auto position = document->GetFirstTrappedGroupPosition();
     while (position != nullptr) {
-      auto* Group = document->GetNextTrappedGroup(position);
+      auto* group = document->GetNextTrappedGroup(position);
 
-      if (Group->SelectUsingRectangle(this, ptMin, ptMax)) {
-        document->RemoveTrappedGroupAt(document->FindTrappedGroup(Group));
-        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+      if (group->SelectUsingRectangle(this, ptMin, ptMax)) {
+        document->RemoveTrappedGroupAt(document->FindTrappedGroup(group));
+        document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       }
     }
     RubberBandingDisable();
@@ -240,8 +240,8 @@ void AeSysView::OnTraprModeLast() {
   auto* document = GetDocument();
 
   if (!document->IsTrapEmpty()) {
-    auto* Group = document->RemoveLastTrappedGroup();
-    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, Group);
+    auto* group = document->RemoveLastTrappedGroup();
+    document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     UpdateStateInformation(TrapCount);
   }
 }
@@ -251,16 +251,16 @@ void AeSysView::OnTraprModeEngage() {
 void AeSysView::OnTraprModeMenu() {
   CPoint currentPosition;
   ::GetCursorPos(&currentPosition);
-  const HMENU TrapMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
-  CMenu* SubMenu = CMenu::FromHandle(::GetSubMenu(TrapMenu, 0));
-  SubMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
-  ::DestroyMenu(TrapMenu);
+  const HMENU trapMenu = ::LoadMenu(AeSys::GetInstance(), MAKEINTRESOURCE(IDR_TRAP));
+  CMenu* subMenu = CMenu::FromHandle(::GetSubMenu(trapMenu, 0));
+  subMenu->TrackPopupMenuEx(0, currentPosition.x, currentPosition.y, AfxGetMainWnd(), nullptr);
+  ::DestroyMenu(trapMenu);
 }
 void AeSysView::OnTraprModeModify() {
   auto* document = GetDocument();
   if (!document->IsTrapEmpty()) {
-    EoDlgTrapModify Dialog(document);
-    if (Dialog.DoModal() == IDOK) { document->UpdateAllViews(nullptr, 0L, nullptr); }
+    EoDlgTrapModify dialog(document);
+    if (dialog.DoModal() == IDOK) { document->UpdateAllViews(nullptr, 0L, nullptr); }
   } else {
     app.AddModeInformationToMessageList();
   }

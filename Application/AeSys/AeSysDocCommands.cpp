@@ -187,7 +187,7 @@ void AeSysDoc::OnPrimBreak() {
 
         const auto transformMatrix = blockReference->BuildTransformMatrix(block->BasePoint());
 
-        EoDbGroup* pSegT = new EoDbGroup(*block);
+        auto* pSegT = new EoDbGroup(*block);
         pSegT->Transform(transformMatrix);
         RegisterGroupHandles(pSegT);
         group->AddTail(pSegT);
@@ -227,14 +227,14 @@ void AeSysDoc::OnFileQuery() {
 
     m_IdentifiedLayerName = layer->Name();
 
-    const int MenuResource = (layer->IsInternal()) ? IDR_LAYER : IDR_TRACING;
+    const int menuResource = (layer->IsInternal()) ? IDR_LAYER : IDR_TRACING;
 
-    auto* const layerTracingMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(MenuResource));
+    auto* const layerTracingMenu = ::LoadMenuW(AeSys::GetInstance(), MAKEINTRESOURCE(menuResource));
     auto* subMenu = CMenu::FromHandle(::GetSubMenu(layerTracingMenu, 0));
 
     subMenu->ModifyMenu(0, MF_BYPOSITION | MF_STRING, 0, m_IdentifiedLayerName);
 
-    if (MenuResource == IDR_LAYER) {
+    if (menuResource == IDR_LAYER) {
       subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_WORK),
           static_cast<UINT>(MF_BYCOMMAND | (layer->IsWork() ? MF_CHECKED : MF_UNCHECKED)));
       subMenu->CheckMenuItem(static_cast<UINT>(ID_LAYER_ACTIVE),
@@ -315,11 +315,11 @@ void AeSysDoc::OnTracingCloak() {
   auto* layer = GetLayerTableLayer(m_IdentifiedLayerName);
 
   if (layer->IsOpened()) {
-    CFile File(m_IdentifiedLayerName, CFile::modeWrite | CFile::modeCreate);
-    if (File != CFile::hFileNull) {
-      EoDbJobFile JobFile;
-      JobFile.WriteHeader(File);
-      JobFile.WriteLayer(File, layer);
+    CFile file(m_IdentifiedLayerName, CFile::modeWrite | CFile::modeCreate);
+    if (file != CFile::hFileNull) {
+      EoDbJobFile jobFile;
+      jobFile.WriteHeader(file);
+      jobFile.WriteLayer(file, layer);
       SetWorkLayer(GetLayerTableLayerAt(0));
       m_saveAsType = EoDb::FileTypes::Unknown;
       UpdateAllViews(nullptr, EoDb::kLayerErase, layer);
@@ -395,32 +395,32 @@ void AeSysDoc::OnEditTrace() {
   if (::OpenClipboard(nullptr)) {
     wchar_t sBuf[16]{};
 
-    UINT ClipboardFormat;
-    UINT Format = 0;
+    UINT clipboardFormat{};
+    UINT format{};
 
-    while ((ClipboardFormat = EnumClipboardFormats(Format)) != 0) {
-      GetClipboardFormatName(ClipboardFormat, sBuf, 16);
+    while ((clipboardFormat = EnumClipboardFormats(format)) != 0) {
+      GetClipboardFormatName(clipboardFormat, sBuf, 16);
 
       if (wcscmp(sBuf, L"EoGroups") == 0) {
-        HGLOBAL ClipboardDataHandle = GetClipboardData(ClipboardFormat);
-        if (ClipboardDataHandle != nullptr) {
-          CMemFile MemFile;
+        HGLOBAL clipboardDataHandle = GetClipboardData(clipboardFormat);
+        if (clipboardDataHandle != nullptr) {
+          CMemFile memFile;
           EoGeVector3d vTrns;
 
-          LPCSTR ClipboardData = (LPCSTR)GlobalLock(ClipboardDataHandle);
-          if (ClipboardData != nullptr) {
-            DWORD dwSizeOfBuffer = *((DWORD*)ClipboardData);
-            MemFile.Write(ClipboardData, UINT(dwSizeOfBuffer));
-            GlobalUnlock(ClipboardDataHandle);
+          auto clipboardData = (LPCSTR)GlobalLock(clipboardDataHandle);
+          if (clipboardData != nullptr) {
+            DWORD dwSizeOfBuffer = *((DWORD*)clipboardData);
+            memFile.Write(clipboardData, UINT(dwSizeOfBuffer));
+            GlobalUnlock(clipboardDataHandle);
 
-            MemFile.Seek(96, CFile::begin);
-            EoDbJobFile JobFile;
-            JobFile.ReadMemFile(MemFile, vTrns);
+            memFile.Seek(96, CFile::begin);
+            EoDbJobFile jobFile;
+            jobFile.ReadMemFile(memFile, vTrns);
           }
           break;
         }
       }
-      Format = ClipboardFormat;
+      format = clipboardFormat;
     }
     CloseClipboard();
   } else {
@@ -461,7 +461,7 @@ void AeSysDoc::OnEditTrapPaste() {
           const EoGePoint3d pivotPoint(app.GetCursorPosition());
           SetTrapPivotPoint(pivotPoint);
 
-          LPCSTR buffer = (LPCSTR)GlobalLock(globalHandle);
+          auto buffer = (LPCSTR)GlobalLock(globalHandle);
 
           DWORD sizeOfBuffer{};
           if (buffer == nullptr) {
@@ -490,7 +490,7 @@ void AeSysDoc::OnEditTrapPaste() {
     } else if (IsClipboardFormatAvailable(CF_TEXT)) {
       HGLOBAL const clipboardDataHandle = GetClipboardData(CF_TEXT);
 
-      wchar_t* const clipboardText = new wchar_t[GlobalSize(clipboardDataHandle)];
+      auto* const clipboardText = new wchar_t[GlobalSize(clipboardDataHandle)];
 
       auto clipboardData = static_cast<const wchar_t*>(GlobalLock(clipboardDataHandle));
       if (clipboardData != nullptr) {
@@ -538,14 +538,14 @@ void AeSysDoc::OnTrapCommandsInvert() {
   for (int i = 0; i < layerTableSize; i++) {
     auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsWork() || layer->IsActive()) {
-      auto LayerPosition = layer->GetHeadPosition();
-      while (LayerPosition != nullptr) {
-        auto* Group = layer->GetNext(LayerPosition);
-        auto GroupPosition = FindTrappedGroup(Group);
-        if (GroupPosition != nullptr) {
-          m_trappedGroups.RemoveAt(GroupPosition);
+      auto layerPosition = layer->GetHeadPosition();
+      while (layerPosition != nullptr) {
+        auto* group = layer->GetNext(layerPosition);
+        auto groupPosition = FindTrappedGroup(group);
+        if (groupPosition != nullptr) {
+          m_trappedGroups.RemoveAt(groupPosition);
         } else {
-          AddGroupToTrap(Group);
+          AddGroupToTrap(group);
         }
       }
     }
@@ -558,13 +558,13 @@ void AeSysDoc::OnTrapCommandsSquare() {
   SquareTrappedGroups(activeView);
 }
 void AeSysDoc::OnTrapCommandsQuery() {
-  EoDlgEditTrapCommandsQuery Dialog;
+  EoDlgEditTrapCommandsQuery dialog;
 
-  if (Dialog.DoModal() == IDOK) {}
+  if (dialog.DoModal() == IDOK) {}
 }
 void AeSysDoc::OnTrapCommandsFilter() {
-  EoDlgTrapFilter Dialog(this);
-  if (Dialog.DoModal() == IDOK) {}
+  EoDlgTrapFilter dialog(this);
+  if (dialog.DoModal() == IDOK) {}
 }
 
 void AeSysDoc::OnTrapCommandsBlock() {
@@ -596,11 +596,11 @@ void AeSysDoc::OnTrapCommandsBlock() {
 
 void AeSysDoc::OnTrapCommandsUnblock() { m_trappedGroups.ExplodeBlockReferences(); }
 void AeSysDoc::OnSetupPenColor() {
-  EoDlgSetupColor Dialog;
-  Dialog.m_ColorIndex = static_cast<std::uint16_t>(Gs::renderState.Color());
+  EoDlgSetupColor dialog;
+  dialog.m_ColorIndex = static_cast<std::uint16_t>(Gs::renderState.Color());
 
-  if (Dialog.DoModal() == IDOK) {
-    Gs::renderState.SetColor(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(Dialog.m_ColorIndex));
+  if (dialog.DoModal() == IDOK) {
+    Gs::renderState.SetColor(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(dialog.m_ColorIndex));
 
     AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::Pen);
   }
@@ -662,42 +662,42 @@ void AeSysDoc::OnSetupFillHollow() { Gs::renderState.SetPolygonIntStyle(EoDb::Po
 void AeSysDoc::OnSetupFillSolid() { Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Solid); }
 void AeSysDoc::OnSetupFillPattern() {}
 void AeSysDoc::OnSetupFillHatch() {
-  EoDlgSetupHatch Dialog;
-  Dialog.m_HatchXScaleFactor = hatch::dXAxRefVecScal;
-  Dialog.m_HatchYScaleFactor = hatch::dYAxRefVecScal;
-  Dialog.m_HatchRotationAngle = Eo::RadianToDegree(hatch::dOffAng);
+  EoDlgSetupHatch dialog;
+  dialog.m_HatchXScaleFactor = hatch::dXAxRefVecScal;
+  dialog.m_HatchYScaleFactor = hatch::dYAxRefVecScal;
+  dialog.m_HatchRotationAngle = Eo::RadianToDegree(hatch::dOffAng);
 
-  if (Dialog.DoModal() == IDOK) {
+  if (dialog.DoModal() == IDOK) {
     Gs::renderState.SetPolygonIntStyle(EoDb::PolygonStyle::Hatch);
-    hatch::dXAxRefVecScal = std::max(0.01, Dialog.m_HatchXScaleFactor);
-    hatch::dYAxRefVecScal = std::max(0.01, Dialog.m_HatchYScaleFactor);
-    hatch::dOffAng = Eo::DegreeToRadian(Dialog.m_HatchRotationAngle);
+    hatch::dXAxRefVecScal = std::max(0.01, dialog.m_HatchXScaleFactor);
+    hatch::dYAxRefVecScal = std::max(0.01, dialog.m_HatchYScaleFactor);
+    hatch::dOffAng = Eo::DegreeToRadian(dialog.m_HatchRotationAngle);
   }
 }
 
 void AeSysDoc::OnSetupNote() {
   EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
 
-  EoDlgSetupNote Dialog(&fontDefinition);
+  EoDlgSetupNote dialog(&fontDefinition);
 
   auto characterCellDefinition = Gs::renderState.CharacterCellDefinition();
 
-  Dialog.m_height = characterCellDefinition.Height();
-  Dialog.m_rotationAngle = Eo::RadianToDegree(characterCellDefinition.RotationAngle());
-  Dialog.m_expansionFactor = characterCellDefinition.ExpansionFactor();
-  Dialog.m_slantAngle = Eo::RadianToDegree(characterCellDefinition.SlantAngle());
+  dialog.m_height = characterCellDefinition.Height();
+  dialog.m_rotationAngle = Eo::RadianToDegree(characterCellDefinition.RotationAngle());
+  dialog.m_expansionFactor = characterCellDefinition.ExpansionFactor();
+  dialog.m_slantAngle = Eo::RadianToDegree(characterCellDefinition.SlantAngle());
 
-  if (Dialog.DoModal() == IDOK) {
-    characterCellDefinition.SetHeight(Dialog.m_height);
-    characterCellDefinition.SetRotationAngle(Eo::DegreeToRadian(Dialog.m_rotationAngle));
-    characterCellDefinition.SetExpansionFactor(Dialog.m_expansionFactor);
-    characterCellDefinition.SetSlantAngle(Eo::DegreeToRadian(Dialog.m_slantAngle));
+  if (dialog.DoModal() == IDOK) {
+    characterCellDefinition.SetHeight(dialog.m_height);
+    characterCellDefinition.SetRotationAngle(Eo::DegreeToRadian(dialog.m_rotationAngle));
+    characterCellDefinition.SetExpansionFactor(dialog.m_expansionFactor);
+    characterCellDefinition.SetSlantAngle(Eo::DegreeToRadian(dialog.m_slantAngle));
     Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
     auto* activeView = AeSysView::GetActiveView();
-    CDC* DeviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
+    CDC* deviceContext = (activeView == nullptr) ? nullptr : activeView->GetDC();
 
-    Gs::renderState.SetFontDefinition(DeviceContext, fontDefinition);
+    Gs::renderState.SetFontDefinition(deviceContext, fontDefinition);
   }
 }
 
@@ -728,14 +728,14 @@ void AeSysDoc::OnToolsGroupDelete() {
   auto* activeView = AeSysView::GetActiveView();
   auto cursorPosition = activeView->GetCursorPosition();
 
-  auto* Group = activeView->SelectGroupAndPrimitive(cursorPosition);
+  auto* group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
-  if (Group != nullptr) {
-    AnyLayerRemove(Group);
-    RemoveGroupFromAllViews(Group);
-    if (RemoveTrappedGroup(Group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
-    UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, Group);
-    DeletedGroupsAddTail(Group);
+  if (group != nullptr) {
+    AnyLayerRemove(group);
+    RemoveGroupFromAllViews(group);
+    if (RemoveTrappedGroup(group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
+    UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
+    DeletedGroupsAddTail(group);
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
 }
@@ -746,10 +746,10 @@ void AeSysDoc::OnToolsGroupDeletelast() {
 }
 void AeSysDoc::OnToolsGroupExchange() {
   if (!DeletedGroupsIsEmpty()) {
-    EoDbGroup* TailGroup = DeletedGroupsRemoveTail();
-    EoDbGroup* HeadGroup = DeletedGroupsRemoveHead();
-    DeletedGroupsAddTail(HeadGroup);
-    DeletedGroupsAddHead(TailGroup);
+    EoDbGroup* tailGroup = DeletedGroupsRemoveTail();
+    EoDbGroup* headGroup = DeletedGroupsRemoveHead();
+    DeletedGroupsAddTail(headGroup);
+    DeletedGroupsAddHead(tailGroup);
   }
 }
 
@@ -825,27 +825,27 @@ void AeSysDoc::OnPrimModifyAttributes() {
 
   const auto cursorPosition = activeView->GetCursorPosition();
 
-  auto* Group = activeView->SelectGroupAndPrimitive(cursorPosition);
+  auto* group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
-  if (Group != nullptr) {
+  if (group != nullptr) {
     activeView->EngagedPrimitive()->ModifyState();
     UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, activeView->EngagedPrimitive());
   }
 }
 void AeSysDoc::OnSetupSavePoint() {
-  EoDlgSetHomePoint Dialog(AeSysView::GetActiveView());
+  EoDlgSetHomePoint dialog(AeSysView::GetActiveView());
 
-  if (Dialog.DoModal() == IDOK) {}
+  if (dialog.DoModal() == IDOK) {}
 }
 void AeSysDoc::OnSetupGotoPoint() {
-  EoDlgSelectGotoHomePoint Dialog(AeSysView::GetActiveView());
+  EoDlgSelectGotoHomePoint dialog(AeSysView::GetActiveView());
 
-  if (Dialog.DoModal() == IDOK) {}
+  if (dialog.DoModal() == IDOK) {}
 }
 void AeSysDoc::OnSetupOptionsDraw() {
-  EoDlgDrawOptions Dialog;
+  EoDlgDrawOptions dialog;
 
-  if (Dialog.DoModal() == IDOK) { AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::All); }
+  if (dialog.DoModal() == IDOK) { AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::All); }
 }
 
 void AeSysDoc::OnFileManageBlocks() {
@@ -860,17 +860,17 @@ void AeSysDoc::OnFileManageLayers() {
 }
 
 void AeSysDoc::OnMaintenanceRemoveEmptyNotes() {
-  const int NumberOfEmptyNotes = RemoveEmptyNotesAndDelete();
-  const int NumberOfEmptyGroups = RemoveEmptyGroups();
+  const int numberOfEmptyNotes = RemoveEmptyNotesAndDelete();
+  const int numberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
-  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", NumberOfEmptyNotes,
-      NumberOfEmptyGroups);
+  str.Format(L"%d notes were removed resulting in %d empty groups which were also removed.", numberOfEmptyNotes,
+      numberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
 void AeSysDoc::OnMaintenanceRemoveEmptyGroups() {
-  const int NumberOfEmptyGroups = RemoveEmptyGroups();
+  const int numberOfEmptyGroups = RemoveEmptyGroups();
   CString str;
-  str.Format(L"%d were removed.", NumberOfEmptyGroups);
+  str.Format(L"%d were removed.", numberOfEmptyGroups);
   app.AddStringToMessageList(str);
 }
 void AeSysDoc::OnPensEditColors() { app.EditColorPalette(); }
@@ -940,11 +940,11 @@ void AeSysDoc::OnPensTranslate() {
 }
 
 void AeSysDoc::OnFile() {
-  CPoint Position(8, 8);
+  CPoint position(8, 8);
 
-  AfxGetApp()->GetMainWnd()->ClientToScreen(&Position);
-  CMenu* FileSubMenu = CMenu::FromHandle(app.GetSubMenu(0));
-  FileSubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, Position.x, Position.y, AfxGetMainWnd(), nullptr);
+  AfxGetApp()->GetMainWnd()->ClientToScreen(&position);
+  CMenu* fileSubMenu = CMenu::FromHandle(app.GetSubMenu(0));
+  fileSubMenu->TrackPopupMenuEx(TPM_LEFTALIGN, position.x, position.y, AfxGetMainWnd(), nullptr);
 }
 
 void AeSysDoc::OnPrimExtractNum() {
@@ -977,10 +977,10 @@ void AeSysDoc::OnPrimExtractNum() {
           iTyp != lex::SimpleUnitsLengthToken) {
         lex::ConvertValTyp(iTyp, lex::RealToken, &lDef, value);
       }
-      wchar_t Message[64]{};
-      swprintf_s(Message, 64, L"%10.4f ", value[0]);
-      wcscat_s(Message, 64, L"was extracted from drawing");
-      app.AddStringToMessageList(std::wstring(Message));
+      wchar_t message[64]{};
+      swprintf_s(message, 64, L"%10.4f ", value[0]);
+      wcscat_s(message, 64, L"was extracted from drawing");
+      app.AddStringToMessageList(std::wstring(message));
     } catch (...) {
       app.WarningMessageBox(IDS_MSG_INVALID_NUMBER_EXTRACT);
       return;
@@ -1000,17 +1000,17 @@ void AeSysDoc::OnPrimExtractStr() {
   if (activeView->SelectGroupAndPrimitive(cursorPosition)) {
     auto* primitive = activeView->EngagedPrimitive();
 
-    CString String;
+    CString string;
 
     if (primitive->Is(EoDb::kTextPrimitive)) {
-      String = static_cast<EoDbText*>(primitive)->Text();
+      string = static_cast<EoDbText*>(primitive)->Text();
     } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-      String = static_cast<EoDbLabeledLine*>(primitive)->Text();
+      string = static_cast<EoDbLabeledLine*>(primitive)->Text();
     } else {
       return;
     }
-    String += L" was extracted from drawing";
-    app.AddStringToMessageList(String);
+    string += L" was extracted from drawing";
+    app.AddStringToMessageList(string);
 #ifdef USING_DDE
     app.SetExtractedString(String);
     dde::PostAdvise(dde::ExtStrInfo);
