@@ -130,7 +130,7 @@ void EoGsRenderState::SetPen(const AeSysView* view,
 
     // Convert resolved line weight from DXF 0.01 mm units to screen pixels.
     // Zoom-independent — matches AutoCAD "Display Lineweight" model-space behavior.
-    auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
+    const auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
     if (dxfCode > 0) { logicalWidth = dxfCode * (0.01 / 25.4) * logicalPixelsX; }
     logicalWidth = Eo::Round(logicalWidth);
   }
@@ -189,7 +189,7 @@ void EoGsRenderState::SetPen(const AeSysView* view,
   if (view && view->PenWidthsOn()) {
     auto const logicalPixelsX = static_cast<double>(renderDevice->GetDeviceCaps(LOGPIXELSX));
 
-    auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
+    const auto dxfCode = EoDxfLineWeights::LineWeightToDxfIndex(lineWeight);
     if (dxfCode > 0) { logicalWidth = dxfCode * (0.01 / 25.4) * logicalPixelsX; }
     logicalWidth = Eo::Round(logicalWidth);
   }

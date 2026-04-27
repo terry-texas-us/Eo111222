@@ -59,7 +59,7 @@ bool EoGePoint3d::IsContained(const EoGePoint3d& lowerLeftPoint, const EoGePoint
 EoGePoint3d EoGePoint3d::ProjectToward(const EoGePoint3d& p, double distance) const {
   EoGeVector3d directionVector(*this, p);
 
-  double length = directionVector.Length();
+  const double length = directionVector.Length();
   if (length > Eo::geometricTolerance) {
     directionVector *= distance / length;
     return (*this + directionVector);

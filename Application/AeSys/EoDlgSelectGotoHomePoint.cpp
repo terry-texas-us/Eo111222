@@ -55,7 +55,7 @@ void EoDlgSelectGotoHomePoint::OnCbnEditupdateList() {
   CString namesItem;
   m_HomePointNames.GetWindowTextW(namesItem);
 
-  int namesItemIndex = m_HomePointNames.FindString(-1, namesItem);
+  const int namesItemIndex = m_HomePointNames.FindString(-1, namesItem);
 
   if (namesItemIndex != CB_ERR) {
     switch (namesItemIndex) {
@@ -78,7 +78,7 @@ void EoDlgSelectGotoHomePoint::OnCbnEditupdateList() {
   }
 }
 void EoDlgSelectGotoHomePoint::OnCbnSelchangeList() {
-  int namesItemIndex = m_HomePointNames.GetCurSel();
+  const int namesItemIndex = m_HomePointNames.GetCurSel();
 
   if (namesItemIndex != CB_ERR) {
     EoGePoint3d point;

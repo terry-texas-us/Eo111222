@@ -163,8 +163,8 @@ void EoDbGroup::ExplodeBlockReferences() {
           }
 
           auto* temporaryGroupTransformed = new EoDbGroup(*block);
-          auto basePoint = block->BasePoint();
-          EoGeTransformMatrix transformMatrix = blockReference->BuildTransformMatrix(basePoint);
+          const auto basePoint = block->BasePoint();
+          const EoGeTransformMatrix transformMatrix = blockReference->BuildTransformMatrix(basePoint);
           temporaryGroupTransformed->Transform(transformMatrix);
           document->RegisterGroupHandles(temporaryGroupTransformed);
           this->InsertBefore(primitivePosition, temporaryGroupTransformed);
@@ -393,7 +393,7 @@ EoDbPrimitive* EoDbGroup::SelPrimAtCtrlPt(AeSysView* view, const EoGePoint4d& pt
 
     if (primitive == sm_PrimitiveToIgnore) { continue; }
 
-    EoGePoint3d pt = primitive->SelectAtControlPoint(view, ptView);
+    const EoGePoint3d pt = primitive->SelectAtControlPoint(view, ptView);
 
     if (EoDbPrimitive::ControlPointIndex() != SHRT_MAX) {
       engagedPrimitive = primitive;
@@ -434,7 +434,7 @@ void EoDbGroup::SortTextOnY() {
       auto* secondPrimitive = GetNext(secondPosition);
       if (firstPrimitive->Is(EoDb::kTextPrimitive) && secondPrimitive->Is(EoDb::kTextPrimitive)) {
         const double firstTextPrimitiveY = static_cast<EoDbText*>(firstPrimitive)->ReferenceOrigin().y;
-        double secondTextPrimitiveY = static_cast<EoDbText*>(secondPrimitive)->ReferenceOrigin().y;
+        const double secondTextPrimitiveY = static_cast<EoDbText*>(secondPrimitive)->ReferenceOrigin().y;
         if (firstTextPrimitiveY < secondTextPrimitiveY) {
           SetAt(position, secondPrimitive);
           SetAt(firstPosition, firstPrimitive);

@@ -482,7 +482,7 @@ void DisplayText(AeSysView* view,
   int startPosition{};
   int currentPosition{startPosition};
   while (currentPosition < text.GetLength()) {
-    wchar_t c = text[currentPosition++];
+    const wchar_t c = text[currentPosition++];
 
     if (c == '\r' && text[currentPosition] == '\n') {
       DisplayTextSegment(view, renderDevice, fd, referenceSystem, startPosition, numberOfCharactersToDisplay, text);
@@ -569,7 +569,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view,
 
   EoGePoint3d ptStroke = EoGePoint3d::kOrigin;
   EoGePoint3d ptChrPos = ptStroke;
-  EoGePoint3d ptLinePos = ptChrPos;
+  const EoGePoint3d ptLinePos{ptChrPos};
 
   int n = startPosition;
 
@@ -606,7 +606,7 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view,
     if (advanceWidthTable != nullptr) {
       const int rawAdvanceWidth = advanceWidthTable[character - 32];
       if (rawAdvanceWidth > 0) {
-        double characterCellWidth = rawAdvanceWidth * 0.01 / Eo::defaultCharacterCellAspectRatio;
+        const double characterCellWidth = rawAdvanceWidth * 0.01 / Eo::defaultCharacterCellAspectRatio;
         characterAdvance = characterCellWidth + interCharacterGap;
       }
     }
@@ -727,10 +727,10 @@ void DisplayTextWithFormattingCharacters(AeSysView* view,
           numberOfCharactersToDisplay = 0;
         }
       } else if (c == 'A') {  // Change alignment to bottom, center middle
-        int endSemicolon = text.Find(';', currentPosition);
+        const int endSemicolon = text.Find(';', currentPosition);
         if (endSemicolon != -1) {
           if (currentPosition + 1 < endSemicolon) {
-            wchar_t parameter = text[currentPosition + 1];
+            const wchar_t parameter = text[currentPosition + 1];
             if (parameter >= '0' && parameter <= '2') {
               if (numberOfCharactersToDisplay > 0) {  // display text segment preceding the formatting
                 DisplayTextSegment(
@@ -757,7 +757,7 @@ void DisplayTextWithFormattingCharacters(AeSysView* view,
           }
         }
       } else if (c == 'S') {  // Stacked text or fractions
-        int endSemicolon = text.Find(';', currentPosition);
+        const int endSemicolon = text.Find(';', currentPosition);
         if (endSemicolon != -1) {
           int textSegmentDelimiter = text.Find('/', currentPosition);
           if (textSegmentDelimiter == -1) { textSegmentDelimiter = text.Find('^', currentPosition); }
@@ -828,7 +828,7 @@ int LengthSansFormattingCharacters(const CString& text) {
     if (c == '\\') {
       c = text[currentPosition];
       if (c == 'A') {
-        int endSemicolon = text.Find(';', currentPosition);
+        const int endSemicolon = text.Find(';', currentPosition);
         if (endSemicolon != -1 && endSemicolon == currentPosition + 2) {
           length -= 4;
           currentPosition = endSemicolon + 1;
@@ -837,7 +837,7 @@ int LengthSansFormattingCharacters(const CString& text) {
         length -= 2;
         currentPosition++;
       } else if (c == 'S') {
-        int endSemicolon = text.Find(';', currentPosition);
+        const int endSemicolon = text.Find(';', currentPosition);
         if (endSemicolon != -1) {
           int textSegmentDelimiter = text.Find('/', currentPosition);
           if (textSegmentDelimiter == -1) { textSegmentDelimiter = text.Find('^', currentPosition); }
@@ -858,7 +858,7 @@ int LengthSansFormattingCharacters(const CString& text) {
 static double CharacterCellWidth(int characterCode, const long* advanceWidthTable, int maxCharacterCode) {
   if (characterCode < 32 || characterCode > maxCharacterCode) { characterCode = '.'; }
   if (advanceWidthTable != nullptr) {
-    int rawAdvanceWidth = advanceWidthTable[characterCode - 32];
+    const int rawAdvanceWidth = advanceWidthTable[characterCode - 32];
     if (rawAdvanceWidth > 0) { return rawAdvanceWidth * 0.01 / Eo::defaultCharacterCellAspectRatio; }
   }
   return 1.0;
@@ -887,9 +887,9 @@ static double ComputeStrokeFontTextExtent(const EoDbFontDefinition& fontDefiniti
 
     // Skip formatting sequences (mirrors LengthSansFormattingCharacters logic)
     if (c == '\\' && currentPosition < text.GetLength()) {
-      wchar_t next = text[currentPosition];
+      const wchar_t next = text[currentPosition];
       if (next == 'A') {
-        int endSemicolon = text.Find(';', currentPosition);
+        const int endSemicolon = text.Find(';', currentPosition);
         if (endSemicolon != -1 && endSemicolon == currentPosition + 2) {
           currentPosition = endSemicolon + 1;
           continue;
@@ -898,7 +898,7 @@ static double ComputeStrokeFontTextExtent(const EoDbFontDefinition& fontDefiniti
         currentPosition++;
         continue;
       } else if (next == 'S') {
-        int endSemicolon = text.Find(';', currentPosition);
+        const int endSemicolon = text.Find(';', currentPosition);
         if (endSemicolon != -1) {
           int delimiter = text.Find('/', currentPosition);
           if (delimiter == -1) { delimiter = text.Find('^', currentPosition); }
@@ -924,7 +924,7 @@ static double ComputeStrokeFontTextExtent(const EoDbFontDefinition& fontDefiniti
   return totalCellWidth + (displayableCount - 1) * interCharacterGap;
 }
 void GetBottomLeftCorner(const EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt) {
-  double dTxtExt = ComputeStrokeFontTextExtent(fd, text);
+  const double dTxtExt = ComputeStrokeFontTextExtent(fd, text);
   if (dTxtExt > 0.0) {
     if (fd.Path() == EoDb::Path::Right || fd.Path() == EoDb::Path::Left) {
       if (fd.Path() == EoDb::Path::Right) {
@@ -993,7 +993,7 @@ void text_GetBoundingBox(const EoDbFontDefinition& fontDefinition,
     EoGePoint3dArray& ptsBox) {
   ptsBox.SetSize(4);
 
-  double textExtent = ComputeStrokeFontTextExtent(fontDefinition, text);
+  const double textExtent = ComputeStrokeFontTextExtent(fontDefinition, text);
   if (textExtent > 0.0) {
     EoGeTransformMatrix transformMatrix(referenceSystem.TransformMatrix());
     transformMatrix.Inverse();
@@ -1119,17 +1119,17 @@ void DisplayMTextWithWordWrap(AeSysView* view,
 
     // Skip formatting sequences for width measurement (but keep them in the output string)
     if (c == '\\' && pos + 1 < text.GetLength()) {
-      wchar_t next = text[pos + 1];
+      const wchar_t next = text[pos + 1];
       if (next == 'A') {
         // \A<digit>; — alignment change, skip the whole sequence for width
-        int endSemicolon = text.Find(';', pos + 1);
+        const int endSemicolon = text.Find(';', pos + 1);
         if (endSemicolon != -1 && endSemicolon == pos + 3) {
           pos = endSemicolon + 1;
           continue;
         }
       } else if (next == 'S') {
         // \S<super>/<sub>; — stacked fraction, measure the contained characters
-        int endSemicolon = text.Find(';', pos + 1);
+        const int endSemicolon = text.Find(';', pos + 1);
         if (endSemicolon != -1) {
           int delimiter = text.Find('/', pos + 2);
           if (delimiter == -1) { delimiter = text.Find('^', pos + 2); }

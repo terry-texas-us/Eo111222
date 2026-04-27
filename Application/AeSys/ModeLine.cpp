@@ -28,7 +28,7 @@ void AeSysView::ModeLineDisplay() {
     GetStatusBar().SetPaneText(::statusOp0 + i, paneText);
     GetStatusBar().SetTipText(::statusOp0 + i, L"Mode Command Tip Text");
 
-    bool isHighlighted = (m_OpHighlighted != 0 && static_cast<std::uint16_t>(ID_OP0 + i) == m_OpHighlighted);
+    const bool isHighlighted = (m_OpHighlighted != 0 && static_cast<std::uint16_t>(ID_OP0 + i) == m_OpHighlighted);
 
     if (isHighlighted) {
       GetStatusBar().SetPaneBackgroundColor(::statusOp0 + i, schemeColors.captionActiveBackground);

@@ -238,10 +238,10 @@ EoDbConic* EoDbConic::CreateRadialArcFrom3Points(EoGePoint3d& start,
   pt[1] = transformMatrix * pt[1];
   pt[2] = transformMatrix * pt[2];
 
-  double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
+  const double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
   if (Eo::IsGeometricallyNonZero(determinant)) {  // Three points are not colinear
-    double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
+    const double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
 
     EoGePoint3d center{(pt[1].x - pt[1].y * dT) * 0.5, (pt[1].y + pt[1].x * dT) * 0.5, 0.0};
 
@@ -323,7 +323,7 @@ void EoDbConic::AddReportToMessageList(const EoGePoint3d& point) {
   const double radius = m_majorAxis.Length();
 
   CString message;
-  auto conicType = Subclass();
+  const auto conicType = Subclass();
   switch (conicType) {
     case ConicType::Circle:
       message.Format(L"  Radius: %.4f", radius);
@@ -886,14 +886,14 @@ EoGePoint3d EoDbConic::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& 
 
   double apertureSize{sm_SelectApertureSize};
 
-  EoGePoint3d ptCtrl[] = {PointAtStartAngle(), PointAtEndAngle()};
+  const EoGePoint3d ptCtrl[] = {PointAtStartAngle(), PointAtEndAngle()};
 
   for (auto i = 0; i < 2; i++) {
     EoGePoint4d pt(ptCtrl[i]);
 
     view->ModelViewTransformPoint(pt);
 
-    double distance = point.DistanceToPointXY(pt);
+    const double distance = point.DistanceToPointXY(pt);
 
     if (distance < apertureSize) {
       sm_controlPointIndex = i;
@@ -955,11 +955,11 @@ void EoDbConic::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
 }
 
 EoDbConic* EoDbConic::ReadFromPeg(CFile& file) {
-  auto color = EoDb::ReadInt16(file);
-  auto lineTypeIndex = EoDb::ReadInt16(file);
-  auto center(EoDb::ReadPoint3d(file));
-  auto majorAxis(EoDb::ReadVector3d(file));
-  auto extrusion(EoDb::ReadVector3d(file));
+  const auto color = EoDb::ReadInt16(file);
+  const auto lineTypeIndex = EoDb::ReadInt16(file);
+  const auto center(EoDb::ReadPoint3d(file));
+  const auto majorAxis(EoDb::ReadVector3d(file));
+  const auto extrusion(EoDb::ReadVector3d(file));
   double ratio;
   EoDb::Read(file, ratio);
   double startAngle;
@@ -1135,7 +1135,7 @@ bool SweepAngleFromNormalAnd3Points(const EoGeVector3d& normal,
     if (t[i] < 0.0) { t[i] += Eo::TwoPi; }
   }
   const double tMin = std::min(t[0], t[2]);
-  double tMax = std::max(t[0], t[2]);
+  const double tMax = std::max(t[0], t[2]);
   if (Eo::IsGeometricallyNonZero(t[1] - tMax) && Eo::IsGeometricallyNonZero(t[1] - tMin)) {
     // Inside line is not colinear with outside lines
     double theta = tMax - tMin;

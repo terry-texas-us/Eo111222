@@ -96,7 +96,7 @@ static EoDbAttrib* CreateAttribFromAttDef(const EoDxfAttDef& attdef,
   auto baselineDirection = EoGeVector3d::positiveUnitX;
   const auto textRotation = Eo::DegreeToRadian(attdef.m_textRotation);
   if (attdef.HasSecondAlignmentPoint() && isAlignedOrFit) {
-    auto alignedDirection = secondPoint - firstPoint;
+    const auto alignedDirection = secondPoint - firstPoint;
     if (!alignedDirection.IsNearNull()) {
       baselineDirection = alignedDirection;
       baselineDirection.Unitize();
@@ -177,7 +177,7 @@ BOOL EoDlgBlockInsert::OnInitDialog() {
 }
 
 void EoDlgBlockInsert::OnOK() {
-  auto currentSelection = m_blocksListBoxControl.GetCurSel();
+  const auto currentSelection = m_blocksListBoxControl.GetCurSel();
 
   if (currentSelection != LB_ERR) {
     CString blockName;
@@ -233,7 +233,7 @@ void EoDlgBlockInsert::OnOK() {
 }
 
 void EoDlgBlockInsert::OnLbnSelchangeBlocksList() {
-  int currentSelection = m_blocksListBoxControl.GetCurSel();
+  const int currentSelection = m_blocksListBoxControl.GetCurSel();
 
   if (currentSelection != LB_ERR) {
     CString blockName;

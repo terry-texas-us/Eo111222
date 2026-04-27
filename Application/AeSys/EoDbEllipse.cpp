@@ -192,7 +192,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
   pt[1] = transformMatrix * pt[1];
   pt[2] = transformMatrix * pt[2];
 
-  double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
+  const double determinant = (pt[1].x * pt[2].y - pt[2].x * pt[1].y);
 
   if (Eo::IsGeometricallyNonZero(determinant)) {  // Three points are not colinear
     const double dT = ((pt[2].x - pt[1].x) * pt[2].x + pt[2].y * (pt[2].y - pt[1].y)) / determinant;
@@ -220,7 +220,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d start, EoGePoint3d intermediate, EoGePoint3
       if (dAng[i] < 0.0) { dAng[i] += Eo::TwoPi; }
     }
     const double dMin = std::min(dAng[0], dAng[2]);
-    double dMax = std::max(dAng[0], dAng[2]);
+    const double dMax = std::max(dAng[0], dAng[2]);
 
     if (Eo::IsGeometricallyNonZero(dAng[1] - dMax) && Eo::IsGeometricallyNonZero(dAng[1] - dMin)) {
       // Inside line is not colinear with outside lines
@@ -843,7 +843,7 @@ EoGePoint3d EoDbEllipse::SelectAtControlPoint(AeSysView* view, const EoGePoint4d
 
     view->ModelViewTransformPoint(pt);
 
-    double dDis = point.DistanceToPointXY(pt);
+    const double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dAPert) {
       sm_controlPointIndex = i;

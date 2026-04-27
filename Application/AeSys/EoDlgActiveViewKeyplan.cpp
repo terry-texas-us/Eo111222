@@ -79,7 +79,7 @@ void EoDlgActiveViewKeyplan::OnOK() {
 
   GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&rcKey);
 
-  EoGePoint3d ptTarget = m_ActiveView->CameraTarget();
+  const EoGePoint3d ptTarget = m_ActiveView->CameraTarget();
 
   const double overviewUMin = m_ActiveView->OverviewUMin();
   double uMin = m_rcWnd.left / static_cast<double>(rcKey.right) * m_ActiveView->OverviewUExt() + overviewUMin;

@@ -56,14 +56,14 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
     return;
   }
 
-  auto textHeight = mtext.m_nominalTextHeight;  // Group code 40
+  const auto textHeight = mtext.m_nominalTextHeight;  // Group code 40
 
   // MTEXT rotation (group code 50) is already in radians; UpdateAngle() has resolved xAxisDirection if present
-  auto textRotation = mtext.m_rotationAngle;
+  const auto textRotation = mtext.m_rotationAngle;
 
   std::wstring textStyleName = mtext.m_textStyleName;  // Group code 7
 
-  auto insertionPointInOcs = EoGePoint3d{mtext.m_insertionPoint.x, mtext.m_insertionPoint.y, mtext.m_insertionPoint.z};
+  const auto insertionPointInOcs = EoGePoint3d{mtext.m_insertionPoint.x, mtext.m_insertionPoint.y, mtext.m_insertionPoint.z};
   EoGeVector3d extrusionDirection{
       mtext.m_extrusionDirection.x, mtext.m_extrusionDirection.y, mtext.m_extrusionDirection.z};
   if (!mtext.m_haveExtrusion || extrusionDirection.IsNearNull()) {
@@ -73,8 +73,8 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
   }
 
   // Transform insertion point OCS → WCS
-  EoGeOcsTransform transformOcs{extrusionDirection};
-  auto insertionPointInWcs = transformOcs * insertionPointInOcs;
+  const EoGeOcsTransform transformOcs{extrusionDirection};
+  const auto insertionPointInWcs = transformOcs * insertionPointInOcs;
 
   // Build baseline direction from rotation angle
   auto baselineDirection = EoGeVector3d::positiveUnitX;
@@ -164,7 +164,7 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
           break;
         case L'A': {
           // Renderer handles \A — pass through the complete \Avalue; sequence
-          auto semicolonPosition = rawText.find(L';', i + 2);
+          const auto semicolonPosition = rawText.find(L';', i + 2);
           if (semicolonPosition != std::wstring::npos) {
             cleanedText += rawText.substr(i, semicolonPosition - i + 1);
             i = semicolonPosition;
@@ -203,7 +203,7 @@ void EoDbDxfInterface::ConvertMTextEntity(const EoDxfMText& mtext, [[maybe_unuse
         case L'W':
         case L'p': {
           // Unsupported formatting commands with value ending in semicolon → skip to semicolon
-          auto semicolonPosition = rawText.find(L';', i + 2);
+          const auto semicolonPosition = rawText.find(L';', i + 2);
           if (semicolonPosition != std::wstring::npos) {
             i = semicolonPosition;
           } else {
@@ -272,23 +272,23 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
     return;
   }
 
-  [[maybe_unused]] auto thickness = text.m_thickness;  // Group code 39 (not supported in AeSys)
-  auto firstAlignmentPointInOcs =
+  [[maybe_unused]] const auto thickness = text.m_thickness;  // Group code 39 (not supported in AeSys)
+  const auto firstAlignmentPointInOcs =
       EoGePoint3d{text.m_firstAlignmentPoint.x, text.m_firstAlignmentPoint.y, text.m_firstAlignmentPoint.z};
-  auto textHeight = text.m_textHeight;  // Group code 40
+  const auto textHeight = text.m_textHeight;  // Group code 40
 
-  std::wstring string{text.m_string};  // Group code 1
+  const std::wstring string{text.m_string};  // Group code 1
 
-  auto textRotation = Eo::DegreeToRadian(text.m_textRotation);  // Group code 50 (degrees → radians)
-  auto xScaleFactorWidth = text.m_scaleFactorWidth;  // Group code 41
-  auto obliqueAngle = Eo::DegreeToRadian(text.m_obliqueAngle);  // Group code 51 (degrees → radians)
+  const auto textRotation = Eo::DegreeToRadian(text.m_textRotation);  // Group code 50 (degrees → radians)
+  const auto xScaleFactorWidth = text.m_scaleFactorWidth;  // Group code 41
+  const auto obliqueAngle = Eo::DegreeToRadian(text.m_obliqueAngle);  // Group code 51 (degrees → radians)
 
   std::wstring textStyleName = text.m_textStyleName;  // Group code 7
 
-  auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (2=backward, 4=upside-down)
-  auto horizontalAlignment = text.m_horizontalAlignment;  // Group code 72
+  const auto textGenerationFlags = text.m_textGenerationFlags;  // Group code 71 (2=backward, 4=upside-down)
+  const auto horizontalAlignment = text.m_horizontalAlignment;  // Group code 72
 
-  auto secondAlignmentPointInOcs =
+  const auto secondAlignmentPointInOcs =
       EoGePoint3d{text.m_secondAlignmentPoint.x, text.m_secondAlignmentPoint.y, text.m_secondAlignmentPoint.z};
   EoGeVector3d extrusionDirection{
       text.m_extrusionDirection.x, text.m_extrusionDirection.y, text.m_extrusionDirection.z};
@@ -298,7 +298,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
     extrusionDirection.Unitize();
   }
 
-  auto verticalAlignment = text.m_verticalAlignment;  // Group code 73
+  const auto verticalAlignment = text.m_verticalAlignment;  // Group code 73
 
   const bool hasSecondAlignmentPoint = text.HasSecondAlignmentPoint();
 
@@ -306,7 +306,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
   EoGePoint3d secondAlignmentPointInWcs;
 
   // Always transform points to WCS (simplifies branches)
-  EoGeOcsTransform transformOcs{extrusionDirection};
+  const EoGeOcsTransform transformOcs{extrusionDirection};
   firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
   secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
 
@@ -321,7 +321,7 @@ void EoDbDxfInterface::ConvertTextEntity(const EoDxfText& text, [[maybe_unused]]
 
   if (hasSecondAlignmentPoint && isAlignedOrFit) {
     // Spec: for Aligned/Fit, ignore textRotation; baseline direction is defined by both points
-    auto alignedDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
+    const auto alignedDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
     if (!alignedDirection.IsNearNull()) {
       baselineDirection = alignedDirection;
       baselineDirection.Unitize();
@@ -471,17 +471,17 @@ EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeS
     return nullptr;
   }
 
-  auto firstAlignmentPointInOcs =
+  const auto firstAlignmentPointInOcs =
       EoGePoint3d{attrib.m_firstAlignmentPoint.x, attrib.m_firstAlignmentPoint.y, attrib.m_firstAlignmentPoint.z};
-  auto textHeight = attrib.m_textHeight;
+  const auto textHeight = attrib.m_textHeight;
   std::wstring string{attrib.m_attributeValue};
-  auto textRotation = Eo::DegreeToRadian(attrib.m_textRotation);
-  auto xScaleFactorWidth = attrib.m_relativeXScaleFactor;
-  auto obliqueAngle = Eo::DegreeToRadian(attrib.m_obliqueAngle);
+  const auto textRotation = Eo::DegreeToRadian(attrib.m_textRotation);
+  const auto xScaleFactorWidth = attrib.m_relativeXScaleFactor;
+  const auto obliqueAngle = Eo::DegreeToRadian(attrib.m_obliqueAngle);
   std::wstring textStyleName = attrib.m_textStyleName;
 
-  auto horizontalAlignment = attrib.m_horizontalTextJustification;
-  auto verticalAlignment = attrib.m_verticalTextJustification;
+  const auto horizontalAlignment = attrib.m_horizontalTextJustification;
+  const auto verticalAlignment = attrib.m_verticalTextJustification;
 
   ATLTRACE2(traceGeneral,
       2,
@@ -490,7 +490,7 @@ EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeS
       verticalAlignment,
       attrib.HasSecondAlignmentPoint() ? 1 : 0);
 
-  auto secondAlignmentPointInOcs =
+  const auto secondAlignmentPointInOcs =
       EoGePoint3d{attrib.m_secondAlignmentPoint.x, attrib.m_secondAlignmentPoint.y, attrib.m_secondAlignmentPoint.z};
   EoGeVector3d extrusionDirection{
       attrib.m_extrusionDirection.x, attrib.m_extrusionDirection.y, attrib.m_extrusionDirection.z};
@@ -502,9 +502,9 @@ EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeS
 
   const bool hasSecondAlignmentPoint = attrib.HasSecondAlignmentPoint();
 
-  EoGeOcsTransform transformOcs{extrusionDirection};
-  auto firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
-  auto secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
+  const EoGeOcsTransform transformOcs{extrusionDirection};
+  const auto firstAlignmentPointInWcs = transformOcs * firstAlignmentPointInOcs;
+  const auto secondAlignmentPointInWcs = transformOcs * secondAlignmentPointInOcs;
 
   const bool isDefaultAlignment = (horizontalAlignment == 0 && verticalAlignment == 0);
   const bool isAlignedOrFit = (horizontalAlignment == 3 || horizontalAlignment == 5);
@@ -512,7 +512,7 @@ EoDbAttrib* EoDbDxfInterface::ConvertAttribEntity(const EoDxfAttrib& attrib, AeS
   auto baselineDirection = EoGeVector3d::positiveUnitX;
 
   if (hasSecondAlignmentPoint && isAlignedOrFit) {
-    auto alignedDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
+    const auto alignedDirection = secondAlignmentPointInWcs - firstAlignmentPointInWcs;
     if (!alignedDirection.IsNearNull()) {
       baselineDirection = alignedDirection;
       baselineDirection.Unitize();

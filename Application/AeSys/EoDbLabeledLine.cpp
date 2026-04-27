@@ -198,8 +198,8 @@ EoGePoint3d EoDbLabeledLine::GoToNextControlPoint() {
   } else if (sm_controlPointIndex == 1) {
     sm_controlPointIndex = 0;
   } else {  // Initial rock .. jump to point at lower left or down if vertical
-    const EoGePoint3d ptBeg = m_line.begin;
-    EoGePoint3d ptEnd = m_line.end;
+    const EoGePoint3d ptBeg{m_line.begin};
+    const EoGePoint3d ptEnd{m_line.end};
 
     if (ptEnd.x > ptBeg.x) {
       sm_controlPointIndex = 0;
@@ -253,7 +253,7 @@ EoGePoint3d EoDbLabeledLine::SelectAtControlPoint(AeSysView* view, const EoGePoi
     EoGePoint4d pt(m_line[i]);
     view->ModelViewTransformPoint(pt);
 
-    double dDis = point.DistanceToPointXY(pt);
+    const double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dAPert) {
       sm_controlPointIndex = i;

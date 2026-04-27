@@ -39,7 +39,7 @@ void CDlgSetPointStyle::OnOK() {
 
   // Validate: for example, accept only 0..4 (five radio styles).
   constexpr int maxStyle{4};
-  int radioOnly = m_pointStyle & 0x0F;
+  const int radioOnly{m_pointStyle & 0x0F};
   if (radioOnly < 0 || radioOnly > maxStyle) {
     AfxMessageBox(L"Please select a valid point style.", MB_ICONWARNING);
     return;  // don't close dialog

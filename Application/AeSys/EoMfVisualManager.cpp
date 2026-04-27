@@ -160,7 +160,7 @@ void EoMfVisualManager::OnDrawTab(CDC* deviceContext,
 
     // If the active tab has an inline close button, draw it and shrink the text rect
     if (isActive && tabWnd->IsActiveTabCloseButton()) {
-      CRect rectClose = tabWnd->GetTabCloseButton();
+      const CRect rectClose = tabWnd->GetTabCloseButton();
       if (!rectClose.IsRectEmpty()) {
         textRect.right = rectClose.left;
         OnDrawTabCloseButton(deviceContext,
@@ -333,7 +333,7 @@ void EoMfVisualManager::OnDrawCaptionButton(CDC* deviceContext,
   const int centerX = rect.CenterPoint().x;
   const int centerY = rect.CenterPoint().y;
 
-  UINT hitTest = button->GetHit();
+  const auto hitTest = button->GetHit();
   if (hitTest == AFX_HTCLOSE) {
     // X glyph
     deviceContext->MoveTo(left, top);

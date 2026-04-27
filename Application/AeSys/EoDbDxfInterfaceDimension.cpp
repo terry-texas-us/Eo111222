@@ -135,7 +135,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
 
   EoDxfGeometryBase3d textPt = textPtOcs;
   if (dimNeedsOcsTransform) {
-    EoGeOcsTransform dimOcsTransform{dimExtrusionDirection};
+    const EoGeOcsTransform dimOcsTransform{dimExtrusionDirection};
     auto transformedTextPt = EoGePoint3d{textPtOcs.x, textPtOcs.y, textPtOcs.z};
     transformedTextPt = dimOcsTransform * transformedTextPt;
     textPt.x = transformedTextPt.x;
@@ -372,7 +372,7 @@ void EoDbDxfInterface::ConvertDimLinearEntity(const EoDxfDimLinear& dimension, A
         const int whole = static_cast<int>(measurement);
         const double fractionalPart = measurement - whole;
         const int denominator = 1 << (decimalPlaces > 0 ? decimalPlaces : 4);
-        int numerator = static_cast<int>(std::round(fractionalPart * denominator));
+        const int numerator = static_cast<int>(std::round(fractionalPart * denominator));
         if (numerator == 0) {
           dimensionText = std::to_wstring(whole);
         } else {

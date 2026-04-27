@@ -490,7 +490,7 @@ void EoDbPolyline::GetExtents(AeSysView* view,
 }
 
 EoGePoint3d EoDbPolyline::GoToNextControlPoint() {
-  int wPts = static_cast<int>(m_pts.GetSize());
+  const auto wPts = static_cast<int>(m_pts.GetSize());
 
   if (sm_pivotVertex >= wPts) {  // have not yet rocked to a vertex
     const auto wBeg = static_cast<std::uint16_t>(sm_Edge - 1);
@@ -593,7 +593,7 @@ EoGePoint3d EoDbPolyline::SelectAtControlPoint(AeSysView* view, const EoGePoint4
     EoGePoint4d pt(m_pts[i]);
     view->ModelViewTransformPoint(pt);
 
-    double dDis = point.DistanceToPointXY(pt);
+    const double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dApert) {
       sm_controlPointIndex = i;
@@ -676,7 +676,7 @@ bool EoDbPolyline::SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dAr
 }
 
 bool EoDbPolyline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
-  std::uint16_t wPts = std::uint16_t(m_pts.GetSize());
+  const auto wPts = std::uint16_t(m_pts.GetSize());
   if (sm_EdgeToEvaluate > 0 && sm_EdgeToEvaluate <= wPts) {  // Evaluate specified edge of polyline
     const INT_PTR edgeStart = sm_EdgeToEvaluate - 1;
     const INT_PTR edgeEnd = sm_EdgeToEvaluate % wPts;

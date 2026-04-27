@@ -96,7 +96,7 @@ void EoDlgPlot::OnOK() {
   const auto* printerCombo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
   if (printerCombo != nullptr) {
     CString name;
-    int sel = printerCombo->GetCurSel();
+    const int sel = printerCombo->GetCurSel();
     if (sel != CB_ERR) {
       printerCombo->GetLBText(sel, name);
       m_settings.printerName = static_cast<const wchar_t*>(name);
@@ -108,7 +108,7 @@ void EoDlgPlot::OnOK() {
   // Paper size
   const auto* paperCombo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_PAPER_SIZE_COMBO));
   if (paperCombo != nullptr) {
-    int sel = paperCombo->GetCurSel();
+    const int sel = paperCombo->GetCurSel();
     if (sel != CB_ERR && sel < static_cast<int>(m_paperSizes.size())) {
       m_settings.paperSizeIndex = sel;
       m_settings.dmPaperSize = m_paperSizes[sel].dmPaperSize;
@@ -223,7 +223,7 @@ void EoDlgPlot::PopulatePrinterCombo() {
 
   // Use pre-selected printer name if provided
   if (!m_settings.printerName.empty()) {
-    int idx = combo->FindStringExact(-1, m_settings.printerName.c_str());
+    const int idx = combo->FindStringExact(-1, m_settings.printerName.c_str());
     if (idx != CB_ERR) { combo->SetCurSel(idx); }
   }
 

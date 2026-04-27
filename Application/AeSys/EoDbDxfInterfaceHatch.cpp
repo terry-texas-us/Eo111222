@@ -250,8 +250,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
             const double centerX = arc->m_centerPoint.x;
             const double centerY = arc->m_centerPoint.y;
             const double radius = arc->m_radius;
-            double startAngle = arc->m_startAngle;
-            double endAngle = arc->m_endAngle;
+            const double startAngle = arc->m_startAngle;
+            const double endAngle = arc->m_endAngle;
 
             // Determine sweep direction from CCW flag
             double sweepAngle;
@@ -297,8 +297,8 @@ void EoDbDxfInterface::ConvertHatchEntity(const EoDxfHatch& hatch, AeSysDoc* doc
             const double majorX = ellipse->m_endPointOfMajorAxis.x;
             const double majorY = ellipse->m_endPointOfMajorAxis.y;
             const double ratio = ellipse->m_ratio;
-            double startParam = ellipse->m_startParam;
-            double endParam = ellipse->m_endParam;
+            const double startParam = ellipse->m_startParam;
+            const double endParam = ellipse->m_endParam;
 
             // Minor axis perpendicular to major axis in 2D
             const double minorX = -majorY * ratio;

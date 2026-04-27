@@ -159,7 +159,7 @@ double CVaxFloat::Convert() {
   return (double(fMS));
 }
 void CVaxFloat::Convert(const double& dMS) {
-  auto fMS = float(dMS);
+  const auto fMS = float(dMS);
   auto fVax = 0.f;
 
   if (fMS != 0.f) {
@@ -606,14 +606,14 @@ EoDbPolygon::EoDbPolygon(std::uint8_t* buffer, int version) {
     m_color = std::int16_t(buffer[4] & 0x000f);
     m_fillStyleIndex = 0;
 
-    double polygonStyle = ((CVaxFloat*)&buffer[12])->Convert();
+    const double polygonStyle = ((CVaxFloat*)&buffer[12])->Convert();
     m_polygonStyle = static_cast<EoDb::PolygonStyle>(static_cast<int>(polygonStyle) % 16);
 
     switch (m_polygonStyle) {
       case EoDb::PolygonStyle::Hatch: {
-        double dXScal = ((CVaxFloat*)&buffer[16])->Convert();
-        double dYScal = ((CVaxFloat*)&buffer[20])->Convert();
-        double dAng = ((CVaxFloat*)&buffer[24])->Convert();
+        const double dXScal = ((CVaxFloat*)&buffer[16])->Convert();
+        const double dYScal = ((CVaxFloat*)&buffer[20])->Convert();
+        const double dAng = ((CVaxFloat*)&buffer[24])->Convert();
 
         m_positiveX.z = 0.0;
         m_positiveY.z = 0.0;
@@ -701,7 +701,7 @@ EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
     int bufferIndex{12};
 
     for (auto i = 0; i < wPts; i++) {
-      EoGePoint3d pt = ((CVaxPnt*)&buffer[bufferIndex])->Convert() * 1.e-3;
+      const EoGePoint3d pt = ((CVaxPnt*)&buffer[bufferIndex])->Convert() * 1.e-3;
       m_pts.Add(pt);
       bufferIndex += sizeof(CVaxPnt);
     }
@@ -714,7 +714,7 @@ EoDbSpline::EoDbSpline(std::uint8_t* buffer, int version) {
     int bufferIndex{10};
 
     for (auto i = 0; i < wPts; i++) {
-      EoGePoint3d pt = ((CVaxPnt*)&buffer[bufferIndex])->Convert();
+      const EoGePoint3d pt = ((CVaxPnt*)&buffer[bufferIndex])->Convert();
       m_pts.Add(pt);
       bufferIndex += sizeof(CVaxPnt);
     }

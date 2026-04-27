@@ -85,7 +85,7 @@ void EoGsVertexBuffer::DisplayDashPattern(AeSysView* view,
   double dashElementSize = std::max(pixelSize, std::abs(dashElements[dashElementIndex]));
 
   for (int i = 0; i < pointsArray.GetSize() - 1; i++) {
-    EoGeVector3d lineAsVector(EoGePoint3d{pointsArray[i]}, EoGePoint3d{pointsArray[i + 1]});
+    const EoGeVector3d lineAsVector(EoGePoint3d{pointsArray[i]}, EoGePoint3d{pointsArray[i + 1]});
     modelPoints[0] = EoGePoint3d{pointsArray[i]};
 
     const double lineLength = lineAsVector.Length();
@@ -155,7 +155,7 @@ void EoGsVertexBuffer::End(AeSysView* view,
 
   // Continuous or unresolved name — use solid pen for stock types
   if (lineTypeIndex == 0 || lineTypeIndex == 1 || EoDbPrimitive::IsSupportedTyp(lineTypeIndex)) {
-    auto size = m_points.GetSize();
+    const auto size = m_points.GetSize();
     if (size > 1) {
       view->ModelViewTransformPoints(m_points);
 

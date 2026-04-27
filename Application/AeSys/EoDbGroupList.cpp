@@ -158,7 +158,7 @@ EoDbGroup* EoDbGroupList::SelectGroupUsingPoint(const EoGePoint3d& pt) {
   EoGePoint4d ptView(pt);
   activeView->ModelViewTransformPoint(ptView);
 
-  EoGeTransformMatrix transformMatrix = activeView->ModelViewGetMatrixInverse();
+  const EoGeTransformMatrix transformMatrix = activeView->ModelViewGetMatrixInverse();
 
   double dPicApert = activeView->SelectApertureSize();
 

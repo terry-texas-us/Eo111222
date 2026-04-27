@@ -301,7 +301,7 @@ void EoGsRenderDeviceDirect2D::TextOut(int x, int y, const wchar_t* text, int le
   const bool hasRotation = (m_escapement != 0);
   if (hasRotation) {
     m_renderTarget->GetTransform(&savedTransform);
-    float angleDegrees = -m_escapement / 10.0f;
+    const float angleDegrees = -m_escapement / 10.0f;
     const auto rotation =
         D2D1::Matrix3x2F::Rotation(angleDegrees, D2D1::Point2F(static_cast<float>(x), static_cast<float>(y)));
     m_renderTarget->SetTransform(rotation * savedTransform);
@@ -426,7 +426,7 @@ int EoGsRenderDeviceDirect2D::SetROP2(int drawMode) {
 int EoGsRenderDeviceDirect2D::GetDeviceCaps(int index) const {
   if (m_renderTarget == nullptr) { return 0; }
 
-  auto size = m_renderTarget->GetSize();  // DIPs — matches D2D coordinate space
+  const auto size = m_renderTarget->GetSize();  // DIPs — matches D2D coordinate space
   float dpiX = 0.0f;
   float dpiY = 0.0f;
 #pragma warning(suppress : 4996)  // GetDpi deprecated in favor of ID2D1DeviceContext methods
@@ -457,7 +457,7 @@ int EoGsRenderDeviceDirect2D::GetDeviceCaps(int index) const {
 int EoGsRenderDeviceDirect2D::GetClipBox(RECT& rect) const {
   if (m_renderTarget == nullptr) { return NULLREGION; }
 
-  auto size = m_renderTarget->GetSize();  // DIPs — matches D2D coordinate space
+  const auto size = m_renderTarget->GetSize();  // DIPs — matches D2D coordinate space
   rect.left = 0;
   rect.top = 0;
   rect.right = static_cast<LONG>(size.width);

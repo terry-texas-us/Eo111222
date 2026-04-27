@@ -592,7 +592,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
 
   EoGsRenderDeviceGdi renderDevice(targetDC);
-  const bool isHandledByState{};
+  bool isHandledByState{};
 #ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
   if (state) { isHandledByState = state->OnUpdate(this, sender, hint, hintObject); }

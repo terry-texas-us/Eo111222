@@ -161,7 +161,7 @@ void EoDbBlockReference::Display(AeSysView* view, EoGsRenderDevice* renderDevice
       ocsInsertionPoint.x += col * m_columnSpacing;
       ocsInsertionPoint.y += row * m_rowSpacing;
 
-      auto transformMatrix = BuildTransformMatrix(basePoint, ocsInsertionPoint);
+      const auto transformMatrix = BuildTransformMatrix(basePoint, ocsInsertionPoint);
 
       view->PushModelTransform();
       view->SetLocalModelTransform(transformMatrix);
@@ -260,7 +260,7 @@ void EoDbBlockReference::GetExtents(AeSysView* view,
 
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return; }
 
-  auto tmIns = BuildTransformMatrix(block->BasePoint());
+  const auto tmIns = BuildTransformMatrix(block->BasePoint());
 
   view->PushModelTransform();
   view->SetLocalModelTransform(tmIns);
@@ -277,7 +277,7 @@ bool EoDbBlockReference::IsInView(AeSysView* view) {
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return false; }
 
   const auto basePoint = block->BasePoint();
-  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
+  const EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
@@ -303,7 +303,7 @@ EoGePoint3d EoDbBlockReference::SelectAtControlPoint(AeSysView* view, const EoGe
 
   const auto basePoint = block->BasePoint();
 
-  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
+  const EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
@@ -334,7 +334,7 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
 
   const auto basePoint = block->BasePoint();
 
-  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
+  const EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
@@ -352,7 +352,7 @@ bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, Eo
   if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return bResult; }
   const auto basePoint = block->BasePoint();
 
-  EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
+  const EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
 
   view->PushModelTransform();
   view->SetLocalModelTransform(transformMatrix);
@@ -419,7 +419,7 @@ EoDbBlockReference* EoDbBlockReference::ReadLegacyInsertPeg(CFile& file) {
     const auto unitX = xAxis * (1.0 / scaleX);
     auto ocsXAxis = ComputeArbitraryAxis(normal);
     ocsXAxis.Unitize();
-    auto ocsYAxis = CrossProduct(normal, ocsXAxis);
+    const auto ocsYAxis = CrossProduct(normal, ocsXAxis);
     rotation = atan2(DotProduct(unitX, ocsYAxis), DotProduct(unitX, ocsXAxis));
   }
 

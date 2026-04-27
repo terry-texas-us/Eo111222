@@ -64,7 +64,7 @@ void EoDbPegFile::Load(AeSysDoc* document) {
   ReadEntitiesSection(document, fileVersion);
   ReadPaperSpaceSection(document, fileVersion);
 
-  auto& modelLayers = document->SpaceLayers(EoDxf::Space::ModelSpace);
+  const auto& modelLayers = document->SpaceLayers(EoDxf::Space::ModelSpace);
 
   // V1 tracing layer rename: convert legacy 'stem.tra' / 'stem.jb1' external layers (IsInternal() == false) to the
   // current '|stem' naming convention so IsTracingLayer() detection works correctly everywhere in the application.
@@ -180,7 +180,7 @@ void EoDbPegFile::ReadTablesSection(AeSysDoc* document, EoDb::PegFileVersion fil
   // Layout table is optional in V2 — peek to check if present before kEndOfSection.
   if (fileVersion == EoDb::PegFileVersion::AE2026) {
     const auto peekPosition = CFile::GetPosition();
-    auto peekedSentinel = EoDb::ReadUInt16(*this);
+    const auto peekedSentinel = EoDb::ReadUInt16(*this);
     if (peekedSentinel == EoDb::kLayoutTable) {
       // Rewind past the sentinel so ReadLayoutTable can consume it.
       CFile::Seek(static_cast<LONGLONG>(peekPosition), CFile::begin);
@@ -452,17 +452,17 @@ void EoDbPegFile::ReadEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion f
  */
 void EoDbPegFile::ReadPaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   auto currentPosition = CFile::GetPosition();
-  auto fileLength = CFile::GetLength();
+  const auto fileLength = CFile::GetLength();
 
   if (currentPosition >= fileLength) { return; }
 
   // Peek at the next uint16_t to check for paper-space sentinel before "EOF".
-  auto peekPosition = CFile::GetPosition();
-  auto peekedSentinel = EoDb::ReadUInt16(*this);
+  const auto peekPosition = CFile::GetPosition();
+  const auto peekedSentinel = EoDb::ReadUInt16(*this);
 
   if (peekedSentinel == EoDb::kMultiLayoutPaperSpaceSection) {
     // --- Multi-layout paper-space section (V2 current format) ---
-    auto layoutCount = EoDb::ReadUInt16(*this);
+    const auto layoutCount = EoDb::ReadUInt16(*this);
 
     for (std::uint16_t layoutIndex = 0; layoutIndex < layoutCount; layoutIndex++) {
       const auto layoutHandle = EoDb::ReadUInt64(*this);
@@ -572,7 +572,7 @@ void EoDbPegFile::ReadPaperSpaceLayoutEntities(AeSysDoc* document,
   }
 
   EoDbPrimitive* primitive{};
-  auto& layoutLayers = document->LayoutLayers(layoutHandle);
+  const auto& layoutLayers = document->LayoutLayers(layoutHandle);
   const auto numberOfEntityLayers = EoDb::ReadUInt16(*this);
 
   for (auto n = 0; n < numberOfEntityLayers; n++) {
@@ -746,7 +746,7 @@ void EoDbPegFile::WriteLinetypeTable(AeSysDoc* document, EoDb::PegFileVersion fi
 }
 
 void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
-  auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
+  const auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
   int numberOfLayers = static_cast<int>(layers.GetSize());
 
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kLayerTable));
@@ -1127,7 +1127,7 @@ void EoDbPegFile::WriteBlocksSection(AeSysDoc* document, EoDb::PegFileVersion fi
 void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion fileVersion) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kGroupsSection));
 
-  auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
+  const auto& layers = document->SpaceLayers(EoDxf::Space::ModelSpace);
 
   // Count only resident layers to match WriteLayerTable's patched count.
   // Non-resident layers are not written to the layer table, so their entity
@@ -1269,7 +1269,7 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
 }
 
 bool EoDb::Read(CFile& file, EoDbPrimitive*& primitive, EoDb::PegFileVersion fileVersion) {
-  auto primitiveType = EoDb::ReadUInt16(file);
+  const auto primitiveType = EoDb::ReadUInt16(file);
   switch (primitiveType) {
     case EoDb::kPointPrimitive:
       primitive = EoDbPoint::ReadFromPeg(file);

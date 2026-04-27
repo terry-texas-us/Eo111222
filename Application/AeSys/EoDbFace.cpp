@@ -375,7 +375,7 @@ EoGePoint3d EoDbFace::SelectAtControlPoint(AeSysView* view, const EoGePoint4d& p
   for (int i = 0; i < m_vertexCount; ++i) {
     EoGePoint4d ndcPoint(m_vertices[i]);
     view->ModelViewTransformPoint(ndcPoint);
-    double distance = point.DistanceToPointXY(ndcPoint);
+    const double distance = point.DistanceToPointXY(ndcPoint);
     if (distance < apertureSize) {
       sm_controlPointIndex = i;
       apertureSize = distance;

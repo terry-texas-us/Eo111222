@@ -64,7 +64,7 @@ void EoDlgSetupNote::OnOK() {
   const auto path = static_cast<EoDb::Path>(GetCheckedRadioButton(IDC_PATH_RIGHT, IDC_PATH_DOWN) - IDC_PATH_RIGHT);
   m_FontDefinition->SetPath(path);
 
-  int fontsIndex = m_MfcFontComboControl.GetCurSel();
+  const int fontsIndex = m_MfcFontComboControl.GetCurSel();
   if (fontsIndex != CB_ERR) {
     CString fontsItemName;
     m_MfcFontComboControl.GetLBText(fontsIndex, fontsItemName);

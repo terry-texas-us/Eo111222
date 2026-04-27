@@ -307,7 +307,7 @@ void EoDlgFileManageLayers::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT l
         CBrush br(rgbBkgnd);
         deviceContext.FillRect(rcItem, &br);
         if (lpDrawItemStruct->itemState & ODS_FOCUS) { deviceContext.DrawFocusRect(rcItem); }
-        int itemID = static_cast<int>(lpDrawItemStruct->itemID);
+        const int itemID = static_cast<int>(lpDrawItemStruct->itemID);
         if (itemID != -1) {
           // The text color is stored as the item data.
           const COLORREF rgbText = (lpDrawItemStruct->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT)
@@ -570,7 +570,7 @@ void EoDlgFileManageLayers::OnLvnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult) {
 }
 
 LRESULT EoDlgFileManageLayers::OnDeferredEditLabel(WPARAM wParam, LPARAM) {
-  auto item = static_cast<int>(wParam);
+  const auto item = static_cast<int>(wParam);
   if (item >= 0 && item < m_layersListControl.GetItemCount()) {
     m_layersListControl.SetFocus();
     m_layersListControl.EditLabel(item);

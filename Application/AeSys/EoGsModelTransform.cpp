@@ -59,11 +59,10 @@ void EoGsModelTransform::TransformPoints(int numberOfPoints, EoGePoint4d* points
 }
 
 void EoGsModelTransform::TransformPoints(EoGePoint4dArray& pointsArray) const noexcept {
-  if (m_depth > 0) {
-    auto numberOfPoints = pointsArray.GetSize();
-    for (decltype(numberOfPoints) i = 0; i < numberOfPoints; i++) {
-      pointsArray[i] = m_compositeTransformMatrix * pointsArray[i];
-    }
+  if (m_depth <= 0) { return; }
+  const size_t numberOfPoints = pointsArray.GetSize();
+  for (size_t i = 0; i < numberOfPoints; i++) {
+    pointsArray[i] = m_compositeTransformMatrix * pointsArray[i];
   }
 }
 

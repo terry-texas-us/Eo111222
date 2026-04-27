@@ -79,7 +79,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
       case BinaryArithmeticOperator:
       case Other:
         if (currentTokenType == BinaryAddToken || currentTokenType == BinarySubtractToken) {
-          TokenClass eClassPrv = TokenPropertiesTable[previousTokenType].tokenClass;
+          const TokenClass eClassPrv = TokenPropertiesTable[previousTokenType].tokenClass;
           if (eClassPrv != Constant && eClassPrv != Identifier && eClassPrv != CloseParentheses) {
             currentTokenType = (currentTokenType == BinaryAddToken) ? UnaryPlus : UnaryMinus;
           }
@@ -353,7 +353,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
             iDim2 = LOWORD(lDef2);
             iDim = iDim2 + iDim1;
 
-            errno_t err = wcscat_s(cOp2, 256, reinterpret_cast<wchar_t*>(operandBuffer));
+            const errno_t err = wcscat_s(cOp2, 256, reinterpret_cast<wchar_t*>(operandBuffer));
             if (err != 0) { throw L"String concatenation overflow!"; }
 
             wcscpy_s(reinterpret_cast<wchar_t*>(operandBuffer), static_cast<size_t>(HIWORD(lDef1) * 4), cOp2);
@@ -417,7 +417,7 @@ void lex::EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandTyp
 
             lOp1[0] = (int)pow((double)lOp2[0], lOp1[0]);
           } else if (iTyp1 == RealToken) {
-            int iExp = (int)dOp1[0];
+            const int iExp = (int)dOp1[0];
 
             if ((iExp >= 0 && iExp > DBL_MAX_10_EXP) || (iExp < 0 && iExp < DBL_MIN_10_EXP)) {
               throw L"Exponentiation error";

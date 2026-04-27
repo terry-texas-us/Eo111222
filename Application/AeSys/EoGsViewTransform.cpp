@@ -197,7 +197,7 @@ void EoGsViewTransform::Scale(EoGeVector3d scale) {
 void EoGsViewTransform::SetCenteredWindow(const EoGsViewport& viewport, double uExtent, double vExtent) {
   if (uExtent == 0.0) { uExtent = UExtent(); }
   if (vExtent == 0.0) { vExtent = VExtent(); }
-  double aspectRatio = viewport.HeightInInches() / viewport.WidthInInches();
+  const double aspectRatio = viewport.HeightInInches() / viewport.WidthInInches();
 
   if (aspectRatio < vExtent / uExtent) {
     uExtent = vExtent / aspectRatio;

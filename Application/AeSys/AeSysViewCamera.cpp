@@ -126,7 +126,7 @@ void AeSysView::DoWindowPan(double ratio) {
 
   auto cursorPosition = GetCursorPosition();
 
-  auto direction = m_ViewTransform.Direction();
+  const auto direction = m_ViewTransform.Direction();
   const auto target = m_ViewTransform.Target();
 
   EoGeLine::IntersectionWithPln(cursorPosition, direction, target, direction, &cursorPosition);

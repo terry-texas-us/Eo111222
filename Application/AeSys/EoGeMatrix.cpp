@@ -144,7 +144,7 @@ EoGeMatrix& EoGeMatrix::Identity() {
 bool EoGeMatrix::IsIdentity(double tolerance) const noexcept {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      double expected = (i == j) ? 1.0 : 0.0;
+      const double expected = (i == j) ? 1.0 : 0.0;
       if (std::abs(m_4X4[i][j] - expected) > tolerance) { return false; }
     }
   }

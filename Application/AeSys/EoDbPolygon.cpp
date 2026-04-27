@@ -77,8 +77,8 @@ void DisplayFilAreaHatch(AeSysView* view,
   EoGeLine lnS;
   EoGeVector3d vEdg;
 
-  std::int16_t color = Gs::renderState.Color();
-  std::int16_t lineType = Gs::renderState.LineTypeIndex();
+  const std::int16_t color = Gs::renderState.Color();
+  const std::int16_t lineType = Gs::renderState.LineTypeIndex();
 
   Gs::renderState.SetLineType(renderDevice, 1);
 
@@ -89,16 +89,16 @@ void DisplayFilAreaHatch(AeSysView* view,
   }
 
   int iTblId = hatch::tableOffset[fillStyleIndex];
-  int iHatLns = int(hatch::tableValue[iTblId++]);
+  const int iHatLns = int(hatch::tableValue[iTblId++]);
 
   for (int i0 = 0; i0 < iHatLns; i0++) {
-    int iStrsInTable = int(hatch::tableValue[iTblId++]);  // number of strokes stored in table
-    int iStrs = std::min(iStrsInTable, 8);  // local buffer limit
-    double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
-    double dSinAng = std::sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
-    double dCosAng = std::cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
-    double dX = hatch::tableValue[iTblId++];  // displacement to origin of initial line
-    double dY = hatch::tableValue[iTblId++];
+    const int iStrsInTable = int(hatch::tableValue[iTblId++]);  // number of strokes stored in table
+    const int iStrs = std::min(iStrsInTable, 8);  // local buffer limit
+    const double dTotStrLen = hatch::tableValue[iTblId++];  // length of all strokes in line definition
+    const double dSinAng = std::sin(hatch::tableValue[iTblId]);  // sine of angle at which line will be drawn
+    const double dCosAng = std::cos(hatch::tableValue[iTblId++]);  // cosine of angle at which line will be drawn
+    const double dX = hatch::tableValue[iTblId++];  // displacement to origin of initial line
+    const double dY = hatch::tableValue[iTblId++];
     double dShift = hatch::tableValue[iTblId++];  // x-axis origin shift between lines
     double dSpac = hatch::tableValue[iTblId++];  // spacing between lines
 
@@ -123,8 +123,8 @@ void DisplayFilAreaHatch(AeSysView* view,
     iTblId += (iStrsInTable - iStrs);  // skip any excess strokes beyond buffer capacity
 
     // Rotate origin on z0 plane so hatch x-axis becomes positive x-axis
-    double dHatOrigX = dX * dCosAng - dY * (-dSinAng);
-    double dHatOrigY = dX * (-dSinAng) + dY * dCosAng;
+    const double dHatOrigX = dX * dCosAng - dY * (-dSinAng);
+    const double dHatOrigY = dX * (-dSinAng) + dY * dCosAng;
 
     // Save matrix before rotation — exact restore eliminates FP drift that
     // accumulates across multi-line patterns (26 matrix multiplies for AR-CONC).
@@ -239,7 +239,7 @@ void DisplayFilAreaHatch(AeSysView* view,
               EoGePoint4d ndcPoint(tmInv * lnS.begin);
               view->ModelViewTransformPoint(ndcPoint);
               if (ndcPoint.IsInView()) {
-                auto clientPoint = view->ProjectToClient(ndcPoint);
+                const auto clientPoint = view->ProjectToClient(ndcPoint);
                 renderDevice->SetPixel(clientPoint, pColTbl[color]);
               }
             } else {
@@ -627,7 +627,7 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
       pEndPt = &m_vertices[SwingVertex()];
     }
     double dAng;
-    double dLen = EoGeVector3d(*pBegPt, *pEndPt).Length();  // Length of edge
+    const double dLen = EoGeVector3d(*pBegPt, *pEndPt).Length();  // Length of edge
 
     if (EoGeVector3d(point, *pBegPt).Length() > dLen * 0.5) {
       dAng = EoGeLine(*pEndPt, *pBegPt).AngleFromXAxisXY();
@@ -685,7 +685,7 @@ EoGePoint3d EoDbPolygon::GetControlPoint() {
 EoGePoint3d EoDbPolygon::GoToNextControlPoint() {
   if (sm_pivotVertex >= m_numberOfVertices) {  // have not yet rocked to a vertex
     const auto wBeg = static_cast<std::uint16_t>(sm_Edge - 1);
-    auto wEnd = std::uint16_t(sm_Edge % m_numberOfVertices);
+    const auto wEnd = static_cast<std::uint16_t>(sm_Edge % m_numberOfVertices);
 
     if (m_vertices[wEnd].x > m_vertices[wBeg].x) {
       sm_pivotVertex = wBeg;
@@ -845,7 +845,7 @@ EoGePoint3d EoDbPolygon::SelectAtControlPoint(AeSysView* view, const EoGePoint4d
     EoGePoint4d pt(m_vertices[i]);
     view->ModelViewTransformPoint(pt);
 
-    double dDis = point.DistanceToPointXY(pt);
+    const double dDis = point.DistanceToPointXY(pt);
 
     if (dDis < dApert) {
       sm_controlPointIndex = i;

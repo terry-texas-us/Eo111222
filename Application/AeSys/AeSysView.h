@@ -22,6 +22,8 @@
 #include "Section.h"
 
 #ifdef USING_STATE_PATTERN
+#include <stack>
+
 #include "AeSysState.h"
 #endif
 class AeSysDoc;

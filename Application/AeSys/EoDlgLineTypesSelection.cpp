@@ -28,7 +28,7 @@ int CALLBACK CompareLineTypeNames(LPARAM lParam1, LPARAM lParam2, LPARAM /*lPara
   const auto* lineType2 = reinterpret_cast<const EoDbLineType*>(lParam2);
   if (lineType1 == nullptr || lineType2 == nullptr) { return 0; }
   const int priority1 = LineTypeSortPriority(lineType1->Name());
-  int priority2 = LineTypeSortPriority(lineType2->Name());
+  const int priority2 = LineTypeSortPriority(lineType2->Name());
   if (priority1 != priority2) { return priority1 - priority2; }
   return lineType1->Name().CompareNoCase(lineType2->Name());
 }
@@ -106,14 +106,14 @@ void EoDlgLineTypesSelection::OnOK() {
   m_selectedFromFileList = false;
 
   // Prefer file list selection when present
-  int fileSelectedIndex = m_fileLineTypesListControl.GetNextItem(-1, LVNI_SELECTED);
+  const int fileSelectedIndex = m_fileLineTypesListControl.GetNextItem(-1, LVNI_SELECTED);
   if (fileSelectedIndex != -1) {
     m_selectedLineType = reinterpret_cast<EoDbLineType*>(m_fileLineTypesListControl.GetItemData(fileSelectedIndex));
     m_selectedFromFileList = true;
   }
   // Fall back to document list selection
   if (m_selectedLineType == nullptr) {
-    int selectedIndex = m_lineTypesListControl.GetNextItem(-1, LVNI_SELECTED);
+    const int selectedIndex = m_lineTypesListControl.GetNextItem(-1, LVNI_SELECTED);
     if (selectedIndex != -1) {
       m_selectedLineType = reinterpret_cast<EoDbLineType*>(m_lineTypesListControl.GetItemData(selectedIndex));
     }
@@ -126,7 +126,7 @@ BOOL EoDlgLineTypesSelection::PreTranslateMessage(MSG* messageStruct) {
     // Check for digit keys '0' to '9'
     if (messageStruct->wParam >= '0' && messageStruct->wParam <= '9') {
       const auto index = static_cast<int>(messageStruct->wParam - '0');
-      int itemCount = m_lineTypesListControl.GetItemCount();
+      const int itemCount = m_lineTypesListControl.GetItemCount();
       if (index < itemCount) {
         m_lineTypesListControl.SetItemState(index, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         m_lineTypesListControl.EnsureVisible(index, FALSE);

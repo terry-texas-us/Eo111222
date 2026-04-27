@@ -147,7 +147,7 @@ std::uint16_t EoGeLine::CutAtPoint(const EoGePoint3d& point, EoGeLine& line) {
 }
 
 int EoGeLine::DirRelOfPt(const EoGePoint3d& point) const {
-  double dDet = begin.x * (end.y - point.y) - end.x * (begin.y - point.y) + point.x * (begin.y - end.y);
+  const double dDet = begin.x * (end.y - point.y) - end.x * (begin.y - point.y) + point.x * (begin.y - end.y);
 
   if (dDet > Eo::geometricTolerance) {
     return (1);
@@ -207,7 +207,7 @@ bool EoGeLine::GetParallels(double distanceBetweenLines,
   leftLine = *this;
   rightLine = *this;
 
-  double lengthOfLines = Length();
+  const double lengthOfLines = Length();
 
   if (lengthOfLines > Eo::geometricTolerance) {
     const double x = (end.y - begin.y) * distanceBetweenLines / lengthOfLines;
@@ -303,7 +303,7 @@ bool EoGeLine::ParallelTo(const EoGeLine& line) const {
 EoGePoint3d EoGeLine::ProjectPointToLine(const EoGePoint3d& point) const {
   EoGeVector3d vBegEnd(begin, end);
 
-  double squaredLength = vBegEnd.SquaredLength();
+  const double squaredLength = vBegEnd.SquaredLength();
 
   if (squaredLength > Eo::geometricTolerance) {
     const EoGeVector3d vBegPt(begin, point);
@@ -348,7 +348,7 @@ int EoGeLine::ProjPtFrom_xy(double parallelDistance, double perpendicularDistanc
 EoGePoint3d EoGeLine::ProjectToBeginPoint(double distance) const {
   EoGeVector3d endBeginVector(end, begin);
 
-  double length = endBeginVector.Length();
+  const double length = endBeginVector.Length();
 
   if (length > Eo::geometricTolerance) { endBeginVector *= distance / length; }
   return (end + endBeginVector);
@@ -357,7 +357,7 @@ EoGePoint3d EoGeLine::ProjectToBeginPoint(double distance) const {
 EoGePoint3d EoGeLine::ProjectToEndPoint(double distance) const {
   EoGeVector3d beginEndVector(begin, end);
 
-  double length = beginEndVector.Length();
+  const double length = beginEndVector.Length();
 
   if (length > Eo::geometricTolerance) { beginEndVector *= distance / length; }
   return (begin + beginEndVector);
@@ -399,7 +399,7 @@ double EoGeLine::AngleBetweenLn_xy(EoGeLine firstLine, EoGeLine secondLine) {
   EoGeVector3d secondVector(secondLine.begin, secondLine.end);
   secondVector.z = 0.0;
 
-  double dSumProd = firstVector.SquaredLength() * secondVector.SquaredLength();
+  const double dSumProd = firstVector.SquaredLength() * secondVector.SquaredLength();
 
   if (dSumProd > Eo::geometricTolerance) {
     double value = DotProduct(firstVector, secondVector) / std::sqrt(dSumProd);
@@ -416,7 +416,7 @@ EoGePoint4d EoGeLine::IntersectionWithPlane(const EoGePoint4d& begin,
     const EoGePoint4d& point,
     const EoGeVector3d& normal) {
   EoGeVector3d beginEndVector(EoGePoint3d{begin}, EoGePoint3d{end});
-  double dotProduct = DotProduct(normal, beginEndVector);
+  const double dotProduct = DotProduct(normal, beginEndVector);
 
   if (Eo::IsGeometricallyNonZero(dotProduct)) {
     const EoGeVector3d pointBeginVector(EoGePoint3d{point}, EoGePoint3d{begin});
@@ -433,7 +433,7 @@ bool EoGeLine::IntersectionWithPln(const EoGePoint3d& beginPoint,
     EoGePoint3d pointOnPlane,
     EoGeVector3d planeNormal,
     EoGePoint3d* intersection) {
-  double dDotProd = DotProduct(planeNormal, lineVector);
+  const double dDotProd = DotProduct(planeNormal, lineVector);
 
   if (Eo::IsGeometricallyNonZero(dDotProd)) {  // Line and plane are not parallel
     EoGeVector3d v(lineVector);
@@ -463,7 +463,7 @@ bool EoGeLine::Intersection(const EoGeLine& firstLine, const EoGeLine& secondLin
   if (normal.IsNearNull()) { return false; }
   normal.Unitize();
 
-  EoGeVector3d v3(firstLine.begin, secondLine.begin);
+  const EoGeVector3d v3(firstLine.begin, secondLine.begin);
 
   if (Eo::IsGeometricallyNonZero(DotProduct(normal, v3))) { return false; }
 
@@ -491,7 +491,7 @@ bool EoGeLine::Intersection_xy(const EoGeLine& firstLine, const EoGeLine& second
   EoGeVector3d firstVector(firstLine.begin, firstLine.end);
   const EoGeVector3d secondVector(secondLine.begin, secondLine.end);
 
-  double determinant = firstVector.x * secondVector.y - secondVector.x * firstVector.y;
+  const double determinant = firstVector.x * secondVector.y - secondVector.x * firstVector.y;
 
   if (Eo::IsGeometricallyNonZero(determinant)) {
     const EoGeVector3d vBeg1Beg2(firstLine.begin, secondLine.begin);
