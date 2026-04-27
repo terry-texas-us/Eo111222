@@ -57,12 +57,12 @@ class EoDxfImageDefinition : public EoDxfObjectEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfImageDefinition() { Reset(); }
+  EoDxfImageDefinition() noexcept { Reset(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
 
-  void Reset();
+  void Reset() noexcept;
 
  public:
   std::wstring m_fileNameOfImage;  // Group code 1
@@ -107,7 +107,7 @@ class EoDxfLayout : public EoDxfObjectEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfLayout() { Reset(); }
+  EoDxfLayout() noexcept { Reset(); }
 
   /// @brief Writes the LAYOUT object to a DXF writer in the standard group-code order.
   void Write(EoDxfWriter* writer) const;
@@ -117,7 +117,7 @@ class EoDxfLayout : public EoDxfObjectEntry {
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
-  void Reset();
+  void Reset() noexcept;
 
  private:
   /// Tracks which AcDb subclass section the parser is currently in.

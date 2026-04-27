@@ -84,5 +84,5 @@ class EoGsVertexBuffer {
   void DisplayDashPattern(AeSysView* view,
       EoGsRenderDevice* renderDevice,
       EoGePoint4dArray& pointsArray,
-      EoDbLineType* lineType);
+      const EoDbLineType* lineType);
 };

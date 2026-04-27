@@ -56,7 +56,7 @@ class EoDxfReader {
 
 class EoDxfReaderBinary : public EoDxfReader {
  public:
-  EoDxfReaderBinary(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = false; }
+  EoDxfReaderBinary(std::ifstream* stream) noexcept : EoDxfReader(stream) { m_isAsciiFile = false; }
   ~EoDxfReaderBinary() = default;
 
   [[nodiscard]] bool ReadCode(int* code) override;
@@ -148,7 +148,7 @@ class EoDxfReaderAscii : public EoDxfReader {
   }
 
  public:
-  EoDxfReaderAscii(std::ifstream* stream) : EoDxfReader(stream) { m_isAsciiFile = true; }
+  EoDxfReaderAscii(std::ifstream* stream) noexcept : EoDxfReader(stream) { m_isAsciiFile = true; }
   ~EoDxfReaderAscii() = default;
 
   [[nodiscard]] bool ReadCode(int* code) override;

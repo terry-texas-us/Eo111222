@@ -156,7 +156,7 @@ void EvalTokenStream(int* aiTokId, long* operandDefinition, int* operandType, vo
  */
 void Parse(const wchar_t* inputLine);
 
-void ParseStringOperand(wchar_t* token);
+void ParseStringOperand(const wchar_t* token);
 
 /** @brief Scans the line buffer for a specific character, skipping whitespace.
  * @param character The character to scan for.

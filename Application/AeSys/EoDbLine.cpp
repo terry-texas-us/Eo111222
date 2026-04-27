@@ -332,15 +332,16 @@ bool EoDbLine::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3
   polyline::SetVertex(m_line.end);
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
-void EoDbLine::Square(AeSysView* view) {
-  const auto ptBeg = view->SnapPointToGrid(m_line.begin);
-  auto ptEnd = view->SnapPointToGrid(m_line.end);
 
-  const auto pt = EoGeLine(ptBeg, ptEnd).Midpoint();
-  const auto dLen = EoGeVector3d(ptBeg, ptEnd).Length();
-  ptEnd = view->SnapPointToAxis(pt, ptEnd);
-  SetBeginPoint(ptEnd.ProjectToward(pt, dLen));
-  SetEndPoint(ptEnd);
+void EoDbLine::Square(const AeSysView* view) {
+  const auto begin = view->SnapPointToGrid(m_line.begin);
+  auto end = view->SnapPointToGrid(m_line.end);
+
+  const auto midpoint = EoGeLine(begin, end).Midpoint();
+  const auto length = EoGeVector3d(begin, end).Length();
+  end = view->SnapPointToAxis(midpoint, end);
+  SetBeginPoint(end.ProjectToward(midpoint, length));
+  SetEndPoint(end);
 }
 
 void EoDbLine::Transform(const EoGeTransformMatrix& transformMatrix) {

@@ -91,7 +91,7 @@ void EoGsRenderState::SetPen(AeSysView* view,
   SetPen(view, deviceContext, color, lineTypeIndex, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault, 1.0);
 }
 
-void EoGsRenderState::SetPen(AeSysView* view,
+void EoGsRenderState::SetPen(const AeSysView* view,
     CDC* deviceContext,
     std::int16_t color,
     std::int16_t lineTypeIndex,
@@ -152,7 +152,7 @@ void EoGsRenderState::SetPen(AeSysView* view,
   SetPen(view, renderDevice, color, lineTypeIndex, lineTypeName, EoDxfLineWeights::LineWeight::kLnWtByLwDefault, 1.0);
 }
 
-void EoGsRenderState::SetPen(AeSysView* view,
+void EoGsRenderState::SetPen(const AeSysView* view,
     EoGsRenderDevice* renderDevice,
     std::int16_t color,
     std::int16_t lineTypeIndex,

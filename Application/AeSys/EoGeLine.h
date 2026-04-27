@@ -14,20 +14,20 @@ class EoGeLine {
   EoGePoint3d begin;
   EoGePoint3d end;
 
-  EoGeLine() {}
+  EoGeLine() noexcept {}
   EoGeLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
-  EoGeLine(const EoGeLine& other);
+  EoGeLine(const EoGeLine& other) noexcept;
 
   ~EoGeLine() {};
 
   bool operator==(const EoGeLine& other) const;
   bool operator!=(const EoGeLine& other) const;
-  EoGeLine& operator=(const EoGeLine& other);
-  void operator+=(const EoGeVector3d& v);
-  void operator-=(const EoGeVector3d& v);
-  EoGePoint3d& operator[](int index);
+  EoGeLine& operator=(const EoGeLine& other) noexcept;
+  void operator+=(const EoGeVector3d& v) noexcept;
+  void operator-=(const EoGeVector3d& v) noexcept;
+  EoGePoint3d& operator[](int index) noexcept;
   const EoGePoint3d& operator[](int index) const;
-  void operator()(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint);
+  void operator()(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint) noexcept;
   EoGeLine operator+(const EoGeVector3d& offset) const;
   EoGeLine operator-(const EoGeVector3d& offset) const;
 
@@ -35,7 +35,7 @@ class EoGeLine {
    * @return The angle (in radians) from the X axis (0 to Eo::TwoPi) to the line segment.
    * note If null length or parallel to z-axis, angle is 0.
    */
-  double AngleFromXAxisXY() const;
+  double AngleFromXAxisXY() const noexcept;
 
   /** @brief Constrains a line to the nearest axis pivoting on the first endpoint.
    * @param influenceAngle The angle [in degrees] to influence the constraint.
@@ -132,7 +132,7 @@ class EoGeLine {
 
   [[nodiscard]] double Length() const;
 
-  [[nodiscard]] EoGePoint3d Midpoint() const;
+  [[nodiscard]] EoGePoint3d Midpoint() const noexcept;
 
   /** @brief Determines if this line is parallel to another line.
    * @param line The line to compare against.
@@ -152,7 +152,7 @@ class EoGeLine {
    * @note A t value of 0 corresponds to the begin point, and a t value of 1 corresponds to the end point. Values of t
    * outside this range will project points beyond the endpoints.
    */
-  [[nodiscard]] EoGePoint3d ProjectBeginPointToEndPoint(double t) const;
+  [[nodiscard]] EoGePoint3d ProjectBeginPointToEndPoint(double t) const noexcept;
 
   /** @brief Projects a point from the begin point toward the end point by a specified parallel distance and then
    * perpendicular to the line by a specified perpendicular distance.
@@ -239,7 +239,7 @@ class EoGeLine {
    * @note Line is defined using parametric representation. Plane is defined by its normal vector and any point on
    * plane.
    */
-  static bool IntersectionWithPln(EoGePoint3d& beginPoint,
+  static bool IntersectionWithPln(const EoGePoint3d& beginPoint,
       EoGeVector3d lineVector,
       EoGePoint3d pointOnPlane,
       EoGeVector3d planeNormal,

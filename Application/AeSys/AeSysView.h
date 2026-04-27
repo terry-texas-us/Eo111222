@@ -171,22 +171,22 @@ class AeSysView : public CView {
   bool m_GridSnap{};
 
  public:
-  double AxisConstraintInfluenceAngle() const;
-  void SetAxisConstraintInfluenceAngle(double angle);
-  double AxisConstraintOffsetAngle() const;
-  void SetAxisConstraintOffsetAngle(double angle);
-  void InitializeConstraints();
+  double AxisConstraintInfluenceAngle() const noexcept;
+  void SetAxisConstraintInfluenceAngle(double angle) noexcept;
+  double AxisConstraintOffsetAngle() const noexcept;
+  void SetAxisConstraintOffsetAngle(double angle) noexcept;
+  void InitializeConstraints() noexcept;
   /// @brief Generates a point display centered about the user origin in one or more of the three orthogonal planes
   /// for the current user grid.
   void DisplayGrid(CDC* deviceContext);
-  EoGePoint3d GridOrign() const;
-  void GridOrign(const EoGePoint3d& origin);
-  void GetGridLineSpacing(double& x, double& y, double& z) const;
-  void SetGridLineSpacing(double x, double y, double z);
-  void GetGridPointSpacing(double& x, double& y, double& z) const;
-  void SetGridPointSpacing(double x, double y, double z);
-  void GetGridSnapSpacing(double& x, double& y, double& z) const;
-  void SetGridSnapSpacing(double x, double y, double z);
+  EoGePoint3d GridOrign() const noexcept;
+  void GridOrign(const EoGePoint3d& origin) noexcept;
+  void GetGridLineSpacing(double& x, double& y, double& z) const noexcept;
+  void SetGridLineSpacing(double x, double y, double z) noexcept;
+  void GetGridPointSpacing(double& x, double& y, double& z) const noexcept;
+  void SetGridPointSpacing(double x, double y, double z) noexcept;
+  void GetGridSnapSpacing(double& x, double& y, double& z) const noexcept;
+  void SetGridSnapSpacing(double x, double y, double z) noexcept;
 
   /** @brief Snaps a point to the nearest grid point based on the current grid snap spacing.
    * This function calculates the nearest grid point to the input point by rounding the coordinates of the input point
@@ -207,13 +207,13 @@ class AeSysView : public CView {
    */
   [[nodiscard]] EoGePoint3d SnapPointToAxis(const EoGePoint3d& begin, const EoGePoint3d& end) const;
 
-  bool DisplayGridWithLines() const;
-  void EnableDisplayGridWithLines(bool display);
-  void EnableDisplayGridWithPoints(bool display);
-  bool DisplayGridWithPoints() const;
-  bool GridSnap() const;
-  void EnableGridSnap(bool snap);
-  void ViewZoomExtents() {}
+  bool DisplayGridWithLines() const noexcept;
+  void EnableDisplayGridWithLines(bool display) noexcept;
+  void EnableDisplayGridWithPoints(bool display) noexcept;
+  bool DisplayGridWithPoints() const noexcept;
+  bool GridSnap() const noexcept;
+  void EnableGridSnap(bool snap) noexcept;
+  void ViewZoomExtents() noexcept {}
 
   /** @brief Applies the *ACTIVE VPORT table entry to the view transform.
    *
@@ -434,7 +434,7 @@ class AeSysView : public CView {
    * @param circle A reference to a pointer that will receive the selected circle primitive.
    * @return A pointer to the group containing the selected circle, or nullptr if no circle was found.
    */
-  [[nodiscard]] EoDbGroup* SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle);
+  [[nodiscard]] EoDbGroup* SelectCircleUsingPoint(const EoGePoint3d& point, double tolerance, EoDbConic*& circle);
 
   /**
    * Select a line primitive using a point.
@@ -442,15 +442,15 @@ class AeSysView : public CView {
    * @param line  The line primitive that is selected.
    * @return The group containing the selected line primitive, or nullptr if no line is selected.
    */
-  [[nodiscard]] EoDbGroup* SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line);
+  [[nodiscard]] EoDbGroup* SelectLineUsingPoint(const EoGePoint3d& point, EoDbLine*& line);
 
   [[nodiscard]] EoDbGroup* SelSegAndPrimAtCtrlPt(const EoGePoint4d& pt);
   [[nodiscard]] EoDbGroup* SelectLineUsingPoint(const EoGePoint3d& pt);
   [[nodiscard]] EoDbText* SelectTextUsingPoint(const EoGePoint3d& pt);
   [[nodiscard]] EoDbGroup* SelectGroupAndPrimitive(const EoGePoint3d& pt);
-  [[nodiscard]] EoGePoint3d& DetPt() { return m_ptDet; }
-  [[nodiscard]] EoDbPrimitive*& EngagedPrimitive() { return m_EngagedPrimitive; }
-  [[nodiscard]] EoDbGroup*& EngagedGroup() { return m_EngagedGroup; }
+  [[nodiscard]] EoGePoint3d& DetPt() noexcept { return m_ptDet; }
+  [[nodiscard]] EoDbPrimitive*& EngagedPrimitive() noexcept { return m_EngagedPrimitive; }
+  [[nodiscard]] EoDbGroup*& EngagedGroup() noexcept { return m_EngagedGroup; }
 
   /** @brief Displays a pixel at the specified 3D point with the given color using the provided device context.
    * This function is typically used for drawing temporary graphics such as rubber band lines or selection highlights.
@@ -462,8 +462,8 @@ class AeSysView : public CView {
    */
   void DisplayPixel(CDC* deviceContext, COLORREF colorReference, const EoGePoint3d& point);
 
-  bool GroupIsEngaged() { return m_EngagedGroup != nullptr; }
-  [[nodiscard]] double& SelectApertureSize() { return m_SelectApertureSize; }
+  bool GroupIsEngaged() noexcept { return m_EngagedGroup != nullptr; }
+  [[nodiscard]] double& SelectApertureSize() noexcept { return m_SelectApertureSize; }
   void BreakAllPolylines();
 
   /** @brief Explodes all block references in the view by iterating through each visible group and calling the
@@ -479,10 +479,10 @@ class AeSysView : public CView {
   /// @brief Marks the overlay (preview group) as dirty, triggering a repaint without re-rendering the scene.
   void InvalidateOverlay();
 
-  bool PenWidthsOn() const { return m_ViewPenWidths; }
-  [[nodiscard]] double GetWorldScale() const { return m_WorldScale; }
+  bool PenWidthsOn() const noexcept { return m_ViewPenWidths; }
+  [[nodiscard]] double GetWorldScale() const noexcept { return m_WorldScale; }
   void SetWorldScale(double scale);
-  bool RenderAsWireframe() const { return m_ViewWireframe; }
+  bool RenderAsWireframe() const noexcept { return m_ViewWireframe; }
   auto AddGroup(EoDbGroup* group) { return m_VisibleGroupList.AddTail(group); }
   void AddGroups(EoDbGroupList* groups) { return m_VisibleGroupList.AddTail(groups); }
   auto RemoveGroup(EoDbGroup* group) { return m_VisibleGroupList.Remove(group); }
@@ -517,8 +517,8 @@ class AeSysView : public CView {
    */
   void BackgroundImageDisplay(CDC* deviceContext);
 
-  [[nodiscard]] EoGeVector3d GetRelPos() const { return m_vRelPos; }
-  [[nodiscard]] bool ViewTrueTypeFonts() const { return m_ViewTrueTypeFonts; }
+  [[nodiscard]] EoGeVector3d GetRelPos() const noexcept { return m_vRelPos; }
+  [[nodiscard]] bool ViewTrueTypeFonts() const noexcept { return m_ViewTrueTypeFonts; }
 
   /** @brief Displays the odometer information showing the relative position from the grid origin to the current cursor
    * position, and optionally the line length and angle if in rubber band line mode.
@@ -535,26 +535,26 @@ class AeSysView : public CView {
   EoGsViewTransform PreviousModelView();
   void ExchangeActiveAndPreviousModelViews();
   void PushModelTransform();
-  void SetLocalModelTransform(EoGeTransformMatrix& transformation);
+  void SetLocalModelTransform(const EoGeTransformMatrix& transformation);
   void PopModelTransform();
 
-  void ModelTransformPoint(EoGePoint4d& point);
-  void ModelTransformPoint(EoGePoint3d& point);
+  void ModelTransformPoint(EoGePoint4d& point) noexcept;
+  void ModelTransformPoint(EoGePoint3d& point) noexcept;
 
-  void ModelTransformVector(EoGeVector3d vector);
+  void ModelTransformVector(EoGeVector3d vector) noexcept;
   void ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, double& vMax, double ratio);
   void ModelViewGetViewport(EoGsViewport& viewport);
   [[nodiscard]] EoGeVector3d CameraDirection() const;
-  [[nodiscard]] EoGeTransformMatrix& ModelViewGetMatrix();
-  [[nodiscard]] EoGeTransformMatrix& ModelViewGetMatrixInverse();
-  [[nodiscard]] EoGePoint3d CameraTarget() const;
-  [[nodiscard]] double UExtent() const;
-  [[nodiscard]] double UMax() const;
-  [[nodiscard]] double UMin() const;
-  [[nodiscard]] double VExtent() const;
-  [[nodiscard]] double VMax() const;
-  [[nodiscard]] double VMin() const;
-  [[nodiscard]] EoGeVector3d ViewUp() const;
+  [[nodiscard]] EoGeTransformMatrix& ModelViewGetMatrix() noexcept;
+  [[nodiscard]] EoGeTransformMatrix& ModelViewGetMatrixInverse() noexcept;
+  [[nodiscard]] EoGePoint3d CameraTarget() const noexcept;
+  [[nodiscard]] double UExtent() const noexcept;
+  [[nodiscard]] double UMax() const noexcept;
+  [[nodiscard]] double UMin() const noexcept;
+  [[nodiscard]] double VExtent() const noexcept;
+  [[nodiscard]] double VMax() const noexcept;
+  [[nodiscard]] double VMin() const noexcept;
+  [[nodiscard]] EoGeVector3d ViewUp() const noexcept;
   void ModelViewInitialize();
 
   void PopViewTransform();
@@ -563,7 +563,7 @@ class AeSysView : public CView {
   void ModelViewTransformPoints(EoGePoint4dArray& pointsArray);
   void ModelViewTransformPoints(int numberOfPoints, EoGePoint4d* points);
   void ModelViewTransformVector(EoGeVector3d& vector);
-  void SetViewTransform(EoGsViewTransform& viewTransform);
+  void SetViewTransform(const EoGsViewTransform& viewTransform);
   void SetCenteredWindow(double uExtent, double vExtent);
   void SetCameraPosition(const EoGeVector3d& direction);
   void SetCameraTarget(const EoGePoint3d& target);
@@ -571,12 +571,12 @@ class AeSysView : public CView {
   void SetViewWindow(double uMin, double vMin, double uMax, double vMax);
 
   /// @brief Determines the number of pages for 1 to 1 print
-  UINT NumPages(CDC* deviceContext, double dScaleFactor, UINT& nHorzPages, UINT& nVertPages);
+  UINT NumPages(const CDC* deviceContext, double dScaleFactor, UINT& nHorzPages, UINT& nVertPages);
 
-  [[nodiscard]] double OverviewUExt() { return m_OverviewViewTransform.UExtent(); }
-  [[nodiscard]] double OverviewUMin() { return m_OverviewViewTransform.UMin(); }
-  [[nodiscard]] double OverviewVExt() { return m_OverviewViewTransform.VExtent(); }
-  [[nodiscard]] double OverviewVMin() { return m_OverviewViewTransform.VMin(); }
+  [[nodiscard]] double OverviewUExt() const noexcept { return m_OverviewViewTransform.UExtent(); }
+  [[nodiscard]] double OverviewUMin() const noexcept { return m_OverviewViewTransform.UMin(); }
+  [[nodiscard]] double OverviewVExt() const noexcept { return m_OverviewViewTransform.VExtent(); }
+  [[nodiscard]] double OverviewVMin() const noexcept { return m_OverviewViewTransform.VMin(); }
 
   [[nodiscard]] CPoint ProjectToClient(const EoGePoint4d& ndcPoint) { return m_Viewport.ProjectToClient(ndcPoint); }
 
@@ -635,20 +635,20 @@ class AeSysView : public CView {
   CString m_DefaultText{};
 
  public:
-  [[nodiscard]] double BubbleRadius() const { return m_BubbleRadius; }
-  void SetBubbleRadius(double radius) { m_BubbleRadius = radius; }
-  [[nodiscard]] double CircleRadius() const { return m_CircleRadius; }
-  void SetCircleRadius(double radius) { m_CircleRadius = radius; }
+  [[nodiscard]] double BubbleRadius() const noexcept { return m_BubbleRadius; }
+  void SetBubbleRadius(double radius) noexcept { m_BubbleRadius = radius; }
+  [[nodiscard]] double CircleRadius() const noexcept { return m_CircleRadius; }
+  void SetCircleRadius(double radius) noexcept { m_CircleRadius = radius; }
   [[nodiscard]] CString DefaultText() const { return m_DefaultText; }
   void SetDefaultText(const CString& text) { m_DefaultText = text; }
-  [[nodiscard]] double EndItemSize() const { return m_EndItemSize; }
-  void SetEndItemSize(double size) { m_EndItemSize = size; }
-  [[nodiscard]] int EndItemType() const { return m_EndItemType; }
-  void SetEndItemType(int type) { m_EndItemType = type; }
-  [[nodiscard]] double GapSpaceFactor() const { return m_GapSpaceFactor; }
-  void SetGapSpaceFactor(double factor) { m_GapSpaceFactor = factor; }
-  [[nodiscard]] int NumberOfSides() const { return m_NumberOfSides; }
-  void SetNumberOfSides(int number) { m_NumberOfSides = number; }
+  [[nodiscard]] double EndItemSize() const noexcept { return m_EndItemSize; }
+  void SetEndItemSize(double size) noexcept { m_EndItemSize = size; }
+  [[nodiscard]] int EndItemType() const noexcept { return m_EndItemType; }
+  void SetEndItemType(int type) noexcept { m_EndItemType = type; }
+  [[nodiscard]] double GapSpaceFactor() const noexcept { return m_GapSpaceFactor; }
+  void SetGapSpaceFactor(double factor) noexcept { m_GapSpaceFactor = factor; }
+  [[nodiscard]] int NumberOfSides() const noexcept { return m_NumberOfSides; }
+  void SetNumberOfSides(int number) noexcept { m_NumberOfSides = number; }
 
  public:  // Annotate mode interface
   void DoAnnotateModeMouseMove();
@@ -673,9 +673,10 @@ class AeSysView : public CView {
   /// group group where primitives are placed
   void GenerateLineEndItem(int type,
       double size,
-      EoGePoint3d& beginPoint,
-      EoGePoint3d& endPoint,
+      const EoGePoint3d& beginPoint,
+      const EoGePoint3d& endPoint,
       EoDbGroup* group) const;
+
   bool CorrectLeaderEndpoints(int beginType, int endType, EoGePoint3d& beginPoint, EoGePoint3d& endPoint) const;
 
   /// Draw Mode Interface ///////////////////////////////////////////////////////
@@ -804,7 +805,7 @@ class AeSysView : public CView {
   EoGeVector3d m_editModeRotationAngles{0.0, 0.0, 45.0};
   EoGeVector3d m_EditModeScale{2.0, 2.0, 2.0};
 
-  [[nodiscard]] EoGeVector3d EditModeRotationAngles() const { return m_editModeRotationAngles; }
+  [[nodiscard]] EoGeVector3d EditModeRotationAngles() const noexcept { return m_editModeRotationAngles; }
   EoGeTransformMatrix EditModeInvertedRotationTMat() const {
     EoGeTransformMatrix matrix;
     matrix = matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
@@ -816,7 +817,7 @@ class AeSysView : public CView {
     matrix = matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
     return matrix;
   }
-  [[nodiscard]] EoGeVector3d EditModeInvertedScaleFactors() const {
+  [[nodiscard]] EoGeVector3d EditModeInvertedScaleFactors() const noexcept {
     EoGeVector3d invertedScaleFactors;
 
     invertedScaleFactors.x = Eo::IsGeometricallyNonZero(m_EditModeScale.x) ? 1.0 / m_EditModeScale.x : 1.0;
@@ -825,11 +826,11 @@ class AeSysView : public CView {
     return invertedScaleFactors;
   }
 
-  [[nodiscard]] EoGeVector3d EditModeScaleFactors() const { return m_EditModeScale; }
-  void SetEditModeScaleFactors(double x, double y, double z) { m_EditModeScale.Set(x, y, z); }
-  void SetEditModeRotationAngles(double x, double y, double z) { m_editModeRotationAngles.Set(x, y, z); }
-  [[nodiscard]] EoGeVector3d EditModeMirrorScale() const { return m_EditModeMirrorScale; }
-  void SetMirrorScale(double x, double y, double z) { m_EditModeMirrorScale.Set(x, y, z); }
+  [[nodiscard]] EoGeVector3d EditModeScaleFactors() const noexcept { return m_EditModeScale; }
+  void SetEditModeScaleFactors(double x, double y, double z) noexcept { m_EditModeScale.Set(x, y, z); }
+  void SetEditModeRotationAngles(double x, double y, double z) noexcept { m_editModeRotationAngles.Set(x, y, z); }
+  [[nodiscard]] EoGeVector3d EditModeMirrorScale() const noexcept { return m_EditModeMirrorScale; }
+  void SetMirrorScale(double x, double y, double z) noexcept { m_EditModeMirrorScale.Set(x, y, z); }
 
   afx_msg void OnEditModeOptions();
   afx_msg void OnEditModePivot();
@@ -915,7 +916,7 @@ class AeSysView : public CView {
    * @param endCapPoint A reference to store the selected point primitive if found.
    * @return The group containing the selected point primitive, or nullptr if none is found.
    */
-  [[nodiscard]] EoDbGroup* SelectPointUsingPoint(EoGePoint3d& point,
+  [[nodiscard]] EoDbGroup* SelectPointUsingPoint(const EoGePoint3d& point,
       double tolerance,
       std::int16_t color,
       std::int16_t pointStyle,
@@ -932,7 +933,7 @@ class AeSysView : public CView {
    * No check is made to see if lines are colinear.
    * Lines are normal to to test line (and therefore parallel to each other) if acceptance angle is 0.
    */
-  bool Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive,
+  bool Find2LinesUsingLineEndpoints(const EoDbLine* testLinePrimitive,
       double angularTolerance,
       EoGeLine& leftLine,
       EoGeLine& rightLine);
@@ -946,7 +947,7 @@ class AeSysView : public CView {
   /// endPoint end point of the line
   /// section width and depth data
   /// group
-  void GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group);
+  void GenerateEndCap(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint, Section section, EoDbGroup* group);
 
   /** @brief Generates the rise/drop lines and the associated section for a vertical section.
    * @param indicatorLineTypeName is the line type name for the rise/drop lines which are generated as a separate
@@ -965,7 +966,7 @@ class AeSysView : public CView {
   /// @brief Generates rectangular section using a set of parallel lines.
   /// section width and depth of section
   /// group
-  void GenerateRectangularSection(EoGeLine& referenceLine, double eccentricity, Section section, EoDbGroup* group);
+  void GenerateRectangularSection(const EoGeLine& referenceLine, double eccentricity, Section section, EoDbGroup* group);
   /// @brief Generates text segment representing width and depth of a piece of duct.
   void GenSizeNote(EoGePoint3d, double angle, Section section);
   /// previousReferenceLine
@@ -995,11 +996,11 @@ class AeSysView : public CView {
    * direction for the two elbow turns.
    *  @note Placeholder until implementation is return of (0.0, 0.0, 0.0)
    */
-  [[nodiscard]] EoGePoint3d GenerateBullheadTee(EoDbGroup* existingGroup,
-      EoGeLine& existingSectionReferenceLine,
+  [[nodiscard]] EoGePoint3d GenerateBullheadTee(const EoDbGroup* existingGroup,
+      const EoGeLine& existingSectionReferenceLine,
       double existingSectionWidth,
       double existingSectionDepth,
-      EoDbGroup* group);
+      const EoDbGroup* group) noexcept;
 
   /** @brief Generates a full elbow takeoff from an existing section to the current section.
    * @param existingSectionReferenceLine Reference line of the existing section.
@@ -1019,7 +1020,7 @@ class AeSysView : public CView {
   /// @param previousSection width and depth at begin of the transition
   /// @param currentSection width and depth at end of the transition
   /// group group receiving the primitives
-  void GenerateTransition(EoGeLine& referenceLine,
+  void GenerateTransition(const EoGeLine& referenceLine,
       double eccentricity,
       EJust justification,
       double slope,
@@ -1099,9 +1100,9 @@ class AeSysView : public CView {
   afx_msg void OnPowerModeEscape();
 
   void GeneratePowerConductorSymbol(std::uint16_t conductorType,
-      EoGePoint3d& pointOnCircuit,
-      EoGePoint3d& endPoint) const;
-  void GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const;
+      const EoGePoint3d& pointOnCircuit,
+      const EoGePoint3d& endPoint) const;
+  void GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, const EoGePoint3d& endPoint) const;
   void DoPowerModeConductor(std::uint16_t conductorType);
 
  public:

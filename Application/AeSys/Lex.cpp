@@ -497,7 +497,7 @@ void lex::Parse(const wchar_t* inputLine) {
   }
 }
 
-void lex::ParseStringOperand(wchar_t* token) {
+void lex::ParseStringOperand(const wchar_t* token) {
   if (wcslen(token) < 3) {
     app.AddStringToMessageList(IDS_MSG_ZERO_LENGTH_STRING);
     return;

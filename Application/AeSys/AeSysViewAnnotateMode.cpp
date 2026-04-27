@@ -444,8 +444,8 @@ void AeSysView::DoAnnotateModeMouseMove() {
 
 void AeSysView::GenerateLineEndItem(int type,
     double size,
-    EoGePoint3d& beginPoint,
-    EoGePoint3d& endPoint,
+    const EoGePoint3d& beginPoint,
+    const EoGePoint3d& endPoint,
     EoDbGroup* group) const {
   const auto cameraDirection = CameraDirection();
 

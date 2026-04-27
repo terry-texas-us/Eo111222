@@ -101,7 +101,7 @@ class EoDbLabeledLine : public EoDbPrimitive {
     m_fontDefinition.SetVerticalAlignment(verticalAlignment);
   }
 
-  void SetTextColor(std::int16_t color) { m_textColor = color; }
+  void SetTextColor(std::int16_t color) noexcept { m_textColor = color; }
 
  private:
   static std::uint16_t sm_flags;  // bit 1	clear if dimension selected at note

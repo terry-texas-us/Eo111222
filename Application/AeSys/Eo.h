@@ -453,7 +453,7 @@ constexpr double geometricTolerance = 1e-9;  // For geometric calculations, poin
  * @param geometricValue The value to check.
  * @return true if the absolute value of geometricValue is greater than geometricTolerance, false otherwise.
  */
-inline bool IsGeometricallyNonZero(double geometricValue) {
+inline bool IsGeometricallyNonZero(double geometricValue) noexcept {
   return std::abs(geometricValue) > geometricTolerance;
 }
 
@@ -461,7 +461,7 @@ inline bool IsGeometricallyNonZero(double geometricValue) {
  * @param geometricValue The value to check.
  * @return true if the absolute value of geometricValue is less than or equal to geometricTolerance, false otherwise.
  */
-inline bool IsGeometricallyZero(double geometricValue) {
+inline bool IsGeometricallyZero(double geometricValue) noexcept {
   return std::abs(geometricValue) <= geometricTolerance;
 }
 
@@ -507,7 +507,7 @@ constexpr double CopySign(double a, double b) {
  * @note This function uses std::round for rounding, which follows the "round half away from zero" rule. Legacy
  * implementation had a different "round half toward infinity" rule.
  */
-inline int Round(double number) {
+inline int Round(double number) noexcept {
   return static_cast<int>(std::round(number));
 }
 

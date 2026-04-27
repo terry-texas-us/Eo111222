@@ -228,7 +228,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     m_currentInsertPrimitive = ConvertInsertEntity(blockReference, m_document);
   }
 
-  void AddSeqend(const EoDxfSeqend& seqend) override {
+  void AddSeqend(const EoDxfSeqend& seqend) noexcept override {
     if (m_dxfWriter) { m_dxfWriter->WriteSeqend(seqend); }
   }
 
@@ -403,7 +403,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     m_document->AddUnsupportedObject(objectData);
   }
 
-  void AddLayout(const EoDxfLayout& layout) override {
+  void AddLayout(const EoDxfLayout& layout) noexcept override {
     if (m_dxfWriter) {
       m_dxfWriter->WriteLayout(layout);
       return;
@@ -459,7 +459,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       // Write block content entities (primitives stored directly in EoDbBlock)
       auto primitivePosition = block->GetHeadPosition();
       while (primitivePosition != nullptr) {
-        auto* primitive = block->GetNext(primitivePosition);
+        const auto* primitive = block->GetNext(primitivePosition);
         if (primitive != nullptr) { primitive->ExportToDxf(this); }
       }
     }
@@ -576,7 +576,7 @@ class EoDbDxfInterface : public EoDxfInterface {
       if (layer == nullptr) { continue; }
       auto position = layer->GetHeadPosition();
       while (position != nullptr) {
-        auto* group = layer->GetNext(position);
+        const auto* group = layer->GetNext(position);
         if (group == nullptr) { continue; }
         auto primitivePosition = group->GetHeadPosition();
         while (primitivePosition != nullptr) {
@@ -598,7 +598,7 @@ class EoDbDxfInterface : public EoDxfInterface {
         if (layer == nullptr) { continue; }
         auto position = layer->GetHeadPosition();
         while (position != nullptr) {
-          auto* group = layer->GetNext(position);
+          const auto* group = layer->GetNext(position);
           if (group == nullptr) { continue; }
           auto primitivePosition = group->GetHeadPosition();
           while (primitivePosition != nullptr) {
@@ -615,7 +615,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     m_dxfWriter->SetCurrentPaperSpaceOwnerHandle(EoDxf::Handles::PaperSpaceBlockRecord);
     m_dxfWriter->SetCurrentExportSpace(EoDxf::Space::ModelSpace);
   };
-  [[nodiscard]] std::uint64_t GetHandleSeed() const override {
+  [[nodiscard]] std::uint64_t GetHandleSeed() const noexcept override {
     return m_document != nullptr ? m_document->HandleManager().NextHandleValue() : 0;
   }
 
@@ -651,7 +651,7 @@ class EoDbDxfInterface : public EoDxfInterface {
     header.AddHandle(L"$HANDSEED", m_document->HandleManager().NextHandleValue(), 5);
   };
   void WriteObjects() override {};
-  [[nodiscard]] bool HasUnsupportedObjects() const override {
+  [[nodiscard]] bool HasUnsupportedObjects() const noexcept override {
     return m_document != nullptr && (!m_document->UnsupportedObjects().empty() || !m_document->Layouts().empty());
   }
   void WriteUnsupportedObjects() override {
@@ -664,7 +664,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
     auto writeLayers = [this](CLayers& layers) {
       for (INT_PTR i = 0; i < layers.GetSize(); i++) {
-        auto* layer = layers.GetAt(i);
+        const auto* layer = layers.GetAt(i);
         if (layer == nullptr) { continue; }
 
         EoDxfLayer dxfLayer;

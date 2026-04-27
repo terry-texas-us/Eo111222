@@ -535,9 +535,9 @@ void CMainFrame::AdjustToolbarSizesToMatchCombos() {
   const CSize kImageSize(24, 24);
   CObList buttons;
   if (CMFCToolBar::GetCommandButtons(ID_PENCOLOR_COMBO, buttons) > 0) {
-    auto* comboButton = DYNAMIC_DOWNCAST(CMFCToolBarComboBoxButton, buttons.GetHead());
+    const auto* comboButton = DYNAMIC_DOWNCAST(CMFCToolBarComboBoxButton, buttons.GetHead());
     if (comboButton != nullptr) {
-      auto* combo = comboButton->GetComboBox();
+      const auto* combo = comboButton->GetComboBox();
       if (combo != nullptr && combo->GetSafeHwnd() != nullptr) {
         CRect comboRect;
         combo->GetWindowRect(&comboRect);

@@ -60,7 +60,7 @@ bool EoGsVertexBuffer::AnyPointsInView(EoGePoint4dArray& pointsArray) {
 void EoGsVertexBuffer::DisplayDashPattern(AeSysView* view,
     EoGsRenderDevice* renderDevice,
     EoGePoint4dArray& pointsArray,
-    EoDbLineType* lineType) {
+    const EoDbLineType* lineType) {
   const auto numberOfDashElements = lineType->GetNumberOfDashes();
   if (numberOfDashElements == 0 || pointsArray.GetSize() < 2) { return; }
 

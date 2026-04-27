@@ -19,8 +19,8 @@ class EoDxfWriter {
 
   void SetVersion(std::wstring_view version) { m_encoder.SetVersion(version); }
   void SetCodePage(std::wstring_view codePage) { m_encoder.SetCodePage(codePage); }
-  [[nodiscard]] const std::wstring& GetCodePage() const { return m_encoder.GetCodePage(); }
-  [[nodiscard]] std::string EncodeWideText(std::wstring_view text) const { return m_encoder.EncodeText(text); }
+  [[nodiscard]] const std::wstring& GetCodePage() const noexcept { return m_encoder.GetCodePage(); }
+  [[nodiscard]] std::string EncodeWideText(std::wstring_view text) const noexcept { return m_encoder.EncodeText(text); }
 
   bool WriteWideString(int code, std::wstring_view text);
 
@@ -46,7 +46,7 @@ class EoDxfWriterBinary : public EoDxfWriter {
 
 class EoDxfWriterAscii : public EoDxfWriter {
  public:
-  EoDxfWriterAscii(std::ofstream* stream) : EoDxfWriter(stream) { m_fileStream->precision(16); }
+  EoDxfWriterAscii(std::ofstream* stream) noexcept : EoDxfWriter(stream) { m_fileStream->precision(16); }
   ~EoDxfWriterAscii() = default;
 
   bool WriteEncodedText(int code, std::string_view encodedText) override;

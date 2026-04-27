@@ -9,7 +9,7 @@ class EoDbCharacterCellDefinition {
  public:
   EoDbCharacterCellDefinition() = default;
 
-  EoDbCharacterCellDefinition(double rotationAngle, double slantAngle, double expansionFactor, double height)
+  EoDbCharacterCellDefinition(double rotationAngle, double slantAngle, double expansionFactor, double height) noexcept
       : m_height{height},
         m_expansionFactor{expansionFactor},
         m_rotationAngle{rotationAngle},

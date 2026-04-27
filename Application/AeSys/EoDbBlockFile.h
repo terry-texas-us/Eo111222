@@ -47,7 +47,7 @@ class EoDbBlock;
 
 class EoDbBlockFile : public CFile {
  public:
-  EoDbBlockFile() {}
+  EoDbBlockFile() noexcept {}
   EoDbBlockFile(const CString& pathName);
   EoDbBlockFile(const EoDbBlockFile&) = delete;
   EoDbBlockFile& operator=(const EoDbBlockFile&) = delete;
@@ -69,8 +69,8 @@ class EoDbBlockFile : public CFile {
 
   /// @brief Reads and validates the header section of an EoDb block file.
   void ReadHeader();
-  void WriteBlock(const CString& name, EoDbBlock* block);
-  void WriteBlocks(EoDbBlocks& blocks);
+  void WriteBlock(const CString& name, const EoDbBlock* block);
+  void WriteBlocks(const EoDbBlocks& blocks);
   void WriteFile(const CString& pathName, EoDbBlocks& blocks);
   void WriteHeader();
 };

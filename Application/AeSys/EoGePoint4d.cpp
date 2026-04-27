@@ -111,7 +111,7 @@ void EoGePoint4d::ClipPolygon(EoGePoint4dArray& pointsArray) {
 
 void EoGePoint4d::IntersectionWithPln(EoGePoint4dArray& pointsArrayIn,
     const EoGePoint4d& pointOnClipPlane,
-    EoGeVector3d& clipPlaneNormal,
+    const EoGeVector3d& clipPlaneNormal,
     EoGePoint4dArray& pointsArrayOut) {
   if (pointsArrayIn.IsEmpty()) { return; }
 

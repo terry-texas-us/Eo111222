@@ -53,12 +53,14 @@ class EoGsRenderState {
   void ManagePenResources(EoGsRenderDevice* renderDevice, std::int16_t color, int width, std::int16_t lineType);
 
   void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType);
+  
   void SetPen(AeSysView* view,
       CDC* deviceContext,
       std::int16_t penColor,
       std::int16_t lineType,
       const std::wstring& lineTypeName);
-  void SetPen(AeSysView* view,
+  
+  void SetPen(const AeSysView* view,
       CDC* deviceContext,
       std::int16_t penColor,
       std::int16_t lineType,
@@ -67,12 +69,14 @@ class EoGsRenderState {
       double lineTypeScale);
 
   void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType);
+  
   void SetPen(AeSysView* view,
       EoGsRenderDevice* renderDevice,
       std::int16_t penColor,
       std::int16_t lineType,
       const std::wstring& lineTypeName);
-  void SetPen(AeSysView* view,
+  
+  void SetPen(const AeSysView* view,
       EoGsRenderDevice* renderDevice,
       std::int16_t penColor,
       std::int16_t lineType,
@@ -82,24 +86,24 @@ class EoGsRenderState {
 
   void SetColor(CDC* deviceContext, std::int16_t color);
   void SetColor(EoGsRenderDevice* renderDevice, std::int16_t color);
-  [[nodiscard]] std::int16_t Color() const { return m_color; }
+  [[nodiscard]] std::int16_t Color() const noexcept { return m_color; }
 
   void SetLineType(CDC* deviceContext, std::int16_t lineType);
   void SetLineType(EoGsRenderDevice* renderDevice, std::int16_t lineType);
-  [[nodiscard]] std::int16_t LineTypeIndex() const { return m_LineTypeIndex; }
+  [[nodiscard]] std::int16_t LineTypeIndex() const noexcept { return m_LineTypeIndex; }
 
-  void SetLineTypeName(std::wstring name) { m_lineTypeName = std::move(name); }
-  [[nodiscard]] const std::wstring& LineTypeName() const { return m_lineTypeName; }
+  void SetLineTypeName(std::wstring name) noexcept { m_lineTypeName = std::move(name); }
+  [[nodiscard]] const std::wstring& LineTypeName() const noexcept { return m_lineTypeName; }
 
   [[nodiscard]] double LineTypeScale() const noexcept { return m_lineTypeScale; }
 
   void SetLineWeight(EoDxfLineWeights::LineWeight lineWeight) noexcept { m_lineWeight = lineWeight; }
   [[nodiscard]] EoDxfLineWeights::LineWeight LineWeight() const noexcept { return m_lineWeight; }
 
-  void SetTextStyleName(std::wstring name) { m_textStyleName = std::move(name); }
-  [[nodiscard]] const std::wstring& TextStyleName() const { return m_textStyleName; }
+  void SetTextStyleName(std::wstring name) noexcept { m_textStyleName = std::move(name); }
+  [[nodiscard]] const std::wstring& TextStyleName() const noexcept { return m_textStyleName; }
 
-  void SetCharacterCellDefinition(const EoDbCharacterCellDefinition& characterCellDefinition) {
+  void SetCharacterCellDefinition(const EoDbCharacterCellDefinition& characterCellDefinition) noexcept {
     m_characterCellDefinition = characterCellDefinition;
   }
 
@@ -110,13 +114,13 @@ class EoGsRenderState {
   }
   [[nodiscard]] const EoDbFontDefinition& FontDefinition() const noexcept { return m_fontDefinition; }
 
-  void SetPointStyle(std::int16_t pointStyle) { m_pointStyle = pointStyle; }
-  const std::int16_t& PointStyle() { return m_pointStyle; }
+  void SetPointStyle(std::int16_t pointStyle) noexcept { m_pointStyle = pointStyle; }
+  const std::int16_t& PointStyle() noexcept { return m_pointStyle; }
 
-  void SetPolygonIntStyle(EoDb::PolygonStyle interiorStyle) { m_PolygonStyle = interiorStyle; }
-  void SetPolygonIntStyleId(std::int16_t styleIndex) { m_PolygonInteriorStyleIndex = styleIndex; }
-  [[nodiscard]] const EoDb::PolygonStyle& PolygonIntStyle() const { return m_PolygonStyle; }
-  [[nodiscard]] std::int16_t PolygonIntStyleId() const { return m_PolygonInteriorStyleIndex; }
+  void SetPolygonIntStyle(EoDb::PolygonStyle interiorStyle) noexcept { m_PolygonStyle = interiorStyle; }
+  void SetPolygonIntStyleId(std::int16_t styleIndex) noexcept { m_PolygonInteriorStyleIndex = styleIndex; }
+  [[nodiscard]] const EoDb::PolygonStyle& PolygonIntStyle() const noexcept { return m_PolygonStyle; }
+  [[nodiscard]] std::int16_t PolygonIntStyleId() const noexcept { return m_PolygonInteriorStyleIndex; }
 
   /** @brief Sets the current foreground mix mode. GDI uses the foreground mix mode to combine pens and
    * interiors of filled objects with the colors already on the screen. The foreground mix mode

@@ -106,7 +106,7 @@ EoDbGroup* AeSysView::SelectGroupAndPrimitive(const EoGePoint3d& point) {
   return nullptr;
 }
 
-EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
+EoDbGroup* AeSysView::SelectCircleUsingPoint(const EoGePoint3d& point, double tolerance, EoDbConic*& circle) {
   auto groupPosition = GetFirstVisibleGroupPosition();
   while (groupPosition != nullptr) {
     auto* group = GetNextVisibleGroup(groupPosition);
@@ -125,7 +125,7 @@ EoDbGroup* AeSysView::SelectCircleUsingPoint(EoGePoint3d& point, double toleranc
   return nullptr;
 }
 
-EoDbGroup* AeSysView::SelectLineUsingPoint(EoGePoint3d& point, EoDbLine*& line) {
+EoDbGroup* AeSysView::SelectLineUsingPoint(const EoGePoint3d& point, EoDbLine*& line) {
   EoGePoint4d ptView(point);
   ModelViewTransformPoint(ptView);
 

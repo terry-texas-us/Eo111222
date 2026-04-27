@@ -34,7 +34,7 @@ class EoDxfSpline : public EoDxfGraphic {
   EoDxfSpline(EoDxfSpline&& other) noexcept = default;
   EoDxfSpline& operator=(EoDxfSpline&& other) noexcept = default;
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
   [[nodiscard]] bool IsClosed() const noexcept { return (m_splineFlag & 0x01) != 0; }
   [[nodiscard]] bool IsPeriodic() const noexcept { return (m_splineFlag & 0x02) != 0; }

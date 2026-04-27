@@ -100,7 +100,8 @@ void AeSysDoc::AddPrimitiveBit(EoDbPrimitive* primitive, int bit) {
   }
   maskedPrimitive->SetMaskBit(bit);
 }
-void AeSysDoc::RemovePrimitiveBit(EoDbPrimitive* primitive, int bit) {
+
+void AeSysDoc::RemovePrimitiveBit(const EoDbPrimitive* primitive, int bit) {
   EoDbMaskedPrimitive* maskedPrimitive{};
 
   auto maskedPrimitivePosition = GetFirstMaskedPrimitivePosition();
@@ -114,7 +115,8 @@ void AeSysDoc::RemovePrimitiveBit(EoDbPrimitive* primitive, int bit) {
   }
   if (maskedPrimitivePosition != nullptr) { maskedPrimitive->ClearMaskBit(bit); }
 }
-DWORD AeSysDoc::GetPrimitiveMask(EoDbPrimitive* primitive) {
+
+DWORD AeSysDoc::GetPrimitiveMask(const EoDbPrimitive* primitive) {
   EoDbMaskedPrimitive* maskedPrimitive = nullptr;
 
   auto maskedPrimitivePosition = GetFirstMaskedPrimitivePosition();

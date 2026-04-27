@@ -53,7 +53,7 @@ void EoDxfImageDefinition::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
-void EoDxfImageDefinition::Reset() {
+void EoDxfImageDefinition::Reset() noexcept {
   m_classVersion = 0;
   m_uImageSizeInPixels = 0.0;
   m_vImageSizeInPixels = 0.0;
@@ -88,7 +88,7 @@ void EoDxfUnsupportedObject::Write(EoDxfWriter* writer) const {
 
 // ── EoDxfLayout ──────────────────────────────────────────────────────────────
 
-void EoDxfLayout::Reset() {
+void EoDxfLayout::Reset() noexcept {
   m_currentSubclass = Subclass::None;
 
   // AcDbPlotSettings

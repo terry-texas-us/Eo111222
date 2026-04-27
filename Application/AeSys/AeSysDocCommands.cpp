@@ -174,7 +174,7 @@ void AeSysDoc::OnPrimBreak() {
       delete primitive;
       ResetAllViews();
     } else if (primitive->Is(EoDb::kGroupReferencePrimitive)) {
-      auto* const blockReference = static_cast<EoDbBlockReference*>(primitive);
+      const auto* blockReference = static_cast<EoDbBlockReference*>(primitive);
 
       EoDbBlock* block{};
 
@@ -216,7 +216,7 @@ void AeSysDoc::OnEditSegToWork() {
 void AeSysDoc::OnFileQuery() {
   const auto cursorPosition = app.GetCursorPosition();
 
-  auto* layer = LayersSelUsingPoint(cursorPosition);
+  const auto* layer = LayersSelUsingPoint(cursorPosition);
 
   if (layer != nullptr) {
     CPoint currentPosition;
@@ -420,7 +420,7 @@ void AeSysDoc::OnEditTrace() {
         HGLOBAL clipboardDataHandle = GetClipboardData(clipboardFormat);
         if (clipboardDataHandle != nullptr) {
           CMemFile memFile;
-          EoGeVector3d vTrns;
+          const EoGeVector3d vTrns;
 
           auto clipboardData = (LPCSTR)GlobalLock(clipboardDataHandle);
           if (clipboardData != nullptr) {
@@ -597,7 +597,7 @@ void AeSysDoc::OnTrapCommandsBlock() {
 
   auto position = GetFirstTrappedGroupPosition();
   while (position != nullptr) {
-    auto* const group = GetNextTrappedGroup(position);
+    const auto* group = GetNextTrappedGroup(position);
 
     auto* newGroup = new EoDbGroup(*group);
 
@@ -849,7 +849,7 @@ void AeSysDoc::OnPrimModifyAttributes() {
 
   const auto cursorPosition = activeView->GetCursorPosition();
 
-  auto* group = activeView->SelectGroupAndPrimitive(cursorPosition);
+  const auto* group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
   if (group != nullptr) {
     activeView->EngagedPrimitive()->ModifyState();
@@ -1075,7 +1075,7 @@ void AeSysDoc::OnViewModelSpace() {
   if (m_activeSpace == EoDxf::Space::PaperSpace) {
     auto viewPosition = GetFirstViewPosition();
     if (viewPosition != nullptr) {
-      auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
+      const auto* view = static_cast<AeSysView*>(GetNextView(viewPosition));
       CreateDefaultPaperSpaceViewport(view);
     }
   }

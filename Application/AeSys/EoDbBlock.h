@@ -31,7 +31,7 @@ class EoDbBlock : public EoDbGroup {
   std::vector<EoDxfAttDef> m_attributeDefinitions;
 
  public:
-  EoDbBlock() { m_blockTypeFlags = 0; }
+  EoDbBlock() noexcept { m_blockTypeFlags = 0; }
   EoDbBlock(std::int16_t flags, EoGePoint3d basePoint);
   EoDbBlock(std::int16_t flags, EoGePoint3d basePoint, const CString& name);
   EoDbBlock& operator=(const EoDbBlock&) = delete;
@@ -41,8 +41,8 @@ class EoDbBlock : public EoDbGroup {
   [[nodiscard]] bool HasAttributes() const noexcept { return (m_blockTypeFlags & 2) == 2; }
   [[nodiscard]] bool IsAnonymous() const noexcept { return (m_blockTypeFlags & 1) == 1; }
   [[nodiscard]] bool IsFromExternalReference() const noexcept { return (m_blockTypeFlags & 4) == 4; }
-  void SetBlockTypeFlags(std::uint16_t flags) { m_blockTypeFlags = flags; }
-  void SetBasePoint(EoGePoint3d basePoint) { m_firstPoint = std::move(basePoint); }
+  void SetBlockTypeFlags(std::uint16_t flags) noexcept { m_blockTypeFlags = flags; }
+  void SetBasePoint(EoGePoint3d basePoint) noexcept { m_firstPoint = std::move(basePoint); }
 
   [[nodiscard]] std::uint64_t Handle() const noexcept { return m_handle; }
   [[nodiscard]] std::uint64_t OwnerHandle() const noexcept { return m_ownerHandle; }
@@ -58,7 +58,7 @@ class EoDbBlock : public EoDbGroup {
    * @param blockName The name of the block to check.
    * @return true if the block name indicates a system block, false otherwise.
    */
-  [[nodiscard]] bool IsSystemBlock(const CString& blockName) const noexcept {
+  [[nodiscard]] bool IsSystemBlock(const CString& blockName) const {
     if (blockName.IsEmpty()) { return false; }
 
     const wchar_t first = blockName[0];

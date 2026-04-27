@@ -37,7 +37,7 @@ std::uint16_t PreviousDimensionCommand{};
  *  @param[out] xAxisReference Receives the reference X axis vector for the character cell.
  *  @param[out] yAxisReference Receives the reference Y axis vector for the character cell.
  */
-void GetReferenceAxesForCharacterCell(EoDbCharacterCellDefinition& characterCellDefinition,
+void GetReferenceAxesForCharacterCell(const EoDbCharacterCellDefinition& characterCellDefinition,
     const EoGeVector3d& normal,
     EoGeVector3d& xAxisReference,
     EoGeVector3d& yAxisReference) {

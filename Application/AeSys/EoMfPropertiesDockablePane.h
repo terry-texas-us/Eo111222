@@ -52,7 +52,7 @@ class EoMfPropertiesDockablePane : public CDockablePane {
   void SetPropertyGridFont();
 
  public:  // Operations
-  CMFCPropertyGridCtrl& GetPropertyGridCtrl() { return m_PropertyGrid; }
+  CMFCPropertyGridCtrl& GetPropertyGridCtrl() noexcept { return m_PropertyGrid; }
   CMFCPropertyGridProperty& GetActiveViewScaleProperty() { return *m_PropertyGrid.FindItemByData(kActiveViewScale); }
 
   /// @brief Updates the Document Statistics group with current work and trap group counts.

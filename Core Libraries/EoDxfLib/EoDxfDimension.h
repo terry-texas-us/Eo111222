@@ -23,7 +23,7 @@ class EoDxfDimension : public EoDxfGraphic {
   friend class EoDxfWrite;
 
  public:
-  EoDxfDimension() {
+  EoDxfDimension() noexcept {
     m_entityType = EoDxf::DIMENSION;
     m_dimensionType = 0;
     m_dimensionTextLineSpacingStyle = 1;
@@ -58,7 +58,7 @@ class EoDxfDimension : public EoDxfGraphic {
   }
   virtual ~EoDxfDimension() = default;
 
-  virtual void ApplyExtrusion() {}
+  virtual void ApplyExtrusion() noexcept {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -139,8 +139,8 @@ class EoDxfDimension : public EoDxfGraphic {
 /// Data is fully accumulated in the base class; this subtype exists only for m_entityType discrimination.
 class EoDxfAlignedDimension : public EoDxfDimension {
  public:
-  EoDxfAlignedDimension() { m_entityType = EoDxf::DIMALIGNED; }
-  EoDxfAlignedDimension(const EoDxfDimension& d) : EoDxfDimension(d) { m_entityType = EoDxf::DIMALIGNED; }
+  EoDxfAlignedDimension() noexcept { m_entityType = EoDxf::DIMALIGNED; }
+  EoDxfAlignedDimension(const EoDxfDimension& d) noexcept : EoDxfDimension(d) { m_entityType = EoDxf::DIMALIGNED; }
 };
 
 /// Linear/Rotated dimension subtype (AcDbAlignedDimension + AcDbRotatedDimension).
@@ -155,8 +155,8 @@ class EoDxfDimLinear : public EoDxfDimension {
 /// Data is fully accumulated in the base class; this subtype exists only for m_entityType discrimination.
 class EoDxfRadialDimension : public EoDxfDimension {
  public:
-  EoDxfRadialDimension() { m_entityType = EoDxf::DIMRADIAL; }
-  EoDxfRadialDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMRADIAL; }
+  EoDxfRadialDimension() noexcept { m_entityType = EoDxf::DIMRADIAL; }
+  EoDxfRadialDimension(const EoDxfDimension& dimension) noexcept : EoDxfDimension(dimension) { m_entityType = EoDxf::DIMRADIAL; }
 };
 
 /// Diametric dimension subtype (AcDbDiametricDimension).
@@ -173,8 +173,8 @@ class EoDxfDiametricDimension : public EoDxfDimension {
 /// Data is fully accumulated in the base class; this subtype exists only for m_entityType discrimination.
 class EoDxf2LineAngularDimension : public EoDxfDimension {
  public:
-  EoDxf2LineAngularDimension() { m_entityType = EoDxf::DIMANGULAR; }
-  EoDxf2LineAngularDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) {
+  EoDxf2LineAngularDimension() noexcept { m_entityType = EoDxf::DIMANGULAR; }
+  EoDxf2LineAngularDimension(const EoDxfDimension& dimension) noexcept : EoDxfDimension(dimension) {
     m_entityType = EoDxf::DIMANGULAR;
   }
 };
@@ -193,7 +193,7 @@ class EoDxf3PointAngularDimension : public EoDxfDimension {
 /// Data is fully accumulated in the base class; this subtype exists only for m_entityType discrimination.
 class EoDxfOrdinateDimension : public EoDxfDimension {
  public:
-  EoDxfOrdinateDimension() { m_entityType = EoDxf::DIMORDINATE; }
+  EoDxfOrdinateDimension() noexcept { m_entityType = EoDxf::DIMORDINATE; }
   EoDxfOrdinateDimension(const EoDxfDimension& dimension) : EoDxfDimension(dimension) {
     m_entityType = EoDxf::DIMORDINATE;
   }

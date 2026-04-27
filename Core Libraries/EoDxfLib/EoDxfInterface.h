@@ -19,7 +19,7 @@ class EoDxfMLeader;
  */
 class EoDxfInterface {
  public:
-  EoDxfInterface() {}
+  EoDxfInterface() noexcept {}
   virtual ~EoDxfInterface() = default;
 
   /** Called when header is parsed.  */
@@ -159,7 +159,7 @@ class EoDxfInterface {
   /** Called to write a SEQEND entity terminating an ATTRIB sequence.
    *  Default no-op — only the export path needs this.
    */
-  virtual void AddSeqend(const EoDxfSeqend& /*seqend*/) {}
+  virtual void AddSeqend(const EoDxfSeqend& /*seqend*/) noexcept {}
 
   /**
    * Called for every image definition.
@@ -174,7 +174,7 @@ class EoDxfInterface {
   /** Called for every LAYOUT object in the OBJECTS section.
    *  Default no-op — override to capture structured layout data.
    */
-  virtual void AddLayout(const EoDxfLayout& /*layout*/) {}
+  virtual void AddLayout(const EoDxfLayout& /*layout*/) noexcept {}
 
   /**
    * Called for every comment in the DXF file (code 999).
@@ -186,12 +186,12 @@ class EoDxfInterface {
   /// all existing entity handles, preventing collisions between preserved
   /// imported handles and newly allocated table/object handles.
   /// @return Next handle value (0 = no application handle manager).
-  [[nodiscard]] virtual std::uint64_t GetHandleSeed() const { return 0; }
+  [[nodiscard]] virtual std::uint64_t GetHandleSeed() const noexcept { return 0; }
 
   /// @brief Returns whether the interface has imported OBJECTS section data.
   /// When true, the writer skips hardcoded root/ACAD_GROUP dictionaries and
   /// delegates entirely to WriteUnsupportedObjects() to avoid duplicates.
-  [[nodiscard]] virtual bool HasUnsupportedObjects() const { return false; }
+  [[nodiscard]] virtual bool HasUnsupportedObjects() const noexcept { return false; }
 
   virtual void WriteHeader(EoDxfHeader& data) = 0;
   virtual void WriteClasses() = 0;

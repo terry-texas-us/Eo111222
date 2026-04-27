@@ -46,13 +46,13 @@ class EoCtrlColorsButton : public CMFCButton {
 
   virtual ~EoCtrlColorsButton();
 
-  static void SetCurrentIndex(const std::uint16_t index) { m_currentIndex = index; }
-  static void SetPalette(COLORREF* palette) { m_palette = palette; }
-  void SetLayout(Layouts layout, const CSize& cellSize) {
+  static void SetCurrentIndex(const std::uint16_t index) noexcept { m_currentIndex = index; }
+  static void SetPalette(COLORREF* palette) noexcept { m_palette = palette; }
+  void SetLayout(Layouts layout, const CSize& cellSize) noexcept {
     m_layout = layout;
     m_cellSize = cellSize;
   }
-  void SetSequenceRange(const std::uint16_t beginIndex, const std::uint16_t endIndex) {
+  void SetSequenceRange(const std::uint16_t beginIndex, const std::uint16_t endIndex) noexcept {
     m_beginIndex = beginIndex;
     m_endIndex = endIndex;
   }

@@ -37,7 +37,7 @@ class EoDbGroup : public CObList {
   static EoDbPrimitive* sm_PrimitiveToIgnore;
 
  public:
-  static void SetPrimitiveToIgnore(EoDbPrimitive* primitive) { sm_PrimitiveToIgnore = primitive; }
+  static void SetPrimitiveToIgnore(EoDbPrimitive* primitive) noexcept { sm_PrimitiveToIgnore = primitive; }
 
  public:
   EoDbGroup();
@@ -66,16 +66,16 @@ class EoDbGroup : public CObList {
   int GetBlockRefCount(const CString& blockName);
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&);
   EoDbPrimitive* GetNext(POSITION& position) const { return ((EoDbPrimitive*)CObList::GetNext(position)); }
-  EoDbPoint* GetFirstDifferentPoint(EoDbPoint* pointPrimitive);
+  EoDbPoint* GetFirstDifferentPoint(const EoDbPoint* pointPrimitive);
   int GetLineTypeRefCount(const std::wstring& lineTypeName);
-  void InsertBefore(POSITION position, EoDbGroup* group);
+  void InsertBefore(POSITION position, const EoDbGroup* group);
   bool IsInView(AeSysView* view);
   void ModifyNotes(const EoDbFontDefinition& fontDefinition,
       const EoDbCharacterCellDefinition& characterCellDefinition,
       int attributes = 0);
   void ModifyColor(std::int16_t color);
   void ModifyLineType(const std::wstring& lineTypeName);
-  void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
+  void PenTranslation(std::uint16_t, const std::int16_t* newColors, const std::int16_t* sourceColors);
 
   /** @brief Removes duplicate primitives from the group.  Two primitives are considered duplicates if their
    * Identical() method returns true.  The first instance of a primitive is kept, and subsequent duplicates are removed
@@ -100,7 +100,7 @@ class EoDbGroup : public CObList {
   void Square(AeSysView* view);
   void Transform(const EoGeTransformMatrix& transformMatrix);
   void Translate(EoGeVector3d v);
-  void Write(CFile& file);
+  void Write(CFile& file) const;
 
   /** @brief Writes the group's primitives to a file, including additional handle information for AE2026 file version.
    *
@@ -112,7 +112,7 @@ class EoDbGroup : public CObList {
    * @param fileVersion The version of the PEG file format being written, which determines whether additional handle
    * information is included.
    */
-  void Write(CFile& file, EoDb::PegFileVersion fileVersion);
+  void Write(CFile& file, EoDb::PegFileVersion fileVersion) const;
 
   /** @brief Writes the group data to a buffer for file output.
    *

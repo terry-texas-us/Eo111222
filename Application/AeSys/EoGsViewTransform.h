@@ -38,8 +38,8 @@ class EoGsViewTransform : public EoGsAbstractView {
  public:  // Methods
   void AdjustWindow(double aspectRatio);
   void BuildTransformMatrix();
-  [[nodiscard]] EoGeTransformMatrix& GetMatrix() { return m_Matrix; }
-  [[nodiscard]] EoGeTransformMatrix& GetMatrixInverse() { return m_InverseMatrix; }
+  [[nodiscard]] EoGeTransformMatrix& GetMatrix() noexcept { return m_Matrix; }
+  [[nodiscard]] EoGeTransformMatrix& GetMatrixInverse() noexcept { return m_InverseMatrix; }
 
   void Initialize(const EoGsViewport& viewport);
   void LoadIdentity();
@@ -50,7 +50,7 @@ class EoGsViewTransform : public EoGsAbstractView {
    */
   void SetCenteredWindow(const EoGsViewport& viewport, double uExtent, double vExtent);
 
-  void SetMatrix(EoGeTransformMatrix& transformMatrix);
+  void SetMatrix(const EoGeTransformMatrix& transformMatrix);
   void SetWindow(double uMin, double vMin, double uMax, double vMax);
   void TransformPoint(EoGePoint4d& point) { point = m_Matrix * point; }
 
@@ -58,12 +58,12 @@ class EoGsViewTransform : public EoGsAbstractView {
   void TransformPoints(int numberOfPoints, EoGePoint4d* points) const;
   void TransformVector(EoGeVector3d& vector) { vector = m_Matrix * vector; }
 
-  [[nodiscard]] double UExtent() const { return static_cast<double>(m_UMax - m_UMin); }
-  [[nodiscard]] double UMax() const { return static_cast<double>(m_UMax); }
-  [[nodiscard]] double UMin() const { return static_cast<double>(m_UMin); }
-  [[nodiscard]] double VExtent() const { return static_cast<double>(m_VMax - m_VMin); }
-  [[nodiscard]] double VMax() const { return static_cast<double>(m_VMax); }
-  [[nodiscard]] double VMin() const { return static_cast<double>(m_VMin); }
+  [[nodiscard]] double UExtent() const noexcept { return static_cast<double>(m_UMax - m_UMin); }
+  [[nodiscard]] double UMax() const noexcept { return static_cast<double>(m_UMax); }
+  [[nodiscard]] double UMin() const noexcept { return static_cast<double>(m_UMin); }
+  [[nodiscard]] double VExtent() const noexcept { return static_cast<double>(m_VMax - m_VMin); }
+  [[nodiscard]] double VMax() const noexcept { return static_cast<double>(m_VMax); }
+  [[nodiscard]] double VMin() const noexcept { return static_cast<double>(m_VMin); }
 };
 
 typedef CList<EoGsViewTransform> EoGsViewTransforms;

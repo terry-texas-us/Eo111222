@@ -18,7 +18,7 @@
 inline EoGeLine::EoGeLine(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint)
     : begin(beginPoint), end(endPoint) {}
 
-EoGeLine::EoGeLine(const EoGeLine& other) {
+EoGeLine::EoGeLine(const EoGeLine& other) noexcept {
   begin = other.begin;
   end = other.end;
 }
@@ -31,23 +31,23 @@ inline bool EoGeLine::operator!=(const EoGeLine& other) const {
   return (!Identical(other, Eo::geometricTolerance));
 }
 
-inline EoGeLine& EoGeLine::operator=(const EoGeLine& other) {
+inline EoGeLine& EoGeLine::operator=(const EoGeLine& other) noexcept {
   begin = other.begin;
   end = other.end;
   return (*this);
 }
 
-inline void EoGeLine::operator+=(const EoGeVector3d& v) {
+inline void EoGeLine::operator+=(const EoGeVector3d& v) noexcept {
   begin += v;
   end += v;
 }
 
-inline void EoGeLine::operator-=(const EoGeVector3d& v) {
+inline void EoGeLine::operator-=(const EoGeVector3d& v) noexcept {
   begin -= v;
   end -= v;
 }
 
-EoGePoint3d& EoGeLine::operator[](int i) {
+EoGePoint3d& EoGeLine::operator[](int i) noexcept {
   return (i == 0 ? begin : end);
 }
 
@@ -55,7 +55,7 @@ const EoGePoint3d& EoGeLine::operator[](int i) const {
   return (i == 0 ? begin : end);
 }
 
-void EoGeLine::operator()(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint) {
+void EoGeLine::operator()(const EoGePoint3d& beginPoint, const EoGePoint3d& endPoint) noexcept {
   begin = beginPoint;
   end = endPoint;
 }
@@ -68,7 +68,7 @@ EoGeLine EoGeLine::operator+(const EoGeVector3d& offset) const {
   return (EoGeLine(begin + offset, end + offset));
 }
 
-double EoGeLine::AngleFromXAxisXY() const {
+double EoGeLine::AngleFromXAxisXY() const noexcept {
   const EoGeVector3d thisAsVector((*this).begin, (*this).end);
 
   double angle{};
@@ -196,7 +196,7 @@ double EoGeLine::Length() const {
   return (vector.Length());
 }
 
-EoGePoint3d EoGeLine::Midpoint() const {
+EoGePoint3d EoGeLine::Midpoint() const noexcept {
   return ProjectBeginPointToEndPoint(0.5);
 }
 
@@ -315,7 +315,7 @@ EoGePoint3d EoGeLine::ProjectPointToLine(const EoGePoint3d& point) const {
   return (begin + vBegEnd);
 }
 
-EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(double t) const {
+EoGePoint3d EoGeLine::ProjectBeginPointToEndPoint(double t) const noexcept {
   return begin + (end - begin) * t;
 }
 
@@ -428,7 +428,7 @@ EoGePoint4d EoGeLine::IntersectionWithPlane(const EoGePoint4d& begin,
   return (begin - beginEndVector);
 }
 
-bool EoGeLine::IntersectionWithPln(EoGePoint3d& beginPoint,
+bool EoGeLine::IntersectionWithPln(const EoGePoint3d& beginPoint,
     EoGeVector3d lineVector,
     EoGePoint3d pointOnPlane,
     EoGeVector3d planeNormal,

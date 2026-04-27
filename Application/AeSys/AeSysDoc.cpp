@@ -145,7 +145,7 @@ void AeSysDoc::UnregisterHandle(std::uint64_t handle) noexcept {
   if (handle != 0) { m_handleMap.erase(handle); }
 }
 
-const HandleObject* AeSysDoc::FindObjectByHandle(std::uint64_t handle) const noexcept {
+const HandleObject* AeSysDoc::FindObjectByHandle(std::uint64_t handle) const {
   if (handle == 0) { return nullptr; }
   const auto it = m_handleMap.find(handle);
   return (it != m_handleMap.end()) ? &it->second : nullptr;
@@ -179,7 +179,7 @@ EoDbBlock* AeSysDoc::FindBlockByHandle(std::uint64_t handle) const noexcept {
   return pointer ? *pointer : nullptr;
 }
 
-void AeSysDoc::RegisterGroupHandles(EoDbGroup* group) {
+void AeSysDoc::RegisterGroupHandles(const EoDbGroup* group) {
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = group->GetNext(position);
@@ -187,10 +187,10 @@ void AeSysDoc::RegisterGroupHandles(EoDbGroup* group) {
   }
 }
 
-void AeSysDoc::UnregisterGroupHandles(EoDbGroup* group) {
+void AeSysDoc::UnregisterGroupHandles(const EoDbGroup* group) {
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
-    auto* const primitive = group->GetNext(position);
+    const auto* primitive = group->GetNext(position);
     UnregisterHandle(primitive->Handle());
   }
 }
@@ -292,7 +292,7 @@ void AeSysDoc::DeletedGroupsRestore() {
 
 // Returns a pointer to the currently active document.
 AeSysDoc* AeSysDoc::GetDoc() {
-  auto* const frame = static_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
+  const auto* frame = static_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
   if (frame == nullptr) { return nullptr; }
   auto* child = static_cast<CMDIChildWndEx*>(frame->MDIGetActive());
 
@@ -456,7 +456,7 @@ void AeSysDoc::OnToolsSaveAsBlockEdit() {
   // Copy primitives from the edit layer into the new block
   auto position = m_blockEditLayer->GetHeadPosition();
   while (position != nullptr) {
-    auto* group = m_blockEditLayer->GetNext(position);
+    const auto* group = m_blockEditLayer->GetNext(position);
     auto primPosition = group->GetHeadPosition();
     while (primPosition != nullptr) {
       auto* primitive = group->GetNext(primPosition);
@@ -650,7 +650,7 @@ void AeSysDoc::ExitTracingEditMode(bool commit) {
     SetModifiedFlag(FALSE);  // Prevent "Save changes?" prompt on close
     auto pos = GetFirstViewPosition();
     if (pos != nullptr) {
-      auto* view = GetNextView(pos);
+      const auto* view = GetNextView(pos);
       if (view != nullptr && view->GetParentFrame() != nullptr) { view->GetParentFrame()->PostMessageW(WM_CLOSE); }
     }
     return;

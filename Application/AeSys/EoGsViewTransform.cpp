@@ -207,7 +207,7 @@ void EoGsViewTransform::SetCenteredWindow(const EoGsViewport& viewport, double u
   SetWindow(-uExtent * 0.5, -vExtent * 0.5, uExtent * 0.5, vExtent * 0.5);
 }
 
-void EoGsViewTransform::SetMatrix(EoGeTransformMatrix& transformMatrix) {
+void EoGsViewTransform::SetMatrix(const EoGeTransformMatrix& transformMatrix) {
   m_Matrix = transformMatrix;
 }
 

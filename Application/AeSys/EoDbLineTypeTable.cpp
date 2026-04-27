@@ -256,7 +256,7 @@ void EoDbLineTypeTable::RemoveAll() {
   m_MapLineTypes.RemoveAll();
 }
 
-void EoDbLineTypeTable::RemoveUnused() {
+void EoDbLineTypeTable::RemoveUnused() noexcept {
   // Note: test new logic for RemoveUnused required since LookupName is gone
   // int i = m_LineTypes.GetSize();
   // while (--i != 0) {

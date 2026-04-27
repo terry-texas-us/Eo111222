@@ -310,7 +310,7 @@ void EoDxfDimensionStyle::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
-void EoDxfDimensionStyle::Reset() {
+void EoDxfDimensionStyle::Reset() noexcept {
   dimasz = 0.18;
   dimtxt = 0.18;
   dimexe = 0.18;

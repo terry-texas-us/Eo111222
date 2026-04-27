@@ -12,7 +12,7 @@ using HeaderVariable = std::variant<double, int, std::wstring, EoGePoint3d, EoGe
 
 class EoDbHeaderSection {
  public:
-  EoDbHeaderSection() = default;
+  EoDbHeaderSection() noexcept = default;
   EoDbHeaderSection(const EoDbHeaderSection&) = delete;
   EoDbHeaderSection& operator=(const EoDbHeaderSection&) = delete;
   virtual ~EoDbHeaderSection() {}
@@ -27,7 +27,7 @@ class EoDbHeaderSection {
    *
    * @return A constant reference to an unordered map containing the header variables.
    */
-  const std::unordered_map<std::wstring, HeaderVariable>& GetVariables() const { return m_variables; }
+  const std::unordered_map<std::wstring, HeaderVariable>& GetVariables() const noexcept { return m_variables; }
 
   /** @brief Sets a specific header variable (no group code — uses default 0).
    *
@@ -74,21 +74,21 @@ class EoDbHeaderSection {
    *
    * @return A constant reference to the group code map.
    */
-  [[nodiscard]] const std::unordered_map<std::wstring, int>& GetGroupCodes() const { return m_groupCodes; }
+  [[nodiscard]] const std::unordered_map<std::wstring, int>& GetGroupCodes() const noexcept { return m_groupCodes; }
 
   /** @brief Provides iterators to traverse the header variables.
    *
    * @return Iterators for the beginning and end of the header variables map.
    */
-  auto Begin() { return m_variables.begin(); }
-  auto End() { return m_variables.end(); }
+  auto Begin() noexcept { return m_variables.begin(); }
+  auto End() noexcept { return m_variables.end(); }
 
   /** @brief Provides constant iterators to traverse the header variables.
    *
    * @return Constant iterators for the beginning and end of the header variables map.
    */
-  auto Begin() const { return m_variables.begin(); }
-  auto End() const { return m_variables.end(); }
+  auto Begin() const noexcept { return m_variables.begin(); }
+  auto End() const noexcept { return m_variables.end(); }
 
   // void Read(AeSysDoc* document, EoDbPegFile& pegFile);
   // void Write(AeSysDoc* document, EoDbPegFile& pegFile);

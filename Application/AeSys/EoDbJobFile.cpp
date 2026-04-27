@@ -373,12 +373,12 @@ void EoDbJobFile::WriteLayer(CFile& file, EoDbLayer* layer) {
 
   auto position = layer->GetHeadPosition();
   while (position != nullptr) {
-    auto* group = layer->GetNext(position);
+    const auto* group = layer->GetNext(position);
     WriteGroup(file, group);
   }
 }
 
-void EoDbJobFile::WriteGroup(CFile& file, EoDbGroup* group) {
+void EoDbJobFile::WriteGroup(CFile& file, const EoDbGroup* group) {
   m_PrimBuf[0] = 0;
   *((std::uint16_t*)&m_PrimBuf[1]) = std::uint16_t(group->GetCount());
 

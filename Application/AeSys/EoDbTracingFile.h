@@ -4,7 +4,7 @@ class EoDbLayer;
 
 class EoDbTracingFile : public CFile {
  public:
-  EoDbTracingFile() {}
+  EoDbTracingFile() noexcept {}
   EoDbTracingFile(const EoDbTracingFile&) = delete;
   EoDbTracingFile& operator=(const EoDbTracingFile&) = delete;
 

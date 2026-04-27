@@ -219,7 +219,7 @@ void EoDlgLineTypesSelection::OnNMCustomDrawFileList(NMHDR* pNMHDR, LRESULT* res
   DrawLineTypePreview(m_fileLineTypesListControl, reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR), result);
 }
 
-void EoDlgLineTypesSelection::DrawLineTypePreview(CListCtrl& listControl,
+void EoDlgLineTypesSelection::DrawLineTypePreview(const CListCtrl& listControl,
     NMLVCUSTOMDRAW* listViewCustomDraw,
     LRESULT* result) {
   *result = CDRF_DODEFAULT;

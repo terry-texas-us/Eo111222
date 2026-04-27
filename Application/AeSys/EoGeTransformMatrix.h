@@ -16,9 +16,9 @@ class EoGeLine;
  */
 class EoGeTransformMatrix : public EoGeMatrix {
  public:
-  EoGeTransformMatrix() = default;
+  EoGeTransformMatrix() noexcept = default;
 
-  EoGeTransformMatrix(const EoGeMatrix& matrix) : EoGeMatrix(matrix) {}
+  EoGeTransformMatrix(const EoGeMatrix& matrix) noexcept : EoGeMatrix(matrix) {}
 
   EoGeTransformMatrix(const EoGeMatrixRow& row0,
       const EoGeMatrixRow& row1,
@@ -58,7 +58,7 @@ class EoGeTransformMatrix : public EoGeMatrix {
 
   void Scale(const EoGeVector3d& scaleFactors);
 
-  inline void Translate(const EoGeVector3d& translate) {
+  inline void Translate(const EoGeVector3d& translate) noexcept {
     m_4X4[0][3] += translate.x;
     m_4X4[1][3] += translate.y;
     m_4X4[2][3] += translate.z;

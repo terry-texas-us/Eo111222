@@ -1147,7 +1147,7 @@ void EoDbPegFile::WriteEntitiesSection(AeSysDoc* document, EoDb::PegFileVersion 
 
       auto position = layer->GetHeadPosition();
       while (position != nullptr) {
-        auto* group = layer->GetNext(position);
+        const auto* group = layer->GetNext(position);
         group->Write(*this, fileVersion);
       }
     } else {

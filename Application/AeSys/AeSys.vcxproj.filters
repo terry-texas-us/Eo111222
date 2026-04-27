@@ -333,9 +333,18 @@
     <None Include="res\Cursors\PowerModeWhite.cur" />
     <None Include="res\Cursors\TrapModeWhite.cur" />
     <None Include="res\Cursors\TrapRModeWhite.cur" />
+    <None Include="AeSys.ruleset" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />

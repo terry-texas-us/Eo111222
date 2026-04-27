@@ -14,7 +14,7 @@
  */
 class EoGsModelTransform {
  public:
-  EoGsModelTransform() : m_depth{0} {}
+  EoGsModelTransform() noexcept : m_depth{0} {}
 
   EoGsModelTransform(const EoGsModelTransform&) = delete;
   EoGsModelTransform& operator=(const EoGsModelTransform&) = delete;

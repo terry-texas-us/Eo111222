@@ -10,7 +10,7 @@ class EoGsRenderDevice;
 
 class EoDbGroupList : public CObList {
  public:
-  EoDbGroupList() {}
+  EoDbGroupList() noexcept {}
   EoDbGroupList(const EoDbGroupList&) = delete;
   EoDbGroupList& operator=(const EoDbGroupList&) = delete;
 

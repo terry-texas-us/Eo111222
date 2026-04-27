@@ -196,7 +196,7 @@ bool EoDbGroup::FindAndRemovePrim(EoDbPrimitive* primitive) {
   return false;
 }
 
-EoDbPoint* EoDbGroup::GetFirstDifferentPoint(EoDbPoint* pointPrimitive) {
+EoDbPoint* EoDbGroup::GetFirstDifferentPoint(const EoDbPoint* pointPrimitive) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
@@ -207,7 +207,7 @@ EoDbPoint* EoDbGroup::GetFirstDifferentPoint(EoDbPoint* pointPrimitive) {
   return nullptr;
 }
 
-void EoDbGroup::InsertBefore(POSITION insertPosition, EoDbGroup* group) {
+void EoDbGroup::InsertBefore(POSITION insertPosition, const EoDbGroup* group) {
   auto position = group->GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = group->GetNext(position);
@@ -313,14 +313,15 @@ void EoDbGroup::ModifyLineType(const std::wstring& lineTypeName) {
     primitive->SetLineTypeName(lineTypeName);
   }
 }
-void EoDbGroup::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+
+void EoDbGroup::PenTranslation(std::uint16_t wCols, const std::int16_t* newColors, const std::int16_t* sourceColors) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);
 
     for (auto i = 0; i < wCols; i++) {
-      if (primitive->Color() == pCol[i]) {
-        primitive->SetColor(pColNew[i]);
+      if (primitive->Color() == sourceColors[i]) {
+        primitive->SetColor(newColors[i]);
         break;
       }
     }
@@ -473,7 +474,7 @@ void EoDbGroup::Translate(EoGeVector3d v) {
     primitive->Translate(v);
   }
 }
-void EoDbGroup::Write(CFile& file) {
+void EoDbGroup::Write(CFile& file) const {
   EoDb::WriteUInt16(file, std::uint16_t(GetCount()));
 
   for (auto position = GetHeadPosition(); position != nullptr;) {
@@ -482,7 +483,7 @@ void EoDbGroup::Write(CFile& file) {
   }
 }
 
-void EoDbGroup::Write(CFile& file, EoDb::PegFileVersion fileVersion) {
+void EoDbGroup::Write(CFile& file, EoDb::PegFileVersion fileVersion) const {
   EoDb::WriteUInt16(file, std::uint16_t(GetCount()));
 
   for (auto position = GetHeadPosition(); position != nullptr;) {

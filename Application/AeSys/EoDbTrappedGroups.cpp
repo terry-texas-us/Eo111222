@@ -221,7 +221,7 @@ void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
   UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_trappedGroups);
 }
 
-void AeSysDoc::TransformTrappedGroups(EoGeTransformMatrix& transformMatrix) {
+void AeSysDoc::TransformTrappedGroups(const EoGeTransformMatrix& transformMatrix) {
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_trappedGroups); }
   m_trappedGroups.Transform(transformMatrix);
 

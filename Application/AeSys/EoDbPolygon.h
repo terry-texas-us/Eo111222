@@ -58,8 +58,8 @@ class EoDbPolygon : public EoDbPrimitive {
 
   const EoDbPolygon& operator=(const EoDbPolygon& other);
 
-  [[nodiscard]] EoGePoint3d& operator[](int i) { return m_vertices[i]; }
-  [[nodiscard]] const EoGePoint3d& operator[](int i) const { return m_vertices[i]; }
+  [[nodiscard]] EoGePoint3d& operator[](int i) noexcept { return m_vertices[i]; }
+  [[nodiscard]] const EoGePoint3d& operator[](int i) const noexcept { return m_vertices[i]; }
 
   ~EoDbPolygon() override;
 
@@ -95,14 +95,14 @@ class EoDbPolygon : public EoDbPrimitive {
   static EoDbPolygon* ReadFromPeg(CFile& file);
 
   CString FormatIntStyle();
-  [[nodiscard]] const EoDb::PolygonStyle& PolygonStyle() { return m_polygonStyle; }
-  [[nodiscard]] std::int16_t FillStyleIndex() { return m_fillStyleIndex; }
-  [[nodiscard]] EoGePoint3d Vertex(int i) { return m_vertices[i]; }
-  [[nodiscard]] int NumberOfVertices() const { return m_numberOfVertices; }
+  [[nodiscard]] const EoDb::PolygonStyle& PolygonStyle() const noexcept { return m_polygonStyle; }
+  [[nodiscard]] std::int16_t FillStyleIndex() const noexcept { return m_fillStyleIndex; }
+  [[nodiscard]] EoGePoint3d Vertex(int i) const noexcept { return m_vertices[i]; }
+  [[nodiscard]] int NumberOfVertices() const noexcept { return m_numberOfVertices; }
   void ModifyState() override;
   bool PivotOnControlPoint(AeSysView* view, const EoGePoint4d&) override;
-  void SetPolygonStyle(const EoDb::PolygonStyle n) { m_polygonStyle = n; }
-  void SetFillStyleIndex(const std::int16_t fillStyleIndex) { m_fillStyleIndex = fillStyleIndex; }
+  void SetPolygonStyle(const EoDb::PolygonStyle n) noexcept { m_polygonStyle = n; }
+  void SetFillStyleIndex(const std::int16_t fillStyleIndex) noexcept { m_fillStyleIndex = fillStyleIndex; }
   void SetHatchPatternDoubleFlag(std::int16_t flag) noexcept { m_hatchPatternDoubleFlag = flag; }
   void SetPatternDefinitionLines(const std::vector<EoDxfHatchPatternDefinitionLine>& lines) {
     m_patternDefinitionLines = lines;
@@ -113,9 +113,9 @@ class EoDbPolygon : public EoDbPrimitive {
   std::uint16_t SwingVertex() const;
 
  public:
-  static void SetSpecialPolygonStyle(EoDb::PolygonStyle polygonStyle) { sm_SpecialPolygonStyle = polygonStyle; }
-  static std::uint16_t& EdgeToEvaluate() { return sm_EdgeToEvaluate; }
-  static std::uint16_t& Edge() { return sm_Edge; }
+  static void SetSpecialPolygonStyle(EoDb::PolygonStyle polygonStyle) noexcept { sm_SpecialPolygonStyle = polygonStyle; }
+  static std::uint16_t& EdgeToEvaluate() noexcept { return sm_EdgeToEvaluate; }
+  static std::uint16_t& Edge() noexcept { return sm_Edge; }
 };
 
 /// @brief Renders a clipped polygon using the current polygon interior style.

@@ -19,7 +19,7 @@ class EoDbLineType : public CObject {
    *
    * @return The index of the line type as an std::int16_t.
    */
-  std::int16_t Index() const { return m_Index; }
+  std::int16_t Index() const noexcept { return m_Index; }
 
   CString IndexToString() const {
     CString indexAsString;
@@ -31,7 +31,7 @@ class EoDbLineType : public CObject {
    *
    * @return The number of dash elements as an std::uint16_t.
    */
-  std::uint16_t GetNumberOfDashes() const { return static_cast<std::uint16_t>(m_DashElements.size()); }
+  std::uint16_t GetNumberOfDashes() const noexcept { return static_cast<std::uint16_t>(m_DashElements.size()); }
 
   /** @brief Copies the dash elements of the line type into the provided array.
    *
@@ -45,7 +45,7 @@ class EoDbLineType : public CObject {
    *
    * @return A constant reference to a vector containing the dash elements.
    */
-  const std::vector<double>& DashElements() const { return m_DashElements; }
+  const std::vector<double>& DashElements() const noexcept { return m_DashElements; }
 
   /** @brief Retrieves the description of the line type.
    *

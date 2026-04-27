@@ -156,7 +156,7 @@ void AeSysView::OnFilePrint() {
   CView::OnFilePrint();
 }
 
-UINT AeSysView::NumPages(CDC* deviceContext, double scaleFactor, UINT& horizontalPages, UINT& verticalPages) {
+UINT AeSysView::NumPages(const CDC* deviceContext, double scaleFactor, UINT& horizontalPages, UINT& verticalPages) {
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
   EoGeTransformMatrix transformMatrix;
@@ -533,7 +533,7 @@ void AeSysView::OnInsertTracing() {
  * @return A pointer to the active AeSysView, or nullptr if no active view is found.
  */
 AeSysView* AeSysView::GetActiveView() {
-  auto* frameWindow = dynamic_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
+  const auto* frameWindow = dynamic_cast<CMDIFrameWndEx*>(AfxGetMainWnd());
   if (frameWindow == nullptr) {
     // Legitimately nullptr during CMainFrame::OnCreate() - not an error
     return nullptr;

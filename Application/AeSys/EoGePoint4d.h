@@ -127,7 +127,7 @@ class EoGePoint4d {
    */
   static void IntersectionWithPln(EoGePoint4dArray& pointsArrayIn,
       const EoGePoint4d& pointOnClipPlane,
-      EoGeVector3d& clipPlaneNormal,
+      const EoGeVector3d& clipPlaneNormal,
       EoGePoint4dArray& pointsArrayOut);
 
   [[nodiscard]] static constexpr EoGePoint4d Max(const EoGePoint4d& a, const EoGePoint4d& b) noexcept {

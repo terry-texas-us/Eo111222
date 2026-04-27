@@ -32,7 +32,7 @@ class EoGeMatrix {
   };
 
  public:
-  EoGeMatrix() : m_4X4{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}} {}
+  EoGeMatrix() noexcept : m_4X4{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}} {}
 
   EoGeMatrix(const EoGeMatrixRow& row0,
       const EoGeMatrixRow& row1,
@@ -70,7 +70,7 @@ class EoGeMatrix {
    * @param tolerance The tolerance value used to compare the matrix elements against the identity matrix.
    * @return true if the matrix is an identity matrix within the specified tolerance; otherwise, false.
    */
-  [[nodiscard]] bool IsIdentity(double tolerance = Eo::geometricTolerance) const;
+  [[nodiscard]] bool IsIdentity(double tolerance = Eo::geometricTolerance) const noexcept;
 
   EoGeMatrix& Inverse();
 
@@ -97,5 +97,5 @@ class EoGeMatrix {
    *  @param column Column index (0-3)
    *  @param value Value to set
    */
-  void SetElement(int row, int column, double value) { m_4X4[row][column] = value; }
+  void SetElement(int row, int column, double value) noexcept { m_4X4[row][column] = value; }
 };

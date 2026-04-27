@@ -91,7 +91,7 @@ inline size_t utf8(
     return n;
   }
 #endif
-  char *t = s;
+  const char *t = s;
   if (c < 0x0800)
   {
     *s++ = static_cast<char>(0xC0 | ((c >> 6) & 0x1F));

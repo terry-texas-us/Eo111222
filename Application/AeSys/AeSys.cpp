@@ -471,12 +471,12 @@ void AeSys::LoadHatchesFromFile(const CString& fileName) {
   }
 }
 
-EoGePoint3d AeSys::HomePointGet(int i) const {
+EoGePoint3d AeSys::HomePointGet(int i) const noexcept {
   if (i >= 0 && i < 9) { return (m_HomePoints[i]); }
   return (EoGePoint3d::kOrigin);
 }
 
-void AeSys::HomePointSave(int i, const EoGePoint3d& pt) {
+void AeSys::HomePointSave(int i, const EoGePoint3d& pt) noexcept {
   if (i >= 0 && i < 9) { m_HomePoints[i] = pt; }
 }
 
@@ -707,7 +707,7 @@ void AeSys::FormatLength(CString& lengthAsString,
   lengthAsString.ReleaseBuffer();
 }
 
-void AeSys::FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) {
+void AeSys::FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) const {
   wchar_t szBuf[16]{};
 
   double scaledLength = length * AeSysView::GetActiveView()->GetWorldScale();

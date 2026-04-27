@@ -12,8 +12,8 @@ class EoDlgLineTypesSelection : public CDialogEx {
   CListCtrl m_lineTypesListControl;
   CListCtrl m_fileLineTypesListControl;
 
-  EoDbLineType* GetSelectedLineType() const { return m_selectedLineType; }
-  void SetSelectedLineType(EoDbLineType* lineType) { m_selectedLineType = lineType; }
+  EoDbLineType* GetSelectedLineType() const noexcept { return m_selectedLineType; }
+  void SetSelectedLineType(EoDbLineType* lineType) noexcept { m_selectedLineType = lineType; }
   [[nodiscard]] bool IsSelectedFromFileList() const noexcept { return m_selectedFromFileList; }
 
   /// @brief Returns the file-loaded line type table for the caller to merge selected entries.
@@ -52,5 +52,5 @@ class EoDlgLineTypesSelection : public CDialogEx {
   afx_msg void OnNMCustomDrawFileList(NMHDR* pNMHDR, LRESULT* result);
 
   /// @brief Shared implementation for NM_CUSTOMDRAW on both list controls.
-  void DrawLineTypePreview(CListCtrl& listControl, NMLVCUSTOMDRAW* listViewCustomDraw, LRESULT* result);
+  void DrawLineTypePreview(const CListCtrl& listControl, NMLVCUSTOMDRAW* listViewCustomDraw, LRESULT* result);
 };

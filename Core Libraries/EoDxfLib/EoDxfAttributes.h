@@ -22,7 +22,7 @@ class EoDxfAttributeBase : public EoDxfGraphic {
   friend class EoDxfWrite;
 
  public:
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
   [[nodiscard]] bool HasSecondAlignmentPoint() const noexcept { return m_hasSecondAlignmentPoint; }
 

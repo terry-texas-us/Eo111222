@@ -40,7 +40,7 @@ namespace App {
 [[nodiscard]] CString ResourceFolderPath();
 
 /// @brief Returns a text color that contrasts with the active model-space background.
-[[nodiscard]] inline COLORREF ViewTextColor() {
+[[nodiscard]] inline COLORREF ViewTextColor() noexcept {
   return (~(Eo::ModelSpaceBackgroundColor() | 0xff000000));
 }
 }  // namespace App
@@ -117,24 +117,26 @@ class AeSys : public CWinAppEx {
   void BuildModifiedAcceleratorTable() const;
 
   // Accessors for mode management (needed by AeSysView)
-  void SetModeResourceIdentifier(int resourceId) { m_ModeResourceIdentifier = resourceId; }
-  void SetPrimaryMode(int mode) { m_PrimaryMode = mode; }
-  void SetModeAddGroups(bool addGroups) { m_TrapModeAddGroups = addGroups; }
-  [[nodiscard]] bool TrapModeAddGroups() const { return m_TrapModeAddGroups; }
+  void SetModeResourceIdentifier(int resourceId) noexcept { m_ModeResourceIdentifier = resourceId; }
+  void SetPrimaryMode(int mode) noexcept { m_PrimaryMode = mode; }
+  void SetModeAddGroups(bool addGroups) noexcept { m_TrapModeAddGroups = addGroups; }
+  [[nodiscard]] bool TrapModeAddGroups() const noexcept { return m_TrapModeAddGroups; }
 
-  UINT CheckMenuItem(UINT uId, UINT uCheck) const { return (::CheckMenuItem(m_MainFrameMenuHandle, uId, uCheck)); }
-  UINT ClipboardFormatIdentifierForEoGroups() const { return m_ClipboardFormatIdentifierForEoGroups; }
+  UINT CheckMenuItem(UINT uId, UINT uCheck) const noexcept {
+    return (::CheckMenuItem(m_MainFrameMenuHandle, uId, uCheck));
+  }
+  UINT ClipboardFormatIdentifierForEoGroups() const noexcept { return m_ClipboardFormatIdentifierForEoGroups; }
   int ConfirmMessageBox(UINT stringResourceIdentifier, const CString& string);
-  [[nodiscard]] int CurrentMode() const { return m_CurrentMode; }
-  [[nodiscard]] double DeviceHeightInMillimeters() const { return m_DeviceHeightInMillimeters; }
-  [[nodiscard]] double DeviceHeightInPixels() const { return m_DeviceHeightInPixels; }
-  [[nodiscard]] double DeviceWidthInMillimeters() const { return m_DeviceWidthInMillimeters; }
-  [[nodiscard]] double DeviceWidthInPixels() const { return m_DeviceWidthInPixels; }
-  [[nodiscard]] double DimensionAngle() const { return m_DimensionAngle; }
-  [[nodiscard]] double DimensionLength() const { return m_DimensionLength; }
+  [[nodiscard]] int CurrentMode() const noexcept { return m_CurrentMode; }
+  [[nodiscard]] double DeviceHeightInMillimeters() const noexcept { return m_DeviceHeightInMillimeters; }
+  [[nodiscard]] double DeviceHeightInPixels() const noexcept { return m_DeviceHeightInPixels; }
+  [[nodiscard]] double DeviceWidthInMillimeters() const noexcept { return m_DeviceWidthInMillimeters; }
+  [[nodiscard]] double DeviceWidthInPixels() const noexcept { return m_DeviceWidthInPixels; }
+  [[nodiscard]] double DimensionAngle() const noexcept { return m_DimensionAngle; }
+  [[nodiscard]] double DimensionLength() const noexcept { return m_DimensionLength; }
   void EditColorPalette();
-  [[nodiscard]] double EngagedAngle() const { return m_EngagedAngle; }
-  [[nodiscard]] double EngagedLength() const { return m_EngagedLength; }
+  [[nodiscard]] double EngagedAngle() const noexcept { return m_EngagedAngle; }
+  [[nodiscard]] double EngagedLength() const noexcept { return m_EngagedLength; }
   void FormatAngle(CString& angleAsString, double angle, const int width, const int precision);
 
   /** @brief Formats a length value as a string with specified units and formatting options.
@@ -166,7 +168,7 @@ class AeSys : public CWinAppEx {
    * @param units The architectural units style to use for formatting (e.g., ArchitecturalS for stacked fractions).
    * @param length The length value to format, in the internal unit system.
    */
-  void FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length);
+  void FormatLengthArchitectural(wchar_t* lengthAsBuffer, const size_t bufSize, Eo::Units units, double length) const;
 
   /** @brief Formats a length in engineering units (feet and inches) with optional fractional inches.
    * @param lengthAsBuffer Buffer to receive the formatted length string.
@@ -198,18 +200,21 @@ class AeSys : public CWinAppEx {
       const int width,
       const int precision);
 
-  [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const { return m_ArchitecturalUnitsFractionPrecision; }
+  [[nodiscard]] int GetArchitecturalUnitsFractionPrecision() const noexcept {
+    return m_ArchitecturalUnitsFractionPrecision;
+  }
   [[nodiscard]] static EoGePoint3d GetCursorPosition();
   [[nodiscard]] static HINSTANCE GetInstance() { return AfxGetInstanceHandle(); }
   [[nodiscard]] static CWnd* GetMainWindow() { return AfxGetMainWnd(); }
   [[nodiscard]] static HWND GetSafeHwnd() { return (AfxGetMainWnd()->GetSafeHwnd()); }
 
-  [[nodiscard]] bool IsClipboardDataGroups() const { return m_ClipboardDataEoGroups; }
-  [[nodiscard]] bool IsClipboardDataImage() const { return m_ClipboardDataImage; }
-  [[nodiscard]] bool IsClipboardDataText() const { return m_ClipboardDataText; }
-  [[nodiscard]] HMENU GetSubMenu(int position) const { return (::GetSubMenu(m_MainFrameMenuHandle, position)); }
-  [[nodiscard]] Eo::Units GetUnits() const { return m_Units; }
-
+  [[nodiscard]] bool IsClipboardDataGroups() const noexcept { return m_ClipboardDataEoGroups; }
+  [[nodiscard]] bool IsClipboardDataImage() const noexcept { return m_ClipboardDataImage; }
+  [[nodiscard]] bool IsClipboardDataText() const noexcept { return m_ClipboardDataText; }
+  [[nodiscard]] HMENU GetSubMenu(int position) const noexcept {
+    return (::GetSubMenu(m_MainFrameMenuHandle, position));
+  }
+  [[nodiscard]] Eo::Units GetUnits() const noexcept { return m_Units; }
   /** @brief Loads hatch pattern definitions from a specified file and populates the hatch pattern tables.
    * The file is expected to contain hatch pattern definitions in a specific format, where each pattern starts with a
    * line beginning with '!' followed by lines defining the pattern's properties. The method reads the file line by
@@ -220,20 +225,20 @@ class AeSys : public CWinAppEx {
    */
   void LoadHatchesFromFile(const CString& strFileName);
   /// @brief Returns the process-wide Direct2D factory (single-threaded).
-  [[nodiscard]] ID2D1Factory* D2DFactory() const { return m_d2dFactory.Get(); }
+  [[nodiscard]] ID2D1Factory* D2DFactory() const noexcept { return m_d2dFactory.Get(); }
 
   /// @brief Returns the process-wide DirectWrite factory.
-  [[nodiscard]] IDWriteFactory* DWriteFactory() const { return m_dwriteFactory.Get(); }
+  [[nodiscard]] IDWriteFactory* DWriteFactory() const noexcept { return m_dwriteFactory.Get(); }
 
-  [[nodiscard]] EoGePoint3d HomePointGet(int i) const;
-  void HomePointSave(int i, const EoGePoint3d& pt);
+  [[nodiscard]] EoGePoint3d HomePointGet(int i) const noexcept;
+  void HomePointSave(int i, const EoGePoint3d& pt) noexcept;
   void InitGbls(CDC* deviceContext);
-  [[nodiscard]] bool IsTrapHighlighted() const { return m_TrapHighlighted; }
+  [[nodiscard]] bool IsTrapHighlighted() const noexcept { return m_TrapHighlighted; }
   void LoadModeResources(int mode, AeSysView* targetView = nullptr);
   void LoadSimplexStrokeFont(const CString& pathName);
   [[nodiscard]] double ParseLength(const wchar_t* lengthAsString);
   [[nodiscard]] double ParseLength(Eo::Units units, const wchar_t* inputLine);
-  [[nodiscard]] auto PenColorsGetHot(std::int16_t color) { return (Eo::ColorPalette[color]); }
+  [[nodiscard]] auto PenColorsGetHot(std::int16_t color) noexcept { return (Eo::ColorPalette[color]); }
 
   /** @brief Loads pen colors from a specified file and updates the color palettes accordingly.
    * The file is expected to have lines in the format: "index=red,green,blue,red,green,blue" for both color and gray
@@ -244,7 +249,7 @@ class AeSys : public CWinAppEx {
    */
   void LoadPenColorsFromFile(const CString& pathName);
 
-  [[nodiscard]] double LineWeight(std::int16_t penIndex) { return (penWidthsTable[penIndex]); }
+  [[nodiscard]] double LineWeight(std::int16_t penIndex) noexcept { return (penWidthsTable[penIndex]); }
 
   /** Loads the pen widths from a file.
    * The file is expected to have lines in the format:
@@ -254,16 +259,16 @@ class AeSys : public CWinAppEx {
    */
   void LoadPenWidthsFromFile(const CString& pathName);
 
-  [[nodiscard]] int PrimaryMode() const { return m_PrimaryMode; }
+  [[nodiscard]] int PrimaryMode() const noexcept { return m_PrimaryMode; }
   void ReleaseSimplexStrokeFont();
-  void SetArchitecturalUnitsFractionPrecision(const int precision) {
+  void SetArchitecturalUnitsFractionPrecision(const int precision) noexcept {
     if (precision > 0) { m_ArchitecturalUnitsFractionPrecision = precision; }
   }
 
-  void SetDimensionAngle(double angle) { m_DimensionAngle = angle; }
-  void SetDimensionLength(double length) { m_DimensionLength = length; }
-  void SetEngagedAngle(double angle) { m_EngagedAngle = angle; }
-  void SetEngagedLength(double length) { m_EngagedLength = length; }
+  void SetDimensionAngle(double angle) noexcept { m_DimensionAngle = angle; }
+  void SetDimensionLength(double length) noexcept { m_DimensionLength = length; }
+  void SetEngagedAngle(double angle) noexcept { m_EngagedAngle = angle; }
+  void SetEngagedLength(double length) noexcept { m_EngagedLength = length; }
 
   /*** @brief Sets the shadow folder path for the application.
    * @param folder The name of the folder to be used as the shadow folder.
@@ -271,15 +276,15 @@ class AeSys : public CWinAppEx {
    * creating the folder.
    */
   [[nodiscard]] int SetShadowFolderPath(const CString& folder);
-  void SetUnits(Eo::Units units) { m_Units = units; }
-  [[nodiscard]] CString ShadowFolderPath() { return m_ShadowFolderPath; }
-  char* SimplexStrokeFont() { return m_SimplexStrokeFont; }
-  [[nodiscard]] int StrokeFontVersion() const { return m_StrokeFontVersion; }
-  [[nodiscard]] std::int16_t TrapHighlightColor() const { return m_TrapHighlightColor; }
+  void SetUnits(Eo::Units units) noexcept { m_Units = units; }
+  [[nodiscard]] CString ShadowFolderPath() const { return m_ShadowFolderPath; }
+  char* SimplexStrokeFont() const noexcept { return m_SimplexStrokeFont; }
+  [[nodiscard]] int StrokeFontVersion() const noexcept { return m_StrokeFontVersion; }
+  [[nodiscard]] std::int16_t TrapHighlightColor() const noexcept { return m_TrapHighlightColor; }
   void UpdateMDITabs(BOOL resetMDIChild);
   void WarningMessageBox(UINT stringResourceIdentifier);
   void WarningMessageBox(UINT stringResourceIdentifier, const CString& string);
-  [[nodiscard]] const EoApOptions& PropertyOptions() const { return m_Options; }
+  [[nodiscard]] const EoApOptions& PropertyOptions() const noexcept { return m_Options; }
 
  public:
   afx_msg void OnAppAbout();

@@ -69,7 +69,7 @@ class EoDbLayer : public EoDbGroupList {
   void Display(AeSysView* view, EoGsRenderDevice* renderDevice);
   void Display(AeSysView* view, EoGsRenderDevice* renderDevice, bool identifyTrap);
 
-  [[nodiscard]] COLORREF ColorValue() const { return Eo::ColorPalette[m_color]; }
+  [[nodiscard]] COLORREF ColorValue() const noexcept { return Eo::ColorPalette[m_color]; }
 
   [[nodiscard]] std::int16_t ColorIndex() const noexcept { return m_color; }
   void SetColorIndex(std::int16_t color) noexcept { m_color = color; }
@@ -106,11 +106,11 @@ class EoDbLayer : public EoDbGroupList {
   void SetColor24(std::int32_t color24) noexcept { m_color24 = color24; }
   void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
 
-  [[nodiscard]] CString Name() const noexcept { return m_name; }
-  void SetName(const CString& name) noexcept { m_name = name; }
+  [[nodiscard]] CString Name() const { return m_name; }
+  void SetName(const CString& name) { m_name = name; }
 
   /// Returns true when this layer is an embedded tracing reference (name starts with '|').
-  [[nodiscard]] bool IsTracingLayer() const noexcept { return !m_name.IsEmpty() && m_name[0] == L'|'; }
+  [[nodiscard]] bool IsTracingLayer() const { return !m_name.IsEmpty() && m_name[0] == L'|'; }
 
   [[nodiscard]] const std::wstring& TracingFilePath() const noexcept { return m_tracingFilePath; }
   void SetTracingFilePath(const std::wstring& path) { m_tracingFilePath = path; }

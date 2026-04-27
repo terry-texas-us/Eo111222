@@ -53,9 +53,9 @@ class EoGeReferenceSystem {
    */
   void Rescale(const EoDbCharacterCellDefinition& characterCellDefinition);
 
-  void SetOrigin(const EoGePoint3d& origin) { m_origin = origin; }
-  void SetXDirection(const EoGeVector3d& xDirection) { m_xDirection = xDirection; }
-  void SetYDirection(const EoGeVector3d& yDirection) { m_yDirection = yDirection; }
+  void SetOrigin(const EoGePoint3d& origin) noexcept { m_origin = origin; }
+  void SetXDirection(const EoGeVector3d& xDirection) noexcept { m_xDirection = xDirection; }
+  void SetYDirection(const EoGeVector3d& yDirection) noexcept { m_yDirection = yDirection; }
 
   void Transform(const EoGeTransformMatrix& transformMatrix);
 

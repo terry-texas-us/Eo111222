@@ -103,11 +103,11 @@ class EoDxfDimensionStyle : public EoDxfTableEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfDimensionStyle() : EoDxfTableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
+  EoDxfDimensionStyle() noexcept : EoDxfTableEntry(EoDxf::SymbolTable::DimStyle) { Reset(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
-  void Reset();
+  void Reset() noexcept;
 
  public:
   std::wstring dimpost;  // Group code 3
@@ -194,7 +194,7 @@ class EoDxfLinetype : public EoDxfTableEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfLinetype() : EoDxfTableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
+  EoDxfLinetype() noexcept : EoDxfTableEntry(EoDxf::SymbolTable::Linetype) { Reset(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -223,7 +223,7 @@ class EoDxfLayer : public EoDxfTableEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfLayer() : EoDxfTableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
+  EoDxfLayer() noexcept : EoDxfTableEntry(EoDxf::SymbolTable::Layer) { Reset(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -252,7 +252,7 @@ class EoDxfBlockRecord : public EoDxfTableEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfBlockRecord() : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
+  EoDxfBlockRecord() noexcept : EoDxfTableEntry(EoDxf::SymbolTable::Block) { Reset(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -276,7 +276,7 @@ class EoDxfTextStyle : public EoDxfTableEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfTextStyle() : EoDxfTableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
+  EoDxfTextStyle() noexcept : EoDxfTableEntry(EoDxf::SymbolTable::TextStyle) { Reset(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -317,7 +317,7 @@ class EoDxfVPort : public EoDxfTableEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfVPort() : EoDxfTableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
+  EoDxfVPort() noexcept : EoDxfTableEntry(EoDxf::SymbolTable::Viewport) { Reset(); }
   void Reset();
 
  protected:
@@ -365,7 +365,7 @@ class EoDxfAppId : public EoDxfTableEntry {
   friend class EoDxfWrite;
 
  public:
-  EoDxfAppId() : EoDxfTableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
+  EoDxfAppId() noexcept : EoDxfTableEntry(EoDxf::SymbolTable::RegApp) { Reset(); }
 
  protected:
   void ParseCode(int code, EoDxfReader& reader) { EoDxfTableEntry::ParseCode(code, reader); }

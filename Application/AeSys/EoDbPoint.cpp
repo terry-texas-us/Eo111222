@@ -243,13 +243,14 @@ void EoDbPoint::ModifyState() {
   EoDbPrimitive::ModifyState();
   m_pointStyle = Gs::renderState.PointStyle();
 }
-void EoDbPoint::SetDat(std::uint16_t wDats, double* dDat) {
+
+void EoDbPoint::SetDat(std::uint16_t wDats, const double* userData) {
   if (m_numberOfDatums != wDats) {
     if (m_numberOfDatums != 0) { delete[] m_Data; }
     m_numberOfDatums = wDats;
     m_Data = (m_numberOfDatums == 0) ? nullptr : new double[m_numberOfDatums];
   }
-  for (auto i = 0; i < m_numberOfDatums; i++) { m_Data[i] = dDat[i]; }
+  for (auto i = 0; i < m_numberOfDatums; i++) { m_Data[i] = userData[i]; }
 }
 
 void EoDbPoint::SetPoint(double x, double y, double z) noexcept {

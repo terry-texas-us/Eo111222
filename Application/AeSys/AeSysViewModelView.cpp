@@ -6,7 +6,7 @@
 EoGeVector3d AeSysView::CameraDirection() const {
   return m_ViewTransform.Direction();
 }
-EoGePoint3d AeSysView::CameraTarget() const {
+EoGePoint3d AeSysView::CameraTarget() const noexcept {
   return m_ViewTransform.Target();
 }
 void AeSysView::CopyActiveModelViewToPreviousModelView() {
@@ -42,7 +42,7 @@ void AeSysView::SetCameraViewUp(const EoGeVector3d& viewUp) {
 void AeSysView::SetCenteredWindow(double uExtent, double vExtent) {
   m_ViewTransform.SetCenteredWindow(m_Viewport, uExtent, vExtent);
 }
-void AeSysView::SetViewTransform(EoGsViewTransform& viewTransform) {
+void AeSysView::SetViewTransform(const EoGsViewTransform& viewTransform) {
   m_ViewTransform = viewTransform;
   m_ViewTransform.BuildTransformMatrix();
 }
@@ -52,45 +52,45 @@ void AeSysView::SetViewWindow(double uMin, double vMin, double uMax, double vMax
 void AeSysView::ModelViewGetViewport(EoGsViewport& viewport) {
   viewport = m_Viewport;
 }
-EoGeTransformMatrix& AeSysView::ModelViewGetMatrix() {
+EoGeTransformMatrix& AeSysView::ModelViewGetMatrix() noexcept {
   return m_ViewTransform.GetMatrix();
 }
-EoGeTransformMatrix& AeSysView::ModelViewGetMatrixInverse() {
+EoGeTransformMatrix& AeSysView::ModelViewGetMatrixInverse() noexcept {
   return m_ViewTransform.GetMatrixInverse();
 }
-double AeSysView::UExtent() const {
+double AeSysView::UExtent() const noexcept {
   return m_ViewTransform.UExtent();
 }
-double AeSysView::UMax() const {
+double AeSysView::UMax() const noexcept {
   return m_ViewTransform.UMax();
 }
-double AeSysView::UMin() const {
+double AeSysView::UMin() const noexcept {
   return m_ViewTransform.UMin();
 }
-EoGeVector3d AeSysView::ViewUp() const {
+EoGeVector3d AeSysView::ViewUp() const noexcept {
   return m_ViewTransform.ViewUp();
 }
-double AeSysView::VExtent() const {
+double AeSysView::VExtent() const noexcept {
   return m_ViewTransform.VExtent();
 }
-double AeSysView::VMax() const {
+double AeSysView::VMax() const noexcept {
   return m_ViewTransform.VMax();
 }
-double AeSysView::VMin() const {
+double AeSysView::VMin() const noexcept {
   return m_ViewTransform.VMin();
 }
 void AeSysView::ModelViewInitialize() {
   m_ViewTransform.Initialize(m_Viewport);
 }
 
-void AeSysView::ModelTransformPoint(EoGePoint3d& point) {
+void AeSysView::ModelTransformPoint(EoGePoint3d& point) noexcept {
   m_ModelTransform.TransformPoint(point);
 }
-void AeSysView::ModelTransformPoint(EoGePoint4d& point) {
+void AeSysView::ModelTransformPoint(EoGePoint4d& point) noexcept {
   m_ModelTransform.TransformPoint(point);
 }
 
-void AeSysView::ModelTransformVector(EoGeVector3d vector) {
+void AeSysView::ModelTransformVector(EoGeVector3d vector) noexcept {
   m_ModelTransform.TransformVector(vector);
 }
 

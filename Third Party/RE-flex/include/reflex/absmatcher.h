@@ -1112,7 +1112,7 @@ class AbstractMatcher {
     {
       if (loc < end_)
       {
-        char *s = static_cast<char*>(std::memchr(buf_ + loc, '\n', end_ - loc));
+        const char *s = static_cast<char*>(std::memchr(buf_ + loc, '\n', end_ - loc));
         if (s != NULL)
           return s + static_cast<size_t>(inclusive);
       }

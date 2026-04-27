@@ -69,7 +69,7 @@ void AeSysView::PushModelTransform() {
   m_ModelTransform.Push();
 }
 
-void AeSysView::SetLocalModelTransform(EoGeTransformMatrix& transformation) {
+void AeSysView::SetLocalModelTransform(const EoGeTransformMatrix& transformation) {
   m_ModelTransform.SetLocalTM(transformation);
 }
 
@@ -322,7 +322,7 @@ void AeSysView::OnSheetSetupFormFactor() {
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* group = layer->GetNext(position);
+      const auto* group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();

@@ -59,7 +59,7 @@ void EoDbBlockFile::ReadHeader() {
   }
 }
 
-void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
+void EoDbBlockFile::WriteBlock(const CString& strName, const EoDbBlock* block) {
   std::uint16_t wPrims{};
 
   const auto countPosition = GetPosition();
@@ -79,7 +79,7 @@ void EoDbBlockFile::WriteBlock(const CString& strName, EoDbBlock* block) {
   Seek(static_cast<LONGLONG>(dwPosition), begin);
 }
 
-void EoDbBlockFile::WriteBlocks(EoDbBlocks& blocks) {
+void EoDbBlockFile::WriteBlocks(const EoDbBlocks& blocks) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kBlocksSection));
   EoDb::WriteUInt16(*this, std::uint16_t(blocks.GetSize()));
 

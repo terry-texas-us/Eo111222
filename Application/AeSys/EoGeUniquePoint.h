@@ -17,7 +17,7 @@ class EoGeUniquePoint : public CObject {
     m_References = other.m_References;
   }
 
-  EoGeUniquePoint& operator=(const EoGeUniquePoint& other) {
+  EoGeUniquePoint& operator=(const EoGeUniquePoint& other) noexcept {
     if (this != &other) {
       m_Point = other.m_Point;
       m_References = other.m_References;

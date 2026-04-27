@@ -141,7 +141,7 @@ EoGeMatrix& EoGeMatrix::Identity() {
   return *this;
 }
 
-bool EoGeMatrix::IsIdentity(double tolerance) const {
+bool EoGeMatrix::IsIdentity(double tolerance) const noexcept {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       double expected = (i == j) ? 1.0 : 0.0;

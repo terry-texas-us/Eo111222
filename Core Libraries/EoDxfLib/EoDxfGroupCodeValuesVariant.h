@@ -50,7 +50,7 @@ class EoDxfGroupCodeValuesVariant {
 
   /// `Add...()` mutator for assigning the new type after construction.
 
-  void AddWideString(int code, std::wstring s) {
+  void AddWideString(int code, std::wstring s) noexcept {
     m_content = std::move(s);
     m_code = code;
   }

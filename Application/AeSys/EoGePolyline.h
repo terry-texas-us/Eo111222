@@ -48,7 +48,7 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
 bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2, const EoGePoint3dArray& pts);
 
 /// @brief Determines points necessary to represent an N-Polygon with line segments.
-void GeneratePointsForNPoly(EoGePoint3d& centerPoint,
+void GeneratePointsForNPoly(const EoGePoint3d& centerPoint,
     EoGeVector3d majorAxis,
     EoGeVector3d minorAxis,
     int numberOfPoints,

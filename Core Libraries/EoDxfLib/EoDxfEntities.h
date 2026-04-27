@@ -43,7 +43,7 @@ class EoDxfGraphic : public EoDxfEntity {
 
   void Clear();
 
-  virtual void ApplyExtrusion() = 0;
+  virtual void ApplyExtrusion() noexcept = 0;
 
   [[nodiscard]] double GetThickness() const noexcept { return m_thickness; }
 
@@ -111,7 +111,7 @@ class EoDxfPoint : public EoDxfGraphic {
  public:
   explicit EoDxfPoint(EoDxf::ETYPE entityType = EoDxf::POINT) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -129,7 +129,7 @@ class EoDxfLine : public EoDxfGraphic {
  public:
   explicit EoDxfLine(EoDxf::ETYPE entityType = EoDxf::LINE) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -152,7 +152,7 @@ class EoDxfRay : public EoDxfGraphic {
  public:
   explicit EoDxfRay(EoDxf::ETYPE entityType = EoDxf::RAY) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -173,7 +173,7 @@ class EoDxfXline : public EoDxfGraphic {
  public:
   explicit EoDxfXline(EoDxf::ETYPE entityType = EoDxf::XLINE) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -207,7 +207,7 @@ class EoDxfAcadProxyEntity : public EoDxfGraphic {
  public:
   explicit EoDxfAcadProxyEntity(EoDxf::ETYPE entityType = EoDxf::ACAD_PROXY_ENTITY) noexcept
       : EoDxfGraphic{entityType} {}
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
   /** @brief Concatenates all hex-encoded graphics data chunks into a single string.
    *  Each code 310 group contributes up to ~254 hex characters (127 bytes). The caller can then pass the result
@@ -276,7 +276,7 @@ class EoDxfCircle : public EoDxfGraphic {
  public:
   explicit EoDxfCircle(EoDxf::ETYPE entityType = EoDxf::CIRCLE) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override;
+  void ApplyExtrusion() noexcept override;
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -303,9 +303,9 @@ class EoDxfArc : public EoDxfGraphic {
    *  Note: Commenting out the calls to CalculateArbitraryAxis and ExtrudePointInPlace will cause arcs being tested to
    * be located on the other side of the y axis (all x dimensions are negated).
    */
-  void ApplyExtrusion() override;
+  void ApplyExtrusion() noexcept override;
 
-  const EoDxfGeometryBase3d& Center() const { return m_centerPoint; }
+  const EoDxfGeometryBase3d& Center() const noexcept { return m_centerPoint; }
   [[nodiscard]] double Radius() const noexcept { return m_radius; }
   [[nodiscard]] double StartAngle() const noexcept { return m_startAngle; }
   [[nodiscard]] double EndAngle() const noexcept { return m_endAngle; }
@@ -341,7 +341,7 @@ class EoDxfEllipse : public EoDxfGraphic {
   explicit EoDxfEllipse(EoDxf::ETYPE entityType = EoDxf::ELLIPSE) noexcept : EoDxfGraphic{entityType} {}
 
   void ToPolyline(EoDxfPolyline* polyline, int parts = 128);
-  void ApplyExtrusion() override;
+  void ApplyExtrusion() noexcept override;
 
  protected:
   /** @brief Parses dxf code and value to read ellipse entity data
@@ -377,7 +377,7 @@ class EoDxfTrace : public EoDxfGraphic {
  public:
   explicit EoDxfTrace(EoDxf::ETYPE entityType = EoDxf::TRACE) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override;
+  void ApplyExtrusion() noexcept override;
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -404,7 +404,7 @@ class EoDxfSolid : public EoDxfGraphic {
  public:
   explicit EoDxfSolid(EoDxf::ETYPE entityType = EoDxf::SOLID) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override;
+  void ApplyExtrusion() noexcept override;
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -449,7 +449,7 @@ class EoDxf3dFace : public EoDxfGraphic {
 
   explicit EoDxf3dFace(EoDxf::ETYPE entityType = EoDxf::_3DFACE) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
   [[nodiscard]] const EoDxfGeometryBase3d& FirstCorner() const noexcept { return m_firstCorner; }
   [[nodiscard]] const EoDxfGeometryBase3d& SecondCorner() const noexcept { return m_secondCorner; }
@@ -485,7 +485,7 @@ class EoDxfBlock : public EoDxfGraphic {
  public:
   explicit EoDxfBlock(EoDxf::ETYPE entityType = EoDxf::BLOCK) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -513,7 +513,7 @@ class EoDxfInsert : public EoDxfGraphic {
  public:
   explicit EoDxfInsert(EoDxf::ETYPE entityType = EoDxf::INSERT) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -544,7 +544,7 @@ class EoDxfInsert : public EoDxfGraphic {
   class EoDxfSeqend : public EoDxfGraphic {
    public:
     EoDxfSeqend() noexcept : EoDxfGraphic{EoDxf::SEQEND} {}
-    void ApplyExtrusion() override {}
+    void ApplyExtrusion() noexcept override {}
   };
 
 /** @brief Class to handle lightweight polyline entity
@@ -567,7 +567,7 @@ class EoDxfLwPolyline : public EoDxfGraphic {
   EoDxfLwPolyline& operator=(EoDxfLwPolyline&&) noexcept = default;
   ~EoDxfLwPolyline() = default;
 
-  void ApplyExtrusion() override;
+  void ApplyExtrusion() noexcept override;
 
   void AddVertex(const EoDxfPolylineVertex2d& vertex) { m_vertices.push_back(vertex); }
 
@@ -619,7 +619,7 @@ class EoDxfMText : public EoDxfGraphic {
 
   explicit EoDxfMText(EoDxf::ETYPE entityType = EoDxf::MTEXT) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -670,7 +670,7 @@ class EoDxfVertex : public EoDxfGraphic {
     m_locationPoint = {sx, sy, sz};
   }
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -715,7 +715,7 @@ class EoDxfSeqEnd : public EoDxfGraphic {
     m_lineWeight = owner.m_lineWeight;
   }
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 };
 
 class EoDxfPolyline : public EoDxfGraphic {
@@ -756,7 +756,7 @@ class EoDxfPolyline : public EoDxfGraphic {
 
   void appendVertex(EoDxfVertex* v) { m_vertices.push_back(v); }
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -784,7 +784,7 @@ class EoDxfPolyline : public EoDxfGraphic {
  */
 class EoDxfHatchLoop {
  public:
-  explicit EoDxfHatchLoop(int boundaryPathType) : m_boundaryPathType{boundaryPathType} {}
+  explicit EoDxfHatchLoop(int boundaryPathType) noexcept : m_boundaryPathType{boundaryPathType} {}
 
   ~EoDxfHatchLoop() = default;
 
@@ -793,7 +793,7 @@ class EoDxfHatchLoop {
   EoDxfHatchLoop(EoDxfHatchLoop&&) = delete;
   EoDxfHatchLoop& operator=(EoDxfHatchLoop&&) = delete;
 
-  void Update() { m_numberOfEdges = static_cast<int>(m_entities.size()); }
+  void Update() noexcept { m_numberOfEdges = static_cast<int>(m_entities.size()); }
 
  public:
   std::int32_t m_boundaryPathType{};  // Group code 92
@@ -817,7 +817,7 @@ class EoDxfImage : public EoDxfGraphic {
  public:
   explicit EoDxfImage(EoDxf::ETYPE entityType = EoDxf::IMAGE) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -861,7 +861,7 @@ class EoDxfLeader : public EoDxfGraphic {
 
   ~EoDxfLeader() = default;
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);
@@ -986,7 +986,7 @@ class EoDxfViewport : public EoDxfGraphic {
  public:
   explicit EoDxfViewport(EoDxf::ETYPE entityType = EoDxf::VIEWPORT) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);

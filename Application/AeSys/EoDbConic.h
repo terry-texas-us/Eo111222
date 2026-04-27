@@ -158,7 +158,7 @@ class EoDbConic : public EoDbPrimitive {
       const EoGePoint3d& intermediate,
       EoGePoint3d& end);
 
-  EoDbConic()
+  EoDbConic() noexcept
       : m_center{},
         m_majorAxis{},
         m_extrusion{EoGeVector3d::positiveUnitZ},
@@ -318,7 +318,7 @@ class EoDbConic : public EoDbPrimitive {
    *
    * @return True if the conic is a full circle or ellipse; otherwise, false.
    */
-  [[nodiscard]] bool IsFullConic() const noexcept {
+  [[nodiscard]] bool IsFullConic() const {
     double sweep = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweep <= 0.0) { sweep += Eo::TwoPi; }
     return Eo::IsGeometricallyZero(sweep - Eo::TwoPi) || Eo::IsGeometricallyZero(m_endAngle - m_startAngle);
@@ -354,32 +354,32 @@ class EoDbConic : public EoDbPrimitive {
   int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d*) override;
 
   [[nodiscard]] const EoGePoint3d& Center() const noexcept { return m_center; }
-  void SetCenter(EoGePoint3d center) { m_center = std::move(center); }
+  void SetCenter(EoGePoint3d center) noexcept { m_center = std::move(center); }
 
   [[nodiscard]] double EndAngle() const noexcept { return m_endAngle; }
-  void SetEndAngle(double endAngle) { m_endAngle = endAngle; }
+  void SetEndAngle(double endAngle) noexcept { m_endAngle = endAngle; }
 
   [[nodiscard]] const EoGeVector3d& MajorAxis() const noexcept { return m_majorAxis; }
-  void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
+  void SetMajorAxis(EoGeVector3d majorAxis) noexcept { m_majorAxis = std::move(majorAxis); }
 
   [[nodiscard]] const EoGeVector3d& Extrusion() const noexcept { return m_extrusion; }
-  void SetExtrusion(EoGeVector3d extrusion) { m_extrusion = std::move(extrusion); }
+  void SetExtrusion(EoGeVector3d extrusion) noexcept { m_extrusion = std::move(extrusion); }
 
   [[nodiscard]] EoGeVector3d MinorAxis() const noexcept { return CrossProduct(m_extrusion, m_majorAxis) * m_ratio; }
 
   [[nodiscard]] double Ratio() const noexcept { return m_ratio; }
-  void SetRatio(double ratio) { m_ratio = ratio; }
+  void SetRatio(double ratio) noexcept { m_ratio = ratio; }
 
   [[nodiscard]] double StartAngle() const noexcept { return m_startAngle; }
-  void SetStartAngle(double startAngle) { m_startAngle = startAngle; }
+  void SetStartAngle(double startAngle) noexcept { m_startAngle = startAngle; }
 
-  void SetAngles(double startAngle, double endAngle) {
+  void SetAngles(double startAngle, double endAngle) noexcept {
     m_startAngle = startAngle;
     m_endAngle = endAngle;
   }
 
-  [[nodiscard]] double Radius() const noexcept { return m_majorAxis.Length(); }
-  [[nodiscard]] double MajorRadius() const noexcept { return m_majorAxis.Length(); }
+  [[nodiscard]] double Radius() const { return m_majorAxis.Length(); }
+  [[nodiscard]] double MajorRadius() const { return m_majorAxis.Length(); }
   [[nodiscard]] double MinorRadius() const noexcept { return Radius() * m_ratio; }
 
   /** @brief Calculates the sweep angle of the conic.
@@ -390,7 +390,7 @@ class EoDbConic : public EoDbPrimitive {
    *
    * @return The sweep angle in radians.
    */
-  [[nodiscard]] double SweepAngle() const noexcept {
+  [[nodiscard]] double SweepAngle() const {
     double sweepAngle = NormalizeTo2Pi(m_endAngle) - NormalizeTo2Pi(m_startAngle);
     if (sweepAngle <= 0.0) { sweepAngle += Eo::TwoPi; }
     return sweepAngle;

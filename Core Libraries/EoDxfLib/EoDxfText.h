@@ -33,7 +33,7 @@ class EoDxfText : public EoDxfGraphic {
 
   explicit EoDxfText(EoDxf::ETYPE entityType = EoDxf::TEXT) noexcept : EoDxfGraphic{entityType} {}
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);

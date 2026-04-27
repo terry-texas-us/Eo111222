@@ -75,7 +75,7 @@ class EoDbPoint : public EoDbPrimitive {
   EoGePoint3d GetPt() const noexcept { return m_Point; }
   std::int16_t& PointStyle() noexcept { return m_pointStyle; }
   void ModifyState() override;
-  void SetDat(std::uint16_t, double*);
+  void SetDat(std::uint16_t, const double* userData);
   void SetPt(EoGePoint3d pt) noexcept { m_Point = pt; }
   void SetPoint(double x, double y, double z) noexcept;
 };

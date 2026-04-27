@@ -17,10 +17,14 @@
 /// on every launch. Docking position is unaffected (managed by CDockingManager).
 class EoMfStatelessToolBar : public CMFCToolBar {
  public:
-  BOOL LoadState(LPCTSTR /*lpszProfileName*/ = nullptr, int /*nIndex*/ = -1, UINT /*uiID*/ = (UINT)-1) override {
+  BOOL LoadState([[maybe_unused]] LPCTSTR profileName = nullptr,
+      [[maybe_unused]] int index = -1,
+      [[maybe_unused]] UINT iD = (UINT)-1) override {
     return TRUE;
   }
-  BOOL SaveState(LPCTSTR /*lpszProfileName*/ = nullptr, int /*nIndex*/ = -1, UINT /*uiID*/ = (UINT)-1) override {
+  BOOL SaveState([[maybe_unused]] LPCTSTR profileName = nullptr,
+      [[maybe_unused]] int index = -1,
+      [[maybe_unused]] UINT iD = (UINT)-1) override {
     return TRUE;
   }
 
@@ -112,9 +116,9 @@ class CMainFrame : public CMDIFrameWndEx {
   void SetPaneTextColor(int index, COLORREF textColor = COLORREF(-1));
   void SetPaneBackgroundColor(int index, COLORREF backgroundColor = COLORREF(-1));
 
-  EoMfStatusBar& GetStatusBar() { return m_statusBar; }
-  EoMfOutputDockablePane& GetOutputPane() { return m_outputPane; }
-  EoMfPropertiesDockablePane& GetPropertiesPane() { return m_propertiesPane; }
+  EoMfStatusBar& GetStatusBar() noexcept { return m_statusBar; }
+  EoMfOutputDockablePane& GetOutputPane() noexcept { return m_outputPane; }
+  EoMfPropertiesDockablePane& GetPropertiesPane() noexcept { return m_propertiesPane; }
 
   /// @brief Propagates the active color scheme to docking panes and chrome.
   void ApplyColorScheme();

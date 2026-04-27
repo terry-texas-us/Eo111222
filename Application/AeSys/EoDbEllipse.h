@@ -127,10 +127,10 @@ class EoDbEllipse : public EoDbPrimitive {
   [[nodiscard]] double SweepAngle() const noexcept { return m_sweepAngle; }
   void GetXYExtents(EoGePoint3d, EoGePoint3d, EoGePoint3d*, EoGePoint3d*) const;
   int IsWithinArea(const EoGePoint3d& lowerLeft, const EoGePoint3d& upperRight, EoGePoint3d*) override;
-  void SetCenterPoint(EoGePoint3d centerPoint) { m_center = std::move(centerPoint); }
-  void SetMajorAxis(EoGeVector3d majorAxis) { m_majorAxis = std::move(majorAxis); }
-  void SetMinorAxis(EoGeVector3d minorAxis) { m_minorAxis = std::move(minorAxis); }
-  void SetSweepAngle(double sweepAngle) { m_sweepAngle = sweepAngle; }
+  void SetCenterPoint(EoGePoint3d centerPoint) noexcept { m_center = std::move(centerPoint); }
+  void SetMajorAxis(EoGeVector3d majorAxis) noexcept { m_majorAxis = std::move(majorAxis); }
+  void SetMinorAxis(EoGeVector3d minorAxis) noexcept { m_minorAxis = std::move(minorAxis); }
+  void SetSweepAngle(double sweepAngle) noexcept { m_sweepAngle = sweepAngle; }
 
   double SweepAngleToPoint(EoGePoint3d point);
 

@@ -51,7 +51,7 @@ void DisplayFilAreaHatch(AeSysView* view,
     EoGeTransformMatrix& transformMatrix,
     const int iSets,
     const int* iPtLstsId,
-    EoGePoint3d* pta) {
+    const EoGePoint3d* pta) {
   double dCurStrLen{};
   double dEps1{};
   double dMaxY{};

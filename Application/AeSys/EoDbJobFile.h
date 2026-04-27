@@ -38,7 +38,7 @@ class EoDbJobFile {
 
   void WriteHeader(CFile& file);
   void WriteLayer(CFile& file, EoDbLayer* layer);
-  void WriteGroup(CFile& file, EoDbGroup* group);
+  void WriteGroup(CFile& file, const EoDbGroup* group);
   void ConstructPrimitive(EoDbPrimitive*& primitive, std::int16_t PrimitiveType);
   void ConstructPrimitiveFromVersion1(EoDbPrimitive*& primitive);
 

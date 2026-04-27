@@ -653,7 +653,7 @@ void AeSysDoc::ResolveDynamicBlockReferences() {
       if (layer == nullptr) { continue; }
       auto groupPosition = layer->GetHeadPosition();
       while (groupPosition != nullptr) {
-        auto* const group = layer->GetNext(groupPosition);
+        const auto* group = layer->GetNext(groupPosition);
         if (group == nullptr) { continue; }
         auto primPosition = group->GetHeadPosition();
         while (primPosition != nullptr) {

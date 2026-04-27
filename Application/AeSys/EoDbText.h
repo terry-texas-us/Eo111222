@@ -39,7 +39,7 @@ class EoDbText : public EoDbPrimitive {
   std::optional<EoDbMTextProperties> m_mtextProperties{};
 
  public:  // Constructors and destructor
-  EoDbText() {}
+  EoDbText() noexcept {}
   EoDbText(std::uint8_t* buffer, int version);
   EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const CString& text);
   EoDbText(const EoDbFontDefinition& fd, EoGeReferenceSystem& referenceSystem, const std::wstring& text);
@@ -89,15 +89,15 @@ class EoDbText : public EoDbPrimitive {
   void ConvertFormattingCharacters();
   void GetBoundingBox(EoGePoint3dArray&, double);
   void GetFontDef(EoDbFontDefinition& fd) const { fd = m_fontDefinition; }
-  void GetRefSys(EoGeReferenceSystem& referenceSystem) const { referenceSystem = m_ReferenceSystem; }
-  const CString& Text() const { return m_strText; }
+  void GetRefSys(EoGeReferenceSystem& referenceSystem) const noexcept { referenceSystem = m_ReferenceSystem; }
+  const CString& Text() const noexcept { return m_strText; }
 
   EoGeVector3d RefNorm() { return m_ReferenceSystem.UnitNormal(); }
 
-  EoGePoint3d ReferenceOrigin() { return m_ReferenceSystem.Origin(); }
+  EoGePoint3d ReferenceOrigin() noexcept { return m_ReferenceSystem.Origin(); }
 
   void SetFontDefinition(const EoDbFontDefinition& fontDefinition) noexcept { m_fontDefinition = fontDefinition; }
-  void SetReferenceOrigin(const EoGePoint3d& origin) { m_ReferenceSystem.SetOrigin(origin); }
+  void SetReferenceOrigin(const EoGePoint3d& origin) noexcept { m_ReferenceSystem.SetOrigin(origin); }
   void SetReferenceSystem(const EoGeReferenceSystem& referenceSystem) noexcept { m_ReferenceSystem = referenceSystem; }
   void SetText(const CString& text) { m_strText = text; }
   void SetText(const std::wstring& text) { m_strText = text.c_str(); }
@@ -130,16 +130,16 @@ void DisplayTextSegment(AeSysView* view,
 /// @brief Displays a text string using a stroke font.
 void DisplayTextSegmentUsingStrokeFont(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     int startPosition,
     int numberOfCharacters,
     const CString& text);
 /// @brief Attempts to display text is using true type font.
 bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     int startPosition,
     int numberOfCharacters,
     const CString& text);
@@ -178,16 +178,18 @@ void DisplayMTextWithWordWrap(AeSysView* view,
 
 /// @brief Determines the count of characters in string excluding formatting characters.
 [[nodiscard]] int LengthSansFormattingCharacters(const CString& text);
+
 /// @brief Determines the offset to the bottom left alignment position of a text string
 /// using per-character advance widths (v2) or fixed cell width (v1) in the z=0 plane.
-void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt);
+void GetBottomLeftCorner(const EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt);
+
 /// @brief Returns the region boundaries of a text string applying an optional inflation factor.
-void text_GetBoundingBox(EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+void text_GetBoundingBox(const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     const CString& text,
     double spaceFactor,
     EoGePoint3dArray& ptsBox);
 EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontdefinition,
-    EoGeReferenceSystem& referenceSystem,
+    const EoGeReferenceSystem& referenceSystem,
     double dLineSpaceFac,
     double dChrSpaceFac);

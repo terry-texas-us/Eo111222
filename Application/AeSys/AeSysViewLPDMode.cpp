@@ -445,7 +445,10 @@ void AeSysView::DoDuctModeMouseMove() {
   InvalidateOverlay();
 }
 
-void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, Section section, EoDbGroup* group) {
+void AeSysView::GenerateEndCap(const EoGePoint3d& beginPoint,
+    const EoGePoint3d& endPoint,
+    Section section,
+    EoDbGroup* group) {
   const auto midpoint = EoGePoint3d::Mid(beginPoint, endPoint);
 
   double data[] = {section.Width(), section.Depth()};
@@ -456,11 +459,11 @@ void AeSysView::GenerateEndCap(EoGePoint3d& beginPoint, EoGePoint3d& endPoint, S
   group->AddTail(EoDbLine::CreateLine(beginPoint, endPoint)->WithProperties(Gs::renderState));
 }
 
-EoGePoint3d AeSysView::GenerateBullheadTee(EoDbGroup* existingGroup,
-    EoGeLine& existingSectionReferenceLine,
+EoGePoint3d AeSysView::GenerateBullheadTee(const EoDbGroup* existingGroup,
+    const EoGeLine& existingSectionReferenceLine,
     double existingSectionWidth,
     double existingSectionDepth,
-    EoDbGroup* group) {
+    const EoDbGroup* group) noexcept {
   (void)existingGroup;
   (void)existingSectionReferenceLine;
   (void)existingSectionWidth;
@@ -597,7 +600,7 @@ void AeSysView::GenerateRectangularElbow(EoGeLine& previousReferenceLine,
   GenerateEndCap(currentLeftLine.begin, currentRightLine.begin, currentSection, group);
 }
 
-void AeSysView::GenerateRectangularSection(EoGeLine& referenceLine,
+void AeSysView::GenerateRectangularSection(const EoGeLine& referenceLine,
     double eccentricity,
     Section section,
     EoDbGroup* group) {
@@ -690,7 +693,7 @@ bool AeSysView::GenerateRectangularTap(EJust justification, Section section) {
   return true;
 }
 
-void AeSysView::GenerateTransition(EoGeLine& referenceLine,
+void AeSysView::GenerateTransition(const EoGeLine& referenceLine,
     double eccentricity,
     EJust justification,
     double slope,
@@ -757,7 +760,7 @@ double AeSysView::LengthOfTransition(EJust justification,
   return length;
 }
 
-EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& cursorPosition,
+EoDbGroup* AeSysView::SelectPointUsingPoint(const EoGePoint3d& cursorPosition,
     double tolerance,
     std::int16_t color,
     std::int16_t pointStyle,
@@ -783,7 +786,7 @@ EoDbGroup* AeSysView::SelectPointUsingPoint(EoGePoint3d& cursorPosition,
   return nullptr;
 }
 
-bool AeSysView::Find2LinesUsingLineEndpoints(EoDbLine* testLinePrimitive,
+bool AeSysView::Find2LinesUsingLineEndpoints(const EoDbLine* testLinePrimitive,
     double angularTolerance,
     EoGeLine& leftLine,
     EoGeLine& rightLine) {

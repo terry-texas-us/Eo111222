@@ -206,7 +206,7 @@ void AeSysView::OnPowerModeEscape() {
   InvalidateOverlay();
 }
 
-void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& endPoint) const {
+void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, const EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3dArray points;
   points.SetSize(3);
@@ -226,8 +226,8 @@ void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, EoGePoint3d& e
 }
 
 void AeSysView::GeneratePowerConductorSymbol(std::uint16_t conductorType,
-    EoGePoint3d& pointOnCircuit,
-    EoGePoint3d& endPoint) const {
+    const EoGePoint3d& pointOnCircuit,
+    const EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
   EoGePoint3d points[5]{};
 

@@ -89,5 +89,5 @@ class EoDbLineTypeTable {
   /// @brief Loads the Line Type table.
   void LoadLineTypesFromTxtFile(const CString& pathName);
   void RemoveAll();
-  void RemoveUnused();
+  void RemoveUnused() noexcept;
 };

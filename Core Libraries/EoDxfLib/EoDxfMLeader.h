@@ -35,7 +35,7 @@ class EoDxfMLeader : public EoDxfGraphic {
 
   ~EoDxfMLeader() = default;
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);

@@ -77,7 +77,7 @@ void EoDlgTextStyleManager::PopulateStyleList() {
 void EoDlgTextStyleManager::OnDoubleClickStyleList(NMHDR* notifyMessageHeader, LRESULT* result) {
   *result = 0;
 
-  auto* info = reinterpret_cast<NMITEMACTIVATE*>(notifyMessageHeader);
+  const auto* info = reinterpret_cast<NMITEMACTIVATE*>(notifyMessageHeader);
   if (info->iItem < 0) { return; }
 
   // Determine which sub-item (column) was clicked

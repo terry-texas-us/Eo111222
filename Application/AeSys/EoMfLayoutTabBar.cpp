@@ -563,7 +563,7 @@ void EoMfLayoutTabBar::UpdateSpaceTransferButton() {
 
   const auto* const parentView = static_cast<AeSysView*>(GetParent());
   if (parentView == nullptr) { return; }
-  auto* document = parentView->GetDocument();
+  const auto* document = parentView->GetDocument();
   if (document == nullptr) { return; }
 
   const bool showButton = !document->IsTrapEmpty();

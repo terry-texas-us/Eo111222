@@ -144,7 +144,7 @@ void EoCtrlTextStyleComboBox::OnSelectionChanged() {
   const LPCTSTR selectedName = GetItem(selectedIndex);
   if (selectedName == nullptr) { return; }
 
-  auto* document = AeSysDoc::GetDoc();
+  const auto* document = AeSysDoc::GetDoc();
   if (document == nullptr) { return; }
 
   const auto* style = document->FindTextStyle(selectedName);

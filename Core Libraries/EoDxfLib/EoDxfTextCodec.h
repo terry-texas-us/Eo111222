@@ -1,9 +1,8 @@
 #pragma once
 
-#include <string_view>
-
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "EoDxfBase.h"
 
@@ -24,13 +23,14 @@ class EoTcTextCodec {
   [[nodiscard]] std::wstring GetVersion() const;
   [[nodiscard]] constexpr EoDxf::Version GetVersionEnum() const noexcept { return m_version; }
 
-  /** @brief Sets the version for the text codec. This method allows you to specify the version of the DXF format that the text
-   * codec should use when encoding and decoding text. The version can affect how certain characters are handled, as different
-   * versions of the DXF format may have different rules for character encoding. By setting the version correctly, you can
-   * ensure that the text codec behaves in a way that is compatible with the specific DXF version you are working with.
+  /** @brief Sets the version for the text codec. This method allows you to specify the version of the DXF format that
+   * the text codec should use when encoding and decoding text. The version can affect how certain characters are
+   * handled, as different versions of the DXF format may have different rules for character encoding. By setting the
+   * version correctly, you can ensure that the text codec behaves in a way that is compatible with the specific DXF
+   * version you are working with.
    *
-   * @param version The version to set, specified as a string (e.g., "AC1015", "AC1021") or as an integer corresponding to
-   * the EoDxf::Version enumeration.
+   * @param version The version to set, specified as a string (e.g., "AC1015", "AC1021") or as an integer corresponding
+   * to the EoDxf::Version enumeration.
    */
   void SetVersion(std::wstring_view version);
   void SetVersion(EoDxf::Version version) noexcept;
@@ -41,9 +41,9 @@ class EoTcTextCodec {
    */
   [[nodiscard]] const std::wstring& GetCodePage() const noexcept { return m_codePage; }
 
-  /** @brief Sets the code page for the text codec. This method allows you to specify the character encoding standard that
-   * the text codec should use when encoding and decoding text. The code page can affect how characters are represented
-   * in bytes, and it is important to set it correctly to ensure proper handling of text data.
+  /** @brief Sets the code page for the text codec. This method allows you to specify the character encoding standard
+   * that the text codec should use when encoding and decoding text. The code page can affect how characters are
+   * represented in bytes, and it is important to set it correctly to ensure proper handling of text data.
    *
    * @param codePage The code page to set, specified as a string (e.g., "UTF-8", "UTF-16", "ANSI_1252").
    */
@@ -71,13 +71,13 @@ class EoTcTextCodec {
   EoDxf::Version m_version;
 };
 
-/** @brief Base converter class for text encoding conversions. This class provides a common interface for converting between
- * UTF-8 strings and other encodings. It holds a character table and its length, which can be used by derived classes to
- * perform specific conversions based on the encoding rules defined in the character table.
+/** @brief Base converter class for text encoding conversions. This class provides a common interface for converting
+ * between UTF-8 strings and other encodings. It holds a character table and its length, which can be used by derived
+ * classes to perform specific conversions based on the encoding rules defined in the character table.
  */
 class EoTcConverter {
  public:
-  EoTcConverter(const int* table, int length) : m_table{table}, m_codePageLength{length} {}
+  EoTcConverter(const int* table, int length) noexcept : m_table{table}, m_codePageLength{length} {}
   virtual ~EoTcConverter() = default;
 
   [[nodiscard]] virtual std::string EncodeText(std::wstring_view text) const = 0;
@@ -94,7 +94,7 @@ class EoTcConverter {
  */
 class EoTcConvertUtf8 : public EoTcConverter {
  public:
-  EoTcConvertUtf8() : EoTcConverter(nullptr, 0) {}
+  EoTcConvertUtf8() noexcept : EoTcConverter(nullptr, 0) {}
   [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
   [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 };
@@ -106,30 +106,30 @@ class EoTcConvertUtf8 : public EoTcConverter {
  */
 class EoTcConvertUtf16 : public EoTcConverter {
  public:
-  EoTcConvertUtf16() : EoTcConverter(nullptr, 0) {}
+  EoTcConvertUtf16() noexcept : EoTcConverter(nullptr, 0) {}
   [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
   [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 };
 
-/** @brief Converter class for character tables. This class provides methods to convert between UTF-8 strings and strings
- * encoded using a specified character table. The FromUtf8 and ToUtf8 methods would need to be implemented to perform the
- * necessary conversions based on the character table provided in the constructor.
+/** @brief Converter class for character tables. This class provides methods to convert between UTF-8 strings and
+ * strings encoded using a specified character table. The FromUtf8 and ToUtf8 methods would need to be implemented to
+ * perform the necessary conversions based on the character table provided in the constructor.
  */
 class EoTcConvertTable : public EoTcConverter {
  public:
-  EoTcConvertTable(const int* table, int length) : EoTcConverter(table, length) {}
+  EoTcConvertTable(const int* table, int length) noexcept : EoTcConverter(table, length) {}
   [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
   [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 };
 
-/** @brief Converter class for DBCS (Double-Byte Character Set) tables. This class provides methods to convert between UTF-8
- * strings and strings encoded using a specified DBCS character table. The FromUtf8 and ToUtf8 methods would need to be
- * implemented to perform the necessary conversions based on the lead byte table and double-byte character table provided
- * in the constructor.
+/** @brief Converter class for DBCS (Double-Byte Character Set) tables. This class provides methods to convert between
+ * UTF-8 strings and strings encoded using a specified DBCS character table. The FromUtf8 and ToUtf8 methods would need
+ * to be implemented to perform the necessary conversions based on the lead byte table and double-byte character table
+ * provided in the constructor.
  */
 class EoTcConvertDBCSTable : public EoTcConverter {
  public:
-  EoTcConvertDBCSTable(const int* table, const int* leadTable, const int doubleTable[][2], int length)
+  EoTcConvertDBCSTable(const int* table, const int* leadTable, const int doubleTable[][2], int length) noexcept
       : EoTcConverter(table, length) {
     m_leadTable = leadTable;
     m_doubleTable = doubleTable;
@@ -144,7 +144,8 @@ class EoTcConvertDBCSTable : public EoTcConverter {
 
 class EoTcConvertWindowsCodePage : public EoTcConverter {
  public:
-  explicit EoTcConvertWindowsCodePage(unsigned int codePage) noexcept : EoTcConverter(nullptr, 0), m_codePage{codePage} {}
+  explicit EoTcConvertWindowsCodePage(unsigned int codePage) noexcept
+      : EoTcConverter(nullptr, 0), m_codePage{codePage} {}
   [[nodiscard]] std::string EncodeText(std::wstring_view text) const override;
   [[nodiscard]] std::wstring DecodeText(std::string_view encodedText) const override;
 

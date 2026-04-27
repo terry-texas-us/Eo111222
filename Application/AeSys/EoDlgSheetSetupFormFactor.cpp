@@ -34,7 +34,7 @@ BOOL EoDlgSheetSetupFormFactor::OnInitDialog() {
 }
 
 void EoDlgSheetSetupFormFactor::OnOK() {
-  auto* comboBox = static_cast<CComboBox*>(GetDlgItem(IDC_SHEET_DESIGNATION));
+  const auto* comboBox = static_cast<CComboBox*>(GetDlgItem(IDC_SHEET_DESIGNATION));
   if (comboBox != nullptr) { m_designationIndex = comboBox->GetCurSel(); }
 
   if (m_designationIndex < 0 || m_designationIndex >= static_cast<int>(std::size(kSheetSizes))) {

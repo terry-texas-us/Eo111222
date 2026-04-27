@@ -63,7 +63,7 @@ void EoDbTracingFile::WriteLayer(CFile& file, EoDbLayer* layer) {
 
   auto position = layer->GetHeadPosition();
   while (position != nullptr) {
-    auto* group = layer->GetNext(position);
+    const auto* group = layer->GetNext(position);
     group->Write(file);
   }
   EoDb::WriteUInt16(file, std::uint16_t(EoDb::kEndOfSection));

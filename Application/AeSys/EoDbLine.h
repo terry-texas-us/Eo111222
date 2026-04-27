@@ -25,7 +25,7 @@ class EoDbLine : public EoDbPrimitive {
   EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end);
 
  public:
-  EoDbLine() = default;
+  EoDbLine() noexcept = default;
 
   static EoDbLine* CreateLine(const EoGePoint3d& begin, const EoGePoint3d& end);
 
@@ -93,7 +93,7 @@ class EoDbLine : public EoDbPrimitive {
   [[nodiscard]] const EoGePoint3d& Begin() const noexcept { return m_line.begin; }
   [[nodiscard]] const EoGePoint3d& End() const noexcept { return m_line.end; }
   [[nodiscard]] const EoGeLine& Line() const noexcept { return m_line; }
-  [[nodiscard]] double Length() const noexcept { return (m_line.Length()); }
+  [[nodiscard]] double Length() const { return (m_line.Length()); }
 
   /** @brief Projects a point onto the line.
    * @param point The point to project onto the line.
@@ -106,5 +106,9 @@ class EoDbLine : public EoDbPrimitive {
   void SetBeginPoint(const EoGePoint3d& point) noexcept { m_line.begin = point; }
   void SetEndPoint(const EoGePoint3d& point) noexcept { m_line.end = point; }
 
-  void Square(AeSysView* view);
+  /** @brief Squares the line to the nearest axis defined by the view, adjusting the end point of the line to create 
+   * a horizontal or vertical line based on the current view's grid and axis settings.
+   * @param view The current view, used to determine the grid and axis for squaring.
+   */
+  void Square(const AeSysView* view);
 };

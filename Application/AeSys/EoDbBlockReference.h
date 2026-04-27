@@ -105,17 +105,16 @@ class EoDbBlockReference : public EoDbPrimitive {
   [[nodiscard]] constexpr std::int16_t RowCount() const noexcept { return m_rowCount; }
   double RowSpacing() const noexcept { return m_rowSpacing; }
 
-  void SetColumns(std::int16_t columns) { m_columnCount = columns; }
-  void SetColumnSpacing(double columnSpacing) { m_columnSpacing = columnSpacing; }
+  void SetColumns(std::int16_t columns) noexcept { m_columnCount = columns; }
+  void SetColumnSpacing(double columnSpacing) noexcept { m_columnSpacing = columnSpacing; }
   void SetName(CString name) { m_blockName = std::move(name); }
-  void SetNormal(EoGeVector3d normal) { m_normal = std::move(normal); }
+  void SetNormal(EoGeVector3d normal) noexcept { m_normal = std::move(normal); }
   void SetInsertionPoint(const EoDxfGeometryBase3d& point);
-  void SetInsertionPoint(const EoGePoint3d& point) { m_insertionPoint = point; }
-  void SetRotation(double rotation) { m_rotation = rotation; }
-  void SetRows(std::int16_t rows) { m_rowCount = rows; }
-  void SetRowSpacing(double rowSpacing) { m_rowSpacing = rowSpacing; }
-  void SetScaleFactors(const EoGeVector3d& scaleFactors) { m_scaleFactors = scaleFactors; }
-
+  void SetInsertionPoint(const EoGePoint3d& point) noexcept { m_insertionPoint = point; }
+  void SetRotation(double rotation) noexcept { m_rotation = rotation; }
+  void SetRows(std::int16_t rows) noexcept { m_rowCount = rows; }
+  void SetRowSpacing(double rowSpacing) noexcept { m_rowSpacing = rowSpacing; }
+  void SetScaleFactors(const EoGeVector3d& scaleFactors) noexcept { m_scaleFactors = scaleFactors; }
   /// @brief Appends an ATTRIB primitive's handle to this INSERT's owned attribute list.
   void AddAttributeHandle(std::uint64_t handle) { m_attributeHandles.push_back(handle); }
   /// @brief Returns the list of owned ATTRIB primitive handles.

@@ -72,7 +72,7 @@ bool SelectUsingRectangle(AeSysView* view,
   return false;
 }
 
-void GeneratePointsForNPoly(EoGePoint3d& centerPoint,
+void GeneratePointsForNPoly(const EoGePoint3d& centerPoint,
     EoGeVector3d majorAxis,
     EoGeVector3d minorAxis,
     int numberOfPoints,

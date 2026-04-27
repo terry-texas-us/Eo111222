@@ -100,8 +100,8 @@ class AeSysDoc : public CDocument {
    *
    * @return A reference to the EoDbHeaderSection object.
    */
-  EoDbHeaderSection& HeaderSection() { return m_HeaderSection; }
-  const EoDbHeaderSection& HeaderSection() const { return m_HeaderSection; }
+  EoDbHeaderSection& HeaderSection() noexcept { return m_HeaderSection; }
+  const EoDbHeaderSection& HeaderSection() const noexcept { return m_HeaderSection; }
 
   /** @brief Provides access to the document's handle manager.
    *
@@ -145,7 +145,7 @@ class AeSysDoc : public CDocument {
    * @param handle The handle to search for.
    * @return Pointer to the HandleObject variant, or nullptr if not found.
    */
-  [[nodiscard]] const HandleObject* FindObjectByHandle(std::uint64_t handle) const noexcept;
+  [[nodiscard]] const HandleObject* FindObjectByHandle(std::uint64_t handle) const;
 
   /** @brief Finds a primitive by its handle.
    * @param handle The handle to search for.
@@ -174,12 +174,12 @@ class AeSysDoc : public CDocument {
   /** @brief Registers all primitive handles in a group.
    * @param group Non-null pointer to the group whose primitives are registered.
    */
-  void RegisterGroupHandles(EoDbGroup* group);
+  void RegisterGroupHandles(const EoDbGroup* group);
 
   /** @brief Unregisters all primitive handles in a group.
    * @param group Non-null pointer to the group whose primitives are unregistered.
    */
-  void UnregisterGroupHandles(EoDbGroup* group);
+  void UnregisterGroupHandles(const EoDbGroup* group);
 
   /** @brief Adds text to the document
    *
@@ -193,7 +193,7 @@ class AeSysDoc : public CDocument {
   void AddTextBlock(wchar_t* textBlock);
 
   // Block Table interface
-  [[nodiscard]] EoDbBlocks* BlocksTable() { return (&m_BlocksTable); }
+  [[nodiscard]] EoDbBlocks* BlocksTable() noexcept { return (&m_BlocksTable); }
   [[nodiscard]] bool BlockTableIsEmpty() const { return m_BlocksTable.IsEmpty() == TRUE; }
   [[nodiscard]] std::uint16_t BlockTableSize() const { return (std::uint16_t(m_BlocksTable.GetSize())); }
   int GetBlockReferenceCount(const CString& name);
@@ -298,7 +298,7 @@ class AeSysDoc : public CDocument {
   /// @brief A layer is converted to a tracing or a job file
   bool LayerMelt(CString& strName);
 
-  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, EoGeTransformMatrix&);
+  void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix& transformMatrix);
   int NumberOfGroupsInWorkLayer();
   int NumberOfGroupsInActiveLayers();
   /// @brief Displays drawing and determines which groups are detectable.
@@ -382,7 +382,7 @@ class AeSysDoc : public CDocument {
    *
    *  @param view  The active AeSysView (needed for model-space extent computation).
    */
-  void CreateDefaultPaperSpaceViewport(AeSysView* view);
+  void CreateDefaultPaperSpaceViewport(const AeSysView* view);
 
   /** @brief Renders model-space layers directly (bypasses active-space routing).
    *
@@ -475,8 +475,8 @@ class AeSysDoc : public CDocument {
   void SetPointSize(double size) noexcept { m_pointSize = size; }
 
   // Line Type Table interface
-  [[nodiscard]] auto* LineTypeTable() { return &m_LineTypeTable; }
-  [[nodiscard]] auto* ContinuousLineType() { return m_continuousLineType; }
+  [[nodiscard]] auto* LineTypeTable() noexcept { return &m_LineTypeTable; }
+  [[nodiscard]] auto* ContinuousLineType() noexcept { return m_continuousLineType; }
 
   // Class Table interface (CLASSES section passthrough)
   [[nodiscard]] auto& ClassTable() noexcept { return m_classTable; }
@@ -603,7 +603,7 @@ class AeSysDoc : public CDocument {
   EoDbGroup* GetPreviousWorkLayerGroup(POSITION& position) const {
     return (m_workLayer != nullptr ? m_workLayer->GetPrev(position) : nullptr);
   }
-  [[nodiscard]] auto* GetWorkLayer() const { return m_workLayer; }
+  [[nodiscard]] auto* GetWorkLayer() const noexcept { return m_workLayer; }
   void InitializeWorkLayer();
   EoDbLayer* SetWorkLayer(EoDbLayer* layer);
 
@@ -660,7 +660,7 @@ class AeSysDoc : public CDocument {
   auto FindTrappedGroup(EoDbGroup* group) { return m_trappedGroups.Find(group); }
   auto GetFirstTrappedGroupPosition() const { return m_trappedGroups.GetHeadPosition(); }
   EoDbGroup* GetNextTrappedGroup(POSITION& position) { return m_trappedGroups.GetNext(position); }
-  EoGePoint3d GetTrapPivotPoint() const { return m_trapPivotPoint; }
+  EoGePoint3d GetTrapPivotPoint() const noexcept { return m_trapPivotPoint; }
   BOOL IsTrapEmpty() const { return m_trappedGroups.IsEmpty(); }
   void ModifyTrappedGroupsColor(std::int16_t color) { m_trappedGroups.ModifyColor(color); }
   void ModifyTrappedGroupsLineType(const std::wstring& lineTypeName) { m_trappedGroups.ModifyLineType(lineTypeName); }
@@ -671,12 +671,12 @@ class AeSysDoc : public CDocument {
   EoDbGroup* RemoveLastTrappedGroup() { return m_trappedGroups.RemoveTail(); }
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_trappedGroups.Remove(group); }
   void RemoveTrappedGroupAt(POSITION position) { m_trappedGroups.RemoveAt(position); }
-  void SetTrapPivotPoint(const EoGePoint3d& pt) { m_trapPivotPoint = pt; }
+  void SetTrapPivotPoint(const EoGePoint3d& pt) noexcept { m_trapPivotPoint = pt; }
   void SquareTrappedGroups(AeSysView* view);
-  void TransformTrappedGroups(EoGeTransformMatrix& transformMatrix);
+  void TransformTrappedGroups(const EoGeTransformMatrix& transformMatrix);
   void TranslateTrappedGroups(const EoGeVector3d& translate);
   [[nodiscard]] auto TrapGroupCount() { return m_trappedGroups.GetCount(); }
-  [[nodiscard]] auto* GroupsInTrap() { return &m_trappedGroups; }
+  [[nodiscard]] auto* GroupsInTrap() noexcept { return &m_trappedGroups; }
 
   /// @brief Moves all trapped groups to the specified target space.
   /// Each group is removed from its current layer (model or paper) and added to the
@@ -702,9 +702,15 @@ class AeSysDoc : public CDocument {
     return (EoDbMaskedPrimitive*)m_MaskedPrimitives.GetNext(position);
   }
   void RemoveAllMaskedPrimitives() { m_MaskedPrimitives.RemoveAll(); }
-  DWORD GetPrimitiveMask(EoDbPrimitive* primitive);
+
+  /**
+   * @brief Retrieves a bitmask representing properties or characteristics of a primitive.
+   * @param primitive A pointer to the primitive to query. Must not be null.
+   * @return A bitmask (DWORD) containing flags that describe the primitive's properties.
+   */
+  DWORD GetPrimitiveMask(const EoDbPrimitive* primitive);
   void AddPrimitiveBit(EoDbPrimitive* primitive, int bit);
-  void RemovePrimitiveBit(EoDbPrimitive* primitive, int bit);
+  void RemovePrimitiveBit(const EoDbPrimitive* primitive, int bit);
 
   int AddUniquePoint(const EoGePoint3d& point);
   auto AddUniquePoint(EoGeUniquePoint* uniquePoint) { return m_UniquePoints.AddTail((CObject*)uniquePoint); }

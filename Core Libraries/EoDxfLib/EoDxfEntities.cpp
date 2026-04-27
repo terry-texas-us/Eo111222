@@ -376,7 +376,7 @@ void EoDxfXline::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
-void EoDxfCircle::ApplyExtrusion() {
+void EoDxfCircle::ApplyExtrusion() noexcept {
   if (m_haveExtrusion) {
     // NOTE: Commenting these out causes the the arcs being tested to be located
     // on the other side of the y axis (all x dimensions are negated).
@@ -405,7 +405,7 @@ void EoDxfCircle::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
-void EoDxfArc::ApplyExtrusion() {
+void EoDxfArc::ApplyExtrusion() noexcept {
   if (!m_haveExtrusion) { return; }
 
   CalculateArbitraryAxis(m_extrusionDirection);
@@ -476,7 +476,7 @@ void EoDxfEllipse::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
-void EoDxfEllipse::ApplyExtrusion() {
+void EoDxfEllipse::ApplyExtrusion() noexcept {
   // DXF ELLIPSE center (10/20/30) and major axis endpoint (11/21/31) are defined
   // in WCS per the DXF specification, unlike ARC/CIRCLE which use OCS coordinates.
   // No OCS→WCS coordinate transformation is needed. The extrusion direction
@@ -542,7 +542,7 @@ void EoDxfEllipse::ToPolyline(EoDxfPolyline* polyline, int parts) {
   polyline->m_extrusionDirection = this->m_extrusionDirection;
 }
 
-void EoDxfTrace::ApplyExtrusion() {
+void EoDxfTrace::ApplyExtrusion() noexcept {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
     ExtrudePointInPlace(m_extrusionDirection, m_firstCorner);
@@ -596,7 +596,7 @@ void EoDxfTrace::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
-void EoDxfSolid::ApplyExtrusion() {
+void EoDxfSolid::ApplyExtrusion() noexcept {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
     ExtrudePointInPlace(m_extrusionDirection, m_firstCorner);
@@ -779,7 +779,7 @@ void EoDxfInsert::ParseCode(int code, EoDxfReader& reader) {
   }
 }
 
-void EoDxfLwPolyline::ApplyExtrusion() {
+void EoDxfLwPolyline::ApplyExtrusion() noexcept {
   if (m_haveExtrusion) {
     CalculateArbitraryAxis(m_extrusionDirection);
     for (auto& vert : m_vertices) {  // range-based, value semantics – no raw pointer

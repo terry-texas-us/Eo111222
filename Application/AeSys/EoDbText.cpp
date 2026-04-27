@@ -529,8 +529,8 @@ void DisplayTextSegment(AeSysView* view,
 
 void DisplayTextSegmentUsingStrokeFont(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fontDefinition,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fontDefinition,
+    const EoGeReferenceSystem& referenceSystem,
     int startPosition,
     int numberOfCharacters,
     const CString& text) {
@@ -633,8 +633,8 @@ void DisplayTextSegmentUsingStrokeFont(AeSysView* view,
 
 bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fontDefinition,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fontDefinition,
+    const EoGeReferenceSystem& referenceSystem,
     int startPosition,
     int numberOfCharacters,
     const CString& text) {
@@ -923,7 +923,7 @@ static double ComputeStrokeFontTextExtent(const EoDbFontDefinition& fontDefiniti
   if (displayableCount <= 0) { return 0.0; }
   return totalCellWidth + (displayableCount - 1) * interCharacterGap;
 }
-void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt) {
+void GetBottomLeftCorner(const EoDbFontDefinition& fd, const CString& text, EoGePoint3d& pt) {
   double dTxtExt = ComputeStrokeFontTextExtent(fd, text);
   if (dTxtExt > 0.0) {
     if (fd.Path() == EoDb::Path::Right || fd.Path() == EoDb::Path::Left) {
@@ -986,8 +986,8 @@ void GetBottomLeftCorner(EoDbFontDefinition& fd, const CString& text, EoGePoint3
   pt.z = 0.;
 }
 
-void text_GetBoundingBox(EoDbFontDefinition& fontDefinition,
-    EoGeReferenceSystem& referenceSystem,
+void text_GetBoundingBox(const EoDbFontDefinition& fontDefinition,
+    const EoGeReferenceSystem& referenceSystem,
     const CString& text,
     double spaceFactor,
     EoGePoint3dArray& ptsBox) {
@@ -1045,7 +1045,7 @@ void text_GetBoundingBox(EoDbFontDefinition& fontDefinition,
 }
 
 EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition,
-    EoGeReferenceSystem& referenceSystem,
+    const EoGeReferenceSystem& referenceSystem,
     double lineSpaceFactor,
     double characterSpaceFactor) {
   auto position = referenceSystem.Origin();

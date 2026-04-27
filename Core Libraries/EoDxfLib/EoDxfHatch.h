@@ -39,7 +39,7 @@ class EoDxfHatch : public EoDxfGraphic {
   friend class EoDxfWrite;
 
  public:
-  EoDxfHatch() : EoDxfGraphic{EoDxf::HATCH} {}
+  EoDxfHatch() noexcept : EoDxfGraphic{EoDxf::HATCH} {}
 
   ~EoDxfHatch() {
     for (auto* hatchLoop : m_hatchLoops) { delete hatchLoop; }
@@ -55,7 +55,7 @@ class EoDxfHatch : public EoDxfGraphic {
   /// @brief Returns a read-only reference to the vector of hatch boundary loops.
   [[nodiscard]] const std::vector<EoDxfHatchLoop*>& HatchLoops() const noexcept { return m_hatchLoops; }
 
-  void ApplyExtrusion() override {}
+  void ApplyExtrusion() noexcept override {}
 
  protected:
   void ParseCode(int code, EoDxfReader& reader);

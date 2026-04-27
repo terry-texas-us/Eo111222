@@ -114,7 +114,7 @@ void AeSysDoc::DisplayPaperSpaceSheet(AeSysView* view, EoGsRenderDevice* renderD
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* group = layer->GetNext(position);
+      const auto* group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();
@@ -253,7 +253,7 @@ void AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDev
     vpBottom = (std::max)({vpDeviceCorners[0].y, vpDeviceCorners[1].y, vpDeviceCorners[2].y, vpDeviceCorners[3].y});
   }
 
-  auto* d2dDevice = dynamic_cast<EoGsRenderDeviceDirect2D*>(renderDevice);
+  const auto* d2dDevice = dynamic_cast<EoGsRenderDeviceDirect2D*>(renderDevice);
   if (d2dDevice != nullptr) {
     auto* renderTarget = d2dDevice->RenderTarget();
     auto* factory = d2dDevice->D2DFactory();
@@ -371,7 +371,7 @@ EoDbViewport* AeSysDoc::HitTestViewport(const EoGePoint3d& worldPoint) {
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* const group = layer->GetNext(position);
+      const auto* group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();
@@ -406,7 +406,7 @@ EoDbViewport* AeSysDoc::FindFirstViewport() {
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* group = layer->GetNext(position);
+      const auto* group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();
@@ -443,7 +443,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* group = layer->GetNext(position);
+      const auto* group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();
@@ -451,7 +451,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
         auto* primitive = group->GetNext(primitivePosition);
         if (primitive == nullptr || !primitive->Is(EoDb::kViewportPrimitive)) { continue; }
 
-        auto* viewport = static_cast<EoDbViewport*>(primitive);
+        const auto* viewport = static_cast<EoDbViewport*>(primitive);
 
         // Skip the overall paper-space viewport (id 1) and viewports with no model-space view
         if (viewport->ViewportId() == 1) { continue; }
@@ -558,7 +558,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
   }
 }
 
-void AeSysDoc::CreateDefaultPaperSpaceViewport(AeSysView* view) {
+void AeSysDoc::CreateDefaultPaperSpaceViewport(const AeSysView* view) {
   // Check if paper-space layers already have a valid model-space viewport (ID > 1 with viewHeight > 0)
   auto& paperLayers = PaperSpaceLayers();
   for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
@@ -567,7 +567,7 @@ void AeSysDoc::CreateDefaultPaperSpaceViewport(AeSysView* view) {
 
     auto position = layer->GetHeadPosition();
     while (position != nullptr) {
-      auto* const group = layer->GetNext(position);
+      const auto* group = layer->GetNext(position);
       if (group == nullptr) { continue; }
 
       auto primitivePosition = group->GetHeadPosition();

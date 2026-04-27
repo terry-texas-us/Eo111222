@@ -24,7 +24,7 @@
 void AeSysDoc::GetExtents(AeSysView* view,
     EoGePoint3d& ptMin,
     EoGePoint3d& ptMax,
-    EoGeTransformMatrix& transformMatrix) {
+    const EoGeTransformMatrix& transformMatrix) {
   ptMin.Set(Eo::boundsMax, Eo::boundsMax, Eo::boundsMax);
   ptMax.Set(Eo::boundsMin, Eo::boundsMin, Eo::boundsMin);
 
@@ -51,7 +51,7 @@ int AeSysDoc::NumberOfGroupsInWorkLayer() {
 
   int count{};
   for (auto i = 0; i < GetLayerTableSize(); i++) {
-    auto* layer = GetLayerTableLayerAt(i);
+    const auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsWork()) { count += static_cast<int>(layer->GetCount()); }
   }
   return count;
@@ -65,7 +65,7 @@ int AeSysDoc::NumberOfGroupsInActiveLayers() {
   int count{};
 
   for (auto i = 0; i < GetLayerTableSize(); i++) {
-    auto* layer = GetLayerTableLayerAt(i);
+    const auto* layer = GetLayerTableLayerAt(i);
     if (layer->IsActive()) { count += static_cast<int>(layer->GetCount()); }
   }
   return static_cast<int>(count);
@@ -83,7 +83,7 @@ EoDbLayer* AeSysDoc::GetLayerTableLayerAt(int index) {
 int AeSysDoc::FindLayerTableLayer(const CString& name) const {
   const auto& layers = ActiveSpaceLayers();
   for (auto i = 0; i < layers.GetSize(); i++) {
-    auto* layer = layers.GetAt(i);
+    const auto* layer = layers.GetAt(i);
     if (name.CompareNoCase(layer->Name()) == 0) { return i; }
   }
   return -1;
@@ -371,7 +371,7 @@ void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
   std::wstring layerName(m_workLayer->Name().GetString());
   auto position = groups->GetHeadPosition();
   while (position != nullptr) {
-    auto* group = groups->GetNext(position);
+    const auto* group = groups->GetNext(position);
     auto primPos = group->GetHeadPosition();
     while (primPos != nullptr) {
       auto* primitive = group->GetNext(primPos);
@@ -534,7 +534,7 @@ void AeSysDoc::TracingFuse(CString& nameAndLocation) {
     wchar_t title[MAX_PATH]{};
     GetFileTitleW(nameAndLocation, title, MAX_PATH);
     wchar_t* context{};
-    wchar_t* baseName = wcstok_s(title, L".", &context);
+    const wchar_t* baseName = wcstok_s(title, L".", &context);
     nameAndLocation = baseName;
     layer->ClearTracingStateBit();
     layer->ClearStateFlag();
