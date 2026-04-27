@@ -48,7 +48,7 @@ void AeSysView::ModelViewAdjustWindow(double& uMin, double& vMin, double& uMax, 
   double xAdjustment{};
   double yAdjustment{};
 
-  double scale = 1.0 - (m_Viewport.WidthInInches() / uExtent) / ratio;
+  const double scale = 1.0 - (m_Viewport.WidthInInches() / uExtent) / ratio;
 
   if (Eo::IsGeometricallyNonZero(scale)) {
     xAdjustment = scale * uExtent;
@@ -276,7 +276,7 @@ void AeSysView::OnWindowBest() {
 
     m_ViewTransform.SetCenteredWindow(m_Viewport, uExtent, vExtent);
 
-    EoGeTransformMatrix transformMatrix;
+    const EoGeTransformMatrix transformMatrix;
     document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
     const auto target = EoGePoint3d((ptMin.x + ptMax.x) / 2.0, (ptMin.y + ptMax.y) / 2.0, (ptMin.z + ptMax.z) / 2.0);
@@ -315,7 +315,7 @@ void AeSysView::OnSheetSetupFormFactor() {
 
   // Find existing paper-space viewport (ID >= 2) or create one
   EoDbViewport* viewport = nullptr;
-  auto& paperLayers = document->PaperSpaceLayers();
+  const auto& paperLayers = document->PaperSpaceLayers();
   for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
     auto* layer = paperLayers.GetAt(layerIndex);
     if (layer == nullptr) { continue; }

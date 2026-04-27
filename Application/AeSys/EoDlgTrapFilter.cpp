@@ -99,7 +99,7 @@ void EoDlgTrapFilter::FilterByColor(std::int16_t colorIndex) {
 
     auto primitivePosition = group->GetHeadPosition();
     while (primitivePosition != nullptr) {
-      auto* primitive = group->GetNext(primitivePosition);
+      const auto* primitive = group->GetNext(primitivePosition);
       if (primitive->Color() == colorIndex) {
         m_Document->RemoveTrappedGroup(group);
         m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -117,7 +117,7 @@ void EoDlgTrapFilter::FilterByLineType(const std::wstring& lineTypeName) {
 
     auto primitivePosition = group->GetHeadPosition();
     while (primitivePosition != nullptr) {
-      auto* primitive = group->GetNext(primitivePosition);
+      const auto* primitive = group->GetNext(primitivePosition);
       if (_wcsicmp(primitive->LineTypeName().c_str(), lineTypeName.c_str()) == 0) {
         m_Document->RemoveTrappedGroup(group);
         m_Document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);

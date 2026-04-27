@@ -128,7 +128,7 @@ BOOL EoDlgFileManageLayers::OnInitDialog() {
   if (auto* deleteButton = GetDlgItem(IDC_MFCBUTTON_DEL)) { m_toolTip.AddTool(deleteButton, L"Delete / Detach Layer"); }
   m_toolTip.Activate(TRUE);
 
-  if (auto* const currentLayer = m_Document->GetWorkLayer()) {
+  if (const auto* currentLayer = m_Document->GetWorkLayer()) {
     CString layerName;
     layerName.Format(L"%s", currentLayer->Name().GetString());
     GetDlgItem(IDC_STATIC_WORK_LAYER)->SetWindowTextW(layerName);
@@ -205,7 +205,7 @@ void EoDlgFileManageLayers::OnBnClickedMfcbuttonDel() {
 }
 
 void EoDlgFileManageLayers::DrawItem(CDC& deviceContext, int itemID, int labelIndex, const RECT& itemRectangle) {
-  auto* const layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(itemID));
+  const auto* layer = reinterpret_cast<const EoDbLayer*>(m_layersListControl.GetItemData(itemID));
   if (layer == nullptr) { return; }
   switch (labelIndex) {
     case Status:
@@ -492,7 +492,7 @@ void EoDlgFileManageLayers::OnNMDblclkLayersListControl(NMHDR* pNMHDR, LRESULT* 
   if (item < 0) { return; }
 
   const auto subItem = pNMItemActivate->iSubItem;
-  auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(item));
+  const auto* layer = reinterpret_cast<const EoDbLayer*>(m_layersListControl.GetItemData(item));
 
   if (subItem == Name && !layer->IsTracingLayer() && layer->Name() != L"0") {
     // Double-click on the Name column launches in-place edit directly
@@ -513,7 +513,7 @@ void EoDlgFileManageLayers::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESUL
     if (m_selectedItemForEdit == item) { m_selectedItemForEdit = -1; }
   }
 
-  auto* const layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(item));
+  const auto* layer = reinterpret_cast<const EoDbLayer*>(m_layersListControl.GetItemData(item));
   if (layer == nullptr) { return; }
 
   CString numberOfGroups;
@@ -528,8 +528,8 @@ void EoDlgFileManageLayers::OnItemchangedLayersListControl(NMHDR* pNMHDR, LRESUL
 }
 
 void EoDlgFileManageLayers::OnLvnBeginLabelEdit(NMHDR* pNMHDR, LRESULT* pResult) {
-  auto* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
-  auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(dispInfo->item.iItem));
+  const auto* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
+  const auto* layer = reinterpret_cast<const EoDbLayer*>(m_layersListControl.GetItemData(dispInfo->item.iItem));
 
   // Disallow in-place edit for layer "0" and tracing layers
   if (layer == nullptr || layer->Name() == L"0" || layer->IsTracingLayer()) {
@@ -544,7 +544,7 @@ void EoDlgFileManageLayers::OnLvnBeginLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 }
 
 void EoDlgFileManageLayers::OnLvnEndLabelEdit(NMHDR* pNMHDR, LRESULT* pResult) {
-  auto* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
+  const auto* dispInfo = reinterpret_cast<NMLVDISPINFOW*>(pNMHDR);
   *pResult = FALSE;
 
   if (dispInfo->item.pszText == nullptr) { return; }  // user cancelled
@@ -583,9 +583,9 @@ void EoDlgFileManageLayers::OnTimer(UINT_PTR nIDEvent) {
     KillTimer(101);
     auto* const editCtrl = m_layersListControl.GetEditControl();
     if (editCtrl != nullptr && editCtrl->IsWindowVisible() && m_editItemForRepos >= 0) {
-      auto* const layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(m_editItemForRepos));
+      const auto* layer = reinterpret_cast<EoDbLayer*>(m_layersListControl.GetItemData(m_editItemForRepos));
       CRect nameRect;
-      CHeaderCtrl* headerCtrl = m_layersListControl.GetHeaderCtrl();
+      const auto* headerCtrl = m_layersListControl.GetHeaderCtrl();
       if (headerCtrl != nullptr) {
         headerCtrl->GetItemRect(Name, &nameRect);
         // nameRect is in header-control client coords; convert to list-control client coords.

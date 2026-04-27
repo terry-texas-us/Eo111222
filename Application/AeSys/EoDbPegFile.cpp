@@ -755,7 +755,7 @@ void EoDbPegFile::WriteLayerTable(AeSysDoc* document, EoDb::PegFileVersion fileV
   EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
 
   for (INT_PTR n = 0; n < layers.GetSize(); n++) {
-    EoDbLayer* layer = layers.GetAt(n);
+    const auto* layer = layers.GetAt(n);
     if (layer->IsResident()) {
       // V1 save: revert '|stem' tracing layer names back to 'stem.tra' and clear isInternal so the V1 reader
       // recognises them as external tracing references.
@@ -1206,7 +1206,7 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
     EoDb::WriteUInt16(*this, std::uint16_t(numberOfLayers));
 
     for (INT_PTR n = 0; n < layers.GetSize(); n++) {
-      EoDbLayer* layer = layers.GetAt(n);
+      const auto* layer = layers.GetAt(n);
       if (layer->IsResident()) {
         EoDb::Write(*this, layer->Name());
         EoDb::WriteUInt16(*this, layer->GetTracingState());
@@ -1254,7 +1254,7 @@ void EoDbPegFile::WritePaperSpaceSection(AeSysDoc* document, EoDb::PegFileVersio
 
         auto position = layer->GetHeadPosition();
         while (position != nullptr) {
-          auto* group = layer->GetNext(position);
+          const auto* group = layer->GetNext(position);
           group->Write(*this, fileVersion);
         }
       } else {

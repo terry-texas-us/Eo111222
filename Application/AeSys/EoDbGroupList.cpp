@@ -17,7 +17,7 @@ void EoDbGroupList::AddToTreeViewControl(HWND hTree, HTREEITEM htiParent) {
 
   while (position != nullptr) {
     auto* group = GetNext(position);
-    const HTREEITEM htiSeg = group->AddToTreeViewControl(hTree, htiParent);
+    const auto htiSeg = group->AddToTreeViewControl(hTree, htiParent);
     if (group->GetCount() == 1) { TreeView_Expand(hTree, htiSeg, TVE_EXPAND); }
   }
 }
@@ -107,9 +107,9 @@ void EoDbGroupList::ModifyNotes(const EoDbFontDefinition& fontDefinition,
   }
 }
 
-void EoDbGroupList::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+void EoDbGroupList::PenTranslation(std::uint16_t wCols, const std::int16_t* newColors, const std::int16_t* sourceColors) {
   auto position = GetHeadPosition();
-  while (position != nullptr) { (GetNext(position))->PenTranslation(wCols, pColNew, pCol); }
+  while (position != nullptr) { (GetNext(position))->PenTranslation(wCols, newColors, sourceColors); }
 }
 
 int EoDbGroupList::RemoveEmptyNotesAndDelete() {

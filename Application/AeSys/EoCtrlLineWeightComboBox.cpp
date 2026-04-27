@@ -123,7 +123,7 @@ void EoCtrlLineWeightComboBox::Serialize(CArchive& ar) {
 
     // Save the current line weight enum value — items are rebuilt on load.
     auto currentWeight = static_cast<std::int32_t>(Gs::renderState.LineWeight());
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
       const auto itemData = CMFCToolBarComboBoxButton::GetItemData(curSel);
       currentWeight = static_cast<std::int32_t>(itemData);

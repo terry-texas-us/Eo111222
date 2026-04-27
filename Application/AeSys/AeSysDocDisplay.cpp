@@ -398,7 +398,7 @@ EoDbViewport* AeSysDoc::HitTestViewport(const EoGePoint3d& worldPoint) {
 }
 
 EoDbViewport* AeSysDoc::FindFirstViewport() {
-  auto& paperLayers = PaperSpaceLayers();
+  const auto& paperLayers = PaperSpaceLayers();
 
   for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
     auto* layer = paperLayers.GetAt(layerIndex);
@@ -426,7 +426,7 @@ EoDbViewport* AeSysDoc::FindFirstViewport() {
 }
 
 void AeSysDoc::DisplayModelSpaceLayers(AeSysView* view, EoGsRenderDevice* renderDevice) {
-  auto& layers = m_modelSpaceLayers;
+  const auto& layers = m_modelSpaceLayers;
   for (INT_PTR i = 0; i < layers.GetSize(); i++) {
     auto* layer = layers.GetAt(i);
     if (layer != nullptr && !layer->IsOff()) { layer->Display(view, renderDevice); }
@@ -435,7 +435,7 @@ void AeSysDoc::DisplayModelSpaceLayers(AeSysView* view, EoGsRenderDevice* render
 
 void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevice* renderDevice) {
   // Walk paper-space layers to find EoDbViewport primitives
-  auto& paperLayers = PaperSpaceLayers();
+  const auto& paperLayers = PaperSpaceLayers();
 
   for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
     auto* layer = paperLayers.GetAt(layerIndex);
@@ -560,7 +560,7 @@ void AeSysDoc::DisplayModelSpaceThroughViewports(AeSysView* view, EoGsRenderDevi
 
 void AeSysDoc::CreateDefaultPaperSpaceViewport(const AeSysView* view) {
   // Check if paper-space layers already have a valid model-space viewport (ID > 1 with viewHeight > 0)
-  auto& paperLayers = PaperSpaceLayers();
+  const auto& paperLayers = PaperSpaceLayers();
   for (INT_PTR layerIndex = 0; layerIndex < paperLayers.GetSize(); layerIndex++) {
     auto* layer = paperLayers.GetAt(layerIndex);
     if (layer == nullptr) { continue; }
@@ -574,7 +574,7 @@ void AeSysDoc::CreateDefaultPaperSpaceViewport(const AeSysView* view) {
       while (primitivePosition != nullptr) {
         auto* primitive = group->GetNext(primitivePosition);
         if (primitive != nullptr && primitive->Is(EoDb::kViewportPrimitive)) {
-          auto* viewport = static_cast<EoDbViewport*>(primitive);
+          const auto* viewport = static_cast<EoDbViewport*>(primitive);
           if (viewport->ViewportId() > 1 && viewport->ViewHeight() > Eo::geometricTolerance) {
             return;  // Already has a valid model-space viewport — nothing to do
           }

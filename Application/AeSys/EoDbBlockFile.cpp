@@ -94,7 +94,7 @@ void EoDbBlockFile::WriteBlocks(const EoDbBlocks& blocks) {
   EoDb::WriteUInt16(*this, std::uint16_t(EoDb::kEndOfSection));
 }
 
-void EoDbBlockFile::WriteFile(const CString& strPathName, EoDbBlocks& blocks) {
+void EoDbBlockFile::WriteFile(const CString& strPathName, const EoDbBlocks& blocks) {
   CFileException e;
 
   CFile::Open(strPathName, modeCreate | modeWrite, &e);

@@ -194,7 +194,7 @@ void AeSysView::OnDrawModeReturn() {
 
       if (numberOfPoints == 1) { return; }
       EoGePoint3d start{pts[0]};
-      EoGePoint3d intermediate{pts[1]};
+      const EoGePoint3d intermediate{pts[1]};
       EoGePoint3d end{pts[2]};
       auto* radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, end);
       if (radialArc == nullptr) {
@@ -297,7 +297,7 @@ void AeSysView::OnDrawCommand(UINT command) {
 void AeSysView::DoDrawModeMouseMove() {
   const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
-  auto numberOfPoints = pts.GetSize();
+  const auto numberOfPoints = pts.GetSize();
 
   switch (previousDrawCommand) {
     case ID_OP2:
@@ -347,9 +347,9 @@ void AeSysView::DoDrawModeMouseMove() {
       if (numberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
       if (numberOfPoints == 2) {
         EoGePoint3d start{pts[0]};
-        EoGePoint3d intermediate{pts[1]};
+        const EoGePoint3d intermediate{pts[1]};
         EoGePoint3d end{pts[2]};
-        auto normal = CrossProduct({start, intermediate}, {start, end});
+        const auto normal = CrossProduct({start, intermediate}, {start, end});
         if (normal.IsNearNull()) {
           m_PreviewGroup.AddTail(new EoDbPolyline(pts));
         } else {
@@ -373,7 +373,7 @@ void AeSysView::DoDrawModeMouseMove() {
       break;
 
     case ID_OP7: {
-      double radius = EoGePoint3d::Distance(pts[0], cursorPosition);
+      const double radius = EoGePoint3d::Distance(pts[0], cursorPosition);
       if (radius > Eo::geometricTolerance) {
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
         m_PreviewGroup.AddTail(EoDbConic::CreateCircleInView(pts[0], radius));

@@ -93,7 +93,7 @@ void EoMfPropertiesDockablePane::OnSize(UINT type, int cx, int cy) {
   AdjustLayout();
 }
 LRESULT EoMfPropertiesDockablePane::OnPropertyChanged(WPARAM, LPARAM lparam) {
-  auto* property = (CMFCPropertyGridProperty*)lparam;
+  const auto* property = reinterpret_cast<const CMFCPropertyGridProperty*>(lparam);
 
   switch (int(property->GetData())) {
     case kActiveViewScale: {
@@ -154,7 +154,7 @@ void EoMfPropertiesDockablePane::InitializePropertyGrid() {
 
   m_PropertyGrid.MarkModifiedProperties(TRUE, TRUE);
 
-  auto* const activeView = AeSysView::GetActiveView();
+  const auto* const activeView = AeSysView::GetActiveView();
   const double scale = (activeView == nullptr) ? 1.0 : activeView->GetWorldScale();
 
   // --- Document Statistics group (first in the grid) ---

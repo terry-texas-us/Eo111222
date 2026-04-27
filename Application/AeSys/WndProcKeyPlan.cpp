@@ -30,7 +30,7 @@ void WndProcKeyPlanOnDraw(HWND hwnd) {
 
   /// @todo Need to use the CWnd associated with Keyplan and not the active app view
 
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
 
   const auto cameraTarget = activeView->CameraTarget();
 

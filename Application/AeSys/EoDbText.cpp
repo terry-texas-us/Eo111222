@@ -460,8 +460,8 @@ bool EoDbText::Write(CFile& file) {
 
 void DisplayText(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem_,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem_,
     const CString& text) {
   if (text.IsEmpty()) { return; }
 
@@ -502,8 +502,8 @@ void DisplayText(AeSysView* view,
 
 void DisplayTextSegment(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     int startPosition,
     int numberOfCharacters,
     const CString& text) {
@@ -692,8 +692,8 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view,
 
 void DisplayTextWithFormattingCharacters(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem_,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem_,
     const CString& text) {
   EoGeReferenceSystem referenceSystem{referenceSystem_};
 
@@ -1065,8 +1065,8 @@ EoGePoint3d text_GetNewLinePos(const EoDbFontDefinition& fontDefinition,
 
 void DisplayMTextWithWordWrap(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     const CString& text,
     const EoDbMTextProperties& mtextProperties) {
   if (text.IsEmpty()) { return; }

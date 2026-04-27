@@ -24,8 +24,8 @@ int LineTypeSortPriority(const CString& name) {
 /// ByBlock, ByLayer, and CONTINUOUS always sort before other entries;
 /// remaining entries are sorted alphabetically.
 int CALLBACK CompareLineTypeNames(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) {
-  auto* const lineType1 = reinterpret_cast<EoDbLineType*>(lParam1);
-  auto* const lineType2 = reinterpret_cast<EoDbLineType*>(lParam2);
+  const auto* lineType1 = reinterpret_cast<const EoDbLineType*>(lParam1);
+  const auto* lineType2 = reinterpret_cast<const EoDbLineType*>(lParam2);
   if (lineType1 == nullptr || lineType2 == nullptr) { return 0; }
   const int priority1 = LineTypeSortPriority(lineType1->Name());
   int priority2 = LineTypeSortPriority(lineType2->Name());
@@ -82,7 +82,7 @@ BOOL EoDlgLineTypesSelection::OnInitDialog() {
 
   if (m_selectedLineType != nullptr) {
     for (int i = 0; i < m_lineTypesListControl.GetItemCount(); ++i) {
-      auto* lineType = reinterpret_cast<EoDbLineType*>(m_lineTypesListControl.GetItemData(i));
+      const auto* lineType = reinterpret_cast<const EoDbLineType*>(m_lineTypesListControl.GetItemData(i));
       if (lineType != nullptr && lineType->Name().CompareNoCase(m_selectedLineType->Name()) == 0) {
         m_lineTypesListControl.SetItemState(i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
         m_lineTypesListControl.EnsureVisible(i, FALSE);
@@ -236,7 +236,7 @@ void EoDlgLineTypesSelection::DrawLineTypePreview(const CListCtrl& listControl,
     case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
       if (listViewCustomDraw->iSubItem == lineTypePreviewColumnIndex) {
         const auto item = static_cast<int>(listViewCustomDraw->nmcd.dwItemSpec);
-        auto* const lineType = reinterpret_cast<EoDbLineType*>(listControl.GetItemData(item));
+        const auto* lineType = reinterpret_cast<const EoDbLineType*>(listControl.GetItemData(item));
 
         if (lineType) {
           CDC controlContext;

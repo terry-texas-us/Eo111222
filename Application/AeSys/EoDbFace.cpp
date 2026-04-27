@@ -339,7 +339,7 @@ EoGePoint3d EoDbFace::GoToNextControlPoint() {
 }
 
 bool EoDbFace::Identical(EoDbPrimitive* primitive) {
-  auto* other = static_cast<EoDbFace*>(primitive);
+  const auto* other = static_cast<EoDbFace*>(primitive);
   if (m_vertexCount != other->m_vertexCount || m_sourceType != other->m_sourceType) { return false; }
   if (m_edgeFlags != other->m_edgeFlags) { return false; }
   if (!(m_extrusion == other->m_extrusion)) { return false; }

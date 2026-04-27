@@ -208,7 +208,7 @@ bool AeSysView::StartAssemblyFromLine() {
 
   const EoGeLine line = m_beginSectionLinePrimitive->Line();
 
-  bool isParallelTo = line.ParallelTo(m_currentReferenceLine);
+  const bool isParallelTo = line.ParallelTo(m_currentReferenceLine);
   if (isParallelTo) { return false; }
 
   EoGePoint3d intersection;
@@ -225,7 +225,7 @@ bool AeSysView::StartAssemblyFromLine() {
   auto* linePrimitive = new EoDbLine(*m_beginSectionLinePrimitive);
 
   const double leftDistance = EoGeVector3d(line.begin, m_currentLeftLine.begin).Length();
-  double rightDistance = EoGeVector3d(line.begin, m_currentRightLine.begin).Length();
+  const double rightDistance = EoGeVector3d(line.begin, m_currentRightLine.begin).Length();
 
   if (leftDistance > rightDistance) {
     m_beginSectionLinePrimitive->SetEndPoint(m_currentRightLine.begin);

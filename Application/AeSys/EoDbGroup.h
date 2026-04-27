@@ -97,7 +97,7 @@ class EoDbGroup : public CObList {
    * text primitives are sorted before non-text primitives).
    */
   void SortTextOnY();
-  void Square(AeSysView* view);
+  void Square(const AeSysView* view);
   void Transform(const EoGeTransformMatrix& transformMatrix);
   void Translate(EoGeVector3d v);
   void Write(CFile& file) const;

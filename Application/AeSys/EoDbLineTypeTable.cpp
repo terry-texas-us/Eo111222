@@ -184,7 +184,7 @@ int EoDbLineTypeTable::ReferenceCount(const std::wstring& lineTypeName) {
   CString key;
   EoDbBlock* block{};
 
-  EoDbBlocks* blocksTable = document->BlocksTable();
+  const auto* blocksTable = document->BlocksTable();
   auto position = blocksTable->GetStartPosition();
   while (position != nullptr) {
     blocksTable->GetNextAssoc(position, key, block);

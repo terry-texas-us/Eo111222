@@ -570,7 +570,7 @@ class EoDbDxfInterface : public EoDxfInterface {
 
     // Export model-space entities
     m_dxfWriter->SetCurrentExportSpace(EoDxf::Space::ModelSpace);
-    auto& modelLayers = m_document->SpaceLayers(EoDxf::Space::ModelSpace);
+    const auto& modelLayers = m_document->SpaceLayers(EoDxf::Space::ModelSpace);
     for (INT_PTR i = 0; i < modelLayers.GetSize(); i++) {
       auto* layer = modelLayers.GetAt(i);
       if (layer == nullptr) { continue; }

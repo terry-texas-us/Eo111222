@@ -132,7 +132,7 @@ class CVaxFloat {
 double CVaxFloat::Convert() {
   float fMS = 0.f;
 
-  BYTE* pvax = (BYTE*)&m_f;
+  const BYTE* pvax = (BYTE*)&m_f;
   BYTE* pms = (BYTE*)&fMS;
 
   const BYTE bSign = BYTE(pvax[1] & 0x80);
@@ -163,7 +163,7 @@ void CVaxFloat::Convert(const double& dMS) {
   auto fVax = 0.f;
 
   if (fMS != 0.f) {
-    BYTE* pMS = (BYTE*)&fMS;
+    const BYTE* pMS = (BYTE*)&fMS;
     BYTE* pVax = (BYTE*)&fVax;
 
     const BYTE bSign = BYTE(pMS[3] & 0x80);
@@ -346,7 +346,7 @@ bool EoDbJobFile::IsValidPrimitive(std::int16_t primitiveType) {
   }
 }
 bool EoDbJobFile::IsValidVersion1Primitive(std::int16_t primitiveType) {
-  auto* primitiveTypePtr = (std::uint8_t*)&primitiveType;
+  const auto* primitiveTypePtr = (std::uint8_t*)&primitiveType;
   switch (primitiveTypePtr[1]) {
     case 17:  // 0x11 text
     case 24:  // 0x18 bspline

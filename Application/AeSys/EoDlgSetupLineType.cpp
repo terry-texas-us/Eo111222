@@ -77,7 +77,7 @@ void EoDlgSetupLineType::OnDrawItem(int controlIdentifier, LPDRAWITEMSTRUCT draw
           deviceContext.SetBkColor(backgroundColor);
           deviceContext.SetTextColor(rgbText);
 
-          auto* const lineType = (EoDbLineType*)m_LineTypesListControl.GetItemData(item);
+          const auto* lineType = reinterpret_cast<const EoDbLineType*>(m_LineTypesListControl.GetItemData(item));
 
           CRect subItemRectangle;
           m_LineTypesListControl.GetSubItemRect(item, Name, LVIR_LABEL, subItemRectangle);

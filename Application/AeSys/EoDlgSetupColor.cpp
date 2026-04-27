@@ -100,7 +100,7 @@ void EoDlgSetupColor::OnChangeColorEdit() {
 }
 BOOL EoDlgSetupColor::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) {
   auto* notifyStructure = (NMHDR*)lParam;
-  CWnd* colorsButton = CWnd::FromHandle(notifyStructure->hwndFrom);
+  const CWnd* colorsButton = CWnd::FromHandle(notifyStructure->hwndFrom);
   DrawSelectionInformation(((EoCtrlColorsButton*)colorsButton)->m_subItem);
   return CDialog::OnNotify(wParam, lParam, pResult);
 }

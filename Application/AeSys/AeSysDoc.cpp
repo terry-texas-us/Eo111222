@@ -497,7 +497,7 @@ bool AeSysDoc::EnterEmbeddedTracingEditMode(EoDbLayer* tracingLayer) {
 
   // Hide all model-space layers except the tracing layer being edited
   m_savedTracingLayerVisibility.clear();
-  auto& modelLayers = SpaceLayers(EoDxf::Space::ModelSpace);
+  const auto& modelLayers = SpaceLayers(EoDxf::Space::ModelSpace);
   for (int i = 0; i < static_cast<int>(modelLayers.GetSize()); ++i) {
     auto* layer = modelLayers.GetAt(i);
     if (layer == tracingLayer) { continue; }

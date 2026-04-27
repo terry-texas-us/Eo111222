@@ -186,7 +186,7 @@ void EoDbViewport::GetExtents(AeSysView* view,
 }
 
 bool EoDbViewport::Identical(EoDbPrimitive* primitive) {
-  auto* other = static_cast<EoDbViewport*>(primitive);
+  const auto* other = static_cast<EoDbViewport*>(primitive);
   return m_centerPoint == other->m_centerPoint && m_width == other->m_width && m_height == other->m_height
       && m_viewportStatus == other->m_viewportStatus && m_viewportId == other->m_viewportId
       && m_viewCenter == other->m_viewCenter && m_snapBasePoint == other->m_snapBasePoint

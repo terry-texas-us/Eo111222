@@ -94,7 +94,7 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
 
     auto groupPosition = GetFirstTrappedGroupPosition();
     while (groupPosition != nullptr) {
-      auto* group = GetNextTrappedGroup(groupPosition);
+      const auto* group = GetNextTrappedGroup(groupPosition);
 
       auto primitivePosition = group->GetHeadPosition();
       while (primitivePosition != nullptr) {
@@ -210,7 +210,7 @@ void AeSysDoc::ExpandTrappedGroups() {
   }
 }
 
-void AeSysDoc::SquareTrappedGroups(AeSysView* view) {
+void AeSysDoc::SquareTrappedGroups(const AeSysView* view) {
   UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_trappedGroups);
 
   auto groupPosition = m_trappedGroups.GetHeadPosition();

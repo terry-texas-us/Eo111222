@@ -103,7 +103,7 @@ CSize EoCtrlColorsButton::SizeToContent(BOOL calculateOnly) {
   if (!calculateOnly) {
     CRect clientRectangle;
     GetWindowRect(clientRectangle);
-    CWnd* const parent = GetParent();
+    const CWnd* const parent = GetParent();
     if (parent) {
       parent->ScreenToClient(clientRectangle);
       clientRectangle.right = clientRectangle.left + size.cx;

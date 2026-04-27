@@ -54,7 +54,7 @@ void GetReferenceAxesForCharacterCell(const EoDbCharacterCellDefinition& charact
 }
 
 EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
-  auto* document = AeSysDoc::GetDoc();
+  const auto* document = AeSysDoc::GetDoc();
 
   EoGeLine line{};
   EoGePoint3d ptProj{};
@@ -63,7 +63,7 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
 
   auto groupPosition = document->GetFirstWorkLayerGroupPosition();
   while (groupPosition != nullptr) {
-    auto* group = document->GetNextWorkLayerGroup(groupPosition);
+    const auto* group = document->GetNextWorkLayerGroup(groupPosition);
 
     auto primitivePosition = group->GetHeadPosition();
     while (primitivePosition != nullptr) {
@@ -105,16 +105,16 @@ void AeSysView::OnDimensionModeArrow() {
   EoGeLine testLine;
   auto groupPosition = GetFirstVisibleGroupPosition();
   while (groupPosition != nullptr) {
-    auto* group = GetNextVisibleGroup(groupPosition);
+    const auto* group = GetNextVisibleGroup(groupPosition);
 
     auto primitivePosition = group->GetHeadPosition();
     while (primitivePosition != nullptr) {
       auto* primitive = group->GetNext(primitivePosition);
       if (primitive->Is(EoDb::kLinePrimitive)) {
-        auto* linePrimitive = static_cast<EoDbLine*>(primitive);
+        const auto* linePrimitive = static_cast<EoDbLine*>(primitive);
         testLine = linePrimitive->Line();
       } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-        auto* dimensionPrimitive = static_cast<EoDbLabeledLine*>(primitive);
+        const auto* dimensionPrimitive = static_cast<EoDbLabeledLine*>(primitive);
         testLine = dimensionPrimitive->Line();
       } else {
         continue;
@@ -167,7 +167,7 @@ void AeSysView::OnDimensionModeLine() {
 
 void AeSysView::OnDimensionModeDLine() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
     RubberBandingDisable();
     if (PreviousDimensionCursorPosition != cursorPosition) {
@@ -210,7 +210,7 @@ void AeSysView::OnDimensionModeDLine() {
 
 void AeSysView::OnDimensionModeDLine2() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand == 0) {
     PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
     PreviousDimensionCursorPosition = cursorPosition;
@@ -278,15 +278,15 @@ void AeSysView::OnDimensionModeExten() {
 
 void AeSysView::OnDimensionModeRadius() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (SelectGroupAndPrimitive(cursorPosition) != nullptr) {
-    EoGePoint3d ptEnd = DetPt();
+    const EoGePoint3d ptEnd = DetPt();
 
     if ((EngagedPrimitive())->Is(EoDb::kConicPrimitive)) {
-      auto* conic = static_cast<EoDbConic*>(EngagedPrimitive());
+      const auto* conic = static_cast<const EoDbConic*>(EngagedPrimitive());
 
-      EoGePoint3d center = conic->Center();
+      const EoGePoint3d center = conic->Center();
 
       auto* group = new EoDbGroup;
 
@@ -318,15 +318,15 @@ void AeSysView::OnDimensionModeRadius() {
 
 void AeSysView::OnDimensionModeDiameter() {
   auto* document = GetDocument();
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
 
   if (SelectGroupAndPrimitive(cursorPosition) != nullptr) {
-    EoGePoint3d end = DetPt();
+    const EoGePoint3d end = DetPt();
 
     if ((EngagedPrimitive())->Is(EoDb::kConicPrimitive)) {
-      auto* conic = static_cast<EoDbConic*>(EngagedPrimitive());
+      const auto* conic = static_cast<EoDbConic*>(EngagedPrimitive());
 
-      auto begin = end.ProjectToward(conic->Center(), 2.0 * conic->Radius());
+      const auto begin = end.ProjectToward(conic->Center(), 2.0 * conic->Radius());
 
       auto* group = new EoDbGroup;
 
@@ -372,7 +372,7 @@ void AeSysView::OnDimensionModeAngle() {
     ModeLineUnhighlightOp(PreviousDimensionCommand);
 
     if (SelectLineUsingPoint(cursorPosition) != nullptr) {
-      auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
+      const auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
 
       rProjPt[0] = DetPt();
       line = engagedPrimitive->Line();
@@ -383,7 +383,7 @@ void AeSysView::OnDimensionModeAngle() {
   } else {
     if (iLns == 1) {
       if (SelectLineUsingPoint(cursorPosition) != nullptr) {
-        auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
+        const auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
 
         rProjPt[1] = DetPt();
         if (EoGeLine::Intersection(line, engagedPrimitive->Line(), center)) {
@@ -405,7 +405,7 @@ void AeSysView::OnDimensionModeAngle() {
         line.end = line.begin.RotateAboutAxis(center, normal, sweepAngle);
 
         auto vXAx = EoGeVector3d(center, line.begin);
-        EoGePoint3d ptRot(line.begin.RotateAboutAxis(center, normal, Eo::HalfPi));
+        const EoGePoint3d ptRot(line.begin.RotateAboutAxis(center, normal, Eo::HalfPi));
         EoGeVector3d vYAx = EoGeVector3d(center, ptRot);
         EoGePoint3d ptArrow = line.begin.RotateAboutAxis(center, normal, Eo::Radian);
 
@@ -421,7 +421,7 @@ void AeSysView::OnDimensionModeAngle() {
         GenerateLineEndItem(1, 0.1, ptArrow, line.end, group);
 
         auto* deviceContext = GetDC();
-        int savedRenderState = Gs::renderState.Save();
+        const int savedRenderState = Gs::renderState.Save();
 
         EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
         fontDefinition.SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
@@ -432,7 +432,7 @@ void AeSysView::OnDimensionModeAngle() {
         characterCellDefinition.SetHeight(0.1);
         Gs::renderState.SetCharacterCellDefinition(characterCellDefinition);
 
-        EoGePoint3d origin = cursorPosition.ProjectToward(center, -0.25);
+        const EoGePoint3d origin = cursorPosition.ProjectToward(center, -0.25);
         GetReferenceAxesForCharacterCell(characterCellDefinition, normal, vXAx, vYAx);
         EoGeReferenceSystem referenceSystem(origin, vXAx, vYAx);
         CString note;
@@ -450,7 +450,7 @@ void AeSysView::OnDimensionModeAngle() {
 }
 
 void AeSysView::OnDimensionModeConvert() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   if (PreviousDimensionCommand != 0) {
     RubberBandingDisable();
     ModeLineUnhighlightOp(PreviousDimensionCommand);
@@ -475,7 +475,7 @@ void AeSysView::OnDimensionModeConvert() {
       primitive = group->GetNext(primitivePosition);
       if (primitive->SelectUsingPoint(this, ptView, ptProj)) {
         if (primitive->Is(EoDb::kLinePrimitive)) {
-          auto* line = static_cast<EoDbLine*>(primitive);
+          const auto* line = static_cast<EoDbLine*>(primitive);
           auto* dimension = new EoDbLabeledLine();
 
           dimension->SetColor(line->Color());
@@ -494,7 +494,7 @@ void AeSysView::OnDimensionModeConvert() {
           PreviousDimensionCursorPosition = ptProj;
           return;
         } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
-          auto* pPrimDim = static_cast<EoDbLabeledLine*>(primitive);
+          const auto* pPrimDim = static_cast<EoDbLabeledLine*>(primitive);
           EoGeReferenceSystem referenceSystem = pPrimDim->ReferenceSystem();
 
           auto* linePrimitive =

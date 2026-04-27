@@ -187,7 +187,7 @@ EoDbText* AeSysView::SelectTextUsingPoint(const EoGePoint3d& point) {
 
   auto groupPosition = GetFirstVisibleGroupPosition();
   while (groupPosition != nullptr) {
-    auto* group = GetNextVisibleGroup(groupPosition);
+    const auto* group = GetNextVisibleGroup(groupPosition);
     auto primitivePosition = group->GetHeadPosition();
     while (primitivePosition != nullptr) {
       auto* primitive = group->GetNext(primitivePosition);

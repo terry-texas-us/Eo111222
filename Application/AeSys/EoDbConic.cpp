@@ -120,7 +120,7 @@ EoDbConic* EoDbConic::CreateCircle(const EoGePoint3d& center, const EoGeVector3d
 }
 
 EoDbConic* EoDbConic::CreateCircleInView(const EoGePoint3d& center, double radius) {
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
   if (!activeView) {
     ATLTRACE2(traceGeneral, 3, L"CreateCircleInView: No active view\n");
     return nullptr;

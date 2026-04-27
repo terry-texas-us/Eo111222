@@ -571,7 +571,7 @@ void AeSysDoc::OnTrapCommandsInvert() {
 }
 
 void AeSysDoc::OnTrapCommandsSquare() {
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
   SquareTrappedGroups(activeView);
 }
 void AeSysDoc::OnTrapCommandsQuery() {
@@ -818,30 +818,29 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
 
   auto* group = activeView->SelectGroupAndPrimitive(pt);
 
-  if (group != nullptr) {
-    const auto position = FindTrappedGroup(group);
+  if (group == nullptr) { return; }
+  const auto position = FindTrappedGroup(group);
 
-    LPARAM lHint = (position != nullptr) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
-    // erase entire group even if group has more than one primitive
-    UpdateAllViews(nullptr, lHint, group);
+  LPARAM hint = (position != nullptr) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
+  // erase entire group even if group has more than one primitive
+  UpdateAllViews(nullptr, hint, group);
 
-    if (group->GetCount() > 1) {  // remove primitive from group
-      auto* primitive = activeView->EngagedPrimitive();
-      group->FindAndRemovePrim(primitive);
-      lHint = (position != nullptr) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
-      // display the group with the primitive removed
-      UpdateAllViews(nullptr, lHint, group);
-      // new group required to allow primitive to be placed into deleted group list
-      group = new EoDbGroup(primitive);
-    } else {  // deleting an entire group
-      AnyLayerRemove(group);
-      RemoveGroupFromAllViews(group);
+  if (group->GetCount() > 1) {  // remove primitive from group
+    auto* primitive = activeView->EngagedPrimitive();
+    group->FindAndRemovePrim(primitive);
+    hint = (position != nullptr) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
+    // display the group with the primitive removed
+    UpdateAllViews(nullptr, hint, group);
+    // new group required to allow primitive to be placed into deleted group list
+    group = new EoDbGroup(primitive);
+  } else {  // deleting an entire group
+    AnyLayerRemove(group);
+    RemoveGroupFromAllViews(group);
 
-      if (RemoveTrappedGroup(group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
-    }
-    DeletedGroupsAddTail(group);
-    app.AddStringToMessageList(IDS_MSG_PRIM_ADDED_TO_DEL_GROUPS);
+    if (RemoveTrappedGroup(group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
   }
+  DeletedGroupsAddTail(group);
+  app.AddStringToMessageList(IDS_MSG_PRIM_ADDED_TO_DEL_GROUPS);
 }
 
 void AeSysDoc::OnPrimModifyAttributes() {

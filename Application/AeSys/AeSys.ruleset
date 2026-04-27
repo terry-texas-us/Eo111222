@@ -2,11 +2,12 @@
 <RuleSet Name="Rules for AeSys" Description="Code analysis rules for AeSys.vcxproj." ToolsVersion="18.0">
   <Include Path="cppcorecheckconstrules.ruleset" Action="Default" />
   <Rules AnalyzerId="Microsoft.Analyzers.NativeCodeAnalysis" RuleNamespace="Microsoft.Rules.Native">
-    <Rule Id="C26460" Action="Warning" />
-    <Rule Id="C26461" Action="Warning" />
+    <Rule Id="C26460" Action="None" />
+    <Rule Id="C26461" Action="None" />
+    <Rule Id="C26462" Action="None" />
     <Rule Id="C26463" Action="None" />
     <Rule Id="C26464" Action="None" />
-    <Rule Id="C26496" Action="None" />
+    <Rule Id="C26496" Action="Warning" />
     <Rule Id="C26497" Action="None" />
     <Rule Id="C26498" Action="None" />
     <Rule Id="C26814" Action="None" />

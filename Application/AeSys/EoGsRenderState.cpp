@@ -79,11 +79,11 @@ int EoGsRenderState::Save() {
   return iSaveId;
 }
 
-void EoGsRenderState::SetPen(AeSysView* view, CDC* deviceContext, std::int16_t color, std::int16_t lineTypeIndex) {
+void EoGsRenderState::SetPen(const AeSysView* view, CDC* deviceContext, std::int16_t color, std::int16_t lineTypeIndex) {
   SetPen(view, deviceContext, color, lineTypeIndex, std::wstring{});
 }
 
-void EoGsRenderState::SetPen(AeSysView* view,
+void EoGsRenderState::SetPen(const AeSysView* view,
     CDC* deviceContext,
     std::int16_t color,
     std::int16_t lineTypeIndex,
@@ -137,14 +137,14 @@ void EoGsRenderState::SetPen(const AeSysView* view,
   if (deviceContext) { ManagePenResources(deviceContext, color, int(logicalWidth), lineTypeIndex); }
 }
 
-void EoGsRenderState::SetPen(AeSysView* view,
+void EoGsRenderState::SetPen(const AeSysView* view,
     EoGsRenderDevice* renderDevice,
     std::int16_t color,
     std::int16_t lineTypeIndex) {
   SetPen(view, renderDevice, color, lineTypeIndex, std::wstring{});
 }
 
-void EoGsRenderState::SetPen(AeSysView* view,
+void EoGsRenderState::SetPen(const AeSysView* view,
     EoGsRenderDevice* renderDevice,
     std::int16_t color,
     std::int16_t lineTypeIndex,

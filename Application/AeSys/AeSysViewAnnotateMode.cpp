@@ -101,7 +101,7 @@ void AeSysView::OnAnnotateModeBubble() {
   if (!currentText.IsEmpty()) {
     auto* deviceContext = GetDC();
 
-    auto cameraDirection = CameraDirection();
+    const auto cameraDirection = CameraDirection();
     auto minorAxis = ViewUp();
     auto majorAxis = CrossProduct(minorAxis, cameraDirection);
 
@@ -109,7 +109,7 @@ void AeSysView::OnAnnotateModeBubble() {
     minorAxis *= 0.1;
     EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
-    int savedRenderState = Gs::renderState.Save();
+    const int savedRenderState = Gs::renderState.Save();
     Gs::renderState.SetColor(deviceContext, 2);
 
     EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
@@ -277,14 +277,14 @@ void AeSysView::OnAnnotateModeCutIn() {
     if (dialog.DoModal() == IDOK) { currentText = dialog.m_sText; }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
 
-    int savedRenderState = Gs::renderState.Save();
+    const int savedRenderState = Gs::renderState.Save();
 
     if (!currentText.IsEmpty()) {
       EoGeLine line = pLine->Line();
       double angle = line.AngleFromXAxisXY();
       if (angle > 0.25 * Eo::TwoPi && angle < 0.75 * Eo::TwoPi) { angle += Eo::Pi; }
 
-      auto cameraDirection = CameraDirection();
+      const auto cameraDirection = CameraDirection();
       auto minorAxis = ViewUp();
       minorAxis.RotateAboutArbitraryAxis(cameraDirection, angle);
       auto majorAxis = CrossProduct(minorAxis, cameraDirection);
@@ -292,7 +292,7 @@ void AeSysView::OnAnnotateModeCutIn() {
       minorAxis *= 0.1;
       EoGeReferenceSystem referenceSystem(cursorPosition, majorAxis, minorAxis);
 
-      auto color = Gs::renderState.Color();
+      const auto color = Gs::renderState.Color();
       Gs::renderState.SetColor(deviceContext, 2);
 
       EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
@@ -310,7 +310,7 @@ void AeSysView::OnAnnotateModeCutIn() {
       EoGePoint3dArray ptsBox;
       text->GetBoundingBox(ptsBox, GapSpaceFactor());
 
-      double dGap = EoGeVector3d(ptsBox[0], ptsBox[1]).Length();
+      const double dGap = EoGeVector3d(ptsBox[0], ptsBox[1]).Length();
 
       ptsBox[0] = cursorPosition.ProjectToward(pLine->Begin(), dGap / 2.0);
       ptsBox[1] = cursorPosition.ProjectToward(pLine->End(), dGap / 2.0);
@@ -405,7 +405,7 @@ bool AeSysView::CorrectLeaderEndpoints(int beginType,
 void AeSysView::DoAnnotateModeMouseMove() {
   const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
-  auto numberOfPoints = pts.GetSize();
+  const auto numberOfPoints = pts.GetSize();
   pts.Add(cursorPosition);
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 

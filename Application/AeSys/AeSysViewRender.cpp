@@ -39,7 +39,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
 
   // Suppress all rendering during document teardown (async WM_CLOSE)
-  if (auto* doc = GetDocument(); doc != nullptr && doc->IsClosing()) {
+  if (const auto* doc = GetDocument(); doc != nullptr && doc->IsClosing()) {
     ValidateRect(nullptr);
     return;
   }
@@ -70,7 +70,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       const int horzRes = deviceContext->GetDeviceCaps(HORZRES);
       const int vertRes = deviceContext->GetDeviceCaps(VERTRES);
 
-      D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,
+      const D2D1_RENDER_TARGET_PROPERTIES rtProps = D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT,
           D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
           dpiX,
           dpiY);
@@ -132,7 +132,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       const bool isBlockEdit = document->IsEditingBlock();
       const bool needsWhiteBackground = isPaperSpace && !isBlockEdit;
       const auto bgColor = isBlockEdit ? Eo::BlockEditBackgroundColor() : Eo::ViewBackgroundColorForSpace(isPaperSpace);
-      auto bkColor =
+      const auto bkColor =
           D2D1::ColorF(GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f, GetBValue(bgColor) / 255.0f);
       m_d2dRenderTarget->Clear(bkColor);
       EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
@@ -154,7 +154,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       // Save the user's current render state (linetype name, color, etc.) before entity
       // rendering, which mutates Gs::renderState via SetPen calls. Restore afterward so that
       // UpdateStateInformation reads the user's selection, not the last-rendered entity's state.
-      auto savedUserState = Gs::renderState.Save();
+      const auto savedUserState = Gs::renderState.Save();
       document->DisplayAllLayers(this, &renderDevice);
       document->DisplayUniquePoints();
 
@@ -183,18 +183,18 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       if (m_rubberbandType != None) {
         Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> rubberbandBrush;
         const auto cr = Eo::RubberbandColor();
-        auto rubberbandColor =
+        const auto rubberbandColor =
             D2D1::ColorF((cr & 0xFF) / 255.0f, ((cr >> 8) & 0xFF) / 255.0f, ((cr >> 16) & 0xFF) / 255.0f);
         m_d2dRenderTarget->CreateSolidColorBrush(rubberbandColor, &rubberbandBrush);
         if (rubberbandBrush) {
-          auto begin = D2D1::Point2F(
+          const auto begin = D2D1::Point2F(
               static_cast<float>(m_rubberbandLogicalBegin.x), static_cast<float>(m_rubberbandLogicalBegin.y));
-          auto end =
+          const auto end =
               D2D1::Point2F(static_cast<float>(m_rubberbandLogicalEnd.x), static_cast<float>(m_rubberbandLogicalEnd.y));
           if (m_rubberbandType == Lines) {
             m_d2dRenderTarget->DrawLine(begin, end, rubberbandBrush.Get(), 1.0f);
           } else if (m_rubberbandType == Rectangles) {
-            auto rect = D2D1::RectF(begin.x, begin.y, end.x, end.y);
+            const auto rect = D2D1::RectF(begin.x, begin.y, end.x, end.y);
             m_d2dRenderTarget->DrawRectangle(rect, rubberbandBrush.Get(), 1.0f);
           }
         }
@@ -202,7 +202,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
       m_d2dRenderTarget->PopAxisAlignedClip();
 
-      HRESULT hr = m_d2dRenderTarget->EndDraw();
+      const HRESULT hr = m_d2dRenderTarget->EndDraw();
       if (hr == D2DERR_RECREATE_TARGET) {
         DiscardD2DResources();
         InvalidateScene();
@@ -212,7 +212,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       m_overlayDirty = false;
     }
     {
-      auto* doc = GetDocument();
+      const auto* doc = GetDocument();
       if (doc != nullptr && !doc->IsClosing()) {
         UpdateStateInformation(All);
         ModeLineDisplay();
@@ -236,7 +236,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     // Save the user's current render state before entity rendering, which mutates
     // Gs::renderState via SetPen calls. Restore afterward so that UpdateStateInformation
     // reads the user's selection, not the last-rendered entity's state.
-    auto savedUserState = Gs::renderState.Save();
+    const auto savedUserState = Gs::renderState.Save();
 
     // If back buffer exists and scene is dirty, re-render the entire scene into the back buffer
     if (m_backBufferDC.GetSafeHdc() != nullptr && m_sceneInvalid) {
@@ -348,7 +348,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     m_overlayDirty = false;
 
     {
-      auto* doc = AeSysDoc::GetDoc();
+      const auto* doc = AeSysDoc::GetDoc();
       if (doc != nullptr && !doc->IsClosing()) {
         UpdateStateInformation(All);
         ModeLineDisplay();
@@ -407,7 +407,7 @@ void AeSysView::OnInitialUpdate() {
 }
 
 void AeSysView::ApplyActiveViewport() {
-  auto* document = GetDocument();
+  const auto* document = GetDocument();
   if (document == nullptr) { return; }
 
   const auto* activeVPort = document->FindActiveVPort();
@@ -420,7 +420,7 @@ void AeSysView::ApplyActiveViewport() {
   // DXF VPORT viewTargetPoint is in WCS. viewDirection is target→camera (WCS).
   auto targetPoint =
       EoGePoint3d(activeVPort->m_viewTargetPoint.x, activeVPort->m_viewTargetPoint.y, activeVPort->m_viewTargetPoint.z);
-  auto viewDirection = activeVPort->m_viewDirection;
+  const auto viewDirection = activeVPort->m_viewDirection;
 
   m_ViewTransform.SetLensLength(activeVPort->m_lensLength);
   m_ViewTransform.SetTarget(targetPoint);
@@ -592,7 +592,7 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor()); }
 
   EoGsRenderDeviceGdi renderDevice(targetDC);
-  bool isHandledByState{};
+  const bool isHandledByState{};
 #ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
   if (state) { isHandledByState = state->OnUpdate(this, sender, hint, hintObject); }
@@ -639,7 +639,7 @@ void AeSysView::OnBeginPrinting(CDC* deviceContext, CPrintInfo* pInfo) {
       auto* document = GetDocument();
       EoGePoint3d ptMin;
       EoGePoint3d ptMax;
-      EoGeTransformMatrix transformMatrix;
+      const EoGeTransformMatrix transformMatrix;
       document->GetExtents(this, ptMin, ptMax, transformMatrix);
 
       const double extentWidth = ptMax.x - ptMin.x;
@@ -684,8 +684,8 @@ BOOL AeSysView::OnPreparePrinting(CPrintInfo* pInfo) {
     if (AfxGetApp()->GetPrinterDeviceDefaults(&pd)) {
       HDC hDC{};
       if (pd.hDevNames != nullptr && pd.hDevMode != nullptr) {
-        auto* devNames = static_cast<DEVNAMES*>(::GlobalLock(pd.hDevNames));
-        auto* devMode = static_cast<DEVMODE*>(::GlobalLock(pd.hDevMode));
+        const auto* devNames = static_cast<DEVNAMES*>(::GlobalLock(pd.hDevNames));
+        const auto* devMode = static_cast<DEVMODE*>(::GlobalLock(pd.hDevMode));
         if (devNames != nullptr && devMode != nullptr) {
           auto* driverName = reinterpret_cast<const wchar_t*>(devNames) + devNames->wDriverOffset;
           auto* deviceName = reinterpret_cast<const wchar_t*>(devNames) + devNames->wDeviceOffset;
@@ -792,7 +792,7 @@ void AeSysView::CreateD2DRenderTarget() {
   rtProps.dpiY = 96.0f;
   const D2D1_HWND_RENDER_TARGET_PROPERTIES hwndProps = D2D1::HwndRenderTargetProperties(GetSafeHwnd(), size);
 
-  HRESULT hr = factory->CreateHwndRenderTarget(rtProps, hwndProps, &m_d2dRenderTarget);
+  const HRESULT hr = factory->CreateHwndRenderTarget(rtProps, hwndProps, &m_d2dRenderTarget);
   if (FAILED(hr)) {
     ATLTRACE2(traceGeneral, 0, L"AeSysView<%p>::CreateD2DRenderTarget() FAILED hr=0x%08X\n", this, hr);
     m_d2dRenderTarget.Reset();
@@ -854,7 +854,7 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
         // D2D does not scale the output.  A clip rect in OnDraw constrains rendering
         // to the drawing area, leaving the tab-bar region untouched.
         const D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(cx), static_cast<UINT32>(cy));
-        HRESULT hr = m_d2dRenderTarget->Resize(size);
+        const HRESULT hr = m_d2dRenderTarget->Resize(size);
         if (FAILED(hr)) { DiscardD2DResources(); }
         m_sceneInvalid = true;
       } else {
@@ -970,7 +970,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   if (mainFrame == nullptr) { return; }
 
   // Suppress state updates during document teardown
-  if (auto* doc = GetDocument(); doc != nullptr && doc->IsClosing()) { return; }
+  if (const auto* doc = GetDocument(); doc != nullptr && doc->IsClosing()) { return; }
 
   if ((item & BothCounts) != 0) { mainFrame->GetPropertiesPane().UpdateDocumentStatistics(); }
 
@@ -1002,7 +1002,7 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
     mainFrame->SetPaneText(2, angle);
   }
   if ((item & Layer) == Layer) {
-    auto* document = GetDocument();
+    const auto* document = GetDocument();
     if (document != nullptr && !document->IsClosing() && document->GetWorkLayer() != nullptr) {
       mainFrame->SyncLayerCombo(document->GetWorkLayer()->Name());
     }

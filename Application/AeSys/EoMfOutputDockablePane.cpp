@@ -101,7 +101,7 @@ void EoMfOutputListBox::OnContextMenu(CWnd* window, CPoint point) {
     CMenu menu;
     menu.LoadMenu(IDR_OUTPUT_POPUP);
 
-    auto* const subMenu = menu.GetSubMenu(0);
+    const auto* const subMenu = menu.GetSubMenu(0);
     auto* const popupMenu = new CMFCPopupMenu;
 
     if (!popupMenu->Create(this, point.x, point.y, subMenu->GetSafeHmenu(), FALSE, TRUE)) { return; }

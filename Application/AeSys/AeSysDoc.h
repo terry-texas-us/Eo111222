@@ -566,7 +566,7 @@ class AeSysDoc : public CDocument {
   void AddLayout(EoDxfLayout&& layout) { m_layouts.push_back(std::move(layout)); }
   void ClearLayouts() noexcept { m_layouts.clear(); }
 
-  void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
+  void PenTranslation(std::uint16_t, const std::int16_t* newColors, const std::int16_t* sourceColors);
 
   int RemoveEmptyNotesAndDelete();
   int RemoveEmptyGroups();
@@ -672,7 +672,7 @@ class AeSysDoc : public CDocument {
   auto RemoveTrappedGroup(EoDbGroup* group) { return m_trappedGroups.Remove(group); }
   void RemoveTrappedGroupAt(POSITION position) { m_trappedGroups.RemoveAt(position); }
   void SetTrapPivotPoint(const EoGePoint3d& pt) noexcept { m_trapPivotPoint = pt; }
-  void SquareTrappedGroups(AeSysView* view);
+  void SquareTrappedGroups(const AeSysView* view);
   void TransformTrappedGroups(const EoGeTransformMatrix& transformMatrix);
   void TranslateTrappedGroups(const EoGeVector3d& translate);
   [[nodiscard]] auto TrapGroupCount() { return m_trappedGroups.GetCount(); }
@@ -783,9 +783,12 @@ class AeSysDoc : public CDocument {
   afx_msg void OnPensTranslate();
   /// @brief Breaks a primitive into a simpler set of primitives.
   afx_msg void OnPrimBreak();
-  /// @brief Searches for closest detectible primitive. If found, primitive is lifted from its group, inserted into a
-  /// new group which is added to deleted group list. The primitive resources are not freed.
+  
+  /** @brief Searches for closest detectible primitive. If found, primitive is lifted from its group, inserted into a
+   * new group which is added to deleted group list. The primitive resources are not freed.
+   */
   afx_msg void OnToolsPrimitiveDelete();
+  
   afx_msg void OnPrimExtractNum();
   afx_msg void OnPrimExtractStr();
   /// @brief Positions the cursor at a "control" point on the current engaged group.

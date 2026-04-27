@@ -11,7 +11,7 @@
 EoGeReferenceSystem::EoGeReferenceSystem(const EoGePoint3d& origin,
     const EoDbCharacterCellDefinition& characterCellDefinition)
     : m_origin{origin} {
-  auto* const activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
   const auto cameraDirection = activeView->CameraDirection();
 
   m_yDirection = activeView->ViewUp();

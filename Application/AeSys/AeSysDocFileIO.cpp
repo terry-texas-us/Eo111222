@@ -569,7 +569,7 @@ void AeSysDoc::ResolveDynamicBlockReferences() {
     for (const auto& value : obj.m_values) {
       if (value.Code() == 5) {
         if (const auto* hexString = value.GetIf<std::wstring>()) {
-          auto handle = std::wcstoull(hexString->c_str(), nullptr, 16);
+          const auto handle = std::wcstoull(hexString->c_str(), nullptr, 16);
           if (handle != 0) { objectsByHandle[handle] = &obj; }
         }
         break;
@@ -627,7 +627,7 @@ void AeSysDoc::ResolveDynamicBlockReferences() {
         const auto* blockHandleHex = entryValue.GetIf<std::wstring>();
         if (blockHandleHex == nullptr) { continue; }
 
-        auto blockRecordHandle = std::wcstoull(blockHandleHex->c_str(), nullptr, 16);
+        const auto blockRecordHandle = std::wcstoull(blockHandleHex->c_str(), nullptr, 16);
         if (blockRecordHandle == 0) { continue; }
 
         // Step E: Lookup block name from the handle → name map.

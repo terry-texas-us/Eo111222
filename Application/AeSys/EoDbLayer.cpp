@@ -85,12 +85,12 @@ std::int16_t EoDbLayer::LineTypeIndex() const {
   return index;
 }
 
-void EoDbLayer::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+void EoDbLayer::PenTranslation(std::uint16_t wCols, const std::int16_t* newColors, const std::int16_t* sourceColors) {
   for (int i = 0; i < wCols; i++) {
-    if (m_color == pCol[i]) {
-      m_color = pColNew[i];
+    if (m_color == sourceColors[i]) {
+      m_color = newColors[i];
       break;
     }
   }
-  EoDbGroupList::PenTranslation(wCols, pColNew, pCol);
+  EoDbGroupList::PenTranslation(wCols, newColors, sourceColors);
 }

@@ -128,7 +128,7 @@ void ConvertStringToVal(int desiredType,
  * @param[out] stringLength length of resulting string
  */
 void ConvertValToString(void* valueBuffer,
-    ValueMetaInformation* valueMetaInformation,
+    const ValueMetaInformation* valueMetaInformation,
     wchar_t* stringbuffer,
     int* stringLength);
 

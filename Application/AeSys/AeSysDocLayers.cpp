@@ -76,7 +76,7 @@ EoDbLayer* AeSysDoc::GetLayerTableLayer(const CString& name) {
   return (i < 0 ? nullptr : ActiveSpaceLayers().GetAt(i));
 }
 EoDbLayer* AeSysDoc::GetLayerTableLayerAt(int index) {
-  auto& layers = ActiveSpaceLayers();
+  const auto& layers = ActiveSpaceLayers();
   return (index >= static_cast<int>(layers.GetSize()) ? nullptr : layers.GetAt(index));
 }
 
@@ -167,7 +167,7 @@ void AeSysDoc::AddLayerToLayout(EoDbLayer* layer, std::uint64_t blockRecordHandl
 }
 
 EoDbLayer* AeSysDoc::FindLayerInSpace(const CString& name, EoDxf::Space space) {
-  auto& layers = SpaceLayers(space);
+  const auto& layers = SpaceLayers(space);
   for (INT_PTR i = 0; i < layers.GetSize(); i++) {
     auto* layer = layers.GetAt(i);
     if (name.CompareNoCase(layer->Name()) == 0) { return layer; }
@@ -245,7 +245,7 @@ bool AeSysDoc::LayerMelt(CString& strName) {
   if (GetSaveFileNameW(&of)) {
     strName = of.lpstrFile;
 
-    EoDb::FileTypes fileType = App::FileTypeFromPath(strName);
+    const EoDb::FileTypes fileType = App::FileTypeFromPath(strName);
     if (fileType == EoDb::FileTypes::Tracing || fileType == EoDb::FileTypes::Job) {
       CFile file(strName, CFile::modeWrite | CFile::modeCreate);
       if (file != CFile::hFileNull) {
@@ -279,10 +279,10 @@ void AeSysDoc::RemoveLayerTableLayer(const CString& name) {
 
   if (i >= 0) { RemoveLayerTableLayerAt(i); }
 }
-void AeSysDoc::PenTranslation(std::uint16_t wCols, std::int16_t* pColNew, std::int16_t* pCol) {
+void AeSysDoc::PenTranslation(std::uint16_t wCols, const std::int16_t* newColors, const std::int16_t* sourceColors) {
   for (auto i = 0; i < GetLayerTableSize(); i++) {
     auto* layer = GetLayerTableLayerAt(i);
-    layer->PenTranslation(wCols, pColNew, pCol);
+    layer->PenTranslation(wCols, newColors, sourceColors);
   }
 }
 

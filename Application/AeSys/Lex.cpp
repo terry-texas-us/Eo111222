@@ -113,7 +113,7 @@ void lex::BreakExpression(int& firstTokenLocation, int& numberOfTokens, int* typ
 }
 
 void lex::ConvertValToString(void* valueBuffer,
-    ValueMetaInformation* valueMetaInformation,
+    const ValueMetaInformation* valueMetaInformation,
     wchar_t* stringBuffer,
     int* stringLength) {
   const int iDim = valueMetaInformation->GetDimension();

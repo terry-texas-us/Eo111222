@@ -193,9 +193,9 @@ void EoDbBlockReference::ExportToDxf(EoDxfInterface* writer) const {
 
   // Emit ATTRIB entities owned by this INSERT, then SEQEND
   if (!m_attributeHandles.empty()) {
-    auto* document = AeSysDoc::GetDoc();
+    const auto* document = AeSysDoc::GetDoc();
     for (const auto attribHandle : m_attributeHandles) {
-      auto* primitive = document->FindPrimitiveByHandle(attribHandle);
+      const auto* primitive = document->FindPrimitiveByHandle(attribHandle);
       if (primitive != nullptr) { primitive->ExportToDxf(writer); }
     }
     // SEQEND terminates the ATTRIB sequence; its owner handle points to the INSERT

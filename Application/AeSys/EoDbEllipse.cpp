@@ -106,7 +106,7 @@ EoDbEllipse::EoDbEllipse(const EoGePoint3d& center,
  */
 EoDbEllipse::EoDbEllipse(EoGePoint3d& center, double radius, std::int16_t color, std::int16_t lineType)
     : EoDbPrimitive(color, lineType), m_center(center) {
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
 
   const auto normal = activeView->CameraDirection();
 
@@ -134,7 +134,7 @@ EoDbEllipse::EoDbEllipse(EoGePoint3d& center,
 }
 
 EoDbEllipse::EoDbEllipse(EoGePoint3d& center, EoGePoint3d& start) {
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
 
   m_color = Gs::renderState.Color();
   SetLineTypeName(Gs::renderState.LineTypeName());

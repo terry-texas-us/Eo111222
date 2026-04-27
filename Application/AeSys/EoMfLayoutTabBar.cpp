@@ -63,7 +63,7 @@ EoMfLayoutTabBar::~EoMfLayoutTabBar() {
 }
 
 BOOL EoMfLayoutTabBar::CreateTabBar(CWnd* parentWindow, UINT controlId) {
-  CRect rect(0, 0, 0, 0);
+  const CRect rect(0, 0, 0, 0);
   if (!Create(CMFCTabCtrl::STYLE_3D, rect, parentWindow, controlId, CMFCTabCtrl::LOCATION_BOTTOM, FALSE)) {
     return FALSE;
   }

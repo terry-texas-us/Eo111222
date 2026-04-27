@@ -104,7 +104,7 @@ class EoDbLayer : public EoDbGroupList {
 
   [[nodiscard]] std::int32_t Color24() const noexcept { return m_color24; }
   void SetColor24(std::int32_t color24) noexcept { m_color24 = color24; }
-  void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
+  void PenTranslation(std::uint16_t, const std::int16_t* newColors, const std::int16_t* sourceColors);
 
   [[nodiscard]] CString Name() const { return m_name; }
   void SetName(const CString& name) { m_name = name; }

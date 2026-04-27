@@ -108,7 +108,7 @@ void EoDlgActiveViewKeyplan::Refresh() {
   if (m_hbmKeyplan == nullptr) {
     CRect rcKey;
     GetDlgItem(IDC_KEYPLAN_AREA)->GetClientRect(&rcKey);
-    CDC* deviceContext = m_ActiveView->GetDC();
+    const CDC* deviceContext = m_ActiveView->GetDC();
     m_hbmKeyplan = CreateCompatibleBitmap(deviceContext->GetSafeHdc(), rcKey.right, rcKey.bottom);
   }
   dcMem.SelectObject(CBitmap::FromHandle(m_hbmKeyplan));

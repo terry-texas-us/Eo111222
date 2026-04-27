@@ -315,7 +315,7 @@ bool EoDbLabeledLine::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoG
 }
 
 void EoDbLabeledLine::SetDefaultNote() {
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
 
   m_ReferenceSystem.SetOrigin(m_line.Midpoint());
   double angle{};

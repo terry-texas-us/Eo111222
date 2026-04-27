@@ -143,7 +143,7 @@ void AeSysView::OnNodalModeToLine() {
 
       auto pointPosition = document->GetFirstUniquePointPosition();
       while (pointPosition != nullptr) {
-        EoGeUniquePoint* uniquePoint = document->GetNextUniquePoint(pointPosition);
+        const auto* uniquePoint = document->GetNextUniquePoint(pointPosition);
         auto* line = EoDbLine::CreateLine(uniquePoint->m_Point, uniquePoint->m_Point + translate)
                          ->WithProperties(Gs::renderState);
         group->AddTail(line);
@@ -181,7 +181,7 @@ void AeSysView::OnNodalModeToPolygon() {
     auto* document = GetDocument();
     auto groupPosition = document->GetFirstNodalGroupPosition();
     while (groupPosition != nullptr) {
-      auto* group = document->GetNextNodalGroup(groupPosition);
+      const auto* group = document->GetNextNodalGroup(groupPosition);
 
       auto primitivePosition = group->GetHeadPosition();
       while (primitivePosition != nullptr) {
@@ -203,7 +203,7 @@ void AeSysView::OnNodalModeToPolygon() {
             document->UpdateAllViews(nullptr, EoDb::kGroupSafe, newGroup);
           }
         } else if (primitive->Is(EoDb::kPolygonPrimitive)) {
-          auto* polygon = dynamic_cast<EoDbPolygon*>(primitive);
+          const auto* polygon = dynamic_cast<EoDbPolygon*>(primitive);
           const int numberOfVertices = polygon->NumberOfVertices();
 
           for (int i = 0; i < numberOfVertices; i++) {
@@ -283,7 +283,7 @@ void AeSysView::OnNodalModeReturn() {
 
         auto groupPosition = document->GetFirstNodalGroupPosition();
         while (groupPosition != nullptr) {
-          auto* group = document->GetNextNodalGroup(groupPosition);
+          const auto* group = document->GetNextNodalGroup(groupPosition);
           document->AddWorkLayerGroup(new EoDbGroup(*group));
           document->GetLastWorkLayerGroup()->Translate(translate);
         }
@@ -348,8 +348,8 @@ void AeSysView::DoNodalModeMouseMove() {
         }
         auto uniquePointPosition = document->GetFirstUniquePointPosition();
         while (uniquePointPosition != nullptr) {
-          auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
-          EoGePoint3d point = (uniquePoint->m_Point) + translate;
+          const auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
+          const EoGePoint3d point = (uniquePoint->m_Point) + translate;
           m_PreviewGroup.AddTail(new EoDbPoint(252, 8, point));
         }
         InvalidateOverlay();
@@ -387,7 +387,7 @@ void AeSysView::ConstructPreviewGroup() {
   }
   auto uniquePointPosition = document->GetFirstUniquePointPosition();
   while (uniquePointPosition != nullptr) {
-    auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
+    const auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
     m_PreviewGroup.AddTail(new EoDbPoint(252, 8, uniquePoint->m_Point));
   }
 }
@@ -396,7 +396,7 @@ void AeSysView::ConstructPreviewGroupForNodalGroups() {
   auto* document = GetDocument();
   auto groupPosition = document->GetFirstNodalGroupPosition();
   while (groupPosition != nullptr) {
-    auto* group = document->GetNextNodalGroup(groupPosition);
+    const auto* group = document->GetNextNodalGroup(groupPosition);
 
     auto primitivePosition = group->GetHeadPosition();
     while (primitivePosition != nullptr) {
@@ -406,7 +406,7 @@ void AeSysView::ConstructPreviewGroupForNodalGroups() {
   }
   auto uniquePointPosition = document->GetFirstUniquePointPosition();
   while (uniquePointPosition != nullptr) {
-    auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
+    const auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
     m_PreviewGroup.AddTail(new EoDbPoint(252, 8, uniquePoint->m_Point));
   }
 }

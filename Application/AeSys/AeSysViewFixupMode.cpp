@@ -66,11 +66,11 @@ EoGeLine currentLine{};
     EoGePoint3d* center) {
   if (center == nullptr) { return false; }
   const EoGeVector3d u(firstLine.begin, firstLine.end);  // Determine vector defined by endpoints of first line
-  double firstLineLength = u.Length();
+  const double firstLineLength = u.Length();
   if (firstLineLength < Eo::geometricTolerance) { return false; }
 
   EoGeVector3d v(secondLine.begin, secondLine.end);
-  double secondLineLength = v.Length();
+  const double secondLineLength = v.Length();
   if (secondLineLength < Eo::geometricTolerance) { return false; }
 
   auto normal = CrossProduct(u, v);  // Determine vector normal to tangent vectors
@@ -85,13 +85,13 @@ EoGeLine currentLine{};
   firstLine.end = transformMatrix * firstLine.end;
   secondLine.begin = transformMatrix * secondLine.begin;
   secondLine.end = transformMatrix * secondLine.end;
-  double dA1 = -firstLine.end.y / firstLineLength;
-  double dB1 = firstLine.end.x / firstLineLength;
+  const double dA1 = -firstLine.end.y / firstLineLength;
+  const double dB1 = firstLine.end.x / firstLineLength;
   v.x = secondLine.end.x - secondLine.begin.x;
   v.y = secondLine.end.y - secondLine.begin.y;
-  double dA2 = -v.y / secondLineLength;
-  double dB2 = v.x / secondLineLength;
-  double dDet = dA2 * dB1 - dA1 * dB2;
+  const double dA2 = -v.y / secondLineLength;
+  const double dB2 = v.x / secondLineLength;
+  const double dDet = dA2 * dB1 - dA1 * dB2;
 
   const double dSgnRad = (firstLine.end.x * secondLine.end.y - secondLine.end.x * firstLine.end.y) >= 0.
       ? -std::abs(radius)

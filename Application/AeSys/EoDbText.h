@@ -117,13 +117,14 @@ class EoDbText : public EoDbPrimitive {
 
 void DisplayText(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     const CString& text);
+
 void DisplayTextSegment(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     int startPosition,
     int numberOfCharacters,
     const CString& text);
@@ -160,8 +161,8 @@ bool DisplayTextSegmentUsingTrueTypeFont(AeSysView* view,
  */
 void DisplayTextWithFormattingCharacters(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     const CString& text);
 
 /// @brief Renders MTEXT text with automatic word-wrapping based on the reference rectangle width.
@@ -171,8 +172,8 @@ void DisplayTextWithFormattingCharacters(AeSysView* view,
 /// and passed through to DisplayTextWithFormattingCharacters for each wrapped line segment.
 void DisplayMTextWithWordWrap(AeSysView* view,
     EoGsRenderDevice* renderDevice,
-    EoDbFontDefinition& fd,
-    EoGeReferenceSystem& referenceSystem,
+    const EoDbFontDefinition& fd,
+    const EoGeReferenceSystem& referenceSystem,
     const CString& text,
     const EoDbMTextProperties& mtextProperties);
 

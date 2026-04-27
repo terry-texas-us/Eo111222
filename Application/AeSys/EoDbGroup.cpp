@@ -130,7 +130,7 @@ void EoDbGroup::ExplodeBlockReferences() {
         EoDbBlock* block{};
         if (document->LookupBlock(static_cast<EoDbBlockReference*>(primitive)->BlockName(), block) != 0) {
           numberOfGroupReferences++;
-          auto* blockReference = static_cast<EoDbBlockReference*>(primitive);
+          const auto* blockReference = static_cast<EoDbBlockReference*>(primitive);
 
           // Convert in-group ATTRIBs to plain EoDbText primitives
           for (const auto attribHandle : blockReference->AttributeHandles()) {
@@ -244,7 +244,7 @@ int EoDbGroup::GetLineTypeRefCount(const std::wstring& lineTypeName) {
 
   auto position = GetHeadPosition();
   while (position != nullptr) {
-    auto* primitive = GetNext(position);
+    const auto* primitive = GetNext(position);
 
     if (_wcsicmp(primitive->LineTypeName().c_str(), lineTypeName.c_str()) == 0) { count++; }
   }
@@ -453,7 +453,7 @@ void EoDbGroup::SortTextOnY() {
   } while (lastSwappedIndex != 0);
 }
 
-void EoDbGroup::Square(AeSysView* view) {
+void EoDbGroup::Square(const AeSysView* view) {
   auto position = GetHeadPosition();
   while (position != nullptr) {
     auto* primitive = GetNext(position);

@@ -52,9 +52,9 @@ class EoGsRenderState {
   /// @brief Backend-agnostic overload — routes through EoGsRenderDevice::SelectPen.
   void ManagePenResources(EoGsRenderDevice* renderDevice, std::int16_t color, int width, std::int16_t lineType);
 
-  void SetPen(AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType);
+  void SetPen(const AeSysView* view, CDC* deviceContext, std::int16_t penColor, std::int16_t lineType);
   
-  void SetPen(AeSysView* view,
+  void SetPen(const AeSysView* view,
       CDC* deviceContext,
       std::int16_t penColor,
       std::int16_t lineType,
@@ -68,9 +68,9 @@ class EoGsRenderState {
       EoDxfLineWeights::LineWeight lineWeight,
       double lineTypeScale);
 
-  void SetPen(AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType);
+  void SetPen(const AeSysView* view, EoGsRenderDevice* renderDevice, std::int16_t penColor, std::int16_t lineType);
   
-  void SetPen(AeSysView* view,
+  void SetPen(const AeSysView* view,
       EoGsRenderDevice* renderDevice,
       std::int16_t penColor,
       std::int16_t lineType,

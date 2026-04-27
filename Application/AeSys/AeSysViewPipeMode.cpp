@@ -316,7 +316,7 @@ void AeSysView::OnPipeModeDrop() {
 void AeSysView::OnPipeModeSymbol() {
   if (m_CurrentPipeSymbolIndex < 0 || m_CurrentPipeSymbolIndex >= static_cast<int>(std::size(symbolSize))) { return; }
 
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
 
   OnPipeModeEscape();
@@ -329,9 +329,9 @@ void AeSysView::OnPipeModeSymbol() {
   EoDlgPipeSymbol dialog;
   dialog.m_CurrentPipeSymbolIndex = m_CurrentPipeSymbolIndex;
   if (dialog.DoModal() == IDOK) { m_CurrentPipeSymbolIndex = dialog.m_CurrentPipeSymbolIndex; }
-  EoGePoint3d begin = horizontalSection->Begin();
-  EoGePoint3d end = horizontalSection->End();
-  EoGePoint3d pointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
+  const EoGePoint3d begin = horizontalSection->Begin();
+  const EoGePoint3d end = horizontalSection->End();
+  const EoGePoint3d pointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
 
   EoGeLine beginSection(pointOnSection, begin);
   EoGeLine endSection(pointOnSection, end);
@@ -340,7 +340,7 @@ void AeSysView::OnPipeModeSymbol() {
 
   EoGePoint3d symbolBeginPoint = pointOnSection.ProjectToward(begin, symbolSize[m_CurrentPipeSymbolIndex]);
   EoGePoint3d symbolEndPoint = pointOnSection.ProjectToward(end, symbolSize[m_CurrentPipeSymbolIndex]);
-  double ticSize = m_PipeTicSize;
+  const double ticSize{m_PipeTicSize};
 
   horizontalSection->SetEndPoint(symbolBeginPoint);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, horizontalSection);
@@ -356,7 +356,7 @@ void AeSysView::OnPipeModeSymbol() {
 
   switch (m_CurrentPipeSymbolIndex) {
     case 0: {  // flow switch
-      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      const double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
       AddCircleToGroup(group, pointOnSection, radius);
       endSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 1.5, &pts[0]);
       endSection.ProjPtFrom_xy(symbolSize[0], -symbolSize[0] * 2.0, &pts[1]);
@@ -370,7 +370,7 @@ void AeSysView::OnPipeModeSymbol() {
     } break;
 
     case 1: {  // float and thermostatic trap
-      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      const double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
       AddCircleToGroup(group, pointOnSection, radius);
       pts[0] = symbolBeginPoint.RotateAboutAxis(pointOnSection, EoGeVector3d::positiveUnitZ, Eo::QuarterPi);
       pts[1] = pts[0].RotateAboutAxis(pointOnSection, EoGeVector3d::positiveUnitZ, Eo::Pi);
@@ -381,7 +381,7 @@ void AeSysView::OnPipeModeSymbol() {
     } break;
 
     case 2: {  // ball valve
-      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      const double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
       AddCircleToGroup(group, pointOnSection, radius);
       endSection.ProjPtFrom_xy(symbolSize[2], symbolSize[2] * 1.5, &pts[0]);
       endSection.ProjPtFrom_xy(0.0, symbolSize[2] * 1.5, &pts[1]);
@@ -391,7 +391,7 @@ void AeSysView::OnPipeModeSymbol() {
     } break;
 
     case 3: {  // butterfly
-      double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
+      const double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
       AddCircleToGroup(group, pointOnSection, radius);
       endSection.ProjPtFrom_xy(symbolSize[3], symbolSize[3] * 1.5, &pts[0]);
       endSection.ProjPtFrom_xy(0.0, symbolSize[3] * 1.5, &pts[1]);
@@ -409,7 +409,7 @@ void AeSysView::OnPipeModeSymbol() {
       beginSection.ProjPtFrom_xy(symbolSize[4], symbolSize[4] * 0.5, &symbolEndPoint);
       AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
       beginSection.ProjPtFrom_xy(symbolSize[4], -symbolSize[4] * 0.3, &pts[0]);
-      double radius = EoGePoint3d::Distance(symbolBeginPoint, pts[0]);
+      const double radius = EoGePoint3d::Distance(symbolBeginPoint, pts[0]);
       AddCircleToGroup(group, symbolBeginPoint, radius);
     } break;
 
@@ -422,7 +422,7 @@ void AeSysView::OnPipeModeSymbol() {
       beginSection.ProjPtFrom_xy(symbolSize[5], symbolSize[5] * 0.5, &symbolEndPoint);
       AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
       beginSection.ProjPtFrom_xy(symbolSize[5], -symbolSize[5] * 0.3, &pts[0]);
-      double radius = EoGePoint3d::Distance(symbolBeginPoint, pts[0]);
+      const double radius = EoGePoint3d::Distance(symbolBeginPoint, pts[0]);
       AddCircleToGroup(group, symbolBeginPoint, radius);
       AddLineToGroup(group, symbolEndPoint, pointOnSection);
     } break;
@@ -434,14 +434,14 @@ void AeSysView::OnPipeModeSymbol() {
     case 7: {  // globe valve
       CreateGateValve(group, beginSection, endSection, symbolSize[7]);
       pts[0] = pointOnSection.ProjectToward(end, symbolSize[7] * 0.25);
-      double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
+      const double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
       AddCircleToGroup(group, pointOnSection, radius);
     } break;
 
     case 8: {  // OS&Y gate valve
       CreateGateValve(group, beginSection, endSection, symbolSize[8]);
       pts[0] = pointOnSection.ProjectToward(end, symbolSize[8] * 0.25);
-      double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
+      const double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
       AddCircleToGroup(group, pointOnSection, radius);
       endSection.ProjPtFrom_xy(0.0, symbolSize[8], &pts[0]);
       AddLineToGroup(group, pointOnSection, pts[0]);
@@ -452,7 +452,7 @@ void AeSysView::OnPipeModeSymbol() {
     case 9: {  // pressure reducing valve
       CreateGateValve(group, beginSection, endSection, symbolSize[9]);
       pts[0] = pointOnSection.ProjectToward(end, symbolSize[9] * 0.25);
-      double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
+      const double radius = EoGePoint3d::Distance(pointOnSection, pts[0]);
       AddCircleToGroup(group, pointOnSection, radius);
       endSection.ProjPtFrom_xy(0.0, symbolSize[9], &pts[0]);
       AddLineToGroup(group, pointOnSection, pts[0]);
@@ -557,7 +557,7 @@ void AeSysView::OnPipeModeSymbol() {
       AddLineToGroup(group, pts[1], symbolBeginPoint);
       AddLineToGroup(group, symbolBeginPoint, symbolEndPoint);
       pts[1] = pointOnSection.ProjectToward(pts[0], 0.28125);
-      double radius = EoGePoint3d::Distance(pts[1], pts[0]);
+      const double radius = EoGePoint3d::Distance(pts[1], pts[0]);
       AddCircleToGroup(group, pts[1], radius);
     } break;
 
@@ -575,7 +575,7 @@ void AeSysView::OnPipeModeSymbol() {
 }
 
 void AeSysView::OnPipeModeWye() {
-  auto cursorPosition = GetCursorPosition();
+  const auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
 
   if (pts.IsEmpty()) {
@@ -587,8 +587,8 @@ void AeSysView::OnPipeModeWye() {
   auto* group = SelectLineUsingPoint(cursorPosition, horizontalSection);
   if (group == nullptr) { return; }
   EoGePoint3d pointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
-  EoGePoint3d beginPointProjectedToSection = horizontalSection->ProjectPointToLine(pts[0]);
-  double distanceToSection = EoGeVector3d(pts[0], beginPointProjectedToSection).Length();
+  const EoGePoint3d beginPointProjectedToSection = horizontalSection->ProjectPointToLine(pts[0]);
+  const double distanceToSection = EoGeVector3d(pts[0], beginPointProjectedToSection).Length();
 
   if (distanceToSection >= 0.25) {
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -596,7 +596,7 @@ void AeSysView::OnPipeModeWye() {
     const EoGePoint3d begin = horizontalSection->Begin();
     const EoGePoint3d endPoint = horizontalSection->End();
 
-    double distanceBetweenSectionPoints = EoGeVector3d(beginPointProjectedToSection, pointOnSection).Length();
+    const double distanceBetweenSectionPoints = EoGeVector3d(beginPointProjectedToSection, pointOnSection).Length();
 
     if (std::abs(distanceBetweenSectionPoints - distanceToSection) <= 0.25) {
       // Just need to shift point on section and do a single 45 degree line

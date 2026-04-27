@@ -96,7 +96,7 @@ void AeSysView::OnPowerModeHome() {
   if (!m_PowerArrow || (pointOnCircuit != cursorPosition)) {
     m_PowerArrow = false;
     EoDbLine* circuit{};
-    auto* group = SelectLineUsingPoint(cursorPosition, circuit);
+    const auto* group = SelectLineUsingPoint(cursorPosition, circuit);
     if (group != nullptr) {
       cursorPosition = circuit->ProjectPointToLine(cursorPosition);
       if (circuit->RelOfPt(cursorPosition) <= 0.5) {
@@ -131,7 +131,7 @@ void AeSysView::DoPowerModeMouseMove() {
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         EoDbConic* circle{};
-        auto* group = SelectCircleUsingPoint(cursorPosition, 0.02, circle);
+        const auto* group = SelectCircleUsingPoint(cursorPosition, 0.02, circle);
         if (group != nullptr) {
           const double radius = circle->Radius();
           cursorPosition = circle->Center();
@@ -162,7 +162,7 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
   if (!m_PowerConductor || pointOnCircuit != cursorPosition) {
     m_PowerConductor = false;
     EoDbLine* circuit{};
-    auto* group = SelectLineUsingPoint(cursorPosition, circuit);
+    const auto* group = SelectLineUsingPoint(cursorPosition, circuit);
     if (group != nullptr) {
       cursorPosition = circuit->ProjectPointToLine(cursorPosition);
 

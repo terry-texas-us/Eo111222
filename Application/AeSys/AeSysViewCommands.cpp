@@ -48,7 +48,7 @@ void AeSysView::OnFilePlot() {
   {
     HANDLE hPrinter{};
     if (::OpenPrinterW(const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), &hPrinter, nullptr)) {
-      DWORD needed = ::DocumentPropertiesW(
+      const DWORD needed = ::DocumentPropertiesW(
           GetSafeHwnd(), hPrinter, const_cast<wchar_t*>(m_plotSettings.printerName.c_str()), nullptr, nullptr, 0);
       if (needed > 0) {
         HGLOBAL hDevMode = ::GlobalAlloc(GHND, needed);
@@ -159,7 +159,7 @@ void AeSysView::OnFilePrint() {
 UINT AeSysView::NumPages(const CDC* deviceContext, double scaleFactor, UINT& horizontalPages, UINT& verticalPages) {
   EoGePoint3d ptMin;
   EoGePoint3d ptMax;
-  EoGeTransformMatrix transformMatrix;
+  const EoGeTransformMatrix transformMatrix;
   auto* document = GetDocument();
 
   document->GetExtents(this, ptMin, ptMax, transformMatrix);
@@ -538,7 +538,7 @@ AeSysView* AeSysView::GetActiveView() {
     // Legitimately nullptr during CMainFrame::OnCreate() - not an error
     return nullptr;
   }
-  auto* childWindow = dynamic_cast<CMDIChildWndEx*>(frameWindow->MDIGetActive());
+  const auto* childWindow = dynamic_cast<CMDIChildWndEx*>(frameWindow->MDIGetActive());
   if (childWindow == nullptr) { return nullptr; }
 
   auto* view = childWindow->GetActiveView();
@@ -637,7 +637,7 @@ void AeSysView::OnOp3() {
 }
 
 void AeSysView::OnOp4() {
-  auto* document = GetDocument();
+  const auto* document = GetDocument();
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       app.LoadModeResources(app.PrimaryMode());

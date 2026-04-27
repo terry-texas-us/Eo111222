@@ -37,7 +37,7 @@ void AeSysView::OnCutModeTorch() {
 
   auto groupPosition = GetFirstVisibleGroupPosition();
   while (groupPosition != nullptr) {
-    auto* group = GetNextVisibleGroup(groupPosition);
+    const auto* group = GetNextVisibleGroup(groupPosition);
 
     auto primitivePosition = group->GetHeadPosition();
     while (primitivePosition != nullptr) {

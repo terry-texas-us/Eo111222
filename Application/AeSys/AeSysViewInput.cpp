@@ -119,7 +119,7 @@ void AeSysView::SetActiveViewportPrimitive(EoDbViewport* viewport) {
     InvalidateScene();
 
     // Update the layout tab bar's viewport state controls
-    auto* document2 = GetDocument();
+    const auto* document2 = GetDocument();
     const bool isPaperSpace = (document2 != nullptr && document2->ActiveSpace() == EoDxf::Space::PaperSpace);
     m_layoutTabBar.UpdateViewportState(viewport, isPaperSpace);
   }
@@ -138,7 +138,7 @@ void AeSysView::DeactivateViewport() {
     InvalidateScene();
 
     // Update the layout tab bar's viewport state controls
-    auto* document2 = GetDocument();
+    const auto* document2 = GetDocument();
     const bool isPaperSpace = (document2 != nullptr && document2->ActiveSpace() == EoDxf::Space::PaperSpace);
     m_layoutTabBar.UpdateViewportState(nullptr, isPaperSpace);
   }
@@ -450,7 +450,7 @@ EoGePoint3d AeSysView::GetCursorPosition() {
   ::GetCursorPos(&cursorPosition);
   ScreenToClient(&cursorPosition);
 
-  EoGePoint3d pt(double(cursorPosition.x), double(cursorPosition.y), 0.0);
+  const EoGePoint3d pt{static_cast<double>(cursorPosition.x), static_cast<double>(cursorPosition.y), 0.0};
   if (pt.x != m_ptCursorPosDev.x || pt.y != m_ptCursorPosDev.y) {
     m_ptCursorPosDev = pt;
     m_ptCursorPosWorld = m_ptCursorPosDev;
@@ -580,8 +580,8 @@ void AeSysView::SetModeCursor(int mode) {
 
   // Paper space is always white — cursor must use white-background variant.
   // Block edit uses gray background — cursor uses the normal dark-scheme variant.
-  auto* document = GetDocument();
-  auto isWhiteBackground = (Eo::activeViewBackground == Eo::ViewBackground::White)
+  const auto* document = GetDocument();
+  const auto isWhiteBackground = (Eo::activeViewBackground == Eo::ViewBackground::White)
       || (document != nullptr && document->ActiveSpace() == EoDxf::Space::PaperSpace && !document->IsEditingBlock());
   std::uint16_t resourceIdentifier{};
 

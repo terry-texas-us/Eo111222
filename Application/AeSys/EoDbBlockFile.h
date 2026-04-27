@@ -71,6 +71,6 @@ class EoDbBlockFile : public CFile {
   void ReadHeader();
   void WriteBlock(const CString& name, const EoDbBlock* block);
   void WriteBlocks(const EoDbBlocks& blocks);
-  void WriteFile(const CString& pathName, EoDbBlocks& blocks);
+  void WriteFile(const CString& pathName, const EoDbBlocks& blocks);
   void WriteHeader();
 };

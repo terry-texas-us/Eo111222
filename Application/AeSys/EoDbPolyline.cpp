@@ -48,7 +48,7 @@ EoDbPolyline::EoDbPolyline(std::int16_t penColor,
     : EoDbPrimitive(penColor, lineType) {
   m_flags = sm_Closed;
 
-  auto* activeView = AeSysView::GetActiveView();
+  const auto* activeView = AeSysView::GetActiveView();
 
   const auto planeNormal = activeView->CameraDirection();
   auto minorAxis = activeView->ViewUp();

@@ -56,7 +56,7 @@ class EoDbGroupList : public CObList {
       int attributes = 0);
   void ModifyColor(std::int16_t color);
   void ModifyLineType(const std::wstring& lineTypeName);
-  void PenTranslation(std::uint16_t, std::int16_t*, std::int16_t*);
+  void PenTranslation(std::uint16_t, const std::int16_t* newColors, const std::int16_t* sourceColors);
   int RemoveEmptyNotesAndDelete();
   int RemoveEmptyGroups();
   POSITION Remove(EoDbGroup* group);

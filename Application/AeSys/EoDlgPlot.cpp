@@ -93,7 +93,7 @@ BOOL EoDlgPlot::OnInitDialog() {
 }
 
 void EoDlgPlot::OnOK() {
-  auto* printerCombo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
+  const auto* printerCombo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
   if (printerCombo != nullptr) {
     CString name;
     int sel = printerCombo->GetCurSel();
@@ -106,7 +106,7 @@ void EoDlgPlot::OnOK() {
   m_settings.printToFile = IsDlgButtonChecked(IDC_PLOT_PRINT_TO_FILE) == BST_CHECKED;
 
   // Paper size
-  auto* paperCombo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_PAPER_SIZE_COMBO));
+  const auto* paperCombo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_PAPER_SIZE_COMBO));
   if (paperCombo != nullptr) {
     int sel = paperCombo->GetCurSel();
     if (sel != CB_ERR && sel < static_cast<int>(m_paperSizes.size())) {
@@ -143,7 +143,7 @@ void EoDlgPlot::OnOK() {
   m_settings.fitToPaper = IsDlgButtonChecked(IDC_PLOT_FIT_TO_PAPER) == BST_CHECKED;
   m_settings.scaleLineweights = IsDlgButtonChecked(IDC_PLOT_SCALE_LINEWEIGHTS) == BST_CHECKED;
   {
-    auto* scaleCombo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_SCALE_COMBO));
+    const auto* scaleCombo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_SCALE_COMBO));
     if (scaleCombo != nullptr) { m_settings.scalePresetIndex = scaleCombo->GetCurSel(); }
 
     CString str;
@@ -207,7 +207,7 @@ void EoDlgPlot::PopulatePrinterCombo() {
             static_cast<DWORD>(buffer.size()),
             &needed,
             &returned)) {
-      auto* const printers = reinterpret_cast<PRINTER_INFO_2*>(buffer.data());
+      const auto* printers = reinterpret_cast<const PRINTER_INFO_2*>(buffer.data());
       int defaultIndex = -1;
       for (DWORD i = 0; i < returned; ++i) {
         const int idx = combo->AddString(printers[i].pPrinterName);
@@ -241,7 +241,7 @@ void EoDlgPlot::PopulatePaperSizeCombo() {
   m_paperSizes.clear();
 
   // Get currently selected printer name
-  auto* const printerCombo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
+  const auto* printerCombo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
   if (printerCombo == nullptr) { return; }
   CString printerName;
   const int sel = printerCombo->GetCurSel();
@@ -323,7 +323,7 @@ void EoDlgPlot::UpdateControlStates() {
 }
 
 void EoDlgPlot::UpdatePrintableAreaLabel() {
-  auto* const combo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_PAPER_SIZE_COMBO));
+  const auto* combo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_PAPER_SIZE_COMBO));
   if (combo == nullptr) { return; }
   const int sel = combo->GetCurSel();
   if (sel == CB_ERR || sel >= static_cast<int>(m_paperSizes.size())) {
@@ -357,7 +357,7 @@ void EoDlgPlot::OnPrinterSelectionChanged() {
 }
 
 void EoDlgPlot::OnPrinterProperties() {
-  auto* const printerCombo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
+  const auto* printerCombo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_PRINTER_COMBO));
   if (printerCombo == nullptr) { return; }
   CString printerName;
   const int sel = printerCombo->GetCurSel();
@@ -393,7 +393,7 @@ void EoDlgPlot::OnPaperSizeSelectionChanged() {
 }
 
 void EoDlgPlot::OnScaleSelectionChanged() {
-  auto* const combo = static_cast<CComboBox*>(GetDlgItem(IDC_PLOT_SCALE_COMBO));
+  const auto* combo = static_cast<const CComboBox*>(GetDlgItem(IDC_PLOT_SCALE_COMBO));
   if (combo == nullptr) { return; }
   const int sel = combo->GetCurSel();
   if (sel == CB_ERR) { return; }

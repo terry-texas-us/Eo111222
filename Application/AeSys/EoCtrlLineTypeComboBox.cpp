@@ -29,7 +29,7 @@ void EoCtrlLineTypeComboBox::PopulateItems() {
   const auto& currentName = Gs::renderState.LineTypeName();
   if (!currentName.empty()) {
     for (int i = 0; i < GetCount(); i++) {
-      auto data = GetItemData(i);
+      const auto data = GetItemData(i);
       if (data == kLoadLineTypes) { continue; }
       LPCTSTR text = GetItem(i);
       if (text != nullptr && _wcsicmp(text, currentName.c_str()) == 0) {
@@ -46,7 +46,7 @@ void EoCtrlLineTypeComboBox::SetCurrentLineType(std::int16_t lineTypeIndex, cons
   // Try to find by name first
   if (!lineTypeName.empty()) {
     for (int i = 0; i < GetCount(); i++) {
-      auto data = GetItemData(i);
+      const auto data = GetItemData(i);
       if (data == kLoadLineTypes) { continue; }
       LPCTSTR text = GetItem(i);
       if (text != nullptr && _wcsicmp(text, lineTypeName.c_str()) == 0) {
@@ -68,7 +68,7 @@ void EoCtrlLineTypeComboBox::SetCurrentLineType(std::int16_t lineTypeIndex, cons
   BuildItemList();
   if (!lineTypeName.empty()) {
     for (int i = 0; i < GetCount(); i++) {
-      auto data = GetItemData(i);
+      const auto data = GetItemData(i);
       if (data == kLoadLineTypes) { continue; }
       LPCTSTR text = GetItem(i);
       if (text != nullptr && _wcsicmp(text, lineTypeName.c_str()) == 0) {
@@ -134,9 +134,9 @@ void EoCtrlLineTypeComboBox::Serialize(CArchive& ar) {
 
     // Save the current line type name — items are rebuilt from the document on load.
     CString currentName;
-    int curSel = CMFCToolBarComboBoxButton::GetCurSel();
+    const int curSel = CMFCToolBarComboBoxButton::GetCurSel();
     if (curSel >= 0) {
-      auto data = CMFCToolBarComboBoxButton::GetItemData(curSel);
+      const auto data = CMFCToolBarComboBoxButton::GetItemData(curSel);
       if (data != kLoadLineTypes) {
         LPCTSTR text = CMFCToolBarComboBoxButton::GetItem(curSel);
         if (text != nullptr) { currentName = text; }
@@ -157,7 +157,7 @@ void EoCtrlLineTypeComboBox::Serialize(CArchive& ar) {
     bool found = false;
     if (!savedName.IsEmpty()) {
       for (int i = 0; i < GetCount(); i++) {
-        auto data = GetItemData(i);
+        const auto data = GetItemData(i);
         if (data == kLoadLineTypes) { continue; }
         LPCTSTR text = GetItem(i);
         if (text != nullptr && savedName.CompareNoCase(text) == 0) {
@@ -263,7 +263,7 @@ void EoCtrlLineTypeComboBox::OnSelectionChanged() {
 
   // Named line type — data is EoDbLineType* (only valid while a document is open)
   if (AeSysDoc::GetDoc() == nullptr) { return; }
-  auto* lineType = reinterpret_cast<EoDbLineType*>(data);
+  const auto* lineType = reinterpret_cast<EoDbLineType*>(data);
   if (lineType != nullptr) {
     Gs::renderState.SetLineType(static_cast<CDC*>(nullptr), static_cast<std::int16_t>(lineType->Index()));
     Gs::renderState.SetLineTypeName(std::wstring(lineType->Name()));
@@ -468,7 +468,7 @@ void EoCtrlLineTypeOwnerDrawCombo::OnPaint() {
 
   dc.FillSolidRect(&clientRect, Eo::chromeColors.paneBackground);
 
-  int curSel = GetCurSel();
+  const int curSel = GetCurSel();
   if (curSel != CB_ERR) {
     DRAWITEMSTRUCT dis{};
     dis.CtlType = ODT_COMBOBOX;
@@ -541,7 +541,7 @@ void EoCtrlLineTypeOwnerDrawCombo::DrawItem(LPDRAWITEMSTRUCT drawItemStruct) {
   if (!isLoadEntry) {
     int previewRight = itemRect.left + 2 + previewWidth;
     previewRight = std::min<LONG>(previewRight, itemRect.right - 40);
-    CRect previewRect(itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom);
+    const CRect previewRect{itemRect.left + 2, itemRect.top, previewRight, itemRect.bottom};
 
     // Only dereference EoDbLineType* when a document is open and the pointer
     // is verified against the current document's line type table.
