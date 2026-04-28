@@ -5,6 +5,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "DrawModeState.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
 #include "EoDbGroup.h"
@@ -20,8 +21,13 @@
 #include "Resource.h"
 
 namespace {
-std::uint16_t previousDrawCommand{};
+/// Returns the active DrawModeState from the view's state stack, or nullptr when
+/// called from outside draw mode (e.g. during PopAllModeStates teardown).
+DrawModeState* DrawState(AeSysView* view) {
+  return dynamic_cast<DrawModeState*>(view->GetCurrentState());
 }
+}  // namespace
+
 void AeSysView::OnDrawModeOptions() {
   AeSysDoc::GetDoc()->OnSetupOptionsDraw();
 }
@@ -36,11 +42,12 @@ void AeSysView::OnDrawModePoint() {
 }
 
 void AeSysView::OnDrawModeLine() {
+  auto* drawState = DrawState(this);
   auto cursorPosition = GetCursorPosition();
-  if (previousDrawCommand != ID_OP2) {
+  if (drawState == nullptr || drawState->PreviousDrawCommand() != ID_OP2) {
     pts.RemoveAll();
     pts.Add(cursorPosition);
-    previousDrawCommand = ModeLineHighlightOp(ID_OP2);
+    if (drawState != nullptr) { drawState->SetPreviousDrawCommand(ModeLineHighlightOp(ID_OP2)); }
   } else {
     auto* document = GetDocument();
     cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
@@ -54,10 +61,11 @@ void AeSysView::OnDrawModeLine() {
 }
 
 void AeSysView::OnDrawModePolygon() {
+  auto* drawState = DrawState(this);
   auto cursorPosition = GetCursorPosition();
 
-  if (previousDrawCommand != ID_OP3) {
-    previousDrawCommand = ModeLineHighlightOp(ID_OP3);
+  if (drawState == nullptr || drawState->PreviousDrawCommand() != ID_OP3) {
+    if (drawState != nullptr) { drawState->SetPreviousDrawCommand(ModeLineHighlightOp(ID_OP3)); }
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -71,10 +79,11 @@ void AeSysView::OnDrawModePolygon() {
 }
 
 void AeSysView::OnDrawModeQuad() {
+  auto* drawState = DrawState(this);
   const auto cursorPosition = GetCursorPosition();
 
-  if (previousDrawCommand != ID_OP4) {
-    previousDrawCommand = ModeLineHighlightOp(ID_OP4);
+  if (drawState == nullptr || drawState->PreviousDrawCommand() != ID_OP4) {
+    if (drawState != nullptr) { drawState->SetPreviousDrawCommand(ModeLineHighlightOp(ID_OP4)); }
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -83,10 +92,11 @@ void AeSysView::OnDrawModeQuad() {
 }
 
 void AeSysView::OnDrawModeArc() {
+  auto* drawState = DrawState(this);
   const auto cursorPosition = GetCursorPosition();
 
-  if (previousDrawCommand != ID_OP5) {
-    previousDrawCommand = ModeLineHighlightOp(ID_OP5);
+  if (drawState == nullptr || drawState->PreviousDrawCommand() != ID_OP5) {
+    if (drawState != nullptr) { drawState->SetPreviousDrawCommand(ModeLineHighlightOp(ID_OP5)); }
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -95,11 +105,11 @@ void AeSysView::OnDrawModeArc() {
 }
 
 void AeSysView::OnDrawModeBspline() {
+  auto* drawState = DrawState(this);
   const auto cursorPosition = GetCursorPosition();
 
-  if (previousDrawCommand != ID_OP6) {
-    previousDrawCommand = ModeLineHighlightOp(ID_OP6);
-
+  if (drawState == nullptr || drawState->PreviousDrawCommand() != ID_OP6) {
+    if (drawState != nullptr) { drawState->SetPreviousDrawCommand(ModeLineHighlightOp(ID_OP6)); }
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -108,10 +118,11 @@ void AeSysView::OnDrawModeBspline() {
 }
 
 void AeSysView::OnDrawModeCircle() {
+  auto* drawState = DrawState(this);
   const auto cursorPosition = GetCursorPosition();
 
-  if (previousDrawCommand != ID_OP7) {
-    previousDrawCommand = ModeLineHighlightOp(ID_OP7);
+  if (drawState == nullptr || drawState->PreviousDrawCommand() != ID_OP7) {
+    if (drawState != nullptr) { drawState->SetPreviousDrawCommand(ModeLineHighlightOp(ID_OP7)); }
     pts.RemoveAll();
     pts.Add(cursorPosition);
     m_PreviewGroup.DeletePrimitivesAndRemoveAll();
@@ -122,10 +133,11 @@ void AeSysView::OnDrawModeCircle() {
 }
 
 void AeSysView::OnDrawModeEllipse() {
+  auto* drawState = DrawState(this);
   const auto cursorPosition = GetCursorPosition();
 
-  if (previousDrawCommand != ID_OP8) {
-    previousDrawCommand = ModeLineHighlightOp(ID_OP8);
+  if (drawState == nullptr || drawState->PreviousDrawCommand() != ID_OP8) {
+    if (drawState != nullptr) { drawState->SetPreviousDrawCommand(ModeLineHighlightOp(ID_OP8)); }
     pts.RemoveAll();
     pts.Add(cursorPosition);
   } else {
@@ -144,6 +156,8 @@ void AeSysView::OnDrawModeInsert() {
 void AeSysView::OnDrawModeReturn() {
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
+  auto* drawState = DrawState(this);
+  std::uint16_t previousDrawCommand = drawState != nullptr ? drawState->PreviousDrawCommand() : std::uint16_t{0};
 
   const auto numberOfPoints = pts.GetSize();
   EoDbGroup* group{};
@@ -262,18 +276,22 @@ void AeSysView::OnDrawModeReturn() {
   InvalidateScene();
   pts.RemoveAll();
   ModeLineUnhighlightOp(previousDrawCommand);
-  previousDrawCommand = 0;
+  if (drawState != nullptr) { drawState->SetPreviousDrawCommand(0); }
 }
 
 void AeSysView::OnDrawModeEscape() {
+  auto* drawState = DrawState(this);
+  auto previousDrawCommand = drawState != nullptr ? drawState->PreviousDrawCommand() : std::uint16_t{0};
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   InvalidateOverlay();
   pts.RemoveAll();
   ModeLineUnhighlightOp(previousDrawCommand);
-  previousDrawCommand = 0;
+  if (drawState != nullptr) { drawState->SetPreviousDrawCommand(0); }
 }
 
 void AeSysView::OnDrawModeShiftReturn() {
+  auto* drawState = DrawState(this);
+  auto previousDrawCommand = drawState != nullptr ? drawState->PreviousDrawCommand() : std::uint16_t{0};
   if (previousDrawCommand == ID_OP3) {
     auto* group = new EoDbGroup(new EoDbPolyline(pts));
     auto* document = GetDocument();
@@ -281,23 +299,19 @@ void AeSysView::OnDrawModeShiftReturn() {
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
   }
   ModeLineUnhighlightOp(previousDrawCommand);
-  previousDrawCommand = 0;
+  if (drawState != nullptr) { drawState->SetPreviousDrawCommand(0); }
   pts.RemoveAll();
 }
-#ifdef USING_STATE_PATTERN
 void AeSysView::OnDrawCommand(UINT command) {
   auto* state = GetCurrentState();
-  if (state) {
-    state->HandleCommand(this, command);
-  } else {
-    // Fallback or error
-  }
+  if (state != nullptr) { state->HandleCommand(this, command); }
 }
-#endif
 void AeSysView::DoDrawModeMouseMove() {
   const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
   const auto numberOfPoints = pts.GetSize();
+  auto* drawState = DrawState(this);
+  const std::uint16_t previousDrawCommand = drawState != nullptr ? drawState->PreviousDrawCommand() : std::uint16_t{0};
 
   switch (previousDrawCommand) {
     case ID_OP2:

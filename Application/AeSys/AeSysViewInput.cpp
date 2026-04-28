@@ -9,9 +9,7 @@
 #include "EoGePoint4d.h"
 #include "Resource.h"
 
-#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
-#endif
 
 void AeSysView::DoCustomMouseClick(const CString& characters) {
   int position{};
@@ -26,27 +24,22 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
     }
   }
 }
-#ifdef USING_STATE_PATTERN
 BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
   if (pMsg->message == WM_KEYDOWN) {
     auto* state = GetCurrentState();
-    if (state && state->HandleKeypad(this, static_cast<UINT>(pMsg->wParam), 1, static_cast<UINT>(pMsg->lParam))) {
+    if (state != nullptr && state->HandleKeypad(this, static_cast<UINT>(pMsg->wParam), 1, static_cast<UINT>(pMsg->lParam))) {
       return TRUE;  // Handled by state
     }
   }
   return CView::PreTranslateMessage(pMsg);
 }
-#endif
 
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
-#ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
-  if (state) {
+  if (state != nullptr) {
     state->OnLButtonDown(this, flags, point);
-    /*if ( handled )*/ { return; }
+    return;
   }
-  // Fallback to existing logic
-#endif
   if (app.CustomLButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
     CView::OnLButtonDown(flags, point);
   } else {
@@ -249,10 +242,8 @@ void AeSysView::OnMButtonUp([[maybe_unused]] UINT flags, [[maybe_unused]] CPoint
 
 void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
-#ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
-  if (state) { state->OnMouseMove(this, flags, point); }
-#endif
+  if (state != nullptr) { state->OnMouseMove(this, flags, point); }
   if (m_middleButtonPanInProgress) {
     const auto delta = point - m_middleButtonPanStartPoint;
     m_middleButtonPanStartPoint = point;
@@ -329,18 +320,6 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
 
     case ID_MODE_POWER:
       DoPowerModeMouseMove();
-      break;
-
-    case ID_MODE_PRIMITIVE_EDIT:
-      PreviewPrimitiveEdit();
-      break;
-
-    case ID_MODE_PRIMITIVE_MEND:
-      PreviewMendPrimitive();
-      break;
-
-    case ID_MODE_GROUP_EDIT:
-      PreviewGroupEdit();
       break;
   }
   if (m_rubberbandType == Lines || m_rubberbandType == Rectangles) {

@@ -85,6 +85,7 @@ class AeSys : public CWinAppEx {
   int m_CurrentMode{};
   int m_ModeResourceIdentifier{};
   int m_PrimaryMode{ID_MODE_DRAW};
+  int m_primaryModeResourceIdentifier{};  ///< resource identifier saved when entering a pick-and-drag sub-mode
 
   std::int16_t m_TrapHighlightColor{};
   bool m_ClipboardDataEoGroups{true};
@@ -118,7 +119,10 @@ class AeSys : public CWinAppEx {
 
   // Accessors for mode management (needed by AeSysView)
   void SetModeResourceIdentifier(int resourceId) noexcept { m_ModeResourceIdentifier = resourceId; }
+  [[nodiscard]] int ModeResourceIdentifier() const noexcept { return m_ModeResourceIdentifier; }
   void SetPrimaryMode(int mode) noexcept { m_PrimaryMode = mode; }
+  void SetPrimaryModeResourceIdentifier(int resourceId) noexcept { m_primaryModeResourceIdentifier = resourceId; }
+  [[nodiscard]] int PrimaryModeResourceIdentifier() const noexcept { return m_primaryModeResourceIdentifier; }
   void SetModeAddGroups(bool addGroups) noexcept { m_TrapModeAddGroups = addGroups; }
   [[nodiscard]] bool TrapModeAddGroups() const noexcept { return m_TrapModeAddGroups; }
 

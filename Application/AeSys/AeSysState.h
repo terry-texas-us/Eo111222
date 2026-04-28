@@ -39,6 +39,8 @@ class AeSysState {
   virtual void HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT command) {}
 
   // Drawing/Updates
+  // Called after DisplayAllLayers completes — override to add mode-specific overlays.
+  // Do NOT call DisplayAllLayers from an override; the scene has already been rendered.
   virtual void OnDraw([[maybe_unused]] AeSysView* context, [[maybe_unused]] CDC* deviceContext) {}
 
   virtual bool OnUpdate([[maybe_unused]] AeSysView* context,

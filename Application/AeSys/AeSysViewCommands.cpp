@@ -23,10 +23,7 @@
 #include "MainFrm.h"
 #include "Resource.h"
 
-#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
-#include "DrawModeState.h"
-#endif
 
 #ifdef USING_DDE
 #include "Dde.h"
@@ -640,11 +637,13 @@ void AeSysView::OnOp4() {
   const auto* document = GetDocument();
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
+      app.SetModeResourceIdentifier(app.PrimaryModeResourceIdentifier());
       app.LoadModeResources(app.PrimaryMode());
       document->InitializeGroupAndPrimitiveEdit();
       break;
 
     case ID_MODE_GROUP_EDIT:
+      app.SetModeResourceIdentifier(app.PrimaryModeResourceIdentifier());
       app.LoadModeResources(app.PrimaryMode());
       document->InitializeGroupAndPrimitiveEdit();
       break;
@@ -702,17 +701,13 @@ void AeSysView::OnOp8() {
 void AeSysView::OnReturn() {
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
-      app.LoadModeResources(app.PrimaryMode());
-      InitializeGroupAndPrimitiveEdit();
-      break;
-
     case ID_MODE_GROUP_EDIT:
-      app.LoadModeResources(app.PrimaryMode());
-      InitializeGroupAndPrimitiveEdit();
+      // Commit drag — geometry stays, pop back to primary mode.
+      PopState();
       break;
 
     case ID_MODE_PRIMITIVE_MEND:
-      MendPrimitiveReturn();
+      MendStateReturn();
       break;
   }
 }
@@ -733,7 +728,7 @@ void AeSysView::OnEscape() {
       break;
 
     case ID_MODE_PRIMITIVE_MEND:
-      MendPrimitiveEscape();
+      MendStateEscape();
       break;
   }
 }
@@ -752,70 +747,82 @@ void AeSysView::SetWorldScale(double scale) {
   }
 }
 
+#include "DrawModeState.h"
+
 void AeSysView::OnModeAnnotate() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_ANNOTATE_MODE);
   app.SetPrimaryMode(ID_MODE_ANNOTATE);
   app.LoadModeResources(ID_MODE_ANNOTATE);
 }
 
 void AeSysView::OnModeCut() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_CUT_MODE);
   app.SetPrimaryMode(ID_MODE_CUT);
   app.LoadModeResources(ID_MODE_CUT);
 }
 
 void AeSysView::OnModeDimension() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_DIMENSION_MODE);
   app.SetPrimaryMode(ID_MODE_DIMENSION);
   app.LoadModeResources(ID_MODE_DIMENSION);
 }
 
 void AeSysView::OnModeDraw() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_DRAW_MODE);
   app.SetPrimaryMode(ID_MODE_DRAW);
   app.LoadModeResources(ID_MODE_DRAW, this);
-#ifdef USING_STATE_PATTERN
   PushState(std::make_unique<DrawModeState>());
-#endif
 }
 
 void AeSysView::OnModeDraw2() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_DRAW2_MODE);
   app.SetPrimaryMode(ID_MODE_DRAW2);
   app.LoadModeResources(ID_MODE_DRAW2);
 }
 
 void AeSysView::OnModeEdit() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_EDIT_MODE);
   app.LoadModeResources(ID_MODE_EDIT);
 }
 
 void AeSysView::OnModeFixup() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_FIXUP_MODE);
   app.LoadModeResources(ID_MODE_FIXUP);
 }
 
 void AeSysView::OnModeLPD() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_LPD_MODE);
   app.LoadModeResources(ID_MODE_LPD);
 }
 
 void AeSysView::OnModeNodal() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_NODAL_MODE);
   app.LoadModeResources(ID_MODE_NODAL);
 }
 
 void AeSysView::OnModePipe() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_PIPE_MODE);
   app.LoadModeResources(ID_MODE_PIPE);
 }
 
 void AeSysView::OnModePower() {
+  PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_POWER_MODE);
   app.LoadModeResources(ID_MODE_POWER);
 }
 
 void AeSysView::OnModeTrap() {
+  PopAllModeStates();
   if (app.TrapModeAddGroups()) {
     app.SetModeResourceIdentifier(IDR_TRAP_MODE);
     app.LoadModeResources(ID_MODE_TRAP);

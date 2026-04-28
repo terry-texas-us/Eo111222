@@ -859,6 +859,19 @@ BEGIN
     VK_RETURN,      ID_EDIT_MODE_SHIFT_RETURN, VIRTKEY, SHIFT, NOINVERT
 END
 
+IDR_PICK_AND_DRAG_MODE ACCELERATORS
+BEGIN
+    VK_RETURN,      ID_EDIT_MODE_RETURN,         VIRTKEY, NOINVERT
+    VK_ESCAPE,      ID_EDIT_MODE_ESCAPE,         VIRTKEY, NOINVERT
+    VK_RETURN,      ID_EDIT_MODE_SHIFT_RETURN,   VIRTKEY, SHIFT, NOINVERT
+END
+
+IDR_MEND_MODE ACCELERATORS
+BEGIN
+    VK_RETURN,      ID_EDIT_MODE_RETURN,         VIRTKEY, NOINVERT
+    VK_ESCAPE,      ID_EDIT_MODE_ESCAPE,         VIRTKEY, NOINVERT
+END
+
 IDR_TRAP_MODE ACCELERATORS
 BEGIN
     "0",            ID_TRAP_MODE_REMOVE_ADD, ASCII, NOINVERT
@@ -3170,7 +3183,7 @@ BEGIN
     ID_MODE_TRAPR           "Trap Rem\n0 Add\n1 Point\n2 Stitch\n\n4 Field\n5 Last\n6 Engage\n\n8 Menu\n9 Modify"
     ID_MODE_FIXUP           "Fixup\n0 Options\n1 Reference\n2 Mend\n3 Chamfer\n4 Fillet\n5 Square\n6 Parallel\n\n\n"
     ID_MODE_PRIMITIVE_EDIT  "Primitive Edit\n0 Options\n\n2 RotCCW\n3 RotCW\n\n5 Copy\n6 Flip\n7 Reduce\n8 Enlarge\n"
-    ID_MODE_PRIMITIVE_MEND  "Primitive Mend\n\n\n\n\n\n\n\n\n\n"
+    ID_MODE_PRIMITIVE_MEND  "Primitive Mend\nReturn Commit\nEscape Cancel\n\n\n\n\n\n\n\n"
     ID_MODE_GROUP_EDIT      "Group Edit\n0 Options\n\n2 RotCCW\n3 RotCW\n\n5 Copy\n6 Flip\n7 Reduce\n8 Enlarge\n"
     ID_MODE_LPD             "Low Pressure Duct\n0 Options\n1 Join\n2 Duct\n3 Trans\n4 Tap\n5 Ell\n6 Tee\n7 UpDn\n\n9 Size"
     ID_MODE_POWER           "Power\n0 Options\n\n2 Circuit\n\n4 Ground\n5 Hot\n6 Switch\n7 Neutral\n8 Home\n"

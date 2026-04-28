@@ -10,11 +10,7 @@
 #include "MainFrm.h"
 #include "Resource.h"
 
-#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
-#include "DrawModeState.h"
-#include "IdleState.h"
-#endif
 
 IMPLEMENT_DYNCREATE(AeSysView, CView)
 
@@ -181,9 +177,7 @@ ON_UPDATE_COMMAND_UI(ID_VIEW_WIREFRAME, OnUpdateViewWireframe)
 ON_UPDATE_COMMAND_UI(ID_VIEW_DIRECT2D, OnUpdateViewDirect2D)
 ON_UPDATE_COMMAND_UI(ID_VIEW_ALIASED, OnUpdateViewAliased)
 ON_UPDATE_COMMAND_UI(ID_VIEW_BACKGROUND_TOGGLE, OnUpdateViewBackgroundToggle)
-#ifdef USING_STATE_PATTERN
-ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN, &AeSysView::OnDrawCommand)
-#endif
+// ON_COMMAND_RANGE for draw mode commands is registered by Phase 2 when a DrawModeState is active.
 #pragma warning(pop)
 ON_COMMAND(ID_DRAW_MODE_OPTIONS, &AeSysView::OnDrawModeOptions)
 ON_COMMAND(ID_DRAW_MODE_POINT, &AeSysView::OnDrawModePoint)
@@ -337,8 +331,17 @@ AeSysView::AeSysView() {
   m_Viewport.SetDeviceHeightInInches(app.DeviceHeightInMillimeters() / Eo::MmPerInch);
 }
 
-AeSysView::~AeSysView() {}
-#ifdef USING_STATE_PATTERN
+AeSysView::~AeSysView() {
+  // Drain the state stack WITHOUT calling OnExit — the window is being destroyed
+  // and any window API calls (InvalidateRect, SetPaneText, etc.) inside OnExit
+  // would fault on the dead HWND.  Memory owned by each state is released by
+  // the unique_ptr destructor; heap objects that live outside the state must be
+  // cleaned up explicitly below.
+  while (!m_stateStack.empty()) { m_stateStack.pop(); }
+
+  // Free preview primitives that DrawModeState::OnExit would normally delete.
+  m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+}
 void AeSysView::PushState(std::unique_ptr<AeSysState> newState) {
   if (!m_stateStack.empty()) { m_stateStack.top()->OnExit(this); }
   newState->OnEnter(this);
@@ -355,10 +358,16 @@ void AeSysView::PopState() {
   }
 }
 
-AeSysState* AeSysView::GetCurrentState() const {
+AeSysState* AeSysView::GetCurrentState() const noexcept {
   return m_stateStack.empty() ? nullptr : m_stateStack.top().get();
 }
-#endif
+
+void AeSysView::PopAllModeStates() {
+  while (!m_stateStack.empty()) {
+    m_stateStack.top()->OnExit(this);
+    m_stateStack.pop();
+  }
+}
 AeSysDoc* AeSysView::GetDocument() const {
 #ifdef _DEBUG
   auto* document = dynamic_cast<AeSysDoc*>(m_pDocument);

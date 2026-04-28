@@ -981,3 +981,99 @@ Use `BS_OWNERDRAW` buttons with parent-handled `WM_DRAWITEM` to replicate the to
 
 ### Reference Implementation
 `EoMfLayoutTabBar::OnDrawItem` and `PreTranslateMessage` in `EoMfLayoutTabBar.cpp` — block edit Save/SaveAs/Close buttons.
+
+## Mode State Pattern
+
+### Architecture Overview
+`AeSysView` owns a `std::stack<std::unique_ptr<AeSysState>> m_stateStack`. Push/pop is always available — the stack starts empty and all dispatch points guard with `if (state != nullptr)`, so zero stack size is a valid idle condition.
+
+`AeSysState` (`AeSysState.h`) is the abstract base. Derived mode states own their per-command sub-state (previous op, point accumulator). `AeSysView` retains `m_PreviousOp` and `pts` for modes not yet migrated.
+
+The `ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN)` entry is **permanently removed** from the message map. Individual `ON_COMMAND` handlers remain. `OnDrawCommand` exists as a method for future use but is not in the message map.
+
+### Dispatch Points (always-active, null-safe)
+| Location | Dispatch |
+|----------|---------|
+| `AeSysViewInput.cpp::PreTranslateMessage` | `state->HandleKeypad(...)` |
+| `AeSysViewInput.cpp::OnLButtonDown` | `state->OnLButtonDown(...)` — early return if state present |
+| `AeSysViewInput.cpp::OnMouseMove` | `state->OnMouseMove(...)` — falls through to existing mode switch |
+| `AeSysViewRender.cpp::OnDraw` (back buffer) | `state->OnDraw(...)` adds overlays after `DisplayAllLayers` completes |
+| `AeSysViewRender.cpp::OnUpdate` | `state->OnUpdate(...)` — `isHandledByState` gate |
+| `AeSysViewDrawMode.cpp::OnDrawCommand` | `state->HandleCommand(...)` when non-null |
+
+### OnLButtonDown Routing Rule
+When the stack is non-empty, `OnLButtonDown` calls `state->OnLButtonDown(...)` and returns immediately — the existing `CView::OnLButtonDown` / custom-click path is bypassed. This is intentional: once a mode state is active it owns all left-click input.
+
+### OnMouseMove Routing Rule
+`state->OnMouseMove(...)` is called first but does **not** consume the event. The existing `app.CurrentMode()` switch still runs afterward. For sub-modes that fully own their preview (e.g., `PickAndDragState`, `PrimitiveMendState`), the corresponding `case` in the switch is **removed** — the state's `OnMouseMove` is the sole handler. For `DrawModeState`, the switch case remains active because the state's `OnMouseMove` is additive only.
+
+### OnDraw Routing Rule
+`state->OnDraw(...)` is called **after** `DisplayAllLayers` and `DisplayUniquePoints` complete — it adds mode-specific overlays on top of the already-rendered scene. A mode state's `OnDraw` must **not** call `DisplayAllLayers` itself. This is an additive (overlay-only) contract, not a replacement contract.
+
+### PreviewGroup Contract
+- Preview primitives are built inside `EoDbHandleSuppressionScope` — no handles assigned.
+- Preview is rebuilt from scratch on every `OnMouseMove` — no incremental update.
+- `OnExit` of every mode state must call `context->PreviewGroup().DeletePrimitivesAndRemoveAll()` and `context->RubberBandingDisable()`.
+- Call `InvalidateScene()` for back-buffer changes. Call `Invalidate()` for overlay-only updates.
+
+### Destructor Safety Rule
+`~AeSysView` drains the stack via raw `pop()` only — **no `OnExit` calls in the destructor**. Window APIs (`InvalidateRect`, `SetPaneText`, `RubberBandingDisable`) are illegal on a dead HWND. Each state's `unique_ptr` destructor releases its owned heap memory. Only objects that live *outside* the state (e.g., `m_PreviewGroup` primitives) are cleaned up explicitly in the destructor body.
+
+### Phase Implementation Status
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Prune `USING_STATE_PATTERN` guards; delete `DrawModeState`/`IdleState`; make infrastructure unconditional | ✅ Complete |
+| 2A | `DrawModeState` lifecycle only — push on `OnModeDraw`, pop on escape/return/mode-switch; `OnExit` consolidates cleanup | ✅ Complete |
+| 2B | Move point accumulator (`pts`) into `DrawModeState::m_pts`; remove from `AeSysView` | ⚠️ Deferred — `pts` is shared by Draw, Annotate, Nodal, Pipe, and Power modes; it cannot be moved to `DrawModeState` alone without leaving four modes using a stale `AeSysView::pts`. Correct path: migrate each mode to its own state class (each owning its own pts). `pts` remains on `AeSysView` until then. |
+| 2C | Move draw sub-command state (`m_previousDrawCommand`) into `DrawModeState`; decouple from `m_PreviousOp` | ✅ Complete |
+| 2D | `PickAndDragState` for `;`/`:` pick-and-drag sub-modes — owns all edit sub-mode data | ✅ Complete |
+| 2E | `PrimitiveMendState` for `M` mend sub-mode — owns all mend data; `IDR_MEND_MODE` accel table | ✅ Complete (geometry correct; mouse-move visual feedback investigation pending — see Known Issues) |
+| 3 | `EoDocCommand` undo stack on `AeSysDoc`; replace `m_DeletedGroupList` with `EoDocCmdDeleteGroup` | ⬜ Pending |
+
+### DrawModeState (Phases 2A + 2C)
+- Pushed by `AeSysView::OnModeDraw()`.
+- Popped by `OnDrawModeEscape()`, `OnDrawModeReturn()`, and every other `OnMode*()` entry point via `PopAllModeStates()`.
+- `OnEnter` calls `app.SetModeResourceIdentifier(IDR_DRAW_MODE)` + `app.LoadModeResources(ID_MODE_DRAW)` — restores draw mode UI when re-entered after a sub-mode pop.
+- `OnExit` is the single authoritative cleanup point: `RubberBandingDisable()`, `PreviewGroup().DeletePrimitivesAndRemoveAll()`, `ModeLineUnhighlightOp(m_previousDrawCommand)`, `ClearPoints()`.
+- Owns `m_previousDrawCommand` (`std::uint16_t`) — replaces the old file-local static in `AeSysViewDrawMode.cpp`.
+
+### PickAndDragState (Phase 2D)
+- Pushed by `AeSysView::OnModePrimitiveEdit()` / `OnModeGroupEdit()` (`;` / `:` AKs).
+- `OnEnter` calls `SelectGroupAndPrimitive`, stores group/primitive, loads `IDR_PICK_AND_DRAG_MODE`.
+- `OnExit` calls `InitializeGroupAndPrimitiveEdit()`, then restores primary mode via `app.PrimaryModeResourceIdentifier()` / `app.PrimaryMode()`.
+- `OnMouseMove` fully owns preview: dispatches `PreviewPrimitiveEdit()` / `PreviewGroupEdit()`. The corresponding switch cases are **removed** from `AeSysViewInput.cpp::OnMouseMove`.
+- Return: `OnEditModeReturn()` and `OnReturn()` call `PopState()` (commit — geometry stays).
+- Escape: `DoEditPrimitiveEscape()` / `DoEditGroupEscape()` undo the transform then call `PopState()`.
+- Owns: `m_subModeEditGroup`, `m_subModeEditPrimitive`, `m_subModeEditBeginPoint`, `m_subModeEditEndPoint`, `m_tmEditSeg` — all removed from `AeSysView`.
+
+### PrimitiveMendState (Phase 2E)
+- Pushed by `AeSysView::OnModePrimitiveMend()` (`M` AK). Push is guarded: `OnEnter` is called first; if nothing is engaged (`IsEngaged() == false`), the state is not pushed.
+- `OnEnter` replicates the old `OnModePrimitiveMend` selection logic: checks engaged group first, then `SelectGroupAndPrimitive`; calls `Copy`, `SelectAtControlPoint`, loads `IDR_MEND_MODE`.
+- `OnExit` frees `m_primitiveToMendCopy` (safety net via `DeleteCopy()`) and restores primary mode.
+- `OnMouseMove` fully owns the vertex drag preview via `UpdateAllViews(kPrimitiveEraseSafe/kPrimitiveSafe)` + `TranslateUsingMask`. The `ID_MODE_PRIMITIVE_MEND` case is **removed** from `AeSysViewInput.cpp::OnMouseMove`.
+- Return: `AeSysView::MendStateReturn()` — document primitive is already at dragged position; just commits with a final `kPrimitiveSafe` redraw, then `ConsumeCopy()` + `PopState()`.
+- Escape: `AeSysView::MendStateEscape()` — erases current position, calls `Assign` to restore snapshot from copy, redraws at original, then `ConsumeCopy()` + `PopState()`.
+- `ConsumeCopy()` nulls `m_primitiveToMendCopy` before `PopState()` so `OnExit`'s safety `DeleteCopy()` is a no-op.
+- Owns: `m_primitiveToMend` (non-owning), `m_primitiveToMendCopy` (owning snapshot for Escape), `m_mendPrimitiveBegin`, `m_mendPrimitiveVertexIndex` — all removed from `AeSysView`.
+- **Visual feedback**: `OnMouseMove` moves the document primitive directly (same as `PreviewPrimitiveEdit`) so `kPrimitiveEraseSafe`/`kPrimitiveSafe` hints produce correct incremental updates. The copy is kept only as a revert snapshot for Escape.
+
+### PopAllModeStates
+`AeSysView::PopAllModeStates()` — empties the stack, calling `OnExit` on each state in order. Called at the top of every `OnMode*()` switching command to ensure clean teardown regardless of which mode was active.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysState.h` | Abstract base — lifecycle virtuals, input virtuals, all with safe no-op defaults |
+| `AeSys\DrawModeState.h/.cpp` | Draw mode state — Phases 2A + 2C complete; owns `m_previousDrawCommand` |
+| `AeSys\PickAndDragState.h/.cpp` | Pick-and-drag sub-mode — Phase 2D complete; owns all edit sub-mode data |
+| `AeSys\PrimitiveMendState.h/.cpp` | Mend sub-mode — Phase 2E complete; owns all mend data; `MendStateReturn`/`MendStateEscape` on `AeSysView` |
+| `AeSys\AeSysView.h/.cpp` | Stack ownership, `PushState`, `PopState`, `PopAllModeStates`, `GetCurrentState`; destructor: raw `pop()` only |
+| `AeSys\AeSysViewDrawMode.cpp` | `OnDrawCommand`, `DoDrawModeMouseMove`, individual `OnDrawMode*` handlers; uses `DrawState(this)` helper |
+| `AeSys\AeSysViewCommands.cpp` | `OnModeDraw` (push), all other `OnMode*` (call `PopAllModeStates` first); `OnReturn`/`OnEscape` route Mend to `MendStateReturn`/`MendStateEscape` |
+| `AeSys\AeSysViewInput.cpp` | `PreTranslateMessage`, `OnLButtonDown`, `OnMouseMove` dispatch; PRIMITIVE_EDIT/GROUP_EDIT/PRIMITIVE_MEND cases removed from switch |
+| `AeSys\AeSysViewEditMode.cpp` | `OnEditModeReturn`/`OnEditModeEscape` — PRIMITIVE_EDIT/GROUP_EDIT pop state; PRIMITIVE_MEND dispatches to `MendStateReturn`/`MendStateEscape` |
+| `AeSys\AeSysViewPrimitiveSubModeMend.cpp` | `OnModePrimitiveMend` — saves primary mode sidecar, creates and conditionally pushes `PrimitiveMendState` |
+| `AeSys\AeSysViewPrimitiveSubModeEdit.cpp` | `OnModePrimitiveEdit` and `Do*` handlers — use `PickDragState(this)` helper |
+| `AeSys\AeSysViewGroupSubModeEdit.cpp` | `OnModeGroupEdit` and `Do*` handlers — use `PickDragState(this)` helper |
+| `AeSys\AeSysViewRender.cpp` | `OnDraw` back-buffer dispatch; `state->OnDraw` additive overlay after `DisplayAllLayers` |
+

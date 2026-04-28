@@ -74,25 +74,25 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
-    <CodeAnalysisRuleSet>C++ Core Guidelines.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
-    <CodeAnalysisRuleSet>C++ Core Guidelines.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
-    <CodeAnalysisRuleSet>C++ Core Guidelines.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <EnableMicrosoftCodeAnalysis>true</EnableMicrosoftCodeAnalysis>
     <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
-    <CodeAnalysisRuleSet>C++ Core Guidelines.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -196,6 +196,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="DrawModeState.cpp" />
     <ClCompile Include="EoCtrlColorComboBox.cpp" />
     <ClCompile Include="EoCtrlLayerComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
@@ -205,6 +206,8 @@
     <ClCompile Include="EoDlgTextStyleManager.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
+    <ClCompile Include="PickAndDragState.cpp" />
+    <ClCompile Include="PrimitiveMendState.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -252,7 +255,6 @@
     <ClCompile Include="DdeAeSysRegistration.cpp" />
     <ClCompile Include="DdeCmds.cpp" />
     <ClCompile Include="DdeGItms.cpp" />
-    <ClCompile Include="DrawModeState.cpp" />
     <ClCompile Include="Eo.cpp" />
     <ClCompile Include="EoApOptions.cpp" />
     <ClCompile Include="EoCtrlColorsButton.cpp" />
@@ -350,7 +352,6 @@
     <ClCompile Include="EoMfPropertiesDockablePane.cpp" />
     <ClCompile Include="EoMfVisualManager.cpp" />
     <ClCompile Include="EoOdaConverter.cpp" />
-    <ClCompile Include="IdleState.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="ModeLine.cpp" />
     <ClCompile Include="Section.cpp" />
@@ -481,11 +482,12 @@
     <ClInclude Include="EoOdaConverter.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="Header.h" />
-    <ClInclude Include="IdleState.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="LexTable.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="PickAndDragState.h" />
+    <ClInclude Include="PrimitiveMendState.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="Stdafx.h" />

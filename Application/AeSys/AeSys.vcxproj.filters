@@ -374,6 +374,10 @@
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Toolbar Bitmaps\LayerStates.bmp" />

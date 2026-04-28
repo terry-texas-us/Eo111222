@@ -21,11 +21,9 @@
 #include "EoMfLayoutTabBar.h"
 #include "Section.h"
 
-#ifdef USING_STATE_PATTERN
 #include <stack>
 
 #include "AeSysState.h"
-#endif
 class AeSysDoc;
 class EoDbBlock;
 class EoDbConic;
@@ -61,35 +59,40 @@ class AeSysView : public CView {
   };
   enum ERubs { None, Lines, Rectangles };
 
-#ifdef USING_STATE_PATTERN
- private:
-  std::stack<std::unique_ptr<AeSysState>> m_stateStack;
+private:
+ std::stack<std::unique_ptr<AeSysState>> m_stateStack;
 
- public:
-  /**
-   * @brief Pushes a new state onto the state stack.
-   * This function exits the current state (if any), enters the new state, and pushes it onto the stack.
-   * It also triggers a redraw of the view.
-   * @param newState A unique pointer to the new state to be pushed.
-   */
-  void PushState(std::unique_ptr<AeSysState> newState);
+public:
+ /**
+  * @brief Pushes a new state onto the state stack.
+  * This function exits the current state (if any), enters the new state, and pushes it onto the stack.
+  * It also triggers a redraw of the view.
+  * @param newState A unique pointer to the new state to be pushed.
+  */
+ void PushState(std::unique_ptr<AeSysState> newState);
 
-  /**
-   * @brief Pops the current state from the state stack.
-   * This function exits the current state, pops it from the stack, and enters the new top state (if any).
-   * It also triggers a redraw of the view.
-   */
-  void PopState();
+ /**
+  * @brief Pops the current state from the state stack.
+  * This function exits the current state, pops it from the stack, and enters the new top state (if any).
+  * It also triggers a redraw of the view.
+  */
+ void PopState();
 
-  /**
-   * @brief Gets a pointer to the current state.
-   * @return A pointer to the current state, or nullptr if the stack is empty.
-   */
-  AeSysState* GetCurrentState() const;
+ /// @brief Empties the state stack, calling OnExit on each state in LIFO order.
+ /// Call at the top of every OnMode*() switching command to ensure clean teardown
+ /// regardless of which mode state was active.
+ void PopAllModeStates();
 
-  /// Accessor for state classes that need the preview group.
-  [[nodiscard]] EoDbGroup& PreviewGroup() noexcept { return m_PreviewGroup; }
-#endif
+ /**
+  * @brief Gets a pointer to the current state.
+  * @return A pointer to the current state, or nullptr if the stack is empty.
+  */
+ [[nodiscard]] AeSysState* GetCurrentState() const noexcept;
+
+ /// Accessor for state classes that need the preview group.
+ [[nodiscard]] EoDbGroup& PreviewGroup() noexcept { return m_PreviewGroup; }
+ /// Clear the shared point accumulator (used by draw mode and other modes).
+ void ClearPoints() { pts.RemoveAll(); }
  private:
   EoGsModelTransform m_ModelTransform;
   EoGsViewport m_Viewport;
@@ -356,10 +359,8 @@ class AeSysView : public CView {
   afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg BOOL OnEraseBkgnd(CDC* deviceContext);
   afx_msg void OnKillFocus(CWnd* newWindow);
-#ifdef USING_STATE_PATTERN
-  afx_msg BOOL PreTranslateMessage(MSG* pMsg);
-#endif
-  afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+afx_msg BOOL PreTranslateMessage(MSG* pMsg);
+afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   afx_msg void OnLButtonDown(UINT nFlags, CPoint pnt);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint pnt);
   afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
@@ -601,12 +602,6 @@ class AeSysView : public CView {
   void SetDeviceWidthInInches(double width) { m_Viewport.SetDeviceWidthInInches(width); }
 
  public:  // Group and Primitive operations
-  EoDbGroup* m_SubModeEditGroup{};
-  EoDbPrimitive* m_SubModeEditPrimitive{};
-  EoGePoint3d m_SubModeEditBeginPoint{};
-  EoGePoint3d m_SubModeEditEndPoint{};
-  EoGeTransformMatrix m_tmEditSeg{};
-
   void InitializeGroupAndPrimitiveEdit();
   void DoEditGroupCopy();
   void DoEditGroupEscape();
@@ -617,14 +612,9 @@ class AeSysView : public CView {
   void PreviewPrimitiveEdit();
   void PreviewGroupEdit();
 
-  EoGePoint3d m_MendPrimitiveBegin{};
-  DWORD m_MendPrimitiveVertexIndex{};
-  EoDbPrimitive* m_PrimitiveToMend{};
-  EoDbPrimitive* m_PrimitiveToMendCopy{};
-
-  void PreviewMendPrimitive();
-  void MendPrimitiveEscape();
-  void MendPrimitiveReturn();
+  // Phase 2E: Mend sub-mode state owned by PrimitiveMendState on the stack.
+  void MendStateReturn();
+  void MendStateEscape();
 
   /// Annotate Mode Interface ///////////////////////////////////////////////////
  private:  // Annotate and Dimension interface
@@ -687,10 +677,8 @@ class AeSysView : public CView {
   afx_msg void OnInsertTracing();
   void DoDrawModeMouseMove();
 
-#ifdef USING_STATE_PATTERN
-  afx_msg void OnDrawCommand(UINT nID);
-#endif
-  afx_msg void OnDrawModeOptions();
+afx_msg void OnDrawCommand(UINT nID);
+afx_msg void OnDrawModeOptions();
   afx_msg void OnDrawModePoint();
   afx_msg void OnDrawModeLine();
   afx_msg void OnDrawModePolygon();

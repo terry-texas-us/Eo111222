@@ -25,10 +25,7 @@
 #include "EoGsViewTransform.h"
 #include "MainFrm.h"
 
-#ifdef USING_STATE_PATTERN
 #include "AeSysState.h"
-#include "IdleState.h"
-#endif
 
 #ifdef USING_DDE
 #include "Dde.h"
@@ -111,7 +108,10 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     return;
   }
 
-  // Direct2D rendering path — the HWND render target is inherently double-buffered
+  // Direct2D rendering path — the HWND render target is inherently double-buffered.
+  // If m_useD2D is set but the target was not yet created (e.g. early OnSize before
+  // the HWND was presentable), attempt creation now.
+  if (m_useD2D && !m_d2dRenderTarget) { CreateD2DRenderTarget(); }
   if (m_useD2D && m_d2dRenderTarget) {
     if (m_sceneInvalid || m_overlayDirty) {
       m_d2dRenderTarget->BeginDraw();
@@ -266,18 +266,12 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         BackgroundImageDisplay(&m_backBufferDC);
         DisplayGrid(&m_backBufferDC);
         EoGsRenderDeviceGdi renderDevice(&m_backBufferDC);
-#ifdef USING_STATE_PATTERN
-        auto* state = GetCurrentState();
-        if (state) {
-          state->OnDraw(this, &m_backBufferDC);
-        } else {
-          document->DisplayAllLayers(this, &renderDevice);
-          document->DisplayUniquePoints();
-        }
-#else
         document->DisplayAllLayers(this, &renderDevice);
         document->DisplayUniquePoints();
-#endif
+        // State overlay: called after scene so states can draw mode-specific
+        // overlays on top (e.g., preview geometry, selection hints).
+        auto* state = GetCurrentState();
+        if (state != nullptr) { state->OnDraw(this, &m_backBufferDC); }
       }
 
       if (needsWhiteBackground) {
@@ -381,9 +375,6 @@ void AeSysView::OnInitialUpdate() {
   // layout viewport so the plot pipeline can use the same paper-space rendering path.
   if (auto* document = GetDocument()) { document->CreateDefaultPaperSpaceViewport(this); }
 
-#ifdef USING_STATE_PATTERN
-  PushState(std::make_unique<IdleState>());
-#endif
   OnModeDraw();
 
   // If the document entered an editor mode during OnOpenDocument (before the view existed),
@@ -593,10 +584,8 @@ void AeSysView::OnUpdate(CView* sender, LPARAM hint, CObject* hintObject) {
 
   EoGsRenderDeviceGdi renderDevice(targetDC);
   bool isHandledByState{};
-#ifdef USING_STATE_PATTERN
   auto* state = GetCurrentState();
-  if (state) { isHandledByState = state->OnUpdate(this, sender, hint, hintObject); }
-#endif
+  if (state != nullptr) { isHandledByState = state->OnUpdate(this, sender, hint, hintObject); }
   if (!isHandledByState) { DisplayUsingHint(sender, hint, hintObject, &renderDevice); }
 
   if ((hint & EoDb::kTrap) == EoDb::kTrap) { EoDbPrimitive::SetSpecialColor(0); }
@@ -858,8 +847,8 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
         if (FAILED(hr)) { DiscardD2DResources(); }
         m_sceneInvalid = true;
       } else {
-        // D2D creation failed — fall back to GDI
-        m_useD2D = false;
+        // D2D creation failed — could be early OnSize before HWND is presentable.
+        // Fall back to GDI for now; OnDraw will retry D2D when the target is needed.
         RecreateBackBuffer(cx, drawingHeight);
       }
     } else {

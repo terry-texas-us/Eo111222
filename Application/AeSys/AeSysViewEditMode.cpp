@@ -1,5 +1,6 @@
 ﻿#include "Stdafx.h"
 
+#include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDlgEditOptions.h"
@@ -125,11 +126,39 @@ void AeSysView::OnEditModeEnlarge() {
   document->TransformTrappedGroups(transformMatrix);
 }
 
-void AeSysView::OnEditModeReturn() {}
+void AeSysView::OnEditModeReturn() {
+  switch (app.CurrentMode()) {
+    case ID_MODE_PRIMITIVE_EDIT:
+    case ID_MODE_GROUP_EDIT:
+      // Commit the drag — geometry stays where it is, just pop back to primary mode.
+      PopState();
+      break;
+
+    case ID_MODE_PRIMITIVE_MEND:
+      MendStateReturn();
+      break;
+  }
+}
 
 void AeSysView::OnEditModeEscape() {
-  if (m_PreviousOp == ID_OP4 || m_PreviousOp == ID_OP5) {
-    ModeLineUnhighlightOp(m_PreviousOp);
-    RubberBandingDisable();
+  switch (app.CurrentMode()) {
+    case ID_MODE_PRIMITIVE_EDIT:
+      DoEditPrimitiveEscape();
+      break;
+
+    case ID_MODE_GROUP_EDIT:
+      DoEditGroupEscape();
+      break;
+
+    case ID_MODE_PRIMITIVE_MEND:
+      MendStateEscape();
+      break;
+
+    default:
+      if (m_PreviousOp == ID_OP4 || m_PreviousOp == ID_OP5) {
+        ModeLineUnhighlightOp(m_PreviousOp);
+        RubberBandingDisable();
+      }
+      break;
   }
 }

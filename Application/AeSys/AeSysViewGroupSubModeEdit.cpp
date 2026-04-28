@@ -4,53 +4,57 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoDbPrimitive.h"
+#include "PickAndDragState.h"
 #include "Resource.h"
 
+namespace {
+PickAndDragState* PickDragState(AeSysView* view) {
+  return dynamic_cast<PickAndDragState*>(view->GetCurrentState());
+}
+}  // namespace
+
 void AeSysView::OnModeGroupEdit() {
-  InitializeGroupAndPrimitiveEdit();
+  const auto cursorPosition = GetCursorPosition();
+  auto* group = SelectGroupAndPrimitive(cursorPosition);
+  if (group == nullptr) { return; }
+  GetDocument()->InitializeGroupAndPrimitiveEdit();
 
-  m_SubModeEditBeginPoint = GetCursorPosition();
-
-  auto* group = SelectGroupAndPrimitive(m_SubModeEditBeginPoint);
-
-  if (group != nullptr) {
-    m_SubModeEditGroup = group;
-    app.LoadModeResources(ID_MODE_GROUP_EDIT);
-  }
+  PushState(std::make_unique<PickAndDragState>(PickAndDragState::Kind::Group));
 }
 
 void AeSysView::DoEditGroupCopy() {
+  auto* dragState = PickDragState(this);
+  if (dragState == nullptr || dragState->SubModeEditGroup() == nullptr) { return; }
   auto* document = GetDocument();
-  if (m_SubModeEditGroup == nullptr) { return; }
-  auto* group = new EoDbGroup(*m_SubModeEditGroup);
+  auto* group = new EoDbGroup(*dragState->SubModeEditGroup());
 
   document->AddWorkLayerGroup(group);
-  m_SubModeEditGroup = group;
+  dragState->SetSubModeEditGroup(group);
 
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-  m_tmEditSeg.Identity();
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, dragState->SubModeEditGroup());
+  dragState->EditSegTransform().Identity();
 }
 
 void AeSysView::DoEditGroupEscape() {
-  if (m_SubModeEditGroup == nullptr) { return; }
+  auto* dragState = PickDragState(this);
+  if (dragState == nullptr || dragState->SubModeEditGroup() == nullptr) { return; }
   auto* document = GetDocument();
-  m_tmEditSeg.Inverse();
+  dragState->EditSegTransform().Inverse();
 
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-  m_SubModeEditGroup->Transform(m_tmEditSeg);
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, dragState->SubModeEditGroup());
+  dragState->SubModeEditGroup()->Transform(dragState->EditSegTransform());
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, dragState->SubModeEditGroup());
 
-  InitializeGroupAndPrimitiveEdit();
-
-  app.LoadModeResources(app.PrimaryMode());
+  PopState();
 }
 
 void AeSysView::DoEditGroupTransform(std::uint16_t operation) {
+  auto* dragState = PickDragState(this);
+  if (dragState == nullptr || dragState->SubModeEditGroup() == nullptr) { return; }
   auto* document = GetDocument();
-  if (m_SubModeEditGroup == nullptr) { return; }
   EoGeTransformMatrix transformMatrix;
 
-  const EoGeVector3d translateVector{m_SubModeEditBeginPoint, EoGePoint3d::kOrigin};
+  const EoGeVector3d translateVector{dragState->SubModeEditBeginPoint(), EoGePoint3d::kOrigin};
 
   transformMatrix.Translate(translateVector);
 
@@ -67,32 +71,32 @@ void AeSysView::DoEditGroupTransform(std::uint16_t operation) {
   }
   transformMatrix.Translate(-translateVector);
 
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-  m_SubModeEditGroup->Transform(transformMatrix);
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, dragState->SubModeEditGroup());
+  dragState->SubModeEditGroup()->Transform(transformMatrix);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, dragState->SubModeEditGroup());
 
-  m_tmEditSeg *= transformMatrix;
+  dragState->EditSegTransform() *= transformMatrix;
 }
 
 void AeSysView::PreviewGroupEdit() {
+  auto* dragState = PickDragState(this);
+  if (dragState == nullptr || dragState->SubModeEditGroup() == nullptr) { return; }
   auto* document = GetDocument();
-  if (m_SubModeEditGroup == nullptr) { return; }
   EoGeTransformMatrix transformMatrix;
-  m_SubModeEditEndPoint = GetCursorPosition();
-  transformMatrix.Translate(EoGeVector3d(m_SubModeEditBeginPoint, m_SubModeEditEndPoint));
+  dragState->SubModeEditEndPoint() = GetCursorPosition();
+  transformMatrix.Translate(EoGeVector3d(dragState->SubModeEditBeginPoint(), dragState->SubModeEditEndPoint()));
 
-  if (app.IsTrapHighlighted() && document->FindTrappedGroup(m_SubModeEditGroup) != nullptr) {
+  if (app.IsTrapHighlighted() && document->FindTrappedGroup(dragState->SubModeEditGroup()) != nullptr) {
     EoDbPrimitive::SetSpecialColor(app.TrapHighlightColor());
   }
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
-  m_SubModeEditGroup->Transform(transformMatrix);
-  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, m_SubModeEditGroup);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, dragState->SubModeEditGroup());
+  dragState->SubModeEditGroup()->Transform(transformMatrix);
+  document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, dragState->SubModeEditGroup());
 
   EoDbPrimitive::SetSpecialColor(0);
 
-  m_tmEditSeg *= transformMatrix;
-
-  m_SubModeEditBeginPoint = m_SubModeEditEndPoint;
+  dragState->EditSegTransform() *= transformMatrix;
+  dragState->SubModeEditBeginPoint() = dragState->SubModeEditEndPoint();
 }
 
 void AeSysDoc::InitializeGroupAndPrimitiveEdit() const {
@@ -104,11 +108,7 @@ void AeSysDoc::InitializeGroupAndPrimitiveEdit() const {
 }
 
 void AeSysView::InitializeGroupAndPrimitiveEdit() {
-  m_SubModeEditBeginPoint = EoGePoint3d::kOrigin;
-  m_SubModeEditEndPoint = m_SubModeEditBeginPoint;
-
-  m_SubModeEditGroup = nullptr;
-  m_SubModeEditPrimitive = nullptr;
-
-  m_tmEditSeg.Identity();
+  // State is now owned by PickAndDragState on the stack.
+  // This method is retained as a no-op called by PickAndDragState::OnExit
+  // and by document-level InitializeGroupAndPrimitiveEdit broadcasts.
 }
