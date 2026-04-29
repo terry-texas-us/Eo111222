@@ -102,6 +102,15 @@
 #define IDR_LPD_MODE_WHITE 296
 #define IDR_PICK_AND_DRAG_MODE 297
 #define IDR_MEND_MODE 298
+
+// Standard MFC undo/redo IDs -- must match afxres.h 0xE12B / 0xE12C
+#ifndef ID_EDIT_UNDO
+#define ID_EDIT_UNDO 0xE12B
+#endif
+#ifndef ID_EDIT_REDO
+#define ID_EDIT_REDO 0xE12C
+#endif
+
 #define IDD_LAYER_PROPERTIES_MANAGER 336
 #define IDB_LAYER_STATES 337
 #define IDD_ACTIVE_VIEW_KEYPLAN 338

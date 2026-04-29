@@ -24,6 +24,7 @@ class PrimitiveMendState : public AeSysState {
   void OnEnter(AeSysView* context) override;
   void OnExit(AeSysView* context) override;
   void OnMouseMove(AeSysView* context, UINT flags, CPoint point) override;
+  [[nodiscard]] bool ShouldBlockCommand(UINT commandId) const noexcept override;
 
   /// Returns true when a primitive was successfully selected on enter.
   [[nodiscard]] bool IsEngaged() const noexcept { return m_primitiveToMend != nullptr; }

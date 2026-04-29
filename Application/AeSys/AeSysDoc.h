@@ -1,6 +1,8 @@
 #pragma once
 
 #include <unordered_map>
+
+#include "EoDocCommand.h"
 #include <variant>
 
 #include "EoDb.h"
@@ -56,7 +58,7 @@ class AeSysDoc : public CDocument {
   std::vector<EoDxfLayout> m_layouts{};
   std::vector<EoDbVPortTableEntry> m_vportTable{};
   EoDbBlocks m_BlocksTable{};
-  EoDbGroupList m_DeletedGroupList{};
+  EoDocCommandStack m_commandStack{};
   EoDbGroupList m_trappedGroups{};
   EoDbGroupList m_NodalGroupList{};
   CObList m_MaskedPrimitives{};
@@ -450,6 +452,7 @@ class AeSysDoc : public CDocument {
 
   /// @brief Finds a layer by name in a specific paper-space layout.
   [[nodiscard]] EoDbLayer* FindLayerInLayout(const CString& name, std::uint64_t blockRecordHandle);
+  [[nodiscard]] EoDbLayer* FindLayerOwning(EoDbGroup* group) noexcept;
 
   /// @brief Returns the active paper-space layout's layer collection.
   CLayers& PaperSpaceLayers() { return m_paperSpaceLayoutLayers[m_activeLayoutHandle]; }
@@ -609,18 +612,7 @@ class AeSysDoc : public CDocument {
 
   void WriteShadowFile(EoDb::PegFileVersion fileVerion);
 
-  // Deleted groups interface
-  auto DeletedGroupsAddHead(EoDbGroup* group) { return (m_DeletedGroupList.AddHead(group)); }
-  auto DeletedGroupsAddTail(EoDbGroup* group) { return (m_DeletedGroupList.AddTail(group)); }
-  bool DeletedGroupsIsEmpty() { return (m_DeletedGroupList.IsEmpty() == TRUE); }
-  // CobList asserts on calls to RemoveHead & RemoveTail if list is empty!
-  EoDbGroup* DeletedGroupsRemoveHead() { return (m_DeletedGroupList.RemoveHead()); }
-  void DeletedGroupsRemoveGroups() { m_DeletedGroupList.DeleteGroupsAndRemoveAll(); }
-  EoDbGroup* DeletedGroupsRemoveTail() { return (m_DeletedGroupList.RemoveTail()); }
-  /// @brief Restores the last group added to the deleted group list.
-  void DeletedGroupsRestore();
-
- public:  // trap interface
+  public:  // trap interface
   void AddGroupsToTrap(EoDbGroupList* groups);
   POSITION AddGroupToTrap(EoDbGroup* group);
 
@@ -673,7 +665,7 @@ class AeSysDoc : public CDocument {
   void RemoveTrappedGroupAt(POSITION position) { m_trappedGroups.RemoveAt(position); }
   void SetTrapPivotPoint(const EoGePoint3d& pt) noexcept { m_trapPivotPoint = pt; }
   void SquareTrappedGroups(const AeSysView* view);
-  void TransformTrappedGroups(const EoGeTransformMatrix& transformMatrix);
+  void TransformTrappedGroups(const EoGeTransformMatrix& transformMatrix, const wchar_t* label = L"Transform");
   void TranslateTrappedGroups(const EoGeVector3d& translate);
   [[nodiscard]] auto TrapGroupCount() { return m_trappedGroups.GetCount(); }
   [[nodiscard]] auto* GroupsInTrap() noexcept { return &m_trappedGroups; }
@@ -820,9 +812,26 @@ class AeSysDoc : public CDocument {
   */
   afx_msg void OnToolsGroupDelete();
   afx_msg void OnToolsGroupDeletelast();
-  /// @brief Exchanges the first and last groups on the deleted group list.
-  afx_msg void OnToolsGroupExchange();
-  afx_msg void OnToolsGroupUndelete();
+
+  // Phase 3A — undo/redo stack
+  afx_msg void OnEditUndo();
+  afx_msg void OnEditRedo();
+  afx_msg void OnUpdateEditUndo(CCmdUI* cmdUI);
+  afx_msg void OnUpdateEditRedo(CCmdUI* cmdUI);
+
+  /// Push a command that has already been executed onto the undo stack.
+  /// Silently discards the command (calling Discard) when the document is being
+  /// torn down or while inside an editor session — both contexts pollute the
+  /// outer document's undo stack with intermediate edits.
+  void PushCommand(std::unique_ptr<EoDocCommand> cmd) {
+    if (cmd == nullptr) { return; }
+    if (m_isClosing || IsInEditor()) {
+      cmd->Discard(this);
+      return;
+    }
+    m_commandStack.Push(this, std::move(cmd));
+  }
+  [[nodiscard]] EoDocCommandStack& CommandStack() noexcept { return m_commandStack; }
   afx_msg void OnSetupFillHatch();
   afx_msg void OnSetupFillHollow();
   afx_msg void OnSetupFillPattern();

@@ -38,6 +38,12 @@ class AeSysState {
   // Command handling (delegate MFC ON_COMMAND)
   virtual void HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT command) {}
 
+  /// Return true to block a WM_COMMAND from reaching the document/view handlers.
+  /// Sub-modes that hold raw pointers into document data (PickAndDragState,
+  /// PrimitiveMendState) must block any command that could invalidate those pointers
+  /// (delete, cut, open, new, etc.) while they are active.
+  [[nodiscard]] virtual bool ShouldBlockCommand([[maybe_unused]] UINT commandId) const noexcept { return false; }
+
   // Drawing/Updates
   // Called after DisplayAllLayers completes — override to add mode-specific overlays.
   // Do NOT call DisplayAllLayers from an override; the scene has already been rendered.

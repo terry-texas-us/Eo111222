@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+﻿// Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
 
@@ -120,6 +120,8 @@ BEGIN
     BUTTON      ID_EDIT_TRAPCUT
     BUTTON      ID_EDIT_TRAPCOPY
     BUTTON      ID_EDIT_TRAPPASTE
+    BUTTON      ID_EDIT_UNDO
+    BUTTON      ID_EDIT_REDO
     SEPARATOR
     BUTTON      ID_FILE_PRINTCURRENTVIEW
     BUTTON      ID_APP_ABOUT
@@ -271,6 +273,9 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
+        MENUITEM SEPARATOR
         POPUP "&Trap Commands"
         BEGIN
             MENUITEM "Add &Groups",                 ID_TRAPCOMMANDS_ADDGROUPS, CHECKED
@@ -438,8 +443,6 @@ BEGIN
             MENUITEM "&Delete \tDelete",            ID_TOOLS_GROUP_DELETE
             MENUITEM "&Break\tBreak",               ID_TOOLS_GROUP_BREAK
             MENUITEM "Delete &Last  \tBackspace",   ID_TOOLS_GROUP_DELETELAST
-            MENUITEM "&Undelete\tInsert",           ID_TOOLS_GROUP_UNDELETE
-            MENUITEM "&Exchange\tShift+Insert",     ID_TOOLS_GROUP_EXCHANGE
         END
         POPUP "&Primitive"
         BEGIN
@@ -768,8 +771,7 @@ BEGIN
     VK_PAUSE,       ID_TOOLS_GROUP_BREAK,   VIRTKEY, NOINVERT
     VK_DELETE,      ID_TOOLS_GROUP_DELETE,  VIRTKEY, NOINVERT
     VK_BACK,        ID_TOOLS_GROUP_DELETELAST, VIRTKEY, NOINVERT
-    VK_INSERT,      ID_TOOLS_GROUP_EXCHANGE, VIRTKEY, SHIFT, NOINVERT
-    VK_INSERT,      ID_TOOLS_GROUP_UNDELETE, VIRTKEY, NOINVERT
+    "U",            ID_EDIT_UNDO,           VIRTKEY, NOINVERT
     "Q",            ID_TOOLS_PRIMITIVE_SNAPTO, VIRTKEY, NOINVERT
     "A",            ID_TOOLS_PRIMITIVE_SNAPTOENDPOINT, VIRTKEY, NOINVERT
     VK_DELETE,      ID_TOOLS_PRIMITVE_DELETE, VIRTKEY, SHIFT, NOINVERT
@@ -789,6 +791,8 @@ BEGIN
     "-",            ID_WINDOW_ZOOMOUT,      ASCII,  ALT, NOINVERT
     VK_ESCAPE,      IDM_ESCAPE,             VIRTKEY, NOINVERT
     VK_RETURN,      IDM_RETURN,             VIRTKEY, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_DRAW_MODE ACCELERATORS
@@ -2967,6 +2971,8 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
     ID_FILE_NEW             "Create a new drawing\nNew"
     ID_FILE_OPEN            "Open an existing drawing\nOpen"
     ID_FILE_CLOSE           "Close the active drawing\nClose"

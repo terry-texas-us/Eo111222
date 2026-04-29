@@ -30,6 +30,7 @@ class PickAndDragState : public AeSysState {
   void OnEnter(AeSysView* context) override;
   void OnExit(AeSysView* context) override;
   void OnMouseMove(AeSysView* context, UINT flags, CPoint point) override;
+  [[nodiscard]] bool ShouldBlockCommand(UINT commandId) const noexcept override;
 
   // --- Accessors used by the existing Do* handlers (DoEditPrimitive*, DoEditGroup*) ---
   [[nodiscard]] Kind GetKind() const noexcept { return m_kind; }

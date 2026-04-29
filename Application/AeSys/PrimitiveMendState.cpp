@@ -109,3 +109,19 @@ void AeSysView::MendStateEscape() {
 
   PopState();
 }
+
+bool PrimitiveMendState::ShouldBlockCommand(UINT commandId) const noexcept {
+  // Block commands that would invalidate m_primitiveToMend (a raw doc pointer).
+  switch (commandId) {
+    case ID_TOOLS_GROUP_DELETE:
+    case ID_TOOLS_GROUP_DELETELAST:
+    case ID_TOOLS_PRIMITVE_DELETE:
+    case ID_EDIT_TRAPCUT:
+    case ID_EDIT_TRAPDELETE:
+    case ID_FILE_NEW:
+    case ID_FILE_OPEN:
+      return true;
+    default:
+      return false;
+  }
+}

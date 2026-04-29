@@ -25,10 +25,15 @@ void AeSysView::DoCustomMouseClick(const CString& characters) {
   }
 }
 BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
+  auto* state = GetCurrentState();
   if (pMsg->message == WM_KEYDOWN) {
-    auto* state = GetCurrentState();
     if (state != nullptr && state->HandleKeypad(this, static_cast<UINT>(pMsg->wParam), 1, static_cast<UINT>(pMsg->lParam))) {
       return TRUE;  // Handled by state
+    }
+  }
+  if (pMsg->message == WM_COMMAND) {
+    if (state != nullptr && state->ShouldBlockCommand(LOWORD(pMsg->wParam))) {
+      return TRUE;  // Swallow command -- sub-mode holds raw doc pointers
     }
   }
   return CView::PreTranslateMessage(pMsg);

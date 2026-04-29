@@ -39,7 +39,7 @@ struct ChromeColors {
   COLORREF tabActiveText = RGB(28, 27, 24);  ///< Active MDI/pane tab text
   COLORREF tabInactiveBackground = RGB(238, 237, 233);  ///< Inactive MDI/pane tab background (Tier 1)
   COLORREF tabInactiveText = RGB(64, 62, 58);  ///< Inactive MDI/pane tab text
-  COLORREF separatorColor = RGB(229, 228, 224);  ///< Toolbar separators and divider lines (Tier 2)
+  COLORREF separatorColor = RGB(180, 179, 175);  ///< Toolbar separators and divider lines
   COLORREF borderColor = RGB(214, 213, 209);  ///< Pane and toolbar borders
 };
 

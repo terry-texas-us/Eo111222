@@ -1019,16 +1019,64 @@ When the stack is non-empty, `OnLButtonDown` calls `state->OnLButtonDown(...)` a
 ### Destructor Safety Rule
 `~AeSysView` drains the stack via raw `pop()` only — **no `OnExit` calls in the destructor**. Window APIs (`InvalidateRect`, `SetPaneText`, `RubberBandingDisable`) are illegal on a dead HWND. Each state's `unique_ptr` destructor releases its owned heap memory. Only objects that live *outside* the state (e.g., `m_PreviewGroup` primitives) are cleaned up explicitly in the destructor body.
 
-### Phase Implementation Status
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Prune `USING_STATE_PATTERN` guards; delete `DrawModeState`/`IdleState`; make infrastructure unconditional | ✅ Complete |
-| 2A | `DrawModeState` lifecycle only — push on `OnModeDraw`, pop on escape/return/mode-switch; `OnExit` consolidates cleanup | ✅ Complete |
-| 2B | Move point accumulator (`pts`) into `DrawModeState::m_pts`; remove from `AeSysView` | ⚠️ Deferred — `pts` is shared by Draw, Annotate, Nodal, Pipe, and Power modes; it cannot be moved to `DrawModeState` alone without leaving four modes using a stale `AeSysView::pts`. Correct path: migrate each mode to its own state class (each owning its own pts). `pts` remains on `AeSysView` until then. |
-| 2C | Move draw sub-command state (`m_previousDrawCommand`) into `DrawModeState`; decouple from `m_PreviousOp` | ✅ Complete |
-| 2D | `PickAndDragState` for `;`/`:` pick-and-drag sub-modes — owns all edit sub-mode data | ✅ Complete |
-| 2E | `PrimitiveMendState` for `M` mend sub-mode — owns all mend data; `IDR_MEND_MODE` accel table | ✅ Complete (geometry correct; mouse-move visual feedback investigation pending — see Known Issues) |
-| 3 | `EoDocCommand` undo stack on `AeSysDoc`; replace `m_DeletedGroupList` with `EoDocCmdDeleteGroup` | ⬜ Pending |
+## EoDocCommand Undo/Redo Stack
+
+### Architecture
+`AeSysDoc` owns `EoDocCommandStack m_commandStack` (64-entry cap). Commands are pushed **after** the operation has already been performed — matching the "already-done" convention used throughout. The stack fully replaces the legacy PEG `m_DeletedGroupList` one-shot restore model.
+
+`EoDocCommand` base: `Label/Execute/Undo` pure virtuals + `Discard(AeSysDoc*)` virtual (default no-op). `Discard` is called on eviction (cap overflow, redo clear on new push, `DeleteContents`). Every `Discard` that owns an `EoDbGroup` must call `group->DeletePrimitivesAndRemoveAll()` before the `unique_ptr` destructs the group — `~EoDbGroup()` is empty by design and does not free primitives.
+
+### Keyboard Bindings
+| Key | Action |
+|-----|--------|
+| Ctrl+Z | Undo one step |
+| Ctrl+Y | Redo one step |
+| U | Undo one step (AutoCAD muscle memory) |
+| Delete | `EoDocCmdDeleteGroup` — delete engaged group |
+| Backspace | `EoDocCmdDeleteLastGroup` — delete last drawn group |
+
+The Insert key (legacy "Undelete") and its accelerator have been removed from the RC. Group restore is handled exclusively by the undo stack.
+
+### Command Inventory
+| Class | Trigger | Owns group on redo branch |
+|-------|---------|--------------------------|
+| `EoDocCmdDeleteGroup` | Delete key | Yes — `m_ownedGroup` |
+| `EoDocCmdDeleteLastGroup` | Backspace | Yes — `m_ownedGroup` |
+| `EoDocCmdTrapCut` | Edit > Trap Cut | Yes — per-entry `owned` |
+| `EoDocCmdDeletePrimitive` | Shift+Delete (solo/multi) | Yes — `m_wrapperGroup` |
+| `EoDocCmdAddGroup` | Every `AddWorkLayerGroup` call | Yes — `m_ownedGroup` (on undo branch) |
+| `EoDocCmdTransformGroups` | `TransformTrappedGroups` / `TranslateTrappedGroups` | No — groups stay in document; stores forward matrix + non-owning group pointers |
+
+`EoDocCmdTransformGroups` stores the forward `EoGeTransformMatrix`. Undo computes the inverse via `EoGeMatrix::Inverse()` and applies it. No `Discard` override needed — no owned heap objects. Labels per call site: `"Move"`, `"Rotate CCW"`, `"Rotate CW"`, `"Flip"`, `"Reduce"`, `"Enlarge"`, `"Translate"`.
+
+### PushCommand Safety Chokepoint
+`AeSysDoc::PushCommand(std::unique_ptr<EoDocCommand>)` is the single recording entry point and is hardened to silently `Discard()` the incoming command (instead of pushing) when:
+- `m_isClosing` is true — prevents recording during document teardown.
+- `IsInEditor()` is true — prevents block/tracing editor intermediates from polluting the outer undo stack.
+
+This makes per-call-site editor guards redundant (the existing one in `AddWorkLayerGroup` is left in place as defense-in-depth). All future `PushCommand` callers inherit these safety semantics automatically.
+
+### Null-Layer Discipline
+Every command that captures an `EoDbLayer*` requires a non-null pointer at construction. Call sites that obtain the layer via `AnyLayerRemove(group)` MUST handle the null return as an orphan-group case: emit an `ATLTRACE2` warning, call `UnregisterGroupHandles(group)`, `group->DeletePrimitivesAndRemoveAll()`, then `delete group`. Pushing a command with a null layer would crash on Execute/Undo. Enforced sites:
+- `AeSysView::DeleteLastGroup` (Backspace path)
+- `AeSysDoc::OnToolsPrimitiveDelete` (solo whole-group path)
+- `AeSysDoc::OnEditTrapCut` (per-entry filter — orphans skipped, command pushed only if any valid entry remains)
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoDocCommand.h` | Full command hierarchy; `EoDocCommandStack` with `Push/Undo/Redo/Clear` |
+| `AeSys\EoDocCommand.cpp` | All `Execute/Undo/Discard` implementations |
+| `AeSys\AeSysDoc.h` | `m_commandStack`; `PushCommand` chokepoint with closing/editor guards |
+| `AeSys\AeSysDocCommands.cpp` | `OnEditUndo`, `OnEditRedo`, `OnToolsGroupDelete`, `OnToolsPrimitiveDelete`, `OnEditTrapCut` |
+| `AeSys\AeSysDocLayers.cpp` | `AddWorkLayerGroup` — pushes `EoDocCmdAddGroup` after add |
+| `AeSys\AeSysViewSelection.cpp` | `DeleteLastGroup` — pushes `EoDocCmdDeleteLastGroup` |
+| `AeSys\FindLayerOwning` in `AeSysDocLayers.cpp` | Non-const full-scan across all spaces + editor layer |
+| `AeSys\EoDbTrappedGroups.cpp` | `TransformTrappedGroups` / `TranslateTrappedGroups` — push `EoDocCmdTransformGroups` |
+| `AeSys\AeSysViewEditMode.cpp` | All edit-mode transform call sites with per-operation labels |
+
+### Status
+All planned work for the undo/redo architecture is complete: command base + stack, all destructive commands (delete group, delete last, trap cut, delete primitive), add-group recording at the `AddWorkLayerGroup` choke point, and trap transforms (move/rotate/scale/flip/enlarge/reduce). Safety hardening (closing/editor gating in `PushCommand`, null-layer discipline at every push site) is in place.
 
 ### DrawModeState (Phases 2A + 2C)
 - Pushed by `AeSysView::OnModeDraw()`.

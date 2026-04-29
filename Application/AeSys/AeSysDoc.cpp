@@ -45,6 +45,10 @@ ON_COMMAND(ID_CLEAR_ALLTRACINGS, OnClearAllTracings)
 ON_COMMAND(ID_CLEAR_MAPPEDTRACINGS, OnClearMappedTracings)
 ON_COMMAND(ID_CLEAR_VIEWEDTRACINGS, OnClearViewedTracings)
 ON_COMMAND(ID_CLEAR_WORKINGLAYER, OnClearWorkingLayer)
+ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
+ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
+ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
+ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
 ON_COMMAND(ID_EDIT_IMAGETOCLIPBOARD, OnEditImageToClipboard)
 ON_COMMAND(ID_EDIT_SEGTOWORK, OnEditSegToWork)
 ON_COMMAND(ID_EDIT_TRACE, OnEditTrace)
@@ -84,8 +88,6 @@ ON_COMMAND(ID_PRIM_MODIFY_ATTRIBUTES, OnPrimModifyAttributes)
 ON_COMMAND(ID_TOOLS_GROUP_BREAK, OnToolsGroupBreak)
 ON_COMMAND(ID_TOOLS_GROUP_DELETE, OnToolsGroupDelete)
 ON_COMMAND(ID_TOOLS_GROUP_DELETELAST, OnToolsGroupDeletelast)
-ON_COMMAND(ID_TOOLS_GROUP_EXCHANGE, OnToolsGroupExchange)
-ON_COMMAND(ID_TOOLS_GROUP_UNDELETE, OnToolsGroupUndelete)
 ON_COMMAND(ID_SETUP_PENCOLOR, OnSetupPenColor)
 ON_COMMAND(ID_SETUP_LINETYPE, OnSetupLineType)
 ON_COMMAND(ID_SETUP_FILL_HOLLOW, OnSetupFillHollow)
@@ -250,14 +252,13 @@ void AeSysDoc::DeleteContents() {
   RemoveAllBlocks();
   m_workLayer = nullptr;  // Null before layer deletion to prevent dangling access during repaints
   RemoveAllLayerTableLayers();
-  DeletedGroupsRemoveGroups();
-
   RemoveAllTrappedGroups();
   RemoveAllGroupsFromAllViews();
 
   DeleteNodalResources();
 
   ResetAllViews();
+  m_commandStack.Clear(this);
   CDocument::DeleteContents();
 }
 
@@ -281,13 +282,6 @@ void AeSysDoc::AddTextBlock(wchar_t* textBlock) {
     if (text == nullptr) { break; }
     text++;
   }
-}
-
-void AeSysDoc::DeletedGroupsRestore() {
-  if (DeletedGroupsIsEmpty()) { return; }
-  auto* group = DeletedGroupsRemoveTail();
-  AddWorkLayerGroup(group);
-  UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
 // Returns a pointer to the currently active document.

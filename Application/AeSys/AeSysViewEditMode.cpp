@@ -40,7 +40,7 @@ void AeSysView::OnEditModeRotccw() {
   transformMatrix.Translate(translateVector);
   transformMatrix *= matrix;
   transformMatrix.Translate(-translateVector);
-  document->TransformTrappedGroups(transformMatrix);
+  document->TransformTrappedGroups(transformMatrix, L"Rotate CCW");
 }
 
 void AeSysView::OnEditModeRotcw() {
@@ -54,7 +54,7 @@ void AeSysView::OnEditModeRotcw() {
   transformMatrix.Translate(translateVector);
   transformMatrix *= matrix;
   transformMatrix.Translate(-translateVector);
-  document->TransformTrappedGroups(transformMatrix);
+  document->TransformTrappedGroups(transformMatrix, L"Rotate CW");
 }
 
 void AeSysView::OnEditModeMove() {
@@ -70,10 +70,9 @@ void AeSysView::OnEditModeMove() {
 
     ModeLineUnhighlightOp(m_PreviousOp);
     RubberBandingDisable();
-    document->TransformTrappedGroups(transformMatrix);
+    document->TransformTrappedGroups(transformMatrix, L"Move");
   }
   document->SetTrapPivotPoint(cursorPosition);
-  // pSetSegPos(pTRAP_PVT_MRK_ID, pt);
 }
 
 void AeSysView::OnEditModeCopy() {
@@ -99,7 +98,7 @@ void AeSysView::OnEditModeFlip() {
   transformMatrix.Translate(translateVector);
   transformMatrix.Scale(EditModeMirrorScale());
   transformMatrix.Translate(-translateVector);
-  document->TransformTrappedGroups(transformMatrix);
+  document->TransformTrappedGroups(transformMatrix, L"Flip");
 }
 
 void AeSysView::OnEditModeReduce() {
@@ -111,7 +110,7 @@ void AeSysView::OnEditModeReduce() {
   transformMatrix.Translate(translateVector);
   transformMatrix.Scale(EditModeInvertedScaleFactors());
   transformMatrix.Translate(-translateVector);
-  document->TransformTrappedGroups(transformMatrix);
+  document->TransformTrappedGroups(transformMatrix, L"Reduce");
 }
 
 void AeSysView::OnEditModeEnlarge() {
@@ -123,7 +122,7 @@ void AeSysView::OnEditModeEnlarge() {
   transformMatrix.Translate(translateVector);
   transformMatrix.Scale(EditModeScaleFactors());
   transformMatrix.Translate(-translateVector);
-  document->TransformTrappedGroups(transformMatrix);
+  document->TransformTrappedGroups(transformMatrix, L"Enlarge");
 }
 
 void AeSysView::OnEditModeReturn() {

@@ -204,6 +204,7 @@
     <ClCompile Include="EoDlgBlocks.cpp" />
     <ClCompile Include="EoDlgSheetSetupFormFactor.cpp" />
     <ClCompile Include="EoDlgTextStyleManager.cpp" />
+    <ClCompile Include="EoDocCommand.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="PickAndDragState.cpp" />
@@ -454,6 +455,7 @@
     <ClInclude Include="EoDlgTrapModify.h" />
     <ClInclude Include="EoDlgViewParameters.h" />
     <ClInclude Include="EoDlgViewZoom.h" />
+    <ClInclude Include="EoDocCommand.h" />
     <ClInclude Include="EoGeLine.h" />
     <ClInclude Include="EoGeMatrix.h" />
     <ClInclude Include="EoGeOcs.h" />

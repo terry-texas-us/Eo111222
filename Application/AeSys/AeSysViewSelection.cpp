@@ -3,6 +3,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoDocCommand.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
 #include "EoDbLine.h"
@@ -21,13 +22,21 @@ void AeSysView::DeleteLastGroup() {
     auto* document = GetDocument();
     auto* group = m_VisibleGroupList.RemoveTail();
 
-    document->AnyLayerRemove(group);
-    if (document->RemoveTrappedGroup(group) != nullptr) {  // Display it normal color so the erase xor will work
+    auto* layer = document->AnyLayerRemove(group);
+    if (document->RemoveTrappedGroup(group) != nullptr) {
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       UpdateStateInformation(TrapCount);
     }
     document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
-    document->DeletedGroupsAddHead(group);
+    if (layer != nullptr) {
+      document->PushCommand(std::make_unique<EoDocCmdDeleteLastGroup>(group, layer));
+    } else {
+      // Group was not found in any layer — should not happen, but avoid a leak.
+      ATLTRACE2(traceGeneral, 1, L"AeSysView::DeleteLastGroup: group not found in any layer; discarding.\n");
+      document->UnregisterGroupHandles(group);
+      group->DeletePrimitivesAndRemoveAll();
+      delete group;
+    }
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
 }

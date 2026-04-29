@@ -17,6 +17,7 @@
 #include "EoDbJobFile.h"
 #include "EoDbLayer.h"
 #include "EoDbTracingFile.h"
+#include "EoDocCommand.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "Resource.h"
@@ -209,8 +210,6 @@ void AeSysDoc::LayerBlank(const CString& name) {
       RemoveAllTrappedGroups();
       RemoveAllGroupsFromAllViews();
       ResetAllViews();
-      m_DeletedGroupList.DeleteGroupsAndRemoveAll();
-
       SetWorkLayer(GetLayerTableLayerAt(0));
       m_saveAsType = EoDb::FileTypes::Unknown;
 
@@ -360,6 +359,7 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
   if (IsEditingTracing()) { m_tracingEditDirty = true; }
   SetModifiedFlag(TRUE);
+  if (!IsInEditor()) { PushCommand(std::make_unique<EoDocCmdAddGroup>(group, m_workLayer)); }
 }
 
 void AeSysDoc::AddWorkLayerGroups(EoDbGroupList* groups) {
@@ -404,12 +404,8 @@ void AeSysDoc::InitializeWorkLayer() {
   RemoveAllTrappedGroups();
   RemoveAllGroupsFromAllViews();
   ResetAllViews();
-
-  position = m_DeletedGroupList.GetHeadPosition();
-  while (position != nullptr) { UnregisterGroupHandles(m_DeletedGroupList.GetNext(position)); }
-
-  m_DeletedGroupList.DeleteGroupsAndRemoveAll();
 }
+
 EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
   if (layer == nullptr) {
     ATLTRACE2(traceGeneral, 1, L"AeSysDoc::SetWorkLayer called with nullptr\n");
@@ -425,6 +421,28 @@ EoDbLayer* AeSysDoc::SetWorkLayer(EoDbLayer* layer) {
   // @todo File Name and Work Layer display? (was appended to MenuBar File command)
 
   return previousWorkLayer;
+}
+
+// Locates the layer containing a group without removing it.
+// Searches editor layer first, then model and all paper-space layout layers.
+EoDbLayer* AeSysDoc::FindLayerOwning(EoDbGroup* group) noexcept {
+  if (IsInEditor()) {
+    EoDbLayer* editLayer = IsEditingBlock() ? m_blockEditLayer : m_tracingEditLayer;
+    if (editLayer != nullptr && editLayer->Find(group)) {
+      return editLayer;
+    }
+  }
+  for (INT_PTR i = 0; i < m_modelSpaceLayers.GetSize(); i++) {
+    auto* layer = m_modelSpaceLayers.GetAt(i);
+    if (layer->Find(group)) { return layer; }
+  }
+  for (const auto& [handle, layers] : m_paperSpaceLayoutLayers) {
+    for (INT_PTR i = 0; i < layers.GetSize(); i++) {
+      auto* layer = layers.GetAt(i);
+      if (layer->Find(group)) { return layer; }
+    }
+  }
+  return nullptr;
 }
 
 // Locates the layer containing a group and removes it.

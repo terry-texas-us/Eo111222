@@ -18,6 +18,7 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderDeviceGdi.h"
 #include "EoGsRenderState.h"
+#include "EoDocCommand.h"
 
 POSITION AeSysDoc::AddGroupToTrap(EoDbGroup* group) {
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupSafeTrap, group); }
@@ -42,9 +43,19 @@ void AeSysDoc::RemoveAllTrappedGroups() {
 }
 
 void AeSysDoc::TranslateTrappedGroups(const EoGeVector3d& translate) {
+  if (m_trappedGroups.IsEmpty()) { return; }
+  std::vector<EoDbGroup*> snapshot;
+  auto position = m_trappedGroups.GetHeadPosition();
+  while (position != nullptr) { snapshot.push_back(m_trappedGroups.GetNext(position)); }
+
+  EoGeTransformMatrix matrix;
+  matrix.Translate(translate);
+
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsSafe, &m_trappedGroups); }
   m_trappedGroups.Translate(translate);
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_trappedGroups); }
+
+  PushCommand(std::make_unique<EoDocCmdTransformGroups>(std::move(snapshot), matrix, L"Translate"));
 }
 
 void AeSysDoc::CompressTrappedGroups() {
@@ -221,9 +232,15 @@ void AeSysDoc::SquareTrappedGroups(const AeSysView* view) {
   UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_trappedGroups);
 }
 
-void AeSysDoc::TransformTrappedGroups(const EoGeTransformMatrix& transformMatrix) {
+void AeSysDoc::TransformTrappedGroups(const EoGeTransformMatrix& transformMatrix, const wchar_t* label) {
+  if (m_trappedGroups.IsEmpty()) { return; }
+  std::vector<EoDbGroup*> snapshot;
+  auto position = m_trappedGroups.GetHeadPosition();
+  while (position != nullptr) { snapshot.push_back(m_trappedGroups.GetNext(position)); }
+
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsEraseSafeTrap, &m_trappedGroups); }
   m_trappedGroups.Transform(transformMatrix);
-
   if (app.IsTrapHighlighted()) { UpdateAllViews(nullptr, EoDb::kGroupsSafeTrap, &m_trappedGroups); }
+
+  PushCommand(std::make_unique<EoDocCmdTransformGroups>(std::move(snapshot), transformMatrix, label));
 }

@@ -18,6 +18,7 @@
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
 #include "EoDbGroupList.h"
+#include "EoDocCommand.h"
 #include "EoDbJobFile.h"
 #include "EoDbLabeledLine.h"
 #include "EoDbLayer.h"
@@ -359,8 +360,35 @@ void AeSysDoc::OnLayersStaticAll() {
 void AeSysDoc::OnLayersRemoveEmpty() {
   RemoveEmptyLayers();
 }
-void AeSysDoc::OnToolsGroupUndelete() {
-  DeletedGroupsRestore();
+// Phase 3A -- undo/redo stack
+void AeSysDoc::OnEditUndo() {
+  m_commandStack.Undo(this);
+}
+
+void AeSysDoc::OnEditRedo() {
+  m_commandStack.Redo(this);
+}
+
+void AeSysDoc::OnUpdateEditUndo(CCmdUI* cmdUI) {
+  cmdUI->Enable(m_commandStack.CanUndo() ? TRUE : FALSE);
+  if (m_commandStack.CanUndo()) {
+    CString label;
+    label.Format(L"Undo %s", m_commandStack.UndoLabel());
+    cmdUI->SetText(label);
+  } else {
+    cmdUI->SetText(L"Undo");
+  }
+}
+
+void AeSysDoc::OnUpdateEditRedo(CCmdUI* cmdUI) {
+  cmdUI->Enable(m_commandStack.CanRedo() ? TRUE : FALSE);
+  if (m_commandStack.CanRedo()) {
+    CString label;
+    label.Format(L"Redo %s", m_commandStack.RedoLabel());
+    cmdUI->SetText(label);
+  } else {
+    cmdUI->SetText(L"Redo");
+  }
 }
 void AeSysDoc::OnPensRemoveUnusedStyles() {
   m_LineTypeTable.RemoveUnused();
@@ -456,9 +484,38 @@ void AeSysDoc::OnEditTrapCopy() {
   CopyTrappedGroupsToClipboard(activeView);
 }
 void AeSysDoc::OnEditTrapCut() {
+  if (m_trappedGroups.IsEmpty()) { return; }
+
   auto* activeView = AeSysView::GetActiveView();
   CopyTrappedGroupsToClipboard(activeView);
-  DeleteAllTrappedGroups();
+
+  // Snapshot each trapped group with its origin layer before removal.
+  std::vector<EoDocCmdTrapCut::Entry> entries{};
+  auto position = m_trappedGroups.GetHeadPosition();
+  while (position != nullptr) {
+    auto* group = m_trappedGroups.GetNext(position);
+    auto* layer = AnyLayerRemove(group);
+    RemoveGroupFromAllViews(group);
+    UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
+    if (layer == nullptr) {
+      // Orphan group not owned by any layer — cannot undo. Discard safely.
+      ATLTRACE2(traceGeneral, 1, L"AeSysDoc::OnEditTrapCut: trapped group not found in any layer; discarding.\n");
+      UnregisterGroupHandles(group);
+      group->DeletePrimitivesAndRemoveAll();
+      delete group;
+      continue;
+    }
+    EoDocCmdTrapCut::Entry entry{};
+    entry.group = group;
+    entry.layer = layer;
+    entry.owned.reset(group);  // Transfer ownership to the entry.
+    entries.push_back(std::move(entry));
+  }
+  m_trappedGroups.RemoveAll();  // Clear trap list (groups now owned by command entries).
+
+  if (!entries.empty()) {
+    PushCommand(std::make_unique<EoDocCmdTrapCut>(std::move(entries)));
+  }
   UpdateAllViews(nullptr, 0L, nullptr);
 }
 
@@ -755,11 +812,19 @@ void AeSysDoc::OnToolsGroupDelete() {
   auto* group = activeView->SelectGroupAndPrimitive(cursorPosition);
 
   if (group != nullptr) {
-    AnyLayerRemove(group);
+    auto* layer = AnyLayerRemove(group);
     RemoveGroupFromAllViews(group);
     if (RemoveTrappedGroup(group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
     UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, group);
-    DeletedGroupsAddTail(group);
+    if (layer != nullptr) {
+      PushCommand(std::make_unique<EoDocCmdDeleteGroup>(group, layer));
+    } else {
+      // Group was not found in any layer — should not happen, but avoid a leak.
+      ATLTRACE2(traceGeneral, 1, L"AeSysDoc::OnToolsGroupDelete: group not found in any layer; discarding.\n");
+      UnregisterGroupHandles(group);
+      group->DeletePrimitivesAndRemoveAll();
+      delete group;
+    }
     app.AddStringToMessageList(IDS_SEG_DEL_TO_RESTORE);
   }
 }
@@ -767,14 +832,6 @@ void AeSysDoc::OnToolsGroupDeletelast() {
   auto* activeView = AeSysView::GetActiveView();
 
   activeView->DeleteLastGroup();
-}
-void AeSysDoc::OnToolsGroupExchange() {
-  if (!DeletedGroupsIsEmpty()) {
-    EoDbGroup* tailGroup = DeletedGroupsRemoveTail();
-    EoDbGroup* headGroup = DeletedGroupsRemoveHead();
-    DeletedGroupsAddTail(headGroup);
-    DeletedGroupsAddHead(tailGroup);
-  }
 }
 
 void AeSysDoc::OnToolsPrimitiveSnaptoendpoint() {
@@ -822,24 +879,31 @@ void AeSysDoc::OnToolsPrimitiveDelete() {
   const auto position = FindTrappedGroup(group);
 
   LPARAM hint = (position != nullptr) ? EoDb::kGroupEraseSafeTrap : EoDb::kGroupEraseSafe;
-  // erase entire group even if group has more than one primitive
   UpdateAllViews(nullptr, hint, group);
 
-  if (group->GetCount() > 1) {  // remove primitive from group
+  if (group->GetCount() > 1) {
+    // Multi: extract the primitive into a new wrapper group.
     auto* primitive = activeView->EngagedPrimitive();
     group->FindAndRemovePrim(primitive);
     hint = (position != nullptr) ? EoDb::kGroupSafeTrap : EoDb::kGroupSafe;
-    // display the group with the primitive removed
     UpdateAllViews(nullptr, hint, group);
-    // new group required to allow primitive to be placed into deleted group list
-    group = new EoDbGroup(primitive);
-  } else {  // deleting an entire group
-    AnyLayerRemove(group);
+    auto* wrapper = new EoDbGroup(primitive);
+    PushCommand(std::make_unique<EoDocCmdDeletePrimitive>(wrapper, group, primitive));
+  } else {
+    // Solo: remove the whole group.
+    auto* layer = AnyLayerRemove(group);
     RemoveGroupFromAllViews(group);
-
     if (RemoveTrappedGroup(group) != nullptr) { activeView->UpdateStateInformation(AeSysView::TrapCount); }
+    if (layer != nullptr) {
+      PushCommand(std::make_unique<EoDocCmdDeletePrimitive>(group, layer));
+    } else {
+      // Group was not found in any layer — should not happen, but avoid a leak.
+      ATLTRACE2(traceGeneral, 1, L"AeSysDoc::OnToolsPrimitiveDelete: group not found in any layer; discarding.\n");
+      UnregisterGroupHandles(group);
+      group->DeletePrimitivesAndRemoveAll();
+      delete group;
+    }
   }
-  DeletedGroupsAddTail(group);
   app.AddStringToMessageList(IDS_MSG_PRIM_ADDED_TO_DEL_GROUPS);
 }
 

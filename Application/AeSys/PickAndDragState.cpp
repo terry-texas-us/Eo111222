@@ -45,3 +45,20 @@ void PickAndDragState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT fla
     context->PreviewGroupEdit();
   }
 }
+
+bool PickAndDragState::ShouldBlockCommand(UINT commandId) const noexcept {
+  // Block any command that could delete or replace the primitive/group we hold
+  // a raw pointer to.  All other commands pass through normally.
+  switch (commandId) {
+    case ID_TOOLS_GROUP_DELETE:
+    case ID_TOOLS_GROUP_DELETELAST:
+    case ID_TOOLS_PRIMITVE_DELETE:
+    case ID_EDIT_TRAPCUT:
+    case ID_EDIT_TRAPDELETE:
+    case ID_FILE_NEW:
+    case ID_FILE_OPEN:
+      return true;
+    default:
+      return false;
+  }
+}

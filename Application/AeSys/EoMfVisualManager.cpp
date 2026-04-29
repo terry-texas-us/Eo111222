@@ -434,13 +434,13 @@ void EoMfVisualManager::OnDrawSeparator(CDC* deviceContext, CBasePane* /*bar*/, 
   CPen* previousPen = deviceContext->SelectObject(&m_separatorPen);
 
   if (isHorizontal) {
-    const int centerY = rect.CenterPoint().y;
-    deviceContext->MoveTo(rect.left, centerY);
-    deviceContext->LineTo(rect.right, centerY);
-  } else {
     const int centerX = rect.CenterPoint().x;
-    deviceContext->MoveTo(centerX, rect.top);
-    deviceContext->LineTo(centerX, rect.bottom);
+    deviceContext->MoveTo(centerX, rect.top + 3);
+    deviceContext->LineTo(centerX, rect.bottom - 3);
+  } else {
+    const int centerY = rect.CenterPoint().y;
+    deviceContext->MoveTo(rect.left + 3, centerY);
+    deviceContext->LineTo(rect.right - 3, centerY);
   }
   deviceContext->SelectObject(previousPen);
 }
