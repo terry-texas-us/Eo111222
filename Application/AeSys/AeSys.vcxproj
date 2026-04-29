@@ -196,7 +196,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="AnnotateModeState.cpp" />
+    <ClCompile Include="CutModeState.cpp" />
+    <ClCompile Include="DimensionModeState.cpp" />
+    <ClCompile Include="Draw2ModeState.cpp" />
     <ClCompile Include="DrawModeState.cpp" />
+    <ClCompile Include="EditModeState.cpp" />
     <ClCompile Include="EoCtrlColorComboBox.cpp" />
     <ClCompile Include="EoCtrlLayerComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
@@ -207,7 +212,12 @@
     <ClCompile Include="EoDocCommand.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
+    <ClCompile Include="FixupModeState.cpp" />
+    <ClCompile Include="LpdModeState.cpp" />
+    <ClCompile Include="NodalModeState.cpp" />
     <ClCompile Include="PickAndDragState.cpp" />
+    <ClCompile Include="PipeModeState.cpp" />
+    <ClCompile Include="PowerModeState.cpp" />
     <ClCompile Include="PrimitiveMendState.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -356,6 +366,7 @@
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="ModeLine.cpp" />
     <ClCompile Include="Section.cpp" />
+    <ClCompile Include="TrapModeState.cpp" />
     <ClCompile Include="WndProcKeyPlan.cpp" />
     <ClCompile Include="WndProcPreview.cpp" />
   </ItemGroup>
@@ -367,10 +378,15 @@
     <ClInclude Include="AeSysDoc.h" />
     <ClInclude Include="AeSysState.h" />
     <ClInclude Include="AeSysView.h" />
+    <ClInclude Include="AnnotateModeState.h" />
     <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="CutModeState.h" />
     <ClInclude Include="DdeCmds.h" />
     <ClInclude Include="DdeGItms.h" />
+    <ClInclude Include="DimensionModeState.h" />
+    <ClInclude Include="Draw2ModeState.h" />
     <ClInclude Include="DrawModeState.h" />
+    <ClInclude Include="EditModeState.h" />
     <ClInclude Include="Eo.h" />
     <ClInclude Include="EoApOptions.h" />
     <ClInclude Include="EoCtrlColorComboBox.h" />
@@ -482,17 +498,23 @@
     <ClInclude Include="EoMfStatusBar.h" />
     <ClInclude Include="EoMfVisualManager.h" />
     <ClInclude Include="EoOdaConverter.h" />
+    <ClInclude Include="FixupModeState.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="LexTable.h" />
+    <ClInclude Include="LpdModeState.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="NodalModeState.h" />
     <ClInclude Include="PickAndDragState.h" />
+    <ClInclude Include="PipeModeState.h" />
+    <ClInclude Include="PowerModeState.h" />
     <ClInclude Include="PrimitiveMendState.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="TrapModeState.h" />
     <ClInclude Include="WndProcPreview.h" />
   </ItemGroup>
   <ItemGroup>

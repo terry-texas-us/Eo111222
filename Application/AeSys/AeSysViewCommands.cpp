@@ -748,12 +748,24 @@ void AeSysView::SetWorldScale(double scale) {
 }
 
 #include "DrawModeState.h"
+#include "EditModeState.h"
+#include "PipeModeState.h"
+#include "PowerModeState.h"
+#include "TrapModeState.h"
+#include "AnnotateModeState.h"
+#include "CutModeState.h"
+#include "DimensionModeState.h"
+#include "Draw2ModeState.h"
+#include "FixupModeState.h"
+#include "LpdModeState.h"
+#include "NodalModeState.h"
 
 void AeSysView::OnModeAnnotate() {
   PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_ANNOTATE_MODE);
   app.SetPrimaryMode(ID_MODE_ANNOTATE);
   app.LoadModeResources(ID_MODE_ANNOTATE);
+  PushState(std::make_unique<AnnotateModeState>());
 }
 
 void AeSysView::OnModeCut() {
@@ -761,6 +773,7 @@ void AeSysView::OnModeCut() {
   app.SetModeResourceIdentifier(IDR_CUT_MODE);
   app.SetPrimaryMode(ID_MODE_CUT);
   app.LoadModeResources(ID_MODE_CUT);
+  PushState(std::make_unique<CutModeState>());
 }
 
 void AeSysView::OnModeDimension() {
@@ -768,6 +781,7 @@ void AeSysView::OnModeDimension() {
   app.SetModeResourceIdentifier(IDR_DIMENSION_MODE);
   app.SetPrimaryMode(ID_MODE_DIMENSION);
   app.LoadModeResources(ID_MODE_DIMENSION);
+  PushState(std::make_unique<DimensionModeState>());
 }
 
 void AeSysView::OnModeDraw() {
@@ -783,42 +797,51 @@ void AeSysView::OnModeDraw2() {
   app.SetModeResourceIdentifier(IDR_DRAW2_MODE);
   app.SetPrimaryMode(ID_MODE_DRAW2);
   app.LoadModeResources(ID_MODE_DRAW2);
+  PushState(std::make_unique<Draw2ModeState>());
 }
 
 void AeSysView::OnModeEdit() {
   PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_EDIT_MODE);
+  app.SetPrimaryMode(ID_MODE_EDIT);
   app.LoadModeResources(ID_MODE_EDIT);
+  PushState(std::make_unique<EditModeState>());
 }
 
 void AeSysView::OnModeFixup() {
   PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_FIXUP_MODE);
   app.LoadModeResources(ID_MODE_FIXUP);
+  PushState(std::make_unique<FixupModeState>());
 }
 
 void AeSysView::OnModeLPD() {
   PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_LPD_MODE);
+  app.SetPrimaryMode(ID_MODE_LPD);
   app.LoadModeResources(ID_MODE_LPD);
+  PushState(std::make_unique<LpdModeState>());
 }
 
 void AeSysView::OnModeNodal() {
   PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_NODAL_MODE);
   app.LoadModeResources(ID_MODE_NODAL);
+  PushState(std::make_unique<NodalModeState>());
 }
 
 void AeSysView::OnModePipe() {
   PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_PIPE_MODE);
   app.LoadModeResources(ID_MODE_PIPE);
+  PushState(std::make_unique<PipeModeState>());
 }
 
 void AeSysView::OnModePower() {
   PopAllModeStates();
   app.SetModeResourceIdentifier(IDR_POWER_MODE);
   app.LoadModeResources(ID_MODE_POWER);
+  PushState(std::make_unique<PowerModeState>());
 }
 
 void AeSysView::OnModeTrap() {
@@ -830,6 +853,7 @@ void AeSysView::OnModeTrap() {
     app.SetModeResourceIdentifier(IDR_TRAPR_MODE);
     app.LoadModeResources(ID_MODE_TRAPR);
   }
+  PushState(std::make_unique<TrapModeState>());
 }
 
 void AeSysView::OnTrapCommandsAddGroups() {

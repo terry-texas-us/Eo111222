@@ -17,7 +17,7 @@ void DrawModeState::OnExit(AeSysView* context) {
   // Single cleanup point for all draw-mode exit paths.
   context->ModeLineUnhighlightOp(m_previousDrawCommand);
   m_previousDrawCommand = 0;
-  context->ClearPoints();
+  m_points.RemoveAll();  // Phase 2B-1: draw-mode point accumulator is now state-owned.
   context->RubberBandingDisable();
   context->PreviewGroup().DeletePrimitivesAndRemoveAll();
   context->InvalidateOverlay();

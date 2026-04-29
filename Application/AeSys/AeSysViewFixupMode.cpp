@@ -18,6 +18,7 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
+#include "FixupModeState.h"
 #include "Resource.h"
 
 /** @todo Color and lineType assignment for chamfer/fillet operations
@@ -35,19 +36,11 @@
 
 namespace {
 
-std::uint16_t previousCommand{};
-
-EoDbGroup* previousGroup{};
-EoDbPrimitive* previousPrimitive{};
-EoGeLine previousLine{};
-
-EoDbGroup* referenceGroup{};
-EoDbPrimitive* referencePrimitive{};
-EoGeLine referenceLine{};
-
-EoDbGroup* currentGroup{};
-EoDbPrimitive* currentPrimitive{};
-EoGeLine currentLine{};
+/// Returns the active FixupModeState if Fixup mode is engaged, else nullptr.
+FixupModeState* FixupState(AeSysView* view) {
+  if (view == nullptr) { return nullptr; }
+  return dynamic_cast<FixupModeState*>(view->GetCurrentState());
+}
 
 /** @brief Finds center point of a circle given radius and two tangent vectors.
  * @param radius The radius of the circle.
@@ -121,6 +114,16 @@ void AeSysView::OnFixupModeOptions() {
 }
 
 void AeSysView::OnFixupModeReference() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& previousCommand = state->PreviousCommandRef();
+  auto& previousGroup = state->PreviousGroupRef();
+  auto& previousPrimitive = state->PreviousPrimitiveRef();
+  auto& previousLine = state->PreviousLineRef();
+  auto& referenceGroup = state->ReferenceGroupRef();
+  auto& referencePrimitive = state->ReferencePrimitiveRef();
+  auto& referenceLine = state->ReferenceLineRef();
+
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
@@ -219,6 +222,17 @@ void AeSysView::OnFixupModeReference() {
 }
 
 void AeSysView::OnFixupModeMend() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& previousCommand = state->PreviousCommandRef();
+  auto& previousGroup = state->PreviousGroupRef();
+  auto& previousPrimitive = state->PreviousPrimitiveRef();
+  auto& previousLine = state->PreviousLineRef();
+  auto& referenceLine = state->ReferenceLineRef();
+  auto& currentGroup = state->CurrentGroupRef();
+  auto& currentPrimitive = state->CurrentPrimitiveRef();
+  auto& currentLine = state->CurrentLineRef();
+
   auto* document = GetDocument();
 
   const auto cursorPosition = GetCursorPosition();
@@ -336,6 +350,17 @@ void AeSysView::OnFixupModeMend() {
 }
 
 void AeSysView::OnFixupModeChamfer() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& previousCommand = state->PreviousCommandRef();
+  auto& previousGroup = state->PreviousGroupRef();
+  auto& previousPrimitive = state->PreviousPrimitiveRef();
+  auto& previousLine = state->PreviousLineRef();
+  auto& referenceLine = state->ReferenceLineRef();
+  auto& currentGroup = state->CurrentGroupRef();
+  auto& currentPrimitive = state->CurrentPrimitiveRef();
+  auto& currentLine = state->CurrentLineRef();
+
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
 
@@ -403,6 +428,17 @@ void AeSysView::OnFixupModeChamfer() {
 }
 
 void AeSysView::OnFixupModeFillet() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& previousCommand = state->PreviousCommandRef();
+  auto& previousGroup = state->PreviousGroupRef();
+  auto& previousPrimitive = state->PreviousPrimitiveRef();
+  auto& previousLine = state->PreviousLineRef();
+  auto& referenceLine = state->ReferenceLineRef();
+  auto& currentGroup = state->CurrentGroupRef();
+  auto& currentPrimitive = state->CurrentPrimitiveRef();
+  auto& currentLine = state->CurrentLineRef();
+
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
 
@@ -486,6 +522,12 @@ void AeSysView::OnFixupModeFillet() {
 }
 
 void AeSysView::OnFixupModeSquare() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& currentGroup = state->CurrentGroupRef();
+  auto& currentPrimitive = state->CurrentPrimitiveRef();
+  auto& currentLine = state->CurrentLineRef();
+
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
@@ -509,6 +551,14 @@ void AeSysView::OnFixupModeSquare() {
 }
 
 void AeSysView::OnFixupModeParallel() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& referenceGroup = state->ReferenceGroupRef();
+  auto& referenceLine = state->ReferenceLineRef();
+  auto& currentGroup = state->CurrentGroupRef();
+  auto& currentPrimitive = state->CurrentPrimitiveRef();
+  auto& currentLine = state->CurrentLineRef();
+
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
 
@@ -528,6 +578,12 @@ void AeSysView::OnFixupModeParallel() {
 }
 
 void AeSysView::OnFixupModeReturn() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& previousCommand = state->PreviousCommandRef();
+  auto& referenceGroup = state->ReferenceGroupRef();
+  auto& referencePrimitive = state->ReferencePrimitiveRef();
+
   auto* document = GetDocument();
 
   if (referenceGroup != nullptr) {
@@ -539,6 +595,12 @@ void AeSysView::OnFixupModeReturn() {
 }
 
 void AeSysView::OnFixupModeEscape() {
+  auto* state = FixupState(this);
+  if (state == nullptr) { return; }
+  auto& previousCommand = state->PreviousCommandRef();
+  auto& referenceGroup = state->ReferenceGroupRef();
+  auto& referencePrimitive = state->ReferencePrimitiveRef();
+
   auto* document = GetDocument();
 
   if (referenceGroup != nullptr) {

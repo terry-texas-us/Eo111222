@@ -22,13 +22,17 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
+#include "DimensionModeState.h"
 
 namespace {
 
 constexpr double DimensionModePickTolerance{0.05};
 
-EoGePoint3d PreviousDimensionCursorPosition{};
-std::uint16_t PreviousDimensionCommand{};
+/// Returns the active DimensionModeState if Dimension mode is engaged, else nullptr.
+DimensionModeState* DimensionState(AeSysView* view) {
+  if (view == nullptr) { return nullptr; }
+  return dynamic_cast<DimensionModeState*>(view->GetCurrentState());
+}
 
 /** @brief Produces the reference system vectors for a single character cell.
  *  @param characterCellDefinition The character cell definition containing the rotation and slant angles, expansion
@@ -87,20 +91,24 @@ EoGePoint3d ProjPtToLn(EoGePoint3d pt) {
 }  // namespace
 
 void AeSysView::OnDimensionModeOptions() {
-  if (PreviousDimensionCommand != 0) {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
+  if (state->PreviousCommand() != 0) {
     RubberBandingDisable();
-    ModeLineUnhighlightOp(PreviousDimensionCommand);
+    ModeLineUnhighlightOp(state->PreviousCommandRef());
   }
-  PreviousDimensionCursorPosition = GetCursorPosition();
+  state->SetPreviousCursorPosition(GetCursorPosition());
 }
 
 void AeSysView::OnDimensionModeArrow() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
 
-  if (PreviousDimensionCommand != 0) {
+  if (state->PreviousCommand() != 0) {
     RubberBandingDisable();
-    ModeLineUnhighlightOp(PreviousDimensionCommand);
+    ModeLineUnhighlightOp(state->PreviousCommandRef());
   }
   EoGeLine testLine;
   auto groupPosition = GetFirstVisibleGroupPosition();
@@ -137,53 +145,57 @@ void AeSysView::OnDimensionModeArrow() {
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, newGroup);
 
         SetCursorPosition(pt);
-        PreviousDimensionCursorPosition = pt;
+        state->SetPreviousCursorPosition(pt);
         return;
       }
     }
   }
-  PreviousDimensionCursorPosition = cursorPosition;
+  state->SetPreviousCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnDimensionModeLine() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
   RubberBandingDisable();
-  if (PreviousDimensionCommand != ID_OP2) {
-    PreviousDimensionCommand = ModeLineHighlightOp(ID_OP2);
-    PreviousDimensionCursorPosition = cursorPosition;
+  if (state->PreviousCommand() != ID_OP2) {
+    state->SetPreviousCommand(ModeLineHighlightOp(ID_OP2));
+    state->SetPreviousCursorPosition(cursorPosition);
   } else {
-    cursorPosition = SnapPointToAxis(PreviousDimensionCursorPosition, cursorPosition);
-    if (PreviousDimensionCursorPosition != cursorPosition) {
+    cursorPosition = SnapPointToAxis(state->PreviousCursorPosition(), cursorPosition);
+    if (state->PreviousCursorPosition() != cursorPosition) {
       auto* group = new EoDbGroup(
-          EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, L"CONTINUOUS"));
+          EoDbLine::CreateLine(state->PreviousCursorPosition(), cursorPosition)->WithProperties(1, L"CONTINUOUS"));
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     }
-    PreviousDimensionCursorPosition = cursorPosition;
+    state->SetPreviousCursorPosition(cursorPosition);
   }
   RubberBandingStartAtEnable(cursorPosition, Lines);
 }
 
 void AeSysView::OnDimensionModeDLine() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
-  if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
+  if (state->PreviousCommand() == ID_OP3 || state->PreviousCommand() == ID_OP4) {
     RubberBandingDisable();
-    if (PreviousDimensionCursorPosition != cursorPosition) {
+    if (state->PreviousCursorPosition() != cursorPosition) {
       auto* group = new EoDbGroup;
 
-      if (PreviousDimensionCommand == ID_OP4) {
-        GenerateLineEndItem(1, 0.1, cursorPosition, PreviousDimensionCursorPosition, group);
-        ModeLineUnhighlightOp(PreviousDimensionCommand);
-        PreviousDimensionCommand = ModeLineHighlightOp(ID_OP3);
+      if (state->PreviousCommand() == ID_OP4) {
+        GenerateLineEndItem(1, 0.1, cursorPosition, state->PreviousCursorPosition(), group);
+        ModeLineUnhighlightOp(state->PreviousCommandRef());
+        state->SetPreviousCommand(ModeLineHighlightOp(ID_OP3));
       }
       auto* linearDimension = new EoDbLabeledLine();
 
       linearDimension->SetColor(1);
       linearDimension->SetLineTypeName(L"CONTINUOUS");
 
-      linearDimension->SetBeginPoint(PreviousDimensionCursorPosition);
+      linearDimension->SetBeginPoint(state->PreviousCursorPosition());
       linearDimension->SetEndPoint(cursorPosition);
 
       linearDimension->SetDefaultNote();
@@ -194,42 +206,44 @@ void AeSysView::OnDimensionModeDLine() {
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
-      PreviousDimensionCursorPosition = cursorPosition;
+      state->SetPreviousCursorPosition(cursorPosition);
     }
   } else {
-    if (PreviousDimensionCommand != 0) {
+    if (state->PreviousCommand() != 0) {
       RubberBandingDisable();
-      ModeLineUnhighlightOp(PreviousDimensionCommand);
+      ModeLineUnhighlightOp(state->PreviousCommandRef());
     }
-    PreviousDimensionCommand = ModeLineHighlightOp(ID_OP3);
-    PreviousDimensionCursorPosition = cursorPosition;
+    state->SetPreviousCommand(ModeLineHighlightOp(ID_OP3));
+    state->SetPreviousCursorPosition(cursorPosition);
   }
   SetCursorPosition(cursorPosition);
   RubberBandingStartAtEnable(cursorPosition, Lines);
 }
 
 void AeSysView::OnDimensionModeDLine2() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
-  if (PreviousDimensionCommand == 0) {
-    PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
-    PreviousDimensionCursorPosition = cursorPosition;
-  } else if (PreviousDimensionCommand == ID_OP3 || PreviousDimensionCommand == ID_OP4) {
+  if (state->PreviousCommand() == 0) {
+    state->SetPreviousCommand(ModeLineHighlightOp(ID_OP4));
+    state->SetPreviousCursorPosition(cursorPosition);
+  } else if (state->PreviousCommand() == ID_OP3 || state->PreviousCommand() == ID_OP4) {
     RubberBandingDisable();
-    if (PreviousDimensionCursorPosition != cursorPosition) {
+    if (state->PreviousCursorPosition() != cursorPosition) {
       auto* group = new EoDbGroup;
-      if (PreviousDimensionCommand == ID_OP4) {
-        GenerateLineEndItem(1, 0.1, cursorPosition, PreviousDimensionCursorPosition, group);
+      if (state->PreviousCommand() == ID_OP4) {
+        GenerateLineEndItem(1, 0.1, cursorPosition, state->PreviousCursorPosition(), group);
       } else {
-        ModeLineUnhighlightOp(PreviousDimensionCommand);
-        PreviousDimensionCommand = ModeLineHighlightOp(ID_OP4);
+        ModeLineUnhighlightOp(state->PreviousCommandRef());
+        state->SetPreviousCommand(ModeLineHighlightOp(ID_OP4));
       }
       auto* linearDimension = new EoDbLabeledLine();
 
       linearDimension->SetColor(1);
       linearDimension->SetLineTypeName(L"CONTINUOUS");
 
-      linearDimension->SetBeginPoint(PreviousDimensionCursorPosition);
+      linearDimension->SetBeginPoint(state->PreviousCursorPosition());
       linearDimension->SetEndPoint(cursorPosition);
 
       linearDimension->SetDefaultNote();
@@ -237,11 +251,11 @@ void AeSysView::OnDimensionModeDLine2() {
       linearDimension->SetAlignment(EoDb::HorizontalAlignment::Center, EoDb::VerticalAlignment::Middle);
 
       group->AddTail(linearDimension);
-      GenerateLineEndItem(1, 0.1, PreviousDimensionCursorPosition, cursorPosition, group);
+      GenerateLineEndItem(1, 0.1, state->PreviousCursorPosition(), cursorPosition, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
-      PreviousDimensionCursorPosition = cursorPosition;
+      state->SetPreviousCursorPosition(cursorPosition);
     } else {
       app.AddModeInformationToMessageList();
     }
@@ -253,30 +267,34 @@ void AeSysView::OnDimensionModeDLine2() {
 }
 
 void AeSysView::OnDimensionModeExten() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
-  if (PreviousDimensionCommand != ID_OP5) {
+  if (state->PreviousCommand() != ID_OP5) {
     RubberBandingDisable();
-    PreviousDimensionCursorPosition = ProjPtToLn(cursorPosition);
-    ModeLineUnhighlightOp(PreviousDimensionCommand);
-    PreviousDimensionCommand = ModeLineHighlightOp(ID_OP5);
+    state->SetPreviousCursorPosition(ProjPtToLn(cursorPosition));
+    ModeLineUnhighlightOp(state->PreviousCommandRef());
+    state->SetPreviousCommand(ModeLineHighlightOp(ID_OP5));
   } else {
     cursorPosition = ProjPtToLn(cursorPosition);
-    if (PreviousDimensionCursorPosition != cursorPosition) {
-      cursorPosition = cursorPosition.ProjectToward(PreviousDimensionCursorPosition, -0.1875);
-      PreviousDimensionCursorPosition = PreviousDimensionCursorPosition.ProjectToward(cursorPosition, 0.0625);
+    if (state->PreviousCursorPosition() != cursorPosition) {
+      cursorPosition = cursorPosition.ProjectToward(state->PreviousCursorPosition(), -0.1875);
+      state->SetPreviousCursorPosition(state->PreviousCursorPosition().ProjectToward(cursorPosition, 0.0625));
 
       auto* group = new EoDbGroup(
-          EoDbLine::CreateLine(PreviousDimensionCursorPosition, cursorPosition)->WithProperties(1, L"CONTINUOUS"));
+          EoDbLine::CreateLine(state->PreviousCursorPosition(), cursorPosition)->WithProperties(1, L"CONTINUOUS"));
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
     }
-    PreviousDimensionCursorPosition = cursorPosition;
-    ModeLineUnhighlightOp(PreviousDimensionCommand);
+    state->SetPreviousCursorPosition(cursorPosition);
+    ModeLineUnhighlightOp(state->PreviousCommandRef());
   }
 }
 
 void AeSysView::OnDimensionModeRadius() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
 
@@ -309,19 +327,21 @@ void AeSysView::OnDimensionModeRadius() {
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
-      PreviousDimensionCursorPosition = ptEnd;
+      state->SetPreviousCursorPosition(ptEnd);
     }
   } else {  // error arc not identified
-    PreviousDimensionCursorPosition = cursorPosition;
+    state->SetPreviousCursorPosition(cursorPosition);
   }
 }
 
 void AeSysView::OnDimensionModeDiameter() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
 
   if (SelectGroupAndPrimitive(cursorPosition) != nullptr) {
-    const EoGePoint3d end = DetPt();
+      const EoGePoint3d end = DetPt();
 
     if ((EngagedPrimitive())->Is(EoDb::kConicPrimitive)) {
       const auto* conic = static_cast<EoDbConic*>(EngagedPrimitive());
@@ -351,14 +371,16 @@ void AeSysView::OnDimensionModeDiameter() {
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
-      PreviousDimensionCursorPosition = end;
+      state->SetPreviousCursorPosition(end);
     }
   } else {
-    PreviousDimensionCursorPosition = cursorPosition;
+    state->SetPreviousCursorPosition(cursorPosition);
   }
 }
 
 void AeSysView::OnDimensionModeAngle() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   auto* document = GetDocument();
   const auto cursorPosition = GetCursorPosition();
 
@@ -367,16 +389,16 @@ void AeSysView::OnDimensionModeAngle() {
   static int iLns;
   static EoGeLine line;
 
-  if (PreviousDimensionCommand != ID_OP8) {
+  if (state->PreviousCommand() != ID_OP8) {
     RubberBandingDisable();
-    ModeLineUnhighlightOp(PreviousDimensionCommand);
+    ModeLineUnhighlightOp(state->PreviousCommandRef());
 
     if (SelectLineUsingPoint(cursorPosition) != nullptr) {
       const auto* engagedPrimitive = static_cast<EoDbLine*>(EngagedPrimitive());
 
       rProjPt[0] = DetPt();
       line = engagedPrimitive->Line();
-      PreviousDimensionCommand = ModeLineHighlightOp(ID_OP8);
+      state->SetPreviousCommand(ModeLineHighlightOp(ID_OP8));
       app.AddStringToMessageList(std::wstring(L"Select the second line."));
       iLns = 1;
     }
@@ -443,17 +465,19 @@ void AeSysView::OnDimensionModeAngle() {
         Gs::renderState.Restore(deviceContext, savedRenderState);
         ReleaseDC(deviceContext);
       }
-      ModeLineUnhighlightOp(PreviousDimensionCommand);
+      ModeLineUnhighlightOp(state->PreviousCommandRef());
       app.AddModeInformationToMessageList();
     }
   }
 }
 
 void AeSysView::OnDimensionModeConvert() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   const auto cursorPosition = GetCursorPosition();
-  if (PreviousDimensionCommand != 0) {
+  if (state->PreviousCommand() != 0) {
     RubberBandingDisable();
-    ModeLineUnhighlightOp(PreviousDimensionCommand);
+    ModeLineUnhighlightOp(state->PreviousCommandRef());
   }
 
   EoDbGroup* group{};
@@ -491,7 +515,7 @@ void AeSysView::OnDimensionModeConvert() {
           group->InsertAfter(posPrimCur, dimension);
           group->RemoveAt(posPrimCur);
           delete primitive;
-          PreviousDimensionCursorPosition = ptProj;
+          state->SetPreviousCursorPosition(ptProj);
           return;
         } else if (primitive->Is(EoDb::kDimensionPrimitive)) {
           const auto* pPrimDim = static_cast<EoDbLabeledLine*>(primitive);
@@ -507,25 +531,29 @@ void AeSysView::OnDimensionModeConvert() {
           group->InsertAfter(posPrimCur, pPrimText);
           group->RemoveAt(posPrimCur);
           delete primitive;
-          PreviousDimensionCursorPosition = ptProj;
+          state->SetPreviousCursorPosition(ptProj);
           return;
         }
       }
     }
   }
-  PreviousDimensionCursorPosition = cursorPosition;
+  state->SetPreviousCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnDimensionModeReturn() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   const auto cursorPosition = GetCursorPosition();
-  if (PreviousDimensionCommand != 0) {
+  if (state->PreviousCommand() != 0) {
     RubberBandingDisable();
-    ModeLineUnhighlightOp(PreviousDimensionCommand);
+    ModeLineUnhighlightOp(state->PreviousCommandRef());
   }
-  PreviousDimensionCursorPosition = cursorPosition;
+  state->SetPreviousCursorPosition(cursorPosition);
 }
 
 void AeSysView::OnDimensionModeEscape() {
+  auto* state = DimensionState(this);
+  if (state == nullptr) { return; }
   RubberBandingDisable();
-  ModeLineUnhighlightOp(PreviousDimensionCommand);
+  ModeLineUnhighlightOp(state->PreviousCommandRef());
 }

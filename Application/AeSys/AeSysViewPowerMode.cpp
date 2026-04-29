@@ -12,18 +12,35 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGsRenderState.h"
+#include "PowerModeState.h"
 #include "Resource.h"
+
+namespace {
+/// Returns the active PowerModeState from the view's state stack, or nullptr when
+/// called outside power mode (e.g. during PopAllModeStates teardown).
+PowerModeState* PowerState(AeSysView* view) {
+  return dynamic_cast<PowerModeState*>(view->GetCurrentState());
+}
+}  // namespace
 
 void AeSysView::OnPowerModeOptions() {
   // TODO: Add your command handler code here
 }
 
 void AeSysView::OnPowerModeCircuit() {
+  auto* state = PowerState(this);
+  if (state == nullptr) { return; }
+  auto& points = state->Points();
+  auto& previousOp = state->PreviousOpRef();
+  auto& powerArrow = state->PowerArrowRef();
+  auto& powerConductor = state->PowerConductorRef();
+  auto& previousRadius = state->PreviousRadiusRef();
+
   auto* document = GetDocument();
   auto cursorPosition = GetCursorPosition();
 
-  m_PowerArrow = false;
-  m_PowerConductor = false;
+  powerArrow = false;
+  powerConductor = false;
 
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
@@ -33,36 +50,36 @@ void AeSysView::OnPowerModeCircuit() {
     cursorPosition = circle->Center();
     const double currentRadius = circle->Radius();
 
-    if (pts.IsEmpty()) {
-      pts.Add(cursorPosition);
-      m_PreviousOp = ModeLineHighlightOp(ID_OP2);
+    if (points.IsEmpty()) {
+      points.Add(cursorPosition);
+      previousOp = ModeLineHighlightOp(ID_OP2);
     } else {
       group = new EoDbGroup;
       document->AddWorkLayerGroup(group);
-      const EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-      const EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], currentRadius);
+      const EoGePoint3d pt1 = points[0].ProjectToward(cursorPosition, previousRadius);
+      const EoGePoint3d pt2 = cursorPosition.ProjectToward(points[0], currentRadius);
       group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(Gs::renderState));
       InvalidateScene();
-      pts[0] = cursorPosition;
+      points[0] = cursorPosition;
     }
-    m_PreviousRadius = currentRadius;
+    previousRadius = currentRadius;
   } else {
-    if (pts.IsEmpty()) {
-      pts.Add(cursorPosition);
+    if (points.IsEmpty()) {
+      points.Add(cursorPosition);
     } else {
-      cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
+      cursorPosition = SnapPointToAxis(points[0], cursorPosition);
 
       group = new EoDbGroup;
       document->AddWorkLayerGroup(group);
-      const EoGePoint3d pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
-      const EoGePoint3d pt2 = cursorPosition.ProjectToward(pts[0], 0.0);
+      const EoGePoint3d pt1 = points[0].ProjectToward(cursorPosition, previousRadius);
+      const EoGePoint3d pt2 = cursorPosition.ProjectToward(points[0], 0.0);
       group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(Gs::renderState));
       InvalidateScene();
 
-      pts[0] = cursorPosition;
+      points[0] = cursorPosition;
     }
-    m_PreviousOp = ModeLineHighlightOp(ID_OP2);
-    m_PreviousRadius = 0.;
+    previousOp = ModeLineHighlightOp(ID_OP2);
+    previousRadius = 0.;
   }
 }
 
@@ -83,51 +100,62 @@ void AeSysView::OnPowerModeNeutral() {
 }
 
 void AeSysView::OnPowerModeHome() {
-  static EoGePoint3d pointOnCircuit;
+  auto* state = PowerState(this);
+  if (state == nullptr) { return; }
+  auto& powerArrow = state->PowerArrowRef();
+  auto& powerConductor = state->PowerConductorRef();
+  auto& circuitEndPoint = state->CircuitEndPointRef();
+  auto& pointOnCircuit = state->PointOnCircuitHomeRef();
 
   auto cursorPosition = GetCursorPosition();
 
-  m_PowerConductor = false;
-  m_PreviousOp = 0;
+  powerConductor = false;
+  state->SetPreviousOp(0);
 
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   InvalidateOverlay();
 
-  if (!m_PowerArrow || (pointOnCircuit != cursorPosition)) {
-    m_PowerArrow = false;
+  if (!powerArrow || (pointOnCircuit != cursorPosition)) {
+    powerArrow = false;
     EoDbLine* circuit{};
     const auto* group = SelectLineUsingPoint(cursorPosition, circuit);
     if (group != nullptr) {
       cursorPosition = circuit->ProjectPointToLine(cursorPosition);
       if (circuit->RelOfPt(cursorPosition) <= 0.5) {
-        m_CircuitEndPoint = circuit->End();
+        circuitEndPoint = circuit->End();
         if (cursorPosition.DistanceTo(circuit->Begin()) <= 0.1) { cursorPosition = circuit->Begin(); }
       } else {
-        m_CircuitEndPoint = circuit->Begin();
+        circuitEndPoint = circuit->Begin();
         if (cursorPosition.DistanceTo(circuit->End()) <= 0.1) { cursorPosition = circuit->End(); }
       }
-      m_PowerArrow = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
-      GenerateHomeRunArrow(cursorPosition, m_CircuitEndPoint);
-      cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+      powerArrow = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
+      GenerateHomeRunArrow(cursorPosition, circuitEndPoint);
+      cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
       SetCursorPosition(cursorPosition);
     }
   } else {
-    m_PowerArrow = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
-    GenerateHomeRunArrow(cursorPosition, m_CircuitEndPoint);
-    cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+    powerArrow = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
+    GenerateHomeRunArrow(cursorPosition, circuitEndPoint);
+    cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
     SetCursorPosition(cursorPosition);
   }
   pointOnCircuit = cursorPosition;
 }
 
 void AeSysView::DoPowerModeMouseMove() {
+  auto* state = PowerState(this);
+  if (state == nullptr) { return; }
+  auto& points = state->Points();
+  const auto previousOp = state->PreviousOp();
+  const auto previousRadius = state->PreviousRadiusRef();
+
   const EoDbHandleSuppressionScope suppressHandles;
   auto cursorPosition = GetCursorPosition();
-  const auto numberOfPoints = pts.GetSize();
+  const auto numberOfPoints = points.GetSize();
 
-  switch (m_PreviousOp) {
+  switch (previousOp) {
     case ID_OP2:
-      if (pts[0] != cursorPosition) {
+      if (points[0] != cursorPosition) {
         m_PreviewGroup.DeletePrimitivesAndRemoveAll();
 
         EoDbConic* circle{};
@@ -135,56 +163,61 @@ void AeSysView::DoPowerModeMouseMove() {
         if (group != nullptr) {
           const double radius = circle->Radius();
           cursorPosition = circle->Center();
-          cursorPosition = cursorPosition.ProjectToward(pts[0], radius);
+          cursorPosition = cursorPosition.ProjectToward(points[0], radius);
         } else {
-          cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
+          cursorPosition = SnapPointToAxis(points[0], cursorPosition);
         }
-        const auto pt1 = pts[0].ProjectToward(cursorPosition, m_PreviousRadius);
+        const auto pt1 = points[0].ProjectToward(cursorPosition, previousRadius);
         m_PreviewGroup.AddTail(EoDbLine::CreateLine(pt1, cursorPosition)->WithProperties(Gs::renderState));
         InvalidateOverlay();
       }
       break;
   }
-  pts.SetSize(numberOfPoints);
+  points.SetSize(numberOfPoints);
 }
 
 void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
-  static EoGePoint3d pointOnCircuit;
+  auto* state = PowerState(this);
+  if (state == nullptr) { return; }
+  auto& powerArrow = state->PowerArrowRef();
+  auto& powerConductor = state->PowerConductorRef();
+  auto& circuitEndPoint = state->CircuitEndPointRef();
+  auto& pointOnCircuit = state->PointOnCircuitConductorRef();
 
   EoGePoint3d cursorPosition = GetCursorPosition();
 
-  m_PowerArrow = false;
-  m_PreviousOp = 0;
+  powerArrow = false;
+  state->SetPreviousOp(0);
 
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   InvalidateOverlay();
 
-  if (!m_PowerConductor || pointOnCircuit != cursorPosition) {
-    m_PowerConductor = false;
+  if (!powerConductor || pointOnCircuit != cursorPosition) {
+    powerConductor = false;
     EoDbLine* circuit{};
     const auto* group = SelectLineUsingPoint(cursorPosition, circuit);
     if (group != nullptr) {
       cursorPosition = circuit->ProjectPointToLine(cursorPosition);
 
       const EoGePoint3d beginPoint = circuit->Begin();
-      m_CircuitEndPoint = circuit->End();
+      circuitEndPoint = circuit->End();
 
-      if (std::abs(m_CircuitEndPoint.x - beginPoint.x) > 0.025) {
-        if (beginPoint.x > m_CircuitEndPoint.x) { m_CircuitEndPoint = beginPoint; }
-      } else if (beginPoint.y > m_CircuitEndPoint.y) {
-        m_CircuitEndPoint = beginPoint;
+      if (std::abs(circuitEndPoint.x - beginPoint.x) > 0.025) {
+        if (beginPoint.x > circuitEndPoint.x) { circuitEndPoint = beginPoint; }
+      } else if (beginPoint.y > circuitEndPoint.y) {
+        circuitEndPoint = beginPoint;
       }
 
-      GeneratePowerConductorSymbol(conductorType, cursorPosition, m_CircuitEndPoint);
-      cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+      GeneratePowerConductorSymbol(conductorType, cursorPosition, circuitEndPoint);
+      cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
       SetCursorPosition(cursorPosition);
-      m_PowerConductor = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
+      powerConductor = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
     }
   } else {
-    GeneratePowerConductorSymbol(conductorType, cursorPosition, m_CircuitEndPoint);
-    cursorPosition = cursorPosition.ProjectToward(m_CircuitEndPoint, m_PowerConductorSpacing);
+    GeneratePowerConductorSymbol(conductorType, cursorPosition, circuitEndPoint);
+    cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
     SetCursorPosition(cursorPosition);
-    m_PowerConductor = cursorPosition.DistanceTo(m_CircuitEndPoint) > m_PowerConductorSpacing;
+    powerConductor = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
   }
   pointOnCircuit = cursorPosition;
 }
@@ -194,16 +227,15 @@ void AeSysView::OnPowerModeReturn() {
 }
 
 void AeSysView::OnPowerModeEscape() {
-  m_PowerArrow = false;
-  m_PowerConductor = false;
-
-  pts.RemoveAll();
-
-  ModeLineUnhighlightOp(m_PreviousOp);
-  m_PreviousOp = 0;
-
   m_PreviewGroup.DeletePrimitivesAndRemoveAll();
   InvalidateOverlay();
+
+  auto* state = PowerState(this);
+  if (state == nullptr) { return; }
+  state->PowerArrowRef() = false;
+  state->PowerConductorRef() = false;
+  state->Points().RemoveAll();
+  state->UnhighlightOp(this);
 }
 
 void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, const EoGePoint3d& endPoint) const {
@@ -280,3 +312,4 @@ void AeSysView::GeneratePowerConductorSymbol(std::uint16_t conductorType,
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
+

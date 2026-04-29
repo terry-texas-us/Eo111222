@@ -91,8 +91,6 @@ public:
 
  /// Accessor for state classes that need the preview group.
  [[nodiscard]] EoDbGroup& PreviewGroup() noexcept { return m_PreviewGroup; }
- /// Clear the shared point accumulator (used by draw mode and other modes).
- void ClearPoints() { pts.RemoveAll(); }
  private:
   EoGsModelTransform m_ModelTransform;
   EoGsViewport m_Viewport;
@@ -122,8 +120,6 @@ public:
   PlotSettings m_plotSettings;  ///< Last-used plot dialog output; consumed by the print lifecycle.
   EoDbGroup m_PreviewGroup{};
   EoGsViewTransform m_PreviousViewTransform{};
-  std::uint16_t m_PreviousOp{0};
-  EoGePoint3d m_PreviousPnt{};
   double m_SelectApertureSize{0.005};
   bool m_viewBackgroundImage{};
   bool m_ViewPenWidths{};
@@ -139,9 +135,7 @@ public:
 
   EoGeVector3d m_vRelPos{};
 
-  EoGePoint3dArray pts;
-
-  EoMfLayoutTabBar m_layoutTabBar;  ///< Layout selector tab bar at bottom of view
+  EoMfLayoutTabBar m_layoutTabBar;
 
   /// @brief The currently activated viewport in paper space (double-click to enter/exit).
   /// When non-null, the view is in viewport-activated mode: the accent border is drawn
@@ -1070,11 +1064,7 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnPipeModeEscape();
 
  private:  // Power mode interface
-  bool m_PowerArrow{};
-  bool m_PowerConductor{};
   double m_PowerConductorSpacing{0.04};
-  EoGePoint3d m_CircuitEndPoint{};
-  double m_PreviousRadius{};
 
  public:
   void DoPowerModeMouseMove();

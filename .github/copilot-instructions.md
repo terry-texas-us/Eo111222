@@ -288,27 +288,10 @@ The chain is: Entity `ownerHandle` → `BLOCK_RECORD` handle → `EoDxfLayout::m
 ### Cleanup
 `RemoveAllLayerTableLayers()` iterates all map entries, clearing and deleting each layout's layers, then clears the map and resets `m_activeLayoutHandle` to `PaperSpaceBlockRecord`. `AnyLayerRemove()` searches model space then all paper-space layouts.
 
-### Implementation Status (5-Phase Plan)
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Data model — per-layout `CLayers` map + active layout handle | ✅ Complete |
-| 2 | Import routing — use entity `ownerHandle` to route to correct layout | ✅ Complete |
-| 3 | PEG V2 persistence — serialize per-layout paper-space sections | ✅ Complete |
-| 4 | Export and rendering — iterate layouts for DXF export, render active layout | ✅ Complete |
-| 5 | UI — layout tab selector for switching active layout | ✅ Complete |
+All five implementation phases are complete (data model, import routing, PEG V2 persistence, DXF export/rendering, layout tab UI).
 
-### PEG V2 Layout Table Persistence
-`kLayoutTable` (0x0205) sentinel in the tables section. `ReadLayoutTable`/`WriteLayoutTable` in `EoDbPegFile.cpp` serialize all ~60 `EoDxfLayout` fields in binary. Backward-compatible via peek-ahead — V1 files without the sentinel skip cleanly.
-
-### PEG V2 Per-Layout Paper-Space Persistence
-`kMultiLayoutPaperSpaceSection` (0x0106) replaces the legacy `kPaperSpaceSection` (0x0105) for writing. The binary format is:kMultiLayoutPaperSpaceSection (0x0106)
-  uint16  layoutCount
-  For each layout:
-    uint64  blockRecordHandle
-    kLayerTable → layers → kEndOfTable
-    kGroupsSection → entity groups → kEndOfSection
-  kEndOfSection
-`ReadPaperSpaceSection` handles both sentinels: `kMultiLayoutPaperSpaceSection` reads per-layout with explicit block record handles; legacy `kPaperSpaceSection` routes all data to the default layout (0x1E). Shared logic is in `ReadPaperSpaceLayoutLayers` and `ReadPaperSpaceLayoutEntities` helpers.
+### PEG V2 Persistence
+`kLayoutTable` (0x0205) serializes `EoDxfLayout` fields. `kMultiLayoutPaperSpaceSection` (0x0106) replaces legacy `kPaperSpaceSection` (0x0105); `ReadPaperSpaceSection` handles both for backward compatibility.
 
 ### Key Files
 | File | Role |
@@ -620,307 +603,42 @@ struct ViewportInfo { EoGePoint3d center; double halfWidth; double halfHeight; E
 ```
 The `primitive` pointer enables the rendering loop to identify the active viewport for accent highlighting.
 
-## Viewport Activation (Phase 7)
+## Paper-Space Viewport Interaction (Phases 7–12, Complete)
 
-### Architecture Overview
-In paper space, double-clicking inside a viewport activates it (accent blue border). Double-clicking anywhere while a viewport is active deactivates it. This is the first step toward in-viewport model-space editing.
+All six paper-space viewport interaction phases are fully implemented.
 
-### State
-`AeSysView::m_activeViewportPrimitive` (`EoDbViewport*`, default `nullptr`) tracks the activated viewport. Lifetime is session-only — not persisted.
+### Viewport Activation
+Double-click inside a viewport in paper space activates it (accent blue border, 2px); double-click elsewhere deactivates. `AeSysView::m_activeViewportPrimitive` (`EoDbViewport*`) tracks the active viewport (session-only). `AeSysDoc::HitTestViewport(worldPoint)` performs point-in-rectangle containment. `OnLayoutTabChange()` calls `DeactivateViewport()` before switching spaces.
 
-### Accessors
-| Method | Returns | Purpose |
-|--------|---------|---------|
-| `ActiveViewportPrimitive()` | `const EoDbViewport*` | Read access for rendering |
-| `SetActiveViewportPrimitive(EoDbViewport*)` | void | Sets pointer + `InvalidateScene()` |
-| `IsViewportActive()` | `bool` | Convenience `!= nullptr` check |
-| `DeactivateViewport()` | void | Clears pointer + `InvalidateScene()` |
+### Coordinate Transform Routing
+`ConfigureViewportTransform(const EoDbViewport*)` pushes the paper-space view transform and configures an off-center projection matching `DisplayModelSpaceThroughViewports` math exactly. `GetCursorPosition()`, `SetCursorPosition()`, and `RubberBandingStartAtEnable()` each call configure→transform→restore, enabling model-space cursor coordinates, rubber-banding, and odometer readout when a viewport is active.
 
-### Double-Click Handler
-`AeSysView::OnLButtonDblClk()` (message map `ON_WM_LBUTTONDBLCLK`):
-1. Only meaningful in paper space — model space falls through to `CView::OnLButtonDown`.
-2. Converts device click point to paper-space world coordinates via `DoProjectionInverse()` + `ModelViewGetMatrixInverse()`.
-3. If a viewport is already active: deactivates it (any click location).
-4. Otherwise: calls `AeSysDoc::HitTestViewport(worldPoint)` to find the viewport under the cursor.
+### Paper-Space Dimming
+`DimPaperSpaceOverlay()` fills a semi-transparent overlay (~40% opacity) over everything except the active viewport's rectangle. D2D path: `ID2D1PathGeometry` with `D2D1_COMBINE_MODE_EXCLUDE`. GDI path: `ExcludeClipRect` + `GdiAlphaBlend`. No-op when no viewport is active. Called last in `DisplayAllLayers()` (after `DisplayModelSpaceThroughViewports`).
 
-### Hit-Testing
-`AeSysDoc::HitTestViewport(worldPoint)` walks `PaperSpaceLayers()`, checking each `EoDbViewport` (ID ≥ 2, valid dimensions) for point-in-rectangle containment. Returns the first match or `nullptr`.
+### Entity Routing
+`SetActiveViewportPrimitive()` saves the current work layer and switches `m_workLayer` to model-space layer "0". `DeactivateViewport()` restores it. `AddWorkLayerGroup()` is the sole routing control point — all draw commands route to model space automatically with no command-level changes.
 
-### Visual Indicator
-In `DisplayPaperSpaceSheet()`, the viewport border loop checks `vp.primitive == view->ActiveViewportPrimitive()`:
-- **Active**: 2px accent blue pen (`Eo::chromeColors.captionActiveBackground`).
-- **Inactive**: 1px gray pen (`viewportBorderColor`).
+### Viewport Pan / Zoom
+Middle-button drag in `OnMouseMove` converts pixel delta to model-space delta using projected clip dimensions and updates `viewport->SetViewCenter()`. `OnWindowZoomIn`/`OnWindowZoomOut` scale `viewHeight` by 0.9/1.111, anchoring the cursor point via `GetCursorPosition`/`SetCursorPosition`. `m_displayLocked` (`EoDbViewport`) blocks pan and zoom but not entity creation.
 
-### Layout Tab Deactivation
-`OnLayoutTabChange()` calls `DeactivateViewport()` before switching spaces — the active viewport is layout-specific and must not carry over.
+### Layout Tab Bar Controls
+`EoMfLayoutTabBar` hosts three right-aligned controls: **Space Label** (IDC_LAYOUT_SPACE_LABEL 1490) — shows MODEL/PAPER, toggles active space on click; **Scale Combo** (IDC_VIEWPORT_SCALE_COMBO 1491) — preset ratios 1:1…1:100 plus 2:1/5:1/10:1, computed as `viewport->Height()/viewport->ViewHeight()`, custom shown when no preset matches; **Lock Button** (IDC_VIEWPORT_LOCK_BUTTON 1492) — toggles `m_displayLocked`. `UpdateViewportState()` is called from `SetActiveViewportPrimitive`, `DeactivateViewport`, and `OnLayoutTabChange`. `RepositionControls()` is called from `OnSize`.
 
 ### Key Files
 | File | Role |
 |------|------|
-| `AeSys\AeSysView.h` | `m_activeViewportPrimitive`, accessors, `OnLButtonDblClk` declaration |
-| `AeSys\AeSysViewInput.cpp` | `OnLButtonDblClk`, `SetActiveViewportPrimitive`, `DeactivateViewport` |
-| `AeSys\AeSysDocDisplay.cpp` | `DisplayPaperSpaceSheet` accent border, `HitTestViewport` implementation |
-| `AeSys\AeSysDoc.h` | `HitTestViewport` declaration |
-| `AeSys\AeSysView.cpp` | `ON_WM_LBUTTONDBLCLK` message map, `OnLayoutTabChange` deactivation |
-
-## Viewport Coordinate Transform Routing (Phase 8)
-
-### Architecture Overview
-When a viewport is active in paper space, mouse input coordinates are routed through the viewport's model-space transform instead of the paper-space transform. This enables cursor positioning, rubber-banding, and odometer display in model-space coordinates while the user interacts with the paper-space view.
-
-### Transform Pipeline
-The key insight: `ConfigureViewportTransform` replicates the **exact same** off-center projection math used by `DisplayModelSpaceThroughViewports` for rendering. After configuration, the existing inverse transform infrastructure (`DoProjectionInverse` + `ModelViewGetMatrixInverse`) automatically maps device pixels to model-space coordinates.
-
-**Forward** (world → device): `ModelViewTransformPoint` → `ProjectToClient`
-**Inverse** (device → world): `DoProjectionInverse` (device→NDC) → `ModelViewGetMatrixInverse` (NDC→world)
-
-### ConfigureViewportTransform
-`AeSysView::ConfigureViewportTransform(const EoDbViewport* viewport)` → `bool`:
-1. Validates viewport (non-null, `viewHeight ≥ geometricTolerance`).
-2. Projects viewport paper-space corners through current paper-space transform → device clip rect.
-3. Validates clip rect (non-degenerate width and height).
-4. Pushes current view transform (save paper-space state).
-5. Configures camera: `SetCameraTarget(viewCenter)`, `SetCameraPosition(viewDirection)`.
-6. Computes off-center projection window from viewport's model-space view params and the device clip rect:
-   - `viewWidth = viewHeight × aspectRatio` (from viewport dimensions)
-   - `halfExtentU = viewWidth × deviceWidth / (2 × clipWidth)`
-   - `halfExtentV = viewHeight × deviceHeight / (2 × clipHeight)`
-   - `windowCenterU = halfExtentU × (1 − 2 × clipCenterX / deviceWidth)`
-   - `windowCenterV = halfExtentV × (−1 + 2 × clipCenterY / deviceHeight)`
-7. Calls `SetViewWindow(...)` which triggers `BuildTransformMatrix` → computes `m_InverseMatrix`.
-8. Returns `true` on success. Returns `false` without pushing on any validation failure.
-
-### RestoreViewportTransform
-`AeSysView::RestoreViewportTransform()`: calls `PopViewTransform()` to restore the saved paper-space view transform.
-
-### Modified Coordinate Methods
-Three methods have viewport-active branches (pattern: configure → transform → restore):
-
-| Method | Viewport-Active Behavior |
-|--------|------------------------|
-| `GetCursorPosition()` | Configure → `DoProjectionInverse` → `ModelViewGetMatrixInverse` → Restore. Returns model-space world point. |
-| `SetCursorPosition()` | Configure → `ModelViewTransformPoint` → `ProjectToClient` → Restore. Positions cursor at model-space point. |
-| `RubberBandingStartAtEnable()` | Configure → `ModelViewTransformPoint` → Restore. Computes rubber-band anchor in device coords from model-space point. |
-
-All three fall through to existing paper-space logic when no viewport is active.
-
-### Key Design Decisions
-- Push/pop pattern ensures paper-space view transform is always restored, even if only one method is called.
-- Failure guard: `ConfigureViewportTransform` returns `false` without pushing if validation fails — callers fall through to normal paper-space path.
-- `DisplayOdometer()` calls `GetCursorPosition()` — automatically shows model-space coordinates when viewport is active.
-- Entity routing is NOT changed at this phase — primitives still go to `ActiveSpaceLayers()` (paper-space). Model-space entity routing is implemented in Phase 10 via work layer switching.
-
-### Key Files
-| File | Role |
-|------|------|
-| `AeSys\AeSysView.h` | `ConfigureViewportTransform`, `RestoreViewportTransform` declarations |
-| `AeSys\AeSysViewInput.cpp` | Both method implementations; modified `GetCursorPosition`, `SetCursorPosition`, `RubberBandingStartAtEnable` |
-| `AeSys\AeSysDocDisplay.cpp` | `DisplayModelSpaceThroughViewports` — the forward transform that Phase 8 mirrors |
+| `AeSys\AeSysView.h` | `m_activeViewportPrimitive`, `m_savedWorkLayerForViewport`, accessors |
+| `AeSys\AeSysViewInput.cpp` | `OnLButtonDblClk`, `SetActiveViewportPrimitive`, `DeactivateViewport`, `ConfigureViewportTransform`, coordinate method branches |
+| `AeSys\AeSysViewCamera.cpp` | `OnWindowZoomIn`/`OnWindowZoomOut` viewport branches |
+| `AeSys\AeSysDocDisplay.cpp` | `DisplayPaperSpaceSheet`, `DisplayModelSpaceThroughViewports`, `DimPaperSpaceOverlay`, `HitTestViewport` |
+| `AeSys\EoMfLayoutTabBar.h/.cpp` | Tab bar state controls — creation, `UpdateViewportState`, `RepositionControls`, scale presets |
+| `AeSys\EoDbViewport.h` | `m_displayLocked`, `SetViewCenter`, `SetViewHeight` |
 
 ### Deferred
-- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
-
-## Paper-Space Dimming When Viewport Active (Phase 9)
-
-### Architecture Overview
-When a viewport is activated (Phase 7), paper-space entities and non-active viewport model-space content are visually dimmed so the active viewport's model-space content stands out at full brightness. Both GDI and D2D render paths are supported.
-
-### Implementation
-`AeSysDoc::DimPaperSpaceOverlay(AeSysView* view, EoGsRenderDevice* renderDevice)`:
-1. Early-returns if no viewport is active (`!view->IsViewportActive()`).
-2. Projects the active viewport's paper-space boundary to a device-coordinate bounding rectangle.
-3. **D2D path** (`dynamic_cast<EoGsRenderDeviceDirect2D*>`): Creates a combined geometry (full clip area minus viewport rectangle via `D2D1_COMBINE_MODE_EXCLUDE`), fills with a semi-transparent brush (`PaperSpaceBackgroundColor` at ~40% opacity).
-4. **GDI path** (`GetCDC()`): `SaveDC` → `ExcludeClipRect` (active viewport) → `GdiAlphaBlend` with 1×1 bitmap at `SourceConstantAlpha = 100` → `RestoreDC`.
-5. The overlay dims paper-space content (sheet, viewport borders, annotations) and non-active viewport model-space content. The active viewport's content remains at full brightness.
-
-### Rendering Order in `DisplayAllLayers()` (Paper Space)
-1. `DisplayPaperSpaceSheet()` — sheet rectangle + viewport borders (accent blue for active)
-2. Paper-space layer entities (annotations, title blocks)
-3. `DisplayModelSpaceThroughViewports()` — model-space through viewport clips
-4. **`DimPaperSpaceOverlay()`** — semi-transparent overlay dims steps 1–3 except the active viewport area
-
-### Key Design Decisions
-- 40% opacity provides noticeable dimming without making paper-space content unreadable.
-- Paper-space background color as overlay tint ensures the dimming blends naturally with the sheet.
-- No-op when no viewport is active — zero overhead for normal paper-space browsing.
-- D2D path uses `ID2D1PathGeometry` with `CombineWithGeometry(EXCLUDE)` — the D2D equivalent of GDI's `ExcludeClipRect`.
-- `EoGsRenderDeviceDirect2D` exposes `RenderTarget()` and `D2DFactory()` accessors for D2D-specific operations like geometry combining.
-
-### Key Files
-| File | Role |
-|------|------|
-| `AeSys\AeSysDoc.h` | `DimPaperSpaceOverlay` declaration |
-| `AeSys\AeSysDocDisplay.cpp` | `DimPaperSpaceOverlay` implementation (GDI + D2D paths); integration point in `DisplayAllLayers` |
-| `AeSys\EoGsRenderDeviceDirect2D.h` | `RenderTarget()`, `D2DFactory()` accessors for D2D geometry operations |
-
-### Deferred
-- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
-
-## In-Viewport Entity Routing (Phase 10)
-
-### Architecture Overview
-When a viewport is activated in paper space (Phase 7), entity creation is routed to model space by switching the document's work layer. This is the simplest correct approach — `AeSysDoc::AddWorkLayerGroup()` adds new groups to `m_workLayer`, which is the SOLE entity routing control point. By switching `m_workLayer` to a model-space layer on viewport activation and restoring it on deactivation, all interactive draw commands automatically create entities in model space without any command-level changes.
-
-### State
-`AeSysView::m_savedWorkLayerForViewport` (`EoDbLayer*`, default `nullptr`) saves the paper-space work layer before switching. Lifetime is session-only — not persisted.
-
-### Activation Flow (`SetActiveViewportPrimitive`)
-1. Sets `m_activeViewportPrimitive` to the viewport.
-2. Saves the current work layer: `m_savedWorkLayerForViewport = document->GetWorkLayer()`.
-3. Finds model-space layer "0": `document->FindLayerInSpace(L"0", EoDxf::Space::ModelSpace)`.
-4. Switches: `document->SetWorkLayer(modelLayer0)` — demotes the paper-space work layer to active state, promotes model-space layer "0" to work state.
-5. Calls `InvalidateScene()` for visual refresh.
-
-### Deactivation Flow (`DeactivateViewport`)
-1. Restores the saved paper-space work layer: `document->SetWorkLayer(m_savedWorkLayerForViewport)`.
-2. Clears the saved pointer: `m_savedWorkLayerForViewport = nullptr`.
-3. Clears `m_activeViewportPrimitive = nullptr`.
-4. Calls `InvalidateScene()` for visual refresh.
-
-### Interaction with Layout Tab Switching
-`OnLayoutTabChange()` calls `DeactivateViewport()` before switching spaces — the saved work layer is always restored before any space transition.
-
-### Key Design Decisions
-- Work layer switching is the minimal-impact approach — no command-level changes needed.
-- Layer "0" is the default target because it always exists in model space.
-- The save/restore pattern on `AeSysView` (not `AeSysDoc`) keeps viewport state view-local.
-- Selection coordinate routing is deferred — `SelectGroupAndPrimitive` uses `m_VisibleGroupList` which already contains model-space entities rendered through viewports.
-
-### Key Files
-| File | Role |
-|------|------|
-| `AeSys\AeSysView.h` | `m_savedWorkLayerForViewport` member; `EoDbLayer` forward declaration |
-| `AeSys\AeSysViewInput.cpp` | `SetActiveViewportPrimitive` (save + switch), `DeactivateViewport` (restore) |
-| `AeSys\AeSysDocLayers.cpp` | `AddWorkLayerGroup` (routing point), `SetWorkLayer`, `FindLayerInSpace` |
-| `AeSys\AeSysDoc.h` | `GetWorkLayer()`, `m_workLayer` |
-
-### Deferred
-- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
-
-## Viewport-Specific View Manipulation (Phase 11)
-
-### Architecture Overview
-When a viewport is activated in paper space (Phase 7), pan and zoom commands operate on the viewport's model-space view parameters instead of the paper-space view transform. Rendering and input transforms read viewport params directly each frame — no explicit notification or invalidation beyond `InvalidateScene()` is needed.
-
-### Pan (Middle-Button Drag)
-`AeSysView::OnMouseMove()` has a viewport-active branch that intercepts middle-button drag:
-1. Projects the viewport's paper-space boundary corners (center ± halfWidth/halfHeight) through the current paper-space transform to device coordinates.
-2. Computes `clipWidth`/`clipHeight` from the projected device rectangle.
-3. Derives `viewWidth = viewHeight × (paperWidth / paperHeight)` from the viewport's model-space view params.
-4. Converts the pixel drag delta to model-space units: `deltaX_model = -deltaX_pixel × viewWidth / clipWidth`, `deltaY_model = deltaY_pixel × viewHeight / clipHeight`.
-5. Applies the delta to `viewport->SetViewCenter()`.
-6. Calls `InvalidateScene()` — both rendering (`DisplayModelSpaceThroughViewports`) and input transforms (`ConfigureViewportTransform`) re-read `viewCenter` on the next frame.
-
-The standard paper-space pan path (`m_ViewTransform.Target()`) is used when no viewport is active.
-
-### Zoom (Mouse Wheel / Keyboard)
-`AeSysView::OnWindowZoomIn()` and `OnWindowZoomOut()` have viewport-active branches:
-1. Save cursor position via `GetCursorPosition()` (which uses `ConfigureViewportTransform` for model-space coords).
-2. Scale `viewport->SetViewHeight(viewHeight * 0.9)` (zoom in) or `viewport->SetViewHeight(viewHeight / 0.9)` (zoom out).
-3. Restore cursor position via `SetCursorPosition(savedPosition)` — keeps the model-space point under the cursor stationary.
-4. Call `InvalidateScene()`.
-
-The standard zoom path (`DoWindowPan(ratio)`) is used when no viewport is active.
-
-### Propagation
-No explicit notification is needed. Both `DisplayModelSpaceThroughViewports` (rendering) and `ConfigureViewportTransform` (input) read `viewCenter` and `viewHeight` directly from the `EoDbViewport` primitive on each frame/event.
-
-### Key Design Decisions
-- Pan converts pixel deltas to model-space deltas using the projected viewport device dimensions — the same off-center projection math used by rendering and input transforms.
-- Zoom uses `GetCursorPosition`/`SetCursorPosition` for cursor-anchored zooming — the cursor stays over the same model-space point.
-- The 0.9 zoom factor matches the standard `DoWindowPan` zoom step.
-- `OnMouseWheel` delegates to `OnWindowZoomIn`/`OnWindowZoomOut` — no separate wheel handler needed.
-
-### Key Files
-| File | Role |
-|------|------|
-| `AeSys\AeSysViewInput.cpp` | Middle-button pan viewport-active branch in `OnMouseMove` |
-| `AeSys\AeSysViewCamera.cpp` | `OnWindowZoomIn`/`OnWindowZoomOut` viewport-active branches |
-| `AeSys\EoDbViewport.h` | `SetViewCenter()`, `SetViewHeight()`, `ViewCenter()`, `ViewHeight()` |
-| `AeSys\AeSysDocDisplay.cpp` | `DisplayModelSpaceThroughViewports` — reads viewport view params for rendering |
-
-### Deferred
-- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
-
-## Layout Tab Bar State Controls (Phase 12)
-
-### Architecture Overview
-`EoMfLayoutTabBar` (CMFCTabCtrl-derived) hosts three state controls positioned to the right of the tab strip. These controls provide contextual viewport state management without cluttering the status bar.
-
-### State Controls
-| Control | Type | ID | Visibility | Purpose |
-|---------|------|----|-----------|---------|
-| Space Label | `CButton` (flat) | `IDC_LAYOUT_SPACE_LABEL` (1490) | Always | Shows "MODEL" or "PAPER". Clicking toggles `AeSysDoc::OnViewModelSpace()`. |
-| Scale Combo | `CComboBox` (dropdown) | `IDC_VIEWPORT_SCALE_COMBO` (1491) | Viewport active + paper space | Fixed scale presets (1:1 through 1:100, plus 2:1, 5:1, 10:1). Shows "Custom (1:X.XX)" for non-preset scales. |
-| Lock Button | `CButton` (flat) | `IDC_VIEWPORT_LOCK_BUTTON` (1492) | Viewport active + paper space | Toggles `EoDbViewport::m_displayLocked`. Shows lock/unlock Unicode glyphs. |
-
-### Scale Presets
-| Label | Scale Value (paper/model) |
-|-------|--------------------------|
-| 1:1 | 1.0 |
-| 1:2 | 0.5 |
-| 1:5 | 0.2 |
-| 1:10 | 0.1 |
-| 1:20 | 0.05 |
-| 1:50 | 0.02 |
-| 1:100 | 0.01 |
-| 2:1 | 2.0 |
-| 5:1 | 5.0 |
-| 10:1 | 10.0 |
-
-Scale = `viewport->Height() / viewport->ViewHeight()` (paper height / model-space view height). Preset matching uses 0.1% tolerance. Non-matching scales show a "Custom (1:X.XX)" entry.
-
-### Viewport Display Lock
-`EoDbViewport::m_displayLocked` (`bool`, default `false`) — session-only, not persisted. When locked:
-- Middle-button pan in `OnMouseMove` returns early (viewport-active branch).
-- `OnWindowZoomIn` and `OnWindowZoomOut` return early (viewport-active branches).
-- Entity creation is NOT blocked — only view manipulation is locked.
-
-### Control Layout
-Controls are right-aligned within the tab bar, positioned by `RepositionControls()`:
-- Lock button (rightmost, square height x height)
-- Scale combo (80px wide)
-- Space label (text width + 16px padding)
-- 4px gaps between controls, 2px top margin, 4px right margin
-
-### Wiring — UpdateViewportState Call Sites
-| Call Site | Viewport Arg | isPaperSpace Arg |
-|-----------|-------------|------------------|
-| `SetActiveViewportPrimitive()` | activated viewport | from `document->ActiveSpace()` |
-| `DeactivateViewport()` | `nullptr` | from `document->ActiveSpace()` |
-| `OnLayoutTabChange()` | `nullptr` | from `!IsModelTab(selectedTab)` |
-
-### Space Toggle Flow
-`OnSpaceLabelClicked()`:
-1. Calls `document->OnViewModelSpace()` (toggles `m_activeSpace` + `UpdateAllViews`).
-2. Deactivates any active viewport.
-3. Syncs tab selection to match the new space (with `m_populating` guard to suppress re-entrant `AFX_WM_CHANGE_ACTIVE_TAB`).
-4. Updates the space label text and control visibility.
-
-### Scale Change Flow
-`OnScaleComboChanged()`:
-1. Reads the selected scale value from combo item data.
-2. Computes `newViewHeight = viewport->Height() / targetScale`.
-3. Calls `viewport->SetViewHeight(newViewHeight)`.
-4. Calls `parentView->InvalidateScene()`.
-
-### Key Files
-| File | Role |
-|------|------|
-| `AeSys\EoMfLayoutTabBar.h` | Header — control members, `UpdateViewportState()`, `RepositionControls()`, `ApplyColorScheme()` |
-| `AeSys\EoMfLayoutTabBar.cpp` | Implementation — control creation, message handlers, scale presets, layout logic |
-| `AeSys\EoDbViewport.h` | `m_displayLocked`, `IsDisplayLocked()`, `SetDisplayLocked()` |
-| `AeSys\Resource.h` | `IDC_LAYOUT_SPACE_LABEL` (1490), `IDC_VIEWPORT_SCALE_COMBO` (1491), `IDC_VIEWPORT_LOCK_BUTTON` (1492) |
-| `AeSys\AeSysViewInput.cpp` | `SetActiveViewportPrimitive`/`DeactivateViewport` — `UpdateViewportState` calls; pan lock guard |
-| `AeSys\AeSysViewCamera.cpp` | `OnWindowZoomIn`/`OnWindowZoomOut` — zoom lock guards |
-| `AeSys\AeSysView.cpp` | `OnLayoutTabChange` — `UpdateViewportState` call after `DeactivateViewport` |
-| `AeSys\AeSysViewRender.cpp` | `OnSize` — `RepositionControls()` call after `MoveWindow` |
-
-### Deferred
-- **Escape key deactivation**: Pressing Escape while a viewport is active could deactivate it.
-- **Lock glyph fallback**: Unicode lock glyphs may not render in all system fonts — ASCII fallback `[L]`/`[U]` if needed.
-- **DPI-aware control widths**: The 80px scale combo width could be DPI-scaled.
-- **Scale combo edit-in-place**: Allow typing a custom scale ratio directly into the combo.
+- Escape key deactivation of active viewport.
+- DPI-aware scale combo width (currently 80px fixed).
+- Scale combo direct text entry.
 
 ## Isolating Editor Pattern (Block Editor → Layer/Tracing Editor)
 
@@ -987,9 +705,9 @@ Use `BS_OWNERDRAW` buttons with parent-handled `WM_DRAWITEM` to replicate the to
 ### Architecture Overview
 `AeSysView` owns a `std::stack<std::unique_ptr<AeSysState>> m_stateStack`. Push/pop is always available — the stack starts empty and all dispatch points guard with `if (state != nullptr)`, so zero stack size is a valid idle condition.
 
-`AeSysState` (`AeSysState.h`) is the abstract base. Derived mode states own their per-command sub-state (previous op, point accumulator). `AeSysView` retains `m_PreviousOp` and `pts` for modes not yet migrated.
+`AeSysState` (`AeSysState.h`) is the abstract base with safe no-op defaults for all lifecycle and input virtuals. Derived mode states own per-command sub-state (previous op, point accumulator, geometry scratchpad). `AeSysView` retains legacy `m_PreviousOp` and `pts` only for modes not yet migrated.
 
-The `ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN)` entry is **permanently removed** from the message map. Individual `ON_COMMAND` handlers remain. `OnDrawCommand` exists as a method for future use but is not in the message map.
+The `ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN)` entry is **permanently removed** from the message map. Individual `ON_COMMAND` handlers remain.
 
 ### Dispatch Points (always-active, null-safe)
 | Location | Dispatch |
@@ -997,27 +715,63 @@ The `ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN)` entry is
 | `AeSysViewInput.cpp::PreTranslateMessage` | `state->HandleKeypad(...)` |
 | `AeSysViewInput.cpp::OnLButtonDown` | `state->OnLButtonDown(...)` — early return if state present |
 | `AeSysViewInput.cpp::OnMouseMove` | `state->OnMouseMove(...)` — falls through to existing mode switch |
-| `AeSysViewRender.cpp::OnDraw` (back buffer) | `state->OnDraw(...)` adds overlays after `DisplayAllLayers` completes |
+| `AeSysViewRender.cpp::OnDraw` (back buffer) | `state->OnDraw(...)` — additive overlay after `DisplayAllLayers` |
 | `AeSysViewRender.cpp::OnUpdate` | `state->OnUpdate(...)` — `isHandledByState` gate |
 | `AeSysViewDrawMode.cpp::OnDrawCommand` | `state->HandleCommand(...)` when non-null |
 
-### OnLButtonDown Routing Rule
-When the stack is non-empty, `OnLButtonDown` calls `state->OnLButtonDown(...)` and returns immediately — the existing `CView::OnLButtonDown` / custom-click path is bypassed. This is intentional: once a mode state is active it owns all left-click input.
-
-### OnMouseMove Routing Rule
-`state->OnMouseMove(...)` is called first but does **not** consume the event. The existing `app.CurrentMode()` switch still runs afterward. For sub-modes that fully own their preview (e.g., `PickAndDragState`, `PrimitiveMendState`), the corresponding `case` in the switch is **removed** — the state's `OnMouseMove` is the sole handler. For `DrawModeState`, the switch case remains active because the state's `OnMouseMove` is additive only.
-
-### OnDraw Routing Rule
-`state->OnDraw(...)` is called **after** `DisplayAllLayers` and `DisplayUniquePoints` complete — it adds mode-specific overlays on top of the already-rendered scene. A mode state's `OnDraw` must **not** call `DisplayAllLayers` itself. This is an additive (overlay-only) contract, not a replacement contract.
+### Routing Rules
+- **OnLButtonDown**: When stack is non-empty the state's handler is called and the method returns immediately — the state owns all left-click input.
+- **OnMouseMove**: State handler fires first but does not consume the event; the existing `app.CurrentMode()` switch follows. States that fully own preview (e.g., `PickAndDragState`, `PrimitiveMendState`) have their switch `case` **removed** to avoid double-handling.
+- **OnDraw**: `state->OnDraw(...)` is called **after** `DisplayAllLayers` + `DisplayUniquePoints` — additive overlay only; states must never call `DisplayAllLayers` themselves.
 
 ### PreviewGroup Contract
 - Preview primitives are built inside `EoDbHandleSuppressionScope` — no handles assigned.
 - Preview is rebuilt from scratch on every `OnMouseMove` — no incremental update.
-- `OnExit` of every mode state must call `context->PreviewGroup().DeletePrimitivesAndRemoveAll()` and `context->RubberBandingDisable()`.
-- Call `InvalidateScene()` for back-buffer changes. Call `Invalidate()` for overlay-only updates.
+- `OnExit` of every state must call `context->PreviewGroup().DeletePrimitivesAndRemoveAll()` and `context->RubberBandingDisable()`.
+- Call `InvalidateScene()` for back-buffer changes; `Invalidate()` for overlay-only updates.
 
 ### Destructor Safety Rule
-`~AeSysView` drains the stack via raw `pop()` only — **no `OnExit` calls in the destructor**. Window APIs (`InvalidateRect`, `SetPaneText`, `RubberBandingDisable`) are illegal on a dead HWND. Each state's `unique_ptr` destructor releases its owned heap memory. Only objects that live *outside* the state (e.g., `m_PreviewGroup` primitives) are cleaned up explicitly in the destructor body.
+`~AeSysView` drains the stack via raw `pop()` only — **no `OnExit` calls in the destructor**. Window APIs are illegal on a dead HWND. States release owned heap memory via their `unique_ptr` destructors.
+
+### PopAllModeStates
+`AeSysView::PopAllModeStates()` — empties the stack, calling `OnExit` on each state in order. Called at the top of every `OnMode*()` switching command to ensure clean teardown.
+
+### Migrated State Classes
+| Class | Mode | Owns | Status |
+|-------|------|------|--------|
+| `DrawModeState` | Draw | `m_previousDrawCommand`, points | ✅ Complete |
+| `PickAndDragState` | Primitive/Group Edit | group, primitive, begin/end points, transform seg | ✅ Complete |
+| `PrimitiveMendState` | Primitive Mend | primitive ptr, owning copy for Escape, vertex index | ✅ Complete |
+| `Draw2ModeState` | Draw2 | previous op/point, continuation flags, reference lines, assembly/section group ptrs | ✅ Complete |
+| `LpdModeState` | Low-Pressure Duct | previous op/point/section, reference lines, original/end-cap group ptrs | ✅ Complete |
+| `DimensionModeState` | Dimension | previous command, previous cursor position | ✅ Partial — static locals remain in angle-dimension flow |
+| `AnnotateModeState` | Annotate | previous op/point | ✅ Complete |
+| `CutModeState` | Cut | previous op/point | ✅ Complete |
+| `EditModeState` | Edit | previous op/point | ✅ Complete |
+| `FixupModeState` | Fixup | previous op/point | ✅ Complete |
+| `NodalModeState` | Nodal | previous op/point | ✅ Complete |
+| `PipeModeState` | Pipe | previous op/point | ✅ Complete |
+| `PowerModeState` | Power | previous op/point | ✅ Complete |
+| `TrapModeState` | Trap | previous op/point | ✅ Complete |
+
+### Raw-Pointer Lifetime Rule in State Objects
+Several state classes (`Draw2ModeState`, `LpdModeState`) store raw non-owning `EoDbGroup*` / `EoDbPrimitive*` pointers to document geometry. These pointers are valid only while the state is active. `OnExit` and `ResetSequence()` must null them. They must **never be accessed** after `PopState()` is called. Document-owned groups must not be deleted through state pointers — deletion goes through the document layer API.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysState.h` | Abstract base — lifecycle virtuals, input virtuals, all with safe no-op defaults |
+| `AeSys\DrawModeState.h/.cpp` | Draw mode — owns `m_previousDrawCommand`, points |
+| `AeSys\PickAndDragState.h/.cpp` | Primitive/Group edit sub-mode |
+| `AeSys\PrimitiveMendState.h/.cpp` | Mend sub-mode; `MendStateReturn`/`MendStateEscape` on `AeSysView` |
+| `AeSys\Draw2ModeState.h/.cpp` | Draw2 mode — raw ptrs to assembly/section groups |
+| `AeSys\LpdModeState.h/.cpp` | LPD mode — `ResetSequence(AeSysView*)` clears preview and restores hidden geometry |
+| `AeSys\DimensionModeState.h/.cpp` | Dimension mode — partial; static locals in angle flow remain |
+| `AeSys\*ModeState.h/.cpp` | Annotate, Cut, Edit, Fixup, Nodal, Pipe, Power, Trap mode states |
+| `AeSys\AeSysView.h/.cpp` | Stack ownership, `PushState`, `PopState`, `PopAllModeStates`, `GetCurrentState`; destructor: raw `pop()` only |
+| `AeSys\AeSysViewCommands.cpp` | `OnModeDraw` (push), all other `OnMode*` (call `PopAllModeStates` first) |
+| `AeSys\AeSysViewInput.cpp` | `PreTranslateMessage`, `OnLButtonDown`, `OnMouseMove` dispatch |
+| `AeSys\AeSysViewRender.cpp` | `OnDraw` back-buffer dispatch; `state->OnDraw` additive overlay |
 
 ## EoDocCommand Undo/Redo Stack
 
@@ -1045,83 +799,24 @@ The Insert key (legacy "Undelete") and its accelerator have been removed from th
 | `EoDocCmdTrapCut` | Edit > Trap Cut | Yes — per-entry `owned` |
 | `EoDocCmdDeletePrimitive` | Shift+Delete (solo/multi) | Yes — `m_wrapperGroup` |
 | `EoDocCmdAddGroup` | Every `AddWorkLayerGroup` call | Yes — `m_ownedGroup` (on undo branch) |
-| `EoDocCmdTransformGroups` | `TransformTrappedGroups` / `TranslateTrappedGroups` | No — groups stay in document; stores forward matrix + non-owning group pointers |
+| `EoDocCmdTransformGroups` | `TransformTrappedGroups` / `TranslateTrappedGroups` | No — stores forward matrix + non-owning group pointers |
 
-`EoDocCmdTransformGroups` stores the forward `EoGeTransformMatrix`. Undo computes the inverse via `EoGeMatrix::Inverse()` and applies it. No `Discard` override needed — no owned heap objects. Labels per call site: `"Move"`, `"Rotate CCW"`, `"Rotate CW"`, `"Flip"`, `"Reduce"`, `"Enlarge"`, `"Translate"`.
+`EoDocCmdTransformGroups` stores the forward `EoGeTransformMatrix`; undo computes the inverse via `EoGeMatrix::Inverse()`. Labels per call site: `"Move"`, `"Rotate CCW"`, `"Rotate CW"`, `"Flip"`, `"Reduce"`, `"Enlarge"`, `"Translate"`.
 
 ### PushCommand Safety Chokepoint
-`AeSysDoc::PushCommand(std::unique_ptr<EoDocCommand>)` is the single recording entry point and is hardened to silently `Discard()` the incoming command (instead of pushing) when:
-- `m_isClosing` is true — prevents recording during document teardown.
-- `IsInEditor()` is true — prevents block/tracing editor intermediates from polluting the outer undo stack.
-
-This makes per-call-site editor guards redundant (the existing one in `AddWorkLayerGroup` is left in place as defense-in-depth). All future `PushCommand` callers inherit these safety semantics automatically.
+`AeSysDoc::PushCommand(std::unique_ptr<EoDocCommand>)` silently `Discard()`s the incoming command when `m_isClosing` or `IsInEditor()` is true — prevents recording during teardown and inside the block/tracing editor.
 
 ### Null-Layer Discipline
-Every command that captures an `EoDbLayer*` requires a non-null pointer at construction. Call sites that obtain the layer via `AnyLayerRemove(group)` MUST handle the null return as an orphan-group case: emit an `ATLTRACE2` warning, call `UnregisterGroupHandles(group)`, `group->DeletePrimitivesAndRemoveAll()`, then `delete group`. Pushing a command with a null layer would crash on Execute/Undo. Enforced sites:
-- `AeSysView::DeleteLastGroup` (Backspace path)
-- `AeSysDoc::OnToolsPrimitiveDelete` (solo whole-group path)
-- `AeSysDoc::OnEditTrapCut` (per-entry filter — orphans skipped, command pushed only if any valid entry remains)
+Call sites that obtain a layer via `AnyLayerRemove(group)` MUST handle null return as an orphan-group case: `ATLTRACE2` warning → `UnregisterGroupHandles(group)` → `group->DeletePrimitivesAndRemoveAll()` → `delete group`. Enforced at: `AeSysView::DeleteLastGroup`, `AeSysDoc::OnToolsPrimitiveDelete`, `AeSysDoc::OnEditTrapCut`.
 
 ### Key Files
 | File | Role |
 |------|------|
 | `AeSys\EoDocCommand.h` | Full command hierarchy; `EoDocCommandStack` with `Push/Undo/Redo/Clear` |
 | `AeSys\EoDocCommand.cpp` | All `Execute/Undo/Discard` implementations |
-| `AeSys\AeSysDoc.h` | `m_commandStack`; `PushCommand` chokepoint with closing/editor guards |
+| `AeSys\AeSysDoc.h` | `m_commandStack`; `PushCommand` chokepoint |
 | `AeSys\AeSysDocCommands.cpp` | `OnEditUndo`, `OnEditRedo`, `OnToolsGroupDelete`, `OnToolsPrimitiveDelete`, `OnEditTrapCut` |
 | `AeSys\AeSysDocLayers.cpp` | `AddWorkLayerGroup` — pushes `EoDocCmdAddGroup` after add |
-| `AeSys\AeSysViewSelection.cpp` | `DeleteLastGroup` — pushes `EoDocCmdDeleteLastGroup` |
-| `AeSys\FindLayerOwning` in `AeSysDocLayers.cpp` | Non-const full-scan across all spaces + editor layer |
 | `AeSys\EoDbTrappedGroups.cpp` | `TransformTrappedGroups` / `TranslateTrappedGroups` — push `EoDocCmdTransformGroups` |
-| `AeSys\AeSysViewEditMode.cpp` | All edit-mode transform call sites with per-operation labels |
 
-### Status
-All planned work for the undo/redo architecture is complete: command base + stack, all destructive commands (delete group, delete last, trap cut, delete primitive), add-group recording at the `AddWorkLayerGroup` choke point, and trap transforms (move/rotate/scale/flip/enlarge/reduce). Safety hardening (closing/editor gating in `PushCommand`, null-layer discipline at every push site) is in place.
-
-### DrawModeState (Phases 2A + 2C)
-- Pushed by `AeSysView::OnModeDraw()`.
-- Popped by `OnDrawModeEscape()`, `OnDrawModeReturn()`, and every other `OnMode*()` entry point via `PopAllModeStates()`.
-- `OnEnter` calls `app.SetModeResourceIdentifier(IDR_DRAW_MODE)` + `app.LoadModeResources(ID_MODE_DRAW)` — restores draw mode UI when re-entered after a sub-mode pop.
-- `OnExit` is the single authoritative cleanup point: `RubberBandingDisable()`, `PreviewGroup().DeletePrimitivesAndRemoveAll()`, `ModeLineUnhighlightOp(m_previousDrawCommand)`, `ClearPoints()`.
-- Owns `m_previousDrawCommand` (`std::uint16_t`) — replaces the old file-local static in `AeSysViewDrawMode.cpp`.
-
-### PickAndDragState (Phase 2D)
-- Pushed by `AeSysView::OnModePrimitiveEdit()` / `OnModeGroupEdit()` (`;` / `:` AKs).
-- `OnEnter` calls `SelectGroupAndPrimitive`, stores group/primitive, loads `IDR_PICK_AND_DRAG_MODE`.
-- `OnExit` calls `InitializeGroupAndPrimitiveEdit()`, then restores primary mode via `app.PrimaryModeResourceIdentifier()` / `app.PrimaryMode()`.
-- `OnMouseMove` fully owns preview: dispatches `PreviewPrimitiveEdit()` / `PreviewGroupEdit()`. The corresponding switch cases are **removed** from `AeSysViewInput.cpp::OnMouseMove`.
-- Return: `OnEditModeReturn()` and `OnReturn()` call `PopState()` (commit — geometry stays).
-- Escape: `DoEditPrimitiveEscape()` / `DoEditGroupEscape()` undo the transform then call `PopState()`.
-- Owns: `m_subModeEditGroup`, `m_subModeEditPrimitive`, `m_subModeEditBeginPoint`, `m_subModeEditEndPoint`, `m_tmEditSeg` — all removed from `AeSysView`.
-
-### PrimitiveMendState (Phase 2E)
-- Pushed by `AeSysView::OnModePrimitiveMend()` (`M` AK). Push is guarded: `OnEnter` is called first; if nothing is engaged (`IsEngaged() == false`), the state is not pushed.
-- `OnEnter` replicates the old `OnModePrimitiveMend` selection logic: checks engaged group first, then `SelectGroupAndPrimitive`; calls `Copy`, `SelectAtControlPoint`, loads `IDR_MEND_MODE`.
-- `OnExit` frees `m_primitiveToMendCopy` (safety net via `DeleteCopy()`) and restores primary mode.
-- `OnMouseMove` fully owns the vertex drag preview via `UpdateAllViews(kPrimitiveEraseSafe/kPrimitiveSafe)` + `TranslateUsingMask`. The `ID_MODE_PRIMITIVE_MEND` case is **removed** from `AeSysViewInput.cpp::OnMouseMove`.
-- Return: `AeSysView::MendStateReturn()` — document primitive is already at dragged position; just commits with a final `kPrimitiveSafe` redraw, then `ConsumeCopy()` + `PopState()`.
-- Escape: `AeSysView::MendStateEscape()` — erases current position, calls `Assign` to restore snapshot from copy, redraws at original, then `ConsumeCopy()` + `PopState()`.
-- `ConsumeCopy()` nulls `m_primitiveToMendCopy` before `PopState()` so `OnExit`'s safety `DeleteCopy()` is a no-op.
-- Owns: `m_primitiveToMend` (non-owning), `m_primitiveToMendCopy` (owning snapshot for Escape), `m_mendPrimitiveBegin`, `m_mendPrimitiveVertexIndex` — all removed from `AeSysView`.
-- **Visual feedback**: `OnMouseMove` moves the document primitive directly (same as `PreviewPrimitiveEdit`) so `kPrimitiveEraseSafe`/`kPrimitiveSafe` hints produce correct incremental updates. The copy is kept only as a revert snapshot for Escape.
-
-### PopAllModeStates
-`AeSysView::PopAllModeStates()` — empties the stack, calling `OnExit` on each state in order. Called at the top of every `OnMode*()` switching command to ensure clean teardown regardless of which mode was active.
-
-### Key Files
-| File | Role |
-|------|------|
-| `AeSys\AeSysState.h` | Abstract base — lifecycle virtuals, input virtuals, all with safe no-op defaults |
-| `AeSys\DrawModeState.h/.cpp` | Draw mode state — Phases 2A + 2C complete; owns `m_previousDrawCommand` |
-| `AeSys\PickAndDragState.h/.cpp` | Pick-and-drag sub-mode — Phase 2D complete; owns all edit sub-mode data |
-| `AeSys\PrimitiveMendState.h/.cpp` | Mend sub-mode — Phase 2E complete; owns all mend data; `MendStateReturn`/`MendStateEscape` on `AeSysView` |
-| `AeSys\AeSysView.h/.cpp` | Stack ownership, `PushState`, `PopState`, `PopAllModeStates`, `GetCurrentState`; destructor: raw `pop()` only |
-| `AeSys\AeSysViewDrawMode.cpp` | `OnDrawCommand`, `DoDrawModeMouseMove`, individual `OnDrawMode*` handlers; uses `DrawState(this)` helper |
-| `AeSys\AeSysViewCommands.cpp` | `OnModeDraw` (push), all other `OnMode*` (call `PopAllModeStates` first); `OnReturn`/`OnEscape` route Mend to `MendStateReturn`/`MendStateEscape` |
-| `AeSys\AeSysViewInput.cpp` | `PreTranslateMessage`, `OnLButtonDown`, `OnMouseMove` dispatch; PRIMITIVE_EDIT/GROUP_EDIT/PRIMITIVE_MEND cases removed from switch |
-| `AeSys\AeSysViewEditMode.cpp` | `OnEditModeReturn`/`OnEditModeEscape` — PRIMITIVE_EDIT/GROUP_EDIT pop state; PRIMITIVE_MEND dispatches to `MendStateReturn`/`MendStateEscape` |
-| `AeSys\AeSysViewPrimitiveSubModeMend.cpp` | `OnModePrimitiveMend` — saves primary mode sidecar, creates and conditionally pushes `PrimitiveMendState` |
-| `AeSys\AeSysViewPrimitiveSubModeEdit.cpp` | `OnModePrimitiveEdit` and `Do*` handlers — use `PickDragState(this)` helper |
-| `AeSys\AeSysViewGroupSubModeEdit.cpp` | `OnModeGroupEdit` and `Do*` handlers — use `PickDragState(this)` helper |
-| `AeSys\AeSysViewRender.cpp` | `OnDraw` back-buffer dispatch; `state->OnDraw` additive overlay after `DisplayAllLayers` |
 

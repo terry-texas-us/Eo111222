@@ -126,7 +126,6 @@
     <ClCompile Include="EoMfOutputDockablePane.cpp" />
     <ClCompile Include="EoMfPropertiesDockablePane.cpp" />
     <ClCompile Include="EoOdaConverter.cpp" />
-    <ClCompile Include="IdleState.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="ModeLine.cpp" />
     <ClCompile Include="Section.cpp" />
@@ -151,6 +150,20 @@
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoCtrlLayerComboBox.cpp" />
     <ClCompile Include="EoDlgBlocks.cpp" />
+    <ClCompile Include="EoDocCommand.cpp" />
+    <ClCompile Include="PickAndDragState.cpp" />
+    <ClCompile Include="PrimitiveMendState.cpp" />
+    <ClCompile Include="TrapModeState.cpp" />
+    <ClCompile Include="EditModeState.cpp" />
+    <ClCompile Include="PipeModeState.cpp" />
+    <ClCompile Include="PowerModeState.cpp" />
+    <ClCompile Include="Draw2ModeState.cpp" />
+    <ClCompile Include="AnnotateModeState.cpp" />
+    <ClCompile Include="DimensionModeState.cpp" />
+    <ClCompile Include="CutModeState.cpp" />
+    <ClCompile Include="NodalModeState.cpp" />
+    <ClCompile Include="FixupModeState.cpp" />
+    <ClCompile Include="LpdModeState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -259,7 +272,6 @@
     <ClInclude Include="EoOdaConverter.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="Header.h" />
-    <ClInclude Include="IdleState.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="LexTable.h" />
@@ -282,6 +294,20 @@
     <ClInclude Include="EoMfLayoutTabBar.h" />
     <ClInclude Include="EoCtrlLayerComboBox.h" />
     <ClInclude Include="EoDlgBlocks.h" />
+    <ClInclude Include="EoDocCommand.h" />
+    <ClInclude Include="PickAndDragState.h" />
+    <ClInclude Include="PrimitiveMendState.h" />
+    <ClInclude Include="EditModeState.h" />
+    <ClInclude Include="TrapModeState.h" />
+    <ClInclude Include="PipeModeState.h" />
+    <ClInclude Include="PowerModeState.h" />
+    <ClInclude Include="Draw2ModeState.h" />
+    <ClInclude Include="AnnotateModeState.h" />
+    <ClInclude Include="CutModeState.h" />
+    <ClInclude Include="FixupModeState.h" />
+    <ClInclude Include="NodalModeState.h" />
+    <ClInclude Include="DimensionModeState.h" />
+    <ClInclude Include="LpdModeState.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
@@ -337,6 +363,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />

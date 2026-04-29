@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
@@ -6,6 +6,15 @@
 #include "EoDbPolygon.h"
 #include "EoDlgTrapModify.h"
 #include "Resource.h"
+#include "TrapModeState.h"
+
+namespace {
+/// Returns the active TrapModeState from the view's state stack, or nullptr when
+/// called outside trap/trapr mode (e.g. during PopAllModeStates teardown).
+TrapModeState* TrapState(AeSysView* view) {
+  return dynamic_cast<TrapModeState*>(view->GetCurrentState());
+}
+}  // namespace
 
 void AeSysView::OnTrapModeRemoveAdd() {
   OnTrapCommandsAddGroups();
@@ -33,18 +42,21 @@ void AeSysView::OnTrapModePoint() {
 }
 
 void AeSysView::OnTrapModeStitch() {
-  if (m_PreviousOp != ID_OP2) {
-    m_PreviousPnt = GetCursorPosition();
-    RubberBandingStartAtEnable(m_PreviousPnt, Lines);
-    m_PreviousOp = ModeLineHighlightOp(ID_OP2);
+  auto* trapState = TrapState(this);
+  if (trapState == nullptr) { return; }
+
+  if (trapState->PreviousOp() != ID_OP2) {
+    trapState->SetPreviousPoint(GetCursorPosition());
+    RubberBandingStartAtEnable(trapState->PreviousPoint(), Lines);
+    trapState->SetPreviousOp(ModeLineHighlightOp(ID_OP2));
   } else {
     const EoGePoint3d pt = GetCursorPosition();
 
-    if (m_PreviousPnt == pt) { return; }
+    if (trapState->PreviousPoint() == pt) { return; }
 
     auto* document = GetDocument();
 
-    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(pt)};
+    EoGePoint4d ptView[] = {EoGePoint4d(trapState->PreviousPoint()), EoGePoint4d(pt)};
 
     ModelViewTransformPoints(2, ptView);
 
@@ -59,23 +71,26 @@ void AeSysView::OnTrapModeStitch() {
       }
     }
     RubberBandingDisable();
-    ModeLineUnhighlightOp(m_PreviousOp);
+    trapState->UnhighlightOp(this);
     UpdateStateInformation(TrapCount);
   }
 }
 
 void AeSysView::OnTrapModeField() {
-  if (m_PreviousOp != ID_OP4) {
-    m_PreviousPnt = GetCursorPosition();
-    RubberBandingStartAtEnable(m_PreviousPnt, Rectangles);
-    m_PreviousOp = ModeLineHighlightOp(ID_OP4);
+  auto* trapState = TrapState(this);
+  if (trapState == nullptr) { return; }
+
+  if (trapState->PreviousOp() != ID_OP4) {
+    trapState->SetPreviousPoint(GetCursorPosition());
+    RubberBandingStartAtEnable(trapState->PreviousPoint(), Rectangles);
+    trapState->SetPreviousOp(ModeLineHighlightOp(ID_OP4));
   } else {
     const auto cursorPosition = GetCursorPosition();
-    if (m_PreviousPnt == cursorPosition) { return; }
+    if (trapState->PreviousPoint() == cursorPosition) { return; }
 
     auto* document = GetDocument();
 
-    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
+    EoGePoint4d ptView[] = {EoGePoint4d(trapState->PreviousPoint()), EoGePoint4d(cursorPosition)};
 
     ModelViewTransformPoints(2, ptView);
 
@@ -91,7 +106,7 @@ void AeSysView::OnTrapModeField() {
       if (group->SelectUsingRectangle(this, ptMin, ptMax)) { document->AddGroupToTrap(group); }
     }
     RubberBandingDisable();
-    ModeLineUnhighlightOp(m_PreviousOp);
+    trapState->UnhighlightOp(this);
     UpdateStateInformation(TrapCount);
   }
 }
@@ -148,8 +163,11 @@ void AeSysView::OnTrapModeModify() {
 }
 
 void AeSysView::OnTrapModeEscape() {
+  auto* trapState = TrapState(this);
   RubberBandingDisable();
-  ModeLineUnhighlightOp(m_PreviousOp);
+  if (trapState != nullptr) {
+    trapState->UnhighlightOp(this);
+  }
 }
 
 void AeSysView::OnTraprModeRemoveAdd() {
@@ -179,17 +197,20 @@ void AeSysView::OnTraprModePoint() {
 }
 
 void AeSysView::OnTraprModeStitch() {
-  if (m_PreviousOp != ID_OP2) {
-    m_PreviousPnt = GetCursorPosition();
-    RubberBandingStartAtEnable(m_PreviousPnt, Lines);
-    m_PreviousOp = ModeLineHighlightOp(ID_OP2);
+  auto* trapState = TrapState(this);
+  if (trapState == nullptr) { return; }
+
+  if (trapState->PreviousOp() != ID_OP2) {
+    trapState->SetPreviousPoint(GetCursorPosition());
+    RubberBandingStartAtEnable(trapState->PreviousPoint(), Lines);
+    trapState->SetPreviousOp(ModeLineHighlightOp(ID_OP2));
   } else {
     const EoGePoint3d cursorPosition = GetCursorPosition();
 
-    if (m_PreviousPnt == cursorPosition) { return; }
+    if (trapState->PreviousPoint() == cursorPosition) { return; }
     auto* document = GetDocument();
 
-    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
+    EoGePoint4d ptView[] = {EoGePoint4d(trapState->PreviousPoint()), EoGePoint4d(cursorPosition)};
 
     ModelViewTransformPoints(2, ptView);
 
@@ -203,23 +224,26 @@ void AeSysView::OnTraprModeStitch() {
       }
     }
     RubberBandingDisable();
-    ModeLineUnhighlightOp(m_PreviousOp);
+    trapState->UnhighlightOp(this);
     UpdateStateInformation(TrapCount);
   }
 }
 
 void AeSysView::OnTraprModeField() {
-  if (m_PreviousOp != ID_OP4) {
-    m_PreviousPnt = GetCursorPosition();
-    RubberBandingStartAtEnable(m_PreviousPnt, Rectangles);
-    m_PreviousOp = ModeLineHighlightOp(ID_OP4);
+  auto* trapState = TrapState(this);
+  if (trapState == nullptr) { return; }
+
+  if (trapState->PreviousOp() != ID_OP4) {
+    trapState->SetPreviousPoint(GetCursorPosition());
+    RubberBandingStartAtEnable(trapState->PreviousPoint(), Rectangles);
+    trapState->SetPreviousOp(ModeLineHighlightOp(ID_OP4));
   } else {
     const auto cursorPosition = GetCursorPosition();
-    if (m_PreviousPnt == cursorPosition) { return; }
+    if (trapState->PreviousPoint() == cursorPosition) { return; }
 
     auto* document = GetDocument();
 
-    EoGePoint4d ptView[] = {EoGePoint4d(m_PreviousPnt), EoGePoint4d(cursorPosition)};
+    EoGePoint4d ptView[] = {EoGePoint4d(trapState->PreviousPoint()), EoGePoint4d(cursorPosition)};
 
     ModelViewTransformPoints(2, ptView);
 
@@ -236,7 +260,7 @@ void AeSysView::OnTraprModeField() {
       }
     }
     RubberBandingDisable();
-    ModeLineUnhighlightOp(m_PreviousOp);
+    trapState->UnhighlightOp(this);
     UpdateStateInformation(TrapCount);
   }
 }
@@ -270,6 +294,9 @@ void AeSysView::OnTraprModeModify() {
   }
 }
 void AeSysView::OnTraprModeEscape() {
+  auto* trapState = TrapState(this);
   RubberBandingDisable();
-  ModeLineUnhighlightOp(m_PreviousOp);
+  if (trapState != nullptr) {
+    trapState->UnhighlightOp(this);
+  }
 }

@@ -12,12 +12,16 @@
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
 #include "EoGeTransformMatrix.h"
+#include "CutModeState.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
 
 namespace {
-std::uint16_t previousKeyDown{};
-EoGePoint3d previousPosition{};
+/// Returns the active CutModeState if Cut mode is engaged, else nullptr.
+CutModeState* CutState(AeSysView* view) {
+  if (view == nullptr) { return nullptr; }
+  return dynamic_cast<CutModeState*>(view->GetCurrentState());
+}
 }  // namespace
 
 void AeSysView::OnCutModeOptions() {}
@@ -61,13 +65,16 @@ void AeSysView::OnCutModeTorch() {
 }
 
 void AeSysView::OnCutModeSlice() {
+  auto* state = CutState(this);
+  if (state == nullptr) { return; }
+
   const auto cursorPosition = GetCursorPosition();
-  if (previousKeyDown != ID_OP2) {
-    previousPosition = cursorPosition;
+  if (state->PreviousOp() != ID_OP2) {
+    state->SetPreviousPosition(cursorPosition);
     RubberBandingStartAtEnable(cursorPosition, Lines);
-    previousKeyDown = ModeLineHighlightOp(ID_OP2);
+    state->SetPreviousOp(ModeLineHighlightOp(ID_OP2));
   } else {
-    const EoGePoint3d pt1 = previousPosition;
+    const EoGePoint3d pt1 = state->PreviousPosition();
     const EoGePoint3d pt2 = cursorPosition;
 
     auto* document = GetDocument();
@@ -111,17 +118,21 @@ void AeSysView::OnCutModeSlice() {
     delete groups;
 
     RubberBandingDisable();
-    ModeLineUnhighlightOp(previousKeyDown);
+    ModeLineUnhighlightOp(state->PreviousOpRef());
   }
 }
 
 void AeSysView::OnCutModeField() {
+  auto* state = CutState(this);
+  if (state == nullptr) { return; }
+
   const auto cursorPosition = GetCursorPosition();
-  if (previousKeyDown != ID_OP4) {
-    previousPosition = cursorPosition;
+  if (state->PreviousOp() != ID_OP4) {
+    state->SetPreviousPosition(cursorPosition);
     RubberBandingStartAtEnable(cursorPosition, Rectangles);
-    previousKeyDown = ModeLineHighlightOp(ID_OP4);
+    state->SetPreviousOp(ModeLineHighlightOp(ID_OP4));
   } else {
+    const auto& previousPosition = state->PreviousPosition();
     EoGePoint3d rLL, rUR;
 
     rLL.x = std::min(previousPosition.x, cursorPosition.x);
@@ -192,17 +203,20 @@ void AeSysView::OnCutModeField() {
 
     UpdateStateInformation(BothCounts);
     RubberBandingDisable();
-    ModeLineUnhighlightOp(previousKeyDown);
+    ModeLineUnhighlightOp(state->PreviousOpRef());
   }
 }
 
 void AeSysView::OnCutModeClip() {
+  auto* state = CutState(this);
+  if (state == nullptr) { return; }
+
   const auto cursorPosition = GetCursorPosition();
-  if (previousKeyDown != ID_OP7) {
-    previousPosition = cursorPosition;
-    previousKeyDown = ModeLineHighlightOp(ID_OP7);
+  if (state->PreviousOp() != ID_OP7) {
+    state->SetPreviousPosition(cursorPosition);
+    state->SetPreviousOp(ModeLineHighlightOp(ID_OP7));
   } else {
-    const EoGePoint3d pt1 = previousPosition;
+    const EoGePoint3d pt1 = state->PreviousPosition();
     const EoGePoint3d pt2 = cursorPosition;
 
     if (pt1 == pt2) { return; }
@@ -279,16 +293,20 @@ void AeSysView::OnCutModeClip() {
     ReleaseDC(deviceContext);
 
     UpdateStateInformation(BothCounts);
-    ModeLineUnhighlightOp(previousKeyDown);
+    ModeLineUnhighlightOp(state->PreviousOpRef());
   }
 }
 
 void AeSysView::OnCutModeDivide() {}
 void AeSysView::OnCutModeReturn() {
+  auto* state = CutState(this);
+  if (state == nullptr) { return; }
   RubberBandingDisable();
-  ModeLineUnhighlightOp(previousKeyDown);
+  ModeLineUnhighlightOp(state->PreviousOpRef());
 }
 void AeSysView::OnCutModeEscape() {
+  auto* state = CutState(this);
+  if (state == nullptr) { return; }
   RubberBandingDisable();
-  ModeLineUnhighlightOp(previousKeyDown);
+  ModeLineUnhighlightOp(state->PreviousOpRef());
 }

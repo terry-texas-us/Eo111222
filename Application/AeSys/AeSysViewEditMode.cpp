@@ -1,13 +1,22 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EditModeState.h"
 #include "EoDlgEditOptions.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "Resource.h"
+
+namespace {
+/// Returns the active EditModeState from the view's state stack, or nullptr when
+/// the current state is a sub-mode (PickAndDragState / PrimitiveMendState) or none.
+EditModeState* EditState(AeSysView* view) {
+  return dynamic_cast<EditModeState*>(view->GetCurrentState());
+}
+}  // namespace
 
 void AeSysView::OnEditModeOptions() {
   EoDlgEditOptions editOptions(this);
@@ -59,16 +68,18 @@ void AeSysView::OnEditModeRotcw() {
 
 void AeSysView::OnEditModeMove() {
   auto* document = GetDocument();
+  auto* editState = EditState(this);
+  if (editState == nullptr) { return; }
 
   const auto cursorPosition = GetCursorPosition();
-  if (m_PreviousOp != ID_OP4) {
-    m_PreviousOp = ModeLineHighlightOp(ID_OP4);
+  if (editState->PreviousOp() != ID_OP4) {
+    editState->SetPreviousOp(ModeLineHighlightOp(ID_OP4));
     RubberBandingStartAtEnable(cursorPosition, Lines);
   } else {
     EoGeTransformMatrix transformMatrix;
     transformMatrix.Translate(EoGeVector3d(document->GetTrapPivotPoint(), cursorPosition));
 
-    ModeLineUnhighlightOp(m_PreviousOp);
+    editState->UnhighlightOp(this);
     RubberBandingDisable();
     document->TransformTrappedGroups(transformMatrix, L"Move");
   }
@@ -77,12 +88,15 @@ void AeSysView::OnEditModeMove() {
 
 void AeSysView::OnEditModeCopy() {
   auto* document = GetDocument();
+  auto* editState = EditState(this);
+  if (editState == nullptr) { return; }
+
   const auto cursorPosition = GetCursorPosition();
-  if (m_PreviousOp != ID_OP5) {
-    m_PreviousOp = ModeLineHighlightOp(ID_OP5);
+  if (editState->PreviousOp() != ID_OP5) {
+    editState->SetPreviousOp(ModeLineHighlightOp(ID_OP5));
     RubberBandingStartAtEnable(cursorPosition, Lines);
   } else {
-    ModeLineUnhighlightOp(m_PreviousOp);
+    editState->UnhighlightOp(this);
     RubberBandingDisable();
     document->CopyTrappedGroups(EoGeVector3d(document->GetTrapPivotPoint(), cursorPosition));
   }
@@ -153,11 +167,13 @@ void AeSysView::OnEditModeEscape() {
       MendStateEscape();
       break;
 
-    default:
-      if (m_PreviousOp == ID_OP4 || m_PreviousOp == ID_OP5) {
-        ModeLineUnhighlightOp(m_PreviousOp);
+    default: {
+      auto* editState = EditState(this);
+      if (editState != nullptr && (editState->PreviousOp() == ID_OP4 || editState->PreviousOp() == ID_OP5)) {
+        editState->UnhighlightOp(this);
         RubberBandingDisable();
       }
       break;
+    }
   }
 }
