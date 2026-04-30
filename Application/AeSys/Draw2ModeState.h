@@ -31,6 +31,9 @@ class Draw2ModeState : public AeSysState {
   Draw2ModeState& operator=(Draw2ModeState&&) = delete;
 
   void OnExit(AeSysView* context) override;
+  void OnMouseMove(AeSysView* context, UINT nFlags, CPoint point) override;
+  bool OnReturn(AeSysView* context) override;
+  bool OnEscape(AeSysView* context) override;
 
   void UnhighlightOp(AeSysView* context);
 

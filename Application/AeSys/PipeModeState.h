@@ -22,6 +22,9 @@ class PipeModeState : public AeSysState {
   PipeModeState& operator=(PipeModeState&&) = delete;
 
   void OnExit(AeSysView* context) override;
+  void OnMouseMove(AeSysView* context, UINT nFlags, CPoint point) override;
+  bool OnReturn(AeSysView* context) override;
+  bool OnEscape(AeSysView* context) override;
 
   /// Unhighlights the active op pane (if any) via the view's status bar API.
   /// Passes m_previousOp by reference so it is also reset to 0 by ModeLineUnhighlightOp.

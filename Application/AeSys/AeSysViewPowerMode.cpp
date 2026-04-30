@@ -12,6 +12,7 @@
 #include "EoGeLine.h"
 #include "EoGePoint3d.h"
 #include "EoGsRenderState.h"
+#include "EoPowerGeometry.h"
 #include "PowerModeState.h"
 #include "Resource.h"
 
@@ -128,52 +129,22 @@ void AeSysView::OnPowerModeHome() {
         circuitEndPoint = circuit->Begin();
         if (cursorPosition.DistanceTo(circuit->End()) <= 0.1) { cursorPosition = circuit->End(); }
       }
-      powerArrow = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
+      powerArrow = cursorPosition.DistanceTo(circuitEndPoint) > m_powerConfig.conductorSpacing;
       GenerateHomeRunArrow(cursorPosition, circuitEndPoint);
-      cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
+      cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_powerConfig.conductorSpacing);
       SetCursorPosition(cursorPosition);
     }
   } else {
-    powerArrow = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
+    powerArrow = cursorPosition.DistanceTo(circuitEndPoint) > m_powerConfig.conductorSpacing;
     GenerateHomeRunArrow(cursorPosition, circuitEndPoint);
-    cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
+    cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_powerConfig.conductorSpacing);
     SetCursorPosition(cursorPosition);
   }
   pointOnCircuit = cursorPosition;
 }
 
 void AeSysView::DoPowerModeMouseMove() {
-  auto* state = PowerState(this);
-  if (state == nullptr) { return; }
-  auto& points = state->Points();
-  const auto previousOp = state->PreviousOp();
-  const auto previousRadius = state->PreviousRadiusRef();
-
-  const EoDbHandleSuppressionScope suppressHandles;
-  auto cursorPosition = GetCursorPosition();
-  const auto numberOfPoints = points.GetSize();
-
-  switch (previousOp) {
-    case ID_OP2:
-      if (points[0] != cursorPosition) {
-        m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-
-        EoDbConic* circle{};
-        const auto* group = SelectCircleUsingPoint(cursorPosition, 0.02, circle);
-        if (group != nullptr) {
-          const double radius = circle->Radius();
-          cursorPosition = circle->Center();
-          cursorPosition = cursorPosition.ProjectToward(points[0], radius);
-        } else {
-          cursorPosition = SnapPointToAxis(points[0], cursorPosition);
-        }
-        const auto pt1 = points[0].ProjectToward(cursorPosition, previousRadius);
-        m_PreviewGroup.AddTail(EoDbLine::CreateLine(pt1, cursorPosition)->WithProperties(Gs::renderState));
-        InvalidateOverlay();
-      }
-      break;
-  }
-  points.SetSize(numberOfPoints);
+  // Preview logic moved to PowerModeState::OnMouseMove.
 }
 
 void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
@@ -209,15 +180,15 @@ void AeSysView::DoPowerModeConductor(std::uint16_t conductorType) {
       }
 
       GeneratePowerConductorSymbol(conductorType, cursorPosition, circuitEndPoint);
-      cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
+      cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_powerConfig.conductorSpacing);
       SetCursorPosition(cursorPosition);
-      powerConductor = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
+      powerConductor = cursorPosition.DistanceTo(circuitEndPoint) > m_powerConfig.conductorSpacing;
     }
   } else {
     GeneratePowerConductorSymbol(conductorType, cursorPosition, circuitEndPoint);
-    cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_PowerConductorSpacing);
+    cursorPosition = cursorPosition.ProjectToward(circuitEndPoint, m_powerConfig.conductorSpacing);
     SetCursorPosition(cursorPosition);
-    powerConductor = cursorPosition.DistanceTo(circuitEndPoint) > m_PowerConductorSpacing;
+    powerConductor = cursorPosition.DistanceTo(circuitEndPoint) > m_powerConfig.conductorSpacing;
   }
   pointOnCircuit = cursorPosition;
 }
@@ -240,20 +211,9 @@ void AeSysView::OnPowerModeEscape() {
 
 void AeSysView::GenerateHomeRunArrow(EoGePoint3d& pointOnCircuit, const EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
-  EoGePoint3dArray points;
-  points.SetSize(3);
-
-  points[0] = pointOnCircuit.ProjectToward(endPoint, 0.05);
-
-  const EoGeLine circuit(points[0], endPoint);
-
-  circuit.ProjPtFrom_xy(0.0, -0.075, &points[0]);
-  points[1] = pointOnCircuit;
-  circuit.ProjPtFrom_xy(0.0, 0.075, &points[2]);
-
   auto* group = new EoDbGroup;
+  Power::FillHomeRunArrow(group, pointOnCircuit, endPoint);
   document->AddWorkLayerGroup(group);
-  group->AddTail(new EoDbPolyline(2, 1, points));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
 
@@ -261,53 +221,10 @@ void AeSysView::GeneratePowerConductorSymbol(std::uint16_t conductorType,
     const EoGePoint3d& pointOnCircuit,
     const EoGePoint3d& endPoint) const {
   auto* document = GetDocument();
-  EoGePoint3d points[5]{};
-
-  const EoGeLine circuit(pointOnCircuit, endPoint);
   auto* group = new EoDbGroup;
-
-  switch (conductorType) {
-    case ID_OP4: {
-      circuit.ProjPtFrom_xy(0.0, -0.1, &points[0]);
-      circuit.ProjPtFrom_xy(0.0, 0.075, &points[1]);
-      circuit.ProjPtFrom_xy(0.0, 0.0875, &points[2]);
-      group->AddTail(EoDbLine::CreateLine(points[0], points[1])->WithProperties(1, L"CONTINUOUS"));
-
-      auto* circle = EoDbConic::CreateCircleInView(points[2], 0.0125);
-      circle->SetColor(1);
-      circle->SetLineTypeName(L"CONTINUOUS");
-
-      group->AddTail(circle);
-    } break;
-
-    case ID_OP5:
-      circuit.ProjPtFrom_xy(0.0, -0.1, &points[0]);
-      circuit.ProjPtFrom_xy(0.0, 0.1, &points[1]);
-      group->AddTail(EoDbLine::CreateLine(points[0], points[1])->WithProperties(1, L"CONTINUOUS"));
-      break;
-
-    case ID_OP6:
-      circuit.ProjPtFrom_xy(0.0, -0.1, &points[0]);
-      circuit.ProjPtFrom_xy(0.0, 0.05, &points[1]);
-
-      points[2] = pointOnCircuit.ProjectToward(endPoint, 0.025);
-
-      EoGeLine(points[2], endPoint).ProjPtFrom_xy(0.0, 0.075, &points[3]);
-      EoGeLine(pointOnCircuit, endPoint).ProjPtFrom_xy(0.0, 0.1, &points[4]);
-      group->AddTail(EoDbLine::CreateLine(points[0], points[1])->WithProperties(1, L"CONTINUOUS"));
-      group->AddTail(EoDbLine::CreateLine(points[1], points[3])->WithProperties(1, L"CONTINUOUS"));
-      group->AddTail(EoDbLine::CreateLine(points[3], points[4])->WithProperties(1, L"CONTINUOUS"));
-      break;
-
-    case ID_OP7:
-      circuit.ProjPtFrom_xy(0.0, -0.05, &points[0]);
-      circuit.ProjPtFrom_xy(0.0, 0.05, &points[1]);
-      group->AddTail(EoDbLine::CreateLine(points[0], points[1])->WithProperties(1, L"CONTINUOUS"));
-      break;
-
-    default:
-      delete group;
-      return;
+  if (!Power::FillConductorSymbol(conductorType, group, pointOnCircuit, endPoint)) {
+    delete group;
+    return;
   }
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);

@@ -1,4 +1,4 @@
-﻿// Microsoft Visual C++ generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
 
@@ -2798,10 +2798,6 @@ END
 // Cursor
 //
 
-IDR_ANNOTATE_MODE       CURSOR                  "res\\Cursors\\AnnotateMode.cur"
-
-IDR_ANNOTATE_MODE_WHITE CURSOR                  "res\\Cursors\\AnnotateModeWhite.cur"
-
 IDR_CUT_MODE            CURSOR                  "res\\Cursors\\CutMode.cur"
 
 IDR_CUT_MODE_WHITE      CURSOR                  "res\\Cursors\\CutModeWhite.cur"
@@ -2847,6 +2843,10 @@ IDR_POWER_MODE_WHITE    CURSOR                  "res\\Cursors\\PowerModeWhite.cu
 //
 // RCDATA
 //
+
+IDR_ANNOTATE_MODE RCDATA                        "res\\Cursors\\AnnotateMode.cur"
+
+IDR_ANNOTATE_MODE_WHITE RCDATA                  "res\\Cursors\\AnnotateModeWhite.cur"
 
 IDR_DRAW_MODE           RCDATA                  "res\\Cursors\\DrawMode.cur"
 

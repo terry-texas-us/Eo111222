@@ -18,7 +18,11 @@
 #include "EoGsModelTransform.h"
 #include "EoGsViewTransform.h"
 #include "EoGsViewport.h"
+#include "EoLpdGeometry.h"
 #include "EoMfLayoutTabBar.h"
+#include "EoModeConfig.h"
+#include "EoPipeGeometry.h"
+#include "EoPowerGeometry.h"
 #include "Section.h"
 
 #include <stack>
@@ -669,7 +673,6 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
  public:
   afx_msg void OnInsertBlock();
   afx_msg void OnInsertTracing();
-  void DoDrawModeMouseMove();
 
 afx_msg void OnDrawCommand(UINT nID);
 afx_msg void OnDrawModeOptions();
@@ -705,6 +708,9 @@ afx_msg void OnDrawModeOptions();
  public:
   void DoDraw2ModeMouseMove();
 
+  [[nodiscard]] double DistanceBetweenLines() const noexcept { return m_distanceBetweenLines; }
+  [[nodiscard]] double CenterLineEccentricity() const noexcept { return m_centerLineEccentricity; }
+
   afx_msg void OnDraw2ModeOptions();
   /// @brief Searches for an existing wall side or endcap
   afx_msg void OnDraw2ModeJoin();
@@ -715,11 +721,8 @@ afx_msg void OnDrawModeOptions();
   bool CleanPreviousLines();
   bool StartAssemblyFromLine();
 
-  enum EJust { Left = -1, Center, Right };
-  enum EElbow { Mittered, Radial };
-
- public:
-  afx_msg void OnDimensionModeOptions();
+  public:
+   afx_msg void OnDimensionModeOptions();
   afx_msg void OnDimensionModeArrow();
   afx_msg void OnDimensionModeLine();
   afx_msg void OnDimensionModeDLine();
@@ -732,8 +735,7 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnDimensionModeReturn();
   afx_msg void OnDimensionModeEscape();
 
-  double m_FixupModeAxisTolerance{2.0};
-  double m_FixupModeCornerSize{0.25};
+  FixupConfig m_fixupConfig;
 
   afx_msg void OnFixupModeOptions();
   afx_msg void OnFixupModeReference();
@@ -785,11 +787,9 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnCutModeEscape();
 
  public:  // Edit mode interface
-  EoGeVector3d m_EditModeMirrorScale{-1.0, 1.0, 1.0};
-  EoGeVector3d m_editModeRotationAngles{0.0, 0.0, 45.0};
-  EoGeVector3d m_EditModeScale{2.0, 2.0, 2.0};
+  EditConfig m_editConfig;
 
-  [[nodiscard]] EoGeVector3d EditModeRotationAngles() const noexcept { return m_editModeRotationAngles; }
+  [[nodiscard]] EoGeVector3d EditModeRotationAngles() const noexcept { return m_editConfig.rotationAngles; }
   EoGeTransformMatrix EditModeInvertedRotationTMat() const {
     EoGeTransformMatrix matrix;
     matrix = matrix.BuildRotationTransformMatrix(EditModeRotationAngles());
@@ -803,18 +803,17 @@ afx_msg void OnDrawModeOptions();
   }
   [[nodiscard]] EoGeVector3d EditModeInvertedScaleFactors() const noexcept {
     EoGeVector3d invertedScaleFactors;
-
-    invertedScaleFactors.x = Eo::IsGeometricallyNonZero(m_EditModeScale.x) ? 1.0 / m_EditModeScale.x : 1.0;
-    invertedScaleFactors.y = Eo::IsGeometricallyNonZero(m_EditModeScale.y) ? 1.0 / m_EditModeScale.y : 1.0;
-    invertedScaleFactors.z = Eo::IsGeometricallyNonZero(m_EditModeScale.z) ? 1.0 / m_EditModeScale.z : 1.0;
+    invertedScaleFactors.x = Eo::IsGeometricallyNonZero(m_editConfig.scale.x) ? 1.0 / m_editConfig.scale.x : 1.0;
+    invertedScaleFactors.y = Eo::IsGeometricallyNonZero(m_editConfig.scale.y) ? 1.0 / m_editConfig.scale.y : 1.0;
+    invertedScaleFactors.z = Eo::IsGeometricallyNonZero(m_editConfig.scale.z) ? 1.0 / m_editConfig.scale.z : 1.0;
     return invertedScaleFactors;
   }
 
-  [[nodiscard]] EoGeVector3d EditModeScaleFactors() const noexcept { return m_EditModeScale; }
-  void SetEditModeScaleFactors(double x, double y, double z) noexcept { m_EditModeScale.Set(x, y, z); }
-  void SetEditModeRotationAngles(double x, double y, double z) noexcept { m_editModeRotationAngles.Set(x, y, z); }
-  [[nodiscard]] EoGeVector3d EditModeMirrorScale() const noexcept { return m_EditModeMirrorScale; }
-  void SetMirrorScale(double x, double y, double z) noexcept { m_EditModeMirrorScale.Set(x, y, z); }
+  [[nodiscard]] EoGeVector3d EditModeScaleFactors() const noexcept { return m_editConfig.scale; }
+  void SetEditModeScaleFactors(double x, double y, double z) noexcept { m_editConfig.scale.Set(x, y, z); }
+  void SetEditModeRotationAngles(double x, double y, double z) noexcept { m_editConfig.rotationAngles.Set(x, y, z); }
+  [[nodiscard]] EoGeVector3d EditModeMirrorScale() const noexcept { return m_editConfig.mirrorScale; }
+  void SetMirrorScale(double x, double y, double z) noexcept { m_editConfig.mirrorScale.Set(x, y, z); }
 
   afx_msg void OnEditModeOptions();
   afx_msg void OnEditModePivot();
@@ -857,15 +856,8 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnTraprModeModify();
   afx_msg void OnTraprModeEscape();
 
- private:  // Low Pressure Duct (retangular) interface
-  double m_InsideRadiusFactor{1.5};
-  double m_DuctSeamSize{0.03125};
-  double m_DuctTapSize{0.09375};
-  bool m_GenerateTurningVanes{true};
-  EElbow m_ElbowType{Mittered};
-  EJust m_DuctJustification{Center};
-  double m_TransitionSlope{4.0};
-  bool m_BeginWithTransition{};
+ private:  // Low Pressure Duct (rectangular) interface
+  LpdConfig m_lpdConfig;
   bool m_ContinueSection{};
   int m_EndCapLocation{0};
   EoDbPoint* m_EndCapPoint{};
@@ -878,6 +870,14 @@ afx_msg void OnDrawModeOptions();
 
  public:
   void DoDuctModeMouseMove();
+
+  [[nodiscard]] double DuctSeamSize() const noexcept { return m_lpdConfig.ductSeamSize; }
+  [[nodiscard]] bool BeginWithTransition() const noexcept { return m_lpdConfig.beginWithTransition; }
+  [[nodiscard]] EJust DuctJustification() const noexcept { return m_lpdConfig.justification; }
+  [[nodiscard]] double TransitionSlope() const noexcept { return m_lpdConfig.transitionSlope; }
+  [[nodiscard]] bool GenerateTurningVanes() const noexcept { return m_lpdConfig.generateTurningVanes; }
+  [[nodiscard]] double PipeTicSize() const noexcept { return m_pipeConfig.ticSize; }
+  [[nodiscard]] double PipeRiseDropRadius() const noexcept { return m_pipeConfig.riseDropRadius; }
 
   afx_msg void OnLpdModeOptions();
   afx_msg void OnLpdModeJoin();
@@ -1025,16 +1025,7 @@ afx_msg void OnDrawModeOptions();
       Section currentSection);
 
  private:  // Pipe mode interface
-  int m_CurrentPipeSymbolIndex{};
-  double m_PipeTicSize{0.03125};
-  double m_PipeRiseDropRadius{0.03125};
-
-  /// @brief Adds a fitting indication to horizontal pipe section as required by previous fitting type.
-  void GenerateLineWithFittings(int beginType,
-      const EoGePoint3d& beginPoint,
-      int endType,
-      const EoGePoint3d& endPoint,
-      EoDbGroup* group);
+  PipeConfig m_pipeConfig;
 
   /** @brief Generates a tick mark at a specified distance along a line defined by two points, and adds it to the given
    * group.
@@ -1050,6 +1041,13 @@ afx_msg void OnDrawModeOptions();
   void DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section);
 
  public:
+  /// @brief Adds a fitting indication to horizontal pipe section as required by previous fitting type.
+  void GenerateLineWithFittings(int beginType,
+      const EoGePoint3d& beginPoint,
+      int endType,
+      const EoGePoint3d& endPoint,
+      EoDbGroup* group);
+
   void DoPipeModeMouseMove();
 
   afx_msg void OnPipeModeOptions();
@@ -1064,7 +1062,7 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnPipeModeEscape();
 
  private:  // Power mode interface
-  double m_PowerConductorSpacing{0.04};
+  PowerConfig m_powerConfig;
 
  public:
   void DoPowerModeMouseMove();

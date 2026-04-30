@@ -20,6 +20,11 @@ class AeSysState {
   virtual void OnEnter([[maybe_unused]] AeSysView* context) {}
   virtual void OnExit([[maybe_unused]] AeSysView* context) {}
 
+  // Universal Return/Escape delegates — return true to consume the event and
+  // prevent it from reaching the legacy CurrentMode() switch on AeSysView.
+  virtual bool OnReturn([[maybe_unused]] AeSysView* context) { return false; }
+  virtual bool OnEscape([[maybe_unused]] AeSysView* context) { return false; }
+
   // Input handling (keypad, mouse)
   virtual bool HandleKeypad([[maybe_unused]] AeSysView* context,
       [[maybe_unused]] UINT nChar,
@@ -35,8 +40,11 @@ class AeSysState {
       [[maybe_unused]] CPoint point) {}
   // Add more: OnRButtonDown, etc., as needed from AeSysView.cpp
 
-  // Command handling (delegate MFC ON_COMMAND)
-  virtual void HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT command) {}
+  // Command handling (delegate MFC ON_COMMAND).
+  // Return true to consume the command and prevent it reaching the legacy CurrentMode() switch.
+  [[nodiscard]] virtual bool HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT command) {
+    return false;
+  }
 
   /// Return true to block a WM_COMMAND from reaching the document/view handlers.
   /// Sub-modes that hold raw pointers into document data (PickAndDragState,

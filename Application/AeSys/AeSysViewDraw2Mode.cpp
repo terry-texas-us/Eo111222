@@ -293,39 +293,5 @@ bool AeSysView::StartAssemblyFromLine() {
 }
 
 void AeSysView::DoDraw2ModeMouseMove() {
-  auto* state = Draw2State(this);
-  if (state == nullptr) { return; }
-
-  const EoDbHandleSuppressionScope suppressHandles;
-  static EoGePoint3d cursorPosition = EoGePoint3d();
-
-  const auto previousOp = state->PreviousOp();
-  if (previousOp == 0) {
-    cursorPosition = GetCursorPosition();
-  } else if (previousOp == ID_OP1 || previousOp == ID_OP2) {
-    m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-
-    cursorPosition = GetCursorPosition();
-    cursorPosition = SnapPointToAxis(state->PreviousPoint(), cursorPosition);
-
-    EoGeLine previewLines[2]{};
-    EoGeLine line(state->PreviousPoint(), cursorPosition);
-    if (!line.GetParallels(m_distanceBetweenLines, m_centerLineEccentricity, previewLines[0], previewLines[1])) {
-      return;
-    }
-
-    const EoGeLine beginCap{previewLines[0].begin, previewLines[1].begin};
-    auto* beginCapLine = EoDbLine::CreateLine(beginCap)->WithProperties(Gs::renderState);
-    m_PreviewGroup.AddTail(beginCapLine);
-
-    auto* leftLine = EoDbLine::CreateLine(previewLines[0])->WithProperties(Gs::renderState);
-    auto* rightLine = EoDbLine::CreateLine(previewLines[1])->WithProperties(Gs::renderState);
-
-    m_PreviewGroup.AddTail(leftLine);
-    m_PreviewGroup.AddTail(rightLine);
-    const EoGeLine endCap{previewLines[1].end, previewLines[0].end};
-    auto* endCapLine = EoDbLine::CreateLine(endCap)->WithProperties(Gs::renderState);
-    m_PreviewGroup.AddTail(endCapLine);
-    InvalidateOverlay();
-  }
+  // Preview logic moved to Draw2ModeState::OnMouseMove.
 }

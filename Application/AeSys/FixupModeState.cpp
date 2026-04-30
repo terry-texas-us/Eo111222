@@ -9,6 +9,16 @@ void FixupModeState::OnExit(AeSysView* context) {
   context->RubberBandingDisable();
 }
 
+bool FixupModeState::OnReturn(AeSysView* context) {
+  context->OnFixupModeReturn();
+  return true;
+}
+
+bool FixupModeState::OnEscape(AeSysView* context) {
+  context->OnFixupModeEscape();
+  return true;
+}
+
 void FixupModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousCommand);
 }

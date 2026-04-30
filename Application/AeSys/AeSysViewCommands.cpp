@@ -601,6 +601,8 @@ void AeSysView::OnUpdateViewPenwidths(CCmdUI* pCmdUI) {
 }
 
 void AeSysView::OnOp0() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP0)) { return; }
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
     case ID_MODE_GROUP_EDIT:
@@ -610,6 +612,8 @@ void AeSysView::OnOp0() {
 }
 
 void AeSysView::OnOp2() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP2)) { return; }
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveTransform(ID_OP2);
@@ -622,6 +626,8 @@ void AeSysView::OnOp2() {
 }
 
 void AeSysView::OnOp3() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP3)) { return; }
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveTransform(ID_OP3);
@@ -634,6 +640,8 @@ void AeSysView::OnOp3() {
 }
 
 void AeSysView::OnOp4() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP4)) { return; }
   const auto* document = GetDocument();
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
@@ -651,6 +659,8 @@ void AeSysView::OnOp4() {
 }
 
 void AeSysView::OnOp5() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP5)) { return; }
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveCopy();
@@ -663,6 +673,8 @@ void AeSysView::OnOp5() {
 }
 
 void AeSysView::OnOp6() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP6)) { return; }
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveTransform(ID_OP6);
@@ -675,6 +687,8 @@ void AeSysView::OnOp6() {
 }
 
 void AeSysView::OnOp7() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP7)) { return; }
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveTransform(ID_OP7);
@@ -687,6 +701,8 @@ void AeSysView::OnOp7() {
 }
 
 void AeSysView::OnOp8() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->HandleCommand(this, ID_OP8)) { return; }
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveTransform(ID_OP8);
@@ -699,6 +715,9 @@ void AeSysView::OnOp8() {
 }
 
 void AeSysView::OnReturn() {
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->OnReturn(this)) { return; }
+
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
     case ID_MODE_GROUP_EDIT:
@@ -713,10 +732,17 @@ void AeSysView::OnReturn() {
 }
 
 void AeSysView::OnEscape() {
+  // Viewport deactivation is handled unconditionally before any state or mode logic,
+  // because the viewport is a UI layer above all editing modes.
   if (IsViewportActive()) {
     DeactivateViewport();
     return;
   }
+
+  // Active state gets priority over the legacy mode switch below.
+  // If a state consumes Escape it returns true and we stop here.
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->OnEscape(this)) { return; }
 
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:

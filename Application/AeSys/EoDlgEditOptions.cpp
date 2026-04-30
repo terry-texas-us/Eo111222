@@ -1,4 +1,4 @@
-﻿#include "Stdafx.h"
+#include "Stdafx.h"
 
 #include "AeSysView.h"
 #include "EoDlgEditOptions.h"
@@ -45,9 +45,9 @@ void EoDlgEditOptions::DoDataExchange(CDataExchange* dataExchange) {
 BOOL EoDlgEditOptions::OnInitDialog() {
   CDialog::OnInitDialog();
 
-  if (m_ActiveView->m_EditModeMirrorScale.x < 0.0) {
+  if (m_ActiveView->m_editConfig.mirrorScale.x < 0.0) {
     m_MirrorXCheckControl.SetCheck(BST_CHECKED);
-  } else if (m_ActiveView->m_EditModeMirrorScale.y < 0.0) {
+  } else if (m_ActiveView->m_editConfig.mirrorScale.y < 0.0) {
     m_MirrorYCheckControl.SetCheck(BST_CHECKED);
   } else {
     m_MirrorZCheckControl.SetCheck(BST_CHECKED);

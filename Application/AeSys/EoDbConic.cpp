@@ -219,6 +219,7 @@ EoDbConic* EoDbConic::CreateRadialArcFrom3Points(EoGePoint3d& start,
   const EoGeVector3d startToIntermediate(start, intermediate);
   const EoGeVector3d startToEnd(start, end);
   auto normal = CrossProduct(startToIntermediate, startToEnd);
+  if (normal.IsNearNull()) { return nullptr; }  // Colinear — no arc possible.
   normal.Unitize();
 
   // Ensure extrusion points in positive Z direction
@@ -922,32 +923,51 @@ bool EoDbConic::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
 }
 
 void EoDbConic::Transform(const EoGeTransformMatrix& transformMatrix) {
-  auto minorAxis = MinorAxis();
+  // Snapshot arc endpoints and minor axis BEFORE any member variables change.
+  // Both are needed to reconstruct parametric angles in the new OCS below.
+  const EoGePoint3d worldStart = PointAtStartAngle();
+  const EoGePoint3d worldEnd = PointAtEndAngle();
+  auto minorAxis = MinorAxis();  // must be captured before m_majorAxis / m_extrusion are modified
 
   m_center = transformMatrix * m_center;
   m_majorAxis = transformMatrix * m_majorAxis;
   m_extrusion = transformMatrix * m_extrusion;
   minorAxis = transformMatrix * minorAxis;
+
   double majorAxisLength = m_majorAxis.Length();
-  // Degenerate major axis, avoid division by zero and silently continue
   majorAxisLength = std::max(majorAxisLength, Eo::geometricTolerance);
   m_ratio = minorAxis.Length() / majorAxisLength;
+
   if (m_ratio > 1.0) {
-    // Minor axis is longer than major axis, swap them
+    // Minor axis became the longer semi-axis after a non-uniform scale — swap.
     std::swap(m_majorAxis, minorAxis);
     m_ratio = 1.0 / m_ratio;
-
-    // @todo this adjustment needs to be verified for correctness
-    // Adjust angles: rotating OCS by 90° means subtracting π/2 from parametric angles or consider
-    // computing actual start/end points before transformation, transform them, then compute new angles
-    m_startAngle -= Eo::HalfPi;
-    m_endAngle -= Eo::HalfPi;
-
-    // Re-normalize to [0, 2π) range
-    m_startAngle = NormalizeTo2Pi(m_startAngle);
-    m_endAngle = NormalizeTo2Pi(m_endAngle);
   }
+
   m_extrusion.Unitize();
+
+  // Recover parametric angles from the transformed world endpoint positions by
+  // projecting into the new OCS (atan2 in the majorAxis/minorAxis plane).
+  // This handles rotations, non-uniform scales, and reflections uniformly.
+  const auto newMinorAxis = MinorAxis();  // safe: uses already-updated m_extrusion and m_majorAxis
+  const double majorLen = m_majorAxis.Length();
+  const double minorLen = newMinorAxis.Length();
+
+  if (majorLen > Eo::geometricTolerance && minorLen > Eo::geometricTolerance) {
+    const EoGeVector3d uHat = m_majorAxis * (1.0 / majorLen);
+    const EoGeVector3d vHat = newMinorAxis * (1.0 / minorLen);
+
+    const EoGeVector3d toStart(m_center, transformMatrix * worldStart);
+    const EoGeVector3d toEnd(m_center, transformMatrix * worldEnd);
+
+    m_startAngle = NormalizeTo2Pi(std::atan2(DotProduct(toStart, vHat), DotProduct(toStart, uHat)));
+    m_endAngle = NormalizeTo2Pi(std::atan2(DotProduct(toEnd, vHat), DotProduct(toEnd, uHat)));
+
+    // A reflection (det < 0) reverses the parametric winding: the CCW minor arc
+    // (e.g. 90°) becomes the major arc (270°) in the reflected OCS.  Swapping
+    // start and end restores the correct short-path winding.
+    if (transformMatrix.Determinant() < 0.0) { std::swap(m_startAngle, m_endAngle); }
+  }
 }
 
 void EoDbConic::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {

@@ -9,6 +9,15 @@ void TrapModeState::OnExit(AeSysView* context) {
   context->RubberBandingDisable();
 }
 
+bool TrapModeState::OnEscape(AeSysView* context) {
+  // Cancel any in-progress two-click stitch/field gesture.
+  if (m_previousOp != 0) {
+    context->RubberBandingDisable();
+    UnhighlightOp(context);
+  }
+  return true;
+}
+
 void TrapModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousOp);
 }

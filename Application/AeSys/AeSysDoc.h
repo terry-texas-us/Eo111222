@@ -707,6 +707,7 @@ class AeSysDoc : public CDocument {
   int AddUniquePoint(const EoGePoint3d& point);
   auto AddUniquePoint(EoGeUniquePoint* uniquePoint) { return m_UniquePoints.AddTail((CObject*)uniquePoint); }
   void DisplayUniquePoints();
+  void RenderUniquePoints(AeSysView* view, EoGsRenderDevice* renderDevice);
   [[nodiscard]] auto GetFirstUniquePointPosition() const { return m_UniquePoints.GetHeadPosition(); }
   EoGeUniquePoint* GetNextUniquePoint(POSITION& position) { return (EoGeUniquePoint*)m_UniquePoints.GetNext(position); }
   void RemoveUniquePointAt(POSITION position) { m_UniquePoints.RemoveAt(position); }

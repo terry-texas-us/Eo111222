@@ -743,16 +743,26 @@ The `ON_COMMAND_RANGE(ID_DRAW_MODE_OPTIONS, ID_DRAW_MODE_SHIFT_RETURN)` entry is
 | `PickAndDragState` | Primitive/Group Edit | group, primitive, begin/end points, transform seg | ✅ Complete |
 | `PrimitiveMendState` | Primitive Mend | primitive ptr, owning copy for Escape, vertex index | ✅ Complete |
 | `Draw2ModeState` | Draw2 | previous op/point, continuation flags, reference lines, assembly/section group ptrs | ✅ Complete |
-| `LpdModeState` | Low-Pressure Duct | previous op/point/section, reference lines, original/end-cap group ptrs | ✅ Complete |
-| `DimensionModeState` | Dimension | previous command, previous cursor position | ✅ Partial — static locals remain in angle-dimension flow |
+| `LpdModeState` | Low-Pressure Duct | previous op/point/section, reference lines, original/end-cap group ptrs | ✅ Complete — `OnMouseMove` owns full preview engine (elbow/section/transition/takeoff), `OnReturn`/`OnEscape` delegate to view |
+| `DimensionModeState` | Dimension | previous command, previous cursor position | ✅ Complete — `OnReturn`/`OnEscape` delegate to view handlers |
 | `AnnotateModeState` | Annotate | previous op/point | ✅ Complete |
-| `CutModeState` | Cut | previous op/point | ✅ Complete |
+| `CutModeState` | Cut | previous op/point | ✅ Complete — `OnReturn`/`OnEscape` delegate to view handlers |
 | `EditModeState` | Edit | previous op/point | ✅ Complete |
-| `FixupModeState` | Fixup | previous op/point | ✅ Complete |
+| `FixupModeState` | Fixup | previous op/point, reference/previous/current group+primitive+line | ✅ Complete — `OnReturn`/`OnEscape` delegate to view handlers |
 | `NodalModeState` | Nodal | previous op/point | ✅ Complete |
 | `PipeModeState` | Pipe | previous op/point | ✅ Complete |
 | `PowerModeState` | Power | previous op/point | ✅ Complete |
 | `TrapModeState` | Trap | previous op/point | ✅ Complete |
+
+### OnOp0–OnOp8 Command Routing
+`AeSysViewCommands.cpp` `OnOp0`–`OnOp8` handlers each open with:
+```cpp
+auto* state = GetCurrentState();
+if (state != nullptr && state->HandleCommand(this, ID_OPx)) { return; }
+```
+`AeSysState::HandleCommand` returns `bool` (default `false`). Any state that overrides `HandleCommand` and returns `true` consumes the op-key command before it reaches the legacy `switch (app.CurrentMode())` fallthrough. This allows future state migrations to absorb their op-key handlers without new MFC message-map entries.
+
+`AeSysViewDrawMode.cpp::OnDrawCommand` dispatches to `state->HandleCommand` in the same pattern (discards the return value with `[[maybe_unused]]` since Draw mode owns all op keys via `ON_COMMAND_RANGE`).
 
 ### Raw-Pointer Lifetime Rule in State Objects
 Several state classes (`Draw2ModeState`, `LpdModeState`) store raw non-owning `EoDbGroup*` / `EoDbPrimitive*` pointers to document geometry. These pointers are valid only while the state is active. `OnExit` and `ResetSequence()` must null them. They must **never be accessed** after `PopState()` is called. Document-owned groups must not be deleted through state pointers — deletion goes through the document layer API.
@@ -765,9 +775,14 @@ Several state classes (`Draw2ModeState`, `LpdModeState`) store raw non-owning `E
 | `AeSys\PickAndDragState.h/.cpp` | Primitive/Group edit sub-mode |
 | `AeSys\PrimitiveMendState.h/.cpp` | Mend sub-mode; `MendStateReturn`/`MendStateEscape` on `AeSysView` |
 | `AeSys\Draw2ModeState.h/.cpp` | Draw2 mode — raw ptrs to assembly/section groups |
-| `AeSys\LpdModeState.h/.cpp` | LPD mode — `ResetSequence(AeSysView*)` clears preview and restores hidden geometry |
-| `AeSys\DimensionModeState.h/.cpp` | Dimension mode — partial; static locals in angle flow remain |
+| `AeSys\LpdModeState.h/.cpp` | LPD mode — `OnMouseMove` owns full duct preview (elbow, section, transition, takeoff, end-cap snap); `ResetSequence` clears preview and restores hidden geometry |
+| `AeSys\DimensionModeState.h/.cpp` | Dimension mode — `OnReturn`/`OnEscape` delegate to view; static locals in angle flow remain |
 | `AeSys\*ModeState.h/.cpp` | Annotate, Cut, Edit, Fixup, Nodal, Pipe, Power, Trap mode states |
+| `AeSys\EoModeConfig.h` | `FixupConfig`, `EditConfig` plain-data config structs owned by `AeSysView` (single member each, persisted across mode switches, read/written by their options dialogs) |
+| `AeSys\EoLpdGeometry.h/.cpp` | Stateless `Lpd::` namespace — `GenerateEndCap`, `GenerateRectangularSection`, `GenerateRectangularElbow`, `GenerateTransition`, `GenerateRiseDrop`, `LengthOfTransition`; consumed by `LpdModeState` and view wrappers; `LpdConfig` lives alongside |
+| `AeSys\EoPipeGeometry.h/.cpp` | Stateless `Pipe::` namespace — `GenerateTickMark` (returns `bool`), `GenerateLineWithFittings`; `PipeConfig` lives alongside |
+| `AeSys\EoPowerGeometry.h/.cpp` | Stateless `Power::` namespace — `FillHomeRunArrow`, `FillConductorSymbol` (returns `false` on unrecognized conductor type); `PowerConfig` lives alongside |
+| `AeSys\AeSysDocNodal.cpp` | `RenderUniquePoints(view, renderDevice)` — render-device based unique-point rendering called from `OnDraw` (replaces the older `DisplayUniquePoints` call site in the render path) |
 | `AeSys\AeSysView.h/.cpp` | Stack ownership, `PushState`, `PopState`, `PopAllModeStates`, `GetCurrentState`; destructor: raw `pop()` only |
 | `AeSys\AeSysViewCommands.cpp` | `OnModeDraw` (push), all other `OnMode*` (call `PopAllModeStates` first) |
 | `AeSys\AeSysViewInput.cpp` | `PreTranslateMessage`, `OnLButtonDown`, `OnMouseMove` dispatch |

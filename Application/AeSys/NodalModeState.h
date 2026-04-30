@@ -18,6 +18,9 @@
 class NodalModeState final : public AeSysState {
  public:
   void OnExit(AeSysView* context) override;
+  void OnMouseMove(AeSysView* context, UINT nFlags, CPoint point) override;
+  bool OnReturn(AeSysView* context) override;
+  bool OnEscape(AeSysView* context) override;
 
   void UnhighlightOp(AeSysView* context);
 

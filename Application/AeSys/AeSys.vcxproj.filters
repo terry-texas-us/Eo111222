@@ -164,6 +164,9 @@
     <ClCompile Include="NodalModeState.cpp" />
     <ClCompile Include="FixupModeState.cpp" />
     <ClCompile Include="LpdModeState.cpp" />
+    <ClCompile Include="EoLpdGeometry.cpp" />
+    <ClCompile Include="EoPipeGeometry.cpp" />
+    <ClCompile Include="EoPowerGeometry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -308,6 +311,10 @@
     <ClInclude Include="NodalModeState.h" />
     <ClInclude Include="DimensionModeState.h" />
     <ClInclude Include="LpdModeState.h" />
+    <ClInclude Include="EoLpdGeometry.h" />
+    <ClInclude Include="EoPipeGeometry.h" />
+    <ClInclude Include="EoPowerGeometry.h" />
+    <ClInclude Include="EoModeConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />

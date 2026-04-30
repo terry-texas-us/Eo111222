@@ -164,10 +164,7 @@ void AeSysView::OnTrapModeModify() {
 
 void AeSysView::OnTrapModeEscape() {
   auto* trapState = TrapState(this);
-  RubberBandingDisable();
-  if (trapState != nullptr) {
-    trapState->UnhighlightOp(this);
-  }
+  if (trapState != nullptr) { trapState->OnEscape(this); }
 }
 
 void AeSysView::OnTraprModeRemoveAdd() {
@@ -295,8 +292,5 @@ void AeSysView::OnTraprModeModify() {
 }
 void AeSysView::OnTraprModeEscape() {
   auto* trapState = TrapState(this);
-  RubberBandingDisable();
-  if (trapState != nullptr) {
-    trapState->UnhighlightOp(this);
-  }
+  if (trapState != nullptr) { trapState->OnEscape(this); }
 }

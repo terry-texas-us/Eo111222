@@ -9,6 +9,16 @@ void CutModeState::OnExit(AeSysView* context) {
   context->RubberBandingDisable();
 }
 
+bool CutModeState::OnReturn(AeSysView* context) {
+  context->OnCutModeReturn();
+  return true;
+}
+
+bool CutModeState::OnEscape(AeSysView* context) {
+  context->OnCutModeEscape();
+  return true;
+}
+
 void CutModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousOp);
 }

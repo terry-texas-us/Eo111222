@@ -104,12 +104,12 @@ FixupModeState* FixupState(AeSysView* view) {
 
 void AeSysView::OnFixupModeOptions() {
   EoDlgFixupOptions dialog;
-  dialog.m_FixupAxisTolerance = m_FixupModeAxisTolerance;
-  dialog.m_FixupModeCornerSize = m_FixupModeCornerSize;
+  dialog.m_FixupAxisTolerance = m_fixupConfig.axisTolerance;
+  dialog.m_FixupModeCornerSize = m_fixupConfig.cornerSize;
   if (dialog.DoModal() == IDOK) {
-    m_FixupModeCornerSize = std::max(0.0, dialog.m_FixupModeCornerSize);
-    m_FixupModeAxisTolerance = std::max(0.0, dialog.m_FixupAxisTolerance);
-    SetAxisConstraintInfluenceAngle(m_FixupModeAxisTolerance);
+    m_fixupConfig.cornerSize = std::max(0.0, dialog.m_FixupModeCornerSize);
+    m_fixupConfig.axisTolerance = std::max(0.0, dialog.m_FixupAxisTolerance);
+    SetAxisConstraintInfluenceAngle(m_fixupConfig.axisTolerance);
   }
 }
 
@@ -167,7 +167,7 @@ void AeSysView::OnFixupModeReference() {
         referenceLine.end = referenceLine.begin;
       }
       referenceLine.begin = intersection;
-      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
+      if (FindCenterFromRadiusAnd4Points(m_fixupConfig.cornerSize, previousLine, referenceLine, &center)) {
         previousLine.end = previousLine.ProjectPointToLine(center);
         referenceLine.begin = referenceLine.ProjectPointToLine(center);
         document->UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, previousGroup);
@@ -188,7 +188,7 @@ void AeSysView::OnFixupModeReference() {
         referenceLine.end = referenceLine.begin;
       }
       referenceLine.begin = intersection;
-      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, referenceLine, &center)) {
+      if (FindCenterFromRadiusAnd4Points(m_fixupConfig.cornerSize, previousLine, referenceLine, &center)) {
         double angle;
         previousLine.end = previousLine.ProjectPointToLine(center);
         referenceLine.begin = referenceLine.ProjectPointToLine(center);
@@ -290,7 +290,7 @@ void AeSysView::OnFixupModeMend() {
         currentLine.end = currentLine.begin;
       }
       currentLine.begin = intersection;
-      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
+      if (FindCenterFromRadiusAnd4Points(m_fixupConfig.cornerSize, previousLine, currentLine, &center)) {
         pLine = static_cast<EoDbLine*>(previousPrimitive);
         previousLine.end = previousLine.ProjectPointToLine(center);
         currentLine.begin = currentLine.ProjectPointToLine(center);
@@ -312,7 +312,7 @@ void AeSysView::OnFixupModeMend() {
         currentLine.end = currentLine.begin;
       }
       currentLine.begin = intersection;
-      if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
+      if (FindCenterFromRadiusAnd4Points(m_fixupConfig.cornerSize, previousLine, currentLine, &center)) {
         pLine = static_cast<EoDbLine*>(previousPrimitive);
         previousLine.end = previousLine.ProjectPointToLine(center);
         currentLine.begin = currentLine.ProjectPointToLine(center);
@@ -395,7 +395,7 @@ void AeSysView::OnFixupModeChamfer() {
     }
     currentLine.begin = intersection;
     EoGePoint3d center;
-    if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
+    if (FindCenterFromRadiusAnd4Points(m_fixupConfig.cornerSize, previousLine, currentLine, &center)) {
       // Center point is defined .. determine arc endpoints
       previousLine.end = previousLine.ProjectPointToLine(center);
       currentLine.begin = currentLine.ProjectPointToLine(center);
@@ -474,7 +474,7 @@ void AeSysView::OnFixupModeFillet() {
     currentLine.begin = intersection;
 
     EoGePoint3d center;
-    if (FindCenterFromRadiusAnd4Points(m_FixupModeCornerSize, previousLine, currentLine, &center)) {
+    if (FindCenterFromRadiusAnd4Points(m_fixupConfig.cornerSize, previousLine, currentLine, &center)) {
       // Center point is defined .. determine arc endpoints
       previousLine.end = previousLine.ProjectPointToLine(center);
       currentLine.begin = currentLine.ProjectPointToLine(center);

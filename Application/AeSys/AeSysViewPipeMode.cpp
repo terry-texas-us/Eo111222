@@ -17,6 +17,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
+#include "EoPipeGeometry.h"
 #include "PipeModeState.h"
 #include "Resource.h"
 
@@ -95,11 +96,11 @@ void CreateGateValve(EoDbGroup* group, const EoGeLine& beginSection, const EoGeL
 
 void AeSysView::OnPipeModeOptions() {
   EoDlgPipeOptions dialog;
-  dialog.m_PipeTicSize = m_PipeTicSize;
-  dialog.m_PipeRiseDropRadius = m_PipeRiseDropRadius;
+  dialog.m_PipeTicSize = m_pipeConfig.ticSize;
+  dialog.m_PipeRiseDropRadius = m_pipeConfig.riseDropRadius;
   if (dialog.DoModal() == IDOK) {
-    m_PipeTicSize = dialog.m_PipeTicSize;
-    m_PipeRiseDropRadius = dialog.m_PipeRiseDropRadius;
+    m_pipeConfig.ticSize = dialog.m_PipeTicSize;
+    m_pipeConfig.riseDropRadius = dialog.m_PipeRiseDropRadius;
   }
 }
 
@@ -152,8 +153,8 @@ void AeSysView::OnPipeModeFitting() {
                 horizontalSection->Color(), horizontalSection->LineTypeName(), horizontalSection->LineWeight()));
 
     group = new EoDbGroup;
-    GenerateTickMark(cursorPosition, begin, m_PipeRiseDropRadius, group);
-    GenerateTickMark(cursorPosition, end, m_PipeRiseDropRadius, group);
+    GenerateTickMark(cursorPosition, begin, m_pipeConfig.riseDropRadius, group);
+    GenerateTickMark(cursorPosition, end, m_pipeConfig.riseDropRadius, group);
     document->AddWorkLayerGroup(group);
     document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
@@ -161,7 +162,7 @@ void AeSysView::OnPipeModeFitting() {
       points.Add(cursorPosition);
       previousOp = ModeLineHighlightOp(ID_OP3);
     } else {
-      GenerateTickMark(cursorPosition, points[0], m_PipeRiseDropRadius, group);
+      GenerateTickMark(cursorPosition, points[0], m_pipeConfig.riseDropRadius, group);
 
       group = new EoDbGroup;
       GenerateLineWithFittings(previousOp, points[0], 0, cursorPosition, group);
@@ -171,7 +172,7 @@ void AeSysView::OnPipeModeFitting() {
     }
   } else {
     EoDbConic* verticalSection{};
-    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, verticalSection);
+    group = SelectCircleUsingPoint(cursorPosition, m_pipeConfig.riseDropRadius, verticalSection);
     if (group != nullptr) {
       cursorPosition = verticalSection->Center();
 
@@ -233,7 +234,7 @@ void AeSysView::OnPipeModeRise() {
     previousOp = ModeLineHighlightOp(ID_OP5);
   } else {
     EoDbConic* verticalSection{};
-    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, verticalSection);
+    group = SelectCircleUsingPoint(cursorPosition, m_pipeConfig.riseDropRadius, verticalSection);
     if (group != nullptr) {  // On an existing vertical pipe section
       cursorPosition = verticalSection->Center();
       if (points.IsEmpty()) {
@@ -262,7 +263,7 @@ void AeSysView::OnPipeModeRise() {
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       }
       auto* circle =
-          EoDbConic::CreateCircleInView(cursorPosition, m_PipeRiseDropRadius)->WithProperties(1, L"CONTINUOUS");
+          EoDbConic::CreateCircleInView(cursorPosition, m_pipeConfig.riseDropRadius)->WithProperties(1, L"CONTINUOUS");
       group = new EoDbGroup(circle);
 
       document->AddWorkLayerGroup(group);
@@ -300,7 +301,7 @@ void AeSysView::OnPipeModeDrop() {
     previousOp = ModeLineHighlightOp(ID_OP4);
   } else {
     EoDbConic* verticalSection{};
-    group = SelectCircleUsingPoint(cursorPosition, m_PipeRiseDropRadius, verticalSection);
+    group = SelectCircleUsingPoint(cursorPosition, m_pipeConfig.riseDropRadius, verticalSection);
     if (group != nullptr) {  // On an existing vertical pipe section
       cursorPosition = verticalSection->Center();
       if (points.IsEmpty()) {
@@ -330,7 +331,7 @@ void AeSysView::OnPipeModeDrop() {
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       }
       auto* circle =
-          EoDbConic::CreateCircleInView(cursorPosition, m_PipeRiseDropRadius)->WithProperties(1, L"CONTINUOUS");
+          EoDbConic::CreateCircleInView(cursorPosition, m_pipeConfig.riseDropRadius)->WithProperties(1, L"CONTINUOUS");
 
       group = new EoDbGroup(circle);
       document->AddWorkLayerGroup(group);
@@ -343,7 +344,7 @@ void AeSysView::OnPipeModeDrop() {
 }
 
 void AeSysView::OnPipeModeSymbol() {
-  if (m_CurrentPipeSymbolIndex < 0 || m_CurrentPipeSymbolIndex >= static_cast<int>(std::size(symbolSize))) { return; }
+  if (m_pipeConfig.currentSymbolIndex < 0 || m_pipeConfig.currentSymbolIndex >= static_cast<int>(std::size(symbolSize))) { return; }
 
   const auto cursorPosition = GetCursorPosition();
   auto* document = GetDocument();
@@ -359,8 +360,8 @@ void AeSysView::OnPipeModeSymbol() {
   if (group == nullptr) { return; }
 
   EoDlgPipeSymbol dialog;
-  dialog.m_CurrentPipeSymbolIndex = m_CurrentPipeSymbolIndex;
-  if (dialog.DoModal() == IDOK) { m_CurrentPipeSymbolIndex = dialog.m_CurrentPipeSymbolIndex; }
+  dialog.m_CurrentPipeSymbolIndex = m_pipeConfig.currentSymbolIndex;
+  if (dialog.DoModal() == IDOK) { m_pipeConfig.currentSymbolIndex = dialog.m_CurrentPipeSymbolIndex; }
   const EoGePoint3d begin = horizontalSection->Begin();
   const EoGePoint3d end = horizontalSection->End();
   const EoGePoint3d pointOnSection = horizontalSection->ProjectPointToLine(cursorPosition);
@@ -370,9 +371,9 @@ void AeSysView::OnPipeModeSymbol() {
 
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, horizontalSection);
 
-  EoGePoint3d symbolBeginPoint = pointOnSection.ProjectToward(begin, symbolSize[m_CurrentPipeSymbolIndex]);
-  EoGePoint3d symbolEndPoint = pointOnSection.ProjectToward(end, symbolSize[m_CurrentPipeSymbolIndex]);
-  const double ticSize{m_PipeTicSize};
+  EoGePoint3d symbolBeginPoint = pointOnSection.ProjectToward(begin, symbolSize[m_pipeConfig.currentSymbolIndex]);
+  EoGePoint3d symbolEndPoint = pointOnSection.ProjectToward(end, symbolSize[m_pipeConfig.currentSymbolIndex]);
+  const double ticSize{m_pipeConfig.ticSize};
 
   horizontalSection->SetEndPoint(symbolBeginPoint);
   document->UpdateAllViews(nullptr, EoDb::kPrimitiveSafe, horizontalSection);
@@ -383,10 +384,10 @@ void AeSysView::OnPipeModeSymbol() {
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
   group = new EoDbGroup;
-  GenerateTickMark(pointOnSection, begin, tickDistance[m_CurrentPipeSymbolIndex], group);
-  GenerateTickMark(pointOnSection, end, tickDistance[m_CurrentPipeSymbolIndex], group);
+  GenerateTickMark(pointOnSection, begin, tickDistance[m_pipeConfig.currentSymbolIndex], group);
+  GenerateTickMark(pointOnSection, end, tickDistance[m_pipeConfig.currentSymbolIndex], group);
 
-  switch (m_CurrentPipeSymbolIndex) {
+  switch (m_pipeConfig.currentSymbolIndex) {
     case 0: {  // flow switch
       const double radius = EoGePoint3d::Distance(pointOnSection, symbolBeginPoint);
       AddCircleToGroup(group, pointOnSection, radius);
@@ -477,7 +478,7 @@ void AeSysView::OnPipeModeSymbol() {
       AddCircleToGroup(group, pointOnSection, radius);
       endSection.ProjPtFrom_xy(0.0, symbolSize[8], &points[0]);
       AddLineToGroup(group, pointOnSection, points[0]);
-      m_PipeTicSize = symbolSize[8] * 0.25;
+      m_pipeConfig.ticSize = symbolSize[8] * 0.25;
       GenerateTickMark(pointOnSection, points[0], symbolSize[8] * 0.75, group);
     } break;
 
@@ -594,14 +595,14 @@ void AeSysView::OnPipeModeSymbol() {
     } break;
 
     case 17:  // union
-      m_PipeTicSize = symbolSize[17];
+      m_pipeConfig.ticSize = symbolSize[17];
       GenerateTickMark(pointOnSection, begin, symbolSize[17], group);
       GenerateTickMark(pointOnSection, end, symbolSize[17], group);
-      m_PipeTicSize = m_PipeTicSize * 2.0;
+      m_pipeConfig.ticSize = m_pipeConfig.ticSize * 2.0;
       GenerateTickMark(pointOnSection, begin, 0.0, group);
       break;
   }
-  m_PipeTicSize = ticSize;
+  m_pipeConfig.ticSize = ticSize;
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
@@ -645,8 +646,8 @@ void AeSysView::OnPipeModeWye() {
       document->AddWorkLayerGroup(group);
 
       group = new EoDbGroup;
-      GenerateTickMark(pointOnSection, begin, m_PipeRiseDropRadius, group);
-      GenerateTickMark(pointOnSection, endPoint, m_PipeRiseDropRadius, group);
+      GenerateTickMark(pointOnSection, begin, m_pipeConfig.riseDropRadius, group);
+      GenerateTickMark(pointOnSection, endPoint, m_pipeConfig.riseDropRadius, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
@@ -669,8 +670,8 @@ void AeSysView::OnPipeModeWye() {
       horizontalSection->SetEndPoint(pointOnSection);
 
       group = new EoDbGroup;
-      GenerateTickMark(pointOnSection, begin, m_PipeRiseDropRadius, group);
-      GenerateTickMark(pointOnSection, endPoint, m_PipeRiseDropRadius, group);
+      GenerateTickMark(pointOnSection, begin, m_pipeConfig.riseDropRadius, group);
+      GenerateTickMark(pointOnSection, endPoint, m_pipeConfig.riseDropRadius, group);
       document->AddWorkLayerGroup(group);
       document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
       group = new EoDbGroup(EoDbLine::CreateLine(pointOnSection, endPoint)
@@ -705,55 +706,7 @@ void AeSysView::OnPipeModeEscape() {
 }
 
 void AeSysView::DoPipeModeMouseMove() {
-  auto* state = PipeState(this);
-  if (state == nullptr) { return; }
-  auto& points = state->Points();
-  const auto previousOp = state->PreviousOp();
-
-  const EoDbHandleSuppressionScope suppressHandles;
-  auto cursorPosition = GetCursorPosition();
-  const auto numberOfPoints = points.GetSize();
-  if (numberOfPoints == 0) { return; }
-
-  switch (previousOp) {
-    case ID_OP2:
-      if (points[0] != cursorPosition) {
-        cursorPosition = SnapPointToAxis(points[0], cursorPosition);
-        points.Add(cursorPosition);
-
-        m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-
-        GenerateLineWithFittings(previousOp, points[0], ID_OP2, cursorPosition, &m_PreviewGroup);
-        InvalidateOverlay();
-      }
-      break;
-
-    case ID_OP3:
-      if (points[0] != cursorPosition) {
-        cursorPosition = SnapPointToAxis(points[0], cursorPosition);
-        points.Add(cursorPosition);
-
-        m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-
-        GenerateLineWithFittings(previousOp, points[0], ID_OP3, cursorPosition, &m_PreviewGroup);
-        InvalidateOverlay();
-      }
-      break;
-
-    case ID_OP4:
-    case ID_OP5:
-    case ID_OP9: {
-      cursorPosition = SnapPointToAxis(points[0], cursorPosition);
-      points.Add(cursorPosition);
-
-      m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-
-      GenerateLineWithFittings(previousOp, points[0], ID_OP3, cursorPosition, &m_PreviewGroup);
-      InvalidateOverlay();
-      break;
-    }
-  }
-  points.SetSize(numberOfPoints);
+  // Preview logic moved to PipeModeState::OnMouseMove.
 }
 
 void AeSysView::GenerateLineWithFittings(int beginType,
@@ -761,31 +714,7 @@ void AeSysView::GenerateLineWithFittings(int beginType,
     int endType,
     const EoGePoint3d& end,
     EoDbGroup* group) {
-  EoGePoint3d pt1 = begin;
-  EoGePoint3d pt2 = end;
-
-  if (beginType == ID_OP3) {
-    // Previous fitting is an elbow or side tee
-    GenerateTickMark(begin, end, m_PipeRiseDropRadius, group);
-  } else if (beginType == ID_OP4) {  // Previous fitting is an elbow down, riser down or bottom tee
-    pt1 = begin.ProjectToward(end, m_PipeRiseDropRadius);
-    GenerateTickMark(pt1, end, m_PipeRiseDropRadius, group);
-  } else if (beginType == ID_OP5) {
-    // Previous fitting is an elbow up, riser up or top tee
-    GenerateTickMark(begin, end, 2.0 * m_PipeRiseDropRadius, group);
-  }
-
-  if (endType == ID_OP3) {
-    // Current fitting is an elbow or side tee
-    GenerateTickMark(end, begin, m_PipeRiseDropRadius, group);
-  } else if (endType == ID_OP4) {
-    // Current fitting is an elbow down, riser down or bottom tee
-    GenerateTickMark(end, begin, 2.0 * m_PipeRiseDropRadius, group);
-  } else if (endType == ID_OP5) {  // Current fitting is an elbow up, riser up or top tee
-    pt2 = end.ProjectToward(begin, m_PipeRiseDropRadius);
-    GenerateTickMark(end, begin, 2.0 * m_PipeRiseDropRadius, group);
-  }
-  group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(Gs::renderState));
+  Pipe::GenerateLineWithFittings(beginType, begin, endType, end, m_pipeConfig.riseDropRadius, m_pipeConfig.ticSize, group);
 }
 
 void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, EoDbGroup* group, EoDbLine* section) {
@@ -795,20 +724,20 @@ void AeSysView::DropIntoOrRiseFromHorizontalSection(const EoGePoint3d& point, Eo
   const EoGePoint3d begin = section->Begin();
   const EoGePoint3d end = section->End();
 
-  auto cutPoint = point.ProjectToward(begin, m_PipeRiseDropRadius);
+  auto cutPoint = point.ProjectToward(begin, m_pipeConfig.riseDropRadius);
   section->SetEndPoint(cutPoint);
-  cutPoint = point.ProjectToward(end, m_PipeRiseDropRadius);
+  cutPoint = point.ProjectToward(end, m_pipeConfig.riseDropRadius);
   group->AddTail(EoDbLine::CreateLine(cutPoint, end)
           ->WithProperties(section->Color(), section->LineTypeName(), section->LineWeight()));
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 
   group = new EoDbGroup;
-  GenerateTickMark(point, begin, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, begin, 2.0 * m_pipeConfig.riseDropRadius, group);
 
-  auto* circle = EoDbConic::CreateCircleInView(point, m_PipeRiseDropRadius)->WithProperties(1, L"CONTINUOUS");
+  auto* circle = EoDbConic::CreateCircleInView(point, m_pipeConfig.riseDropRadius)->WithProperties(1, L"CONTINUOUS");
 
   group->AddTail(circle);
-  GenerateTickMark(point, end, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, end, 2.0 * m_pipeConfig.riseDropRadius, group);
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
@@ -825,12 +754,12 @@ void AeSysView::DropFromOrRiseIntoHorizontalSection(const EoGePoint3d& point,
           ->WithProperties(section->Color(), section->LineTypeName(), section->LineWeight()));
 
   group = new EoDbGroup{};
-  GenerateTickMark(point, begin, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, begin, 2.0 * m_pipeConfig.riseDropRadius, group);
 
-  auto* circle = EoDbConic::CreateCircleInView(point, m_PipeRiseDropRadius)->WithProperties(1, L"CONTINUOUS");
+  auto* circle = EoDbConic::CreateCircleInView(point, m_pipeConfig.riseDropRadius)->WithProperties(1, L"CONTINUOUS");
   group->AddTail(circle);
 
-  GenerateTickMark(point, end, 2.0 * m_PipeRiseDropRadius, group);
+  GenerateTickMark(point, end, 2.0 * m_pipeConfig.riseDropRadius, group);
   document->AddWorkLayerGroup(group);
   document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
 }
@@ -839,23 +768,7 @@ bool AeSysView::GenerateTickMark(const EoGePoint3d& begin,
     const EoGePoint3d& end,
     double distance,
     EoDbGroup* group) const {
-  const auto pointOnLine = begin.ProjectToward(end, distance);
-
-  EoGeVector3d projection(pointOnLine, end);
-
-  const double distanceToEndPoint = projection.Length();
-  const bool markGenerated = distanceToEndPoint > Eo::geometricTolerance;
-  if (markGenerated) {
-    projection *= m_PipeTicSize / distanceToEndPoint;
-
-    EoGePoint3d pt1(pointOnLine);
-    pt1 += EoGeVector3d(projection.y, -projection.x, 0.0);
-
-    EoGePoint3d pt2(pointOnLine);
-    pt2 += EoGeVector3d(-projection.y, projection.x, 0.0);
-    group->AddTail(EoDbLine::CreateLine(pt1, pt2)->WithProperties(1, L"CONTINUOUS"));
-  }
-  return markGenerated;
+  return Pipe::GenerateTickMark(begin, end, distance, m_pipeConfig.ticSize, group);
 }
 
 

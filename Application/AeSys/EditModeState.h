@@ -20,6 +20,8 @@ class EditModeState : public AeSysState {
   EditModeState& operator=(EditModeState&&) = delete;
 
   void OnExit(AeSysView* context) override;
+  bool OnReturn(AeSysView* context) override;
+  bool OnEscape(AeSysView* context) override;
 
   /// Unhighlights the active op pane (if any) via the view's status bar API.
   /// Passes m_previousOp by reference so it is also reset to 0 by ModeLineUnhighlightOp.

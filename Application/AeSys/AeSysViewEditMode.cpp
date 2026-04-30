@@ -20,15 +20,15 @@ EditModeState* EditState(AeSysView* view) {
 
 void AeSysView::OnEditModeOptions() {
   EoDlgEditOptions editOptions(this);
-  m_EditModeScale.Get(editOptions.m_EditModeScaleX, editOptions.m_EditModeScaleY, editOptions.m_EditModeScaleZ);
-  m_editModeRotationAngles.Get(
+  m_editConfig.scale.Get(editOptions.m_EditModeScaleX, editOptions.m_EditModeScaleY, editOptions.m_EditModeScaleZ);
+  m_editConfig.rotationAngles.Get(
       editOptions.m_EditModeRotationAngleX, editOptions.m_EditModeRotationAngleY, editOptions.m_EditModeRotationAngleZ);
 
   if (editOptions.DoModal() == IDOK) {
-    m_editModeRotationAngles.Set(editOptions.m_EditModeRotationAngleX,
+    m_editConfig.rotationAngles.Set(editOptions.m_EditModeRotationAngleX,
         editOptions.m_EditModeRotationAngleY,
         editOptions.m_EditModeRotationAngleZ);
-    m_EditModeScale.Set(editOptions.m_EditModeScaleX, editOptions.m_EditModeScaleY, editOptions.m_EditModeScaleZ);
+    m_editConfig.scale.Set(editOptions.m_EditModeScaleX, editOptions.m_EditModeScaleY, editOptions.m_EditModeScaleZ);
   }
 }
 
@@ -140,10 +140,13 @@ void AeSysView::OnEditModeEnlarge() {
 }
 
 void AeSysView::OnEditModeReturn() {
+  // Try the active state first (handles EditModeState in-progress op cancel).
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->OnReturn(this)) { return; }
+
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
     case ID_MODE_GROUP_EDIT:
-      // Commit the drag — geometry stays where it is, just pop back to primary mode.
       PopState();
       break;
 
@@ -154,6 +157,10 @@ void AeSysView::OnEditModeReturn() {
 }
 
 void AeSysView::OnEditModeEscape() {
+  // Try the active state first (handles EditModeState in-progress op cancel).
+  auto* state = GetCurrentState();
+  if (state != nullptr && state->OnEscape(this)) { return; }
+
   switch (app.CurrentMode()) {
     case ID_MODE_PRIMITIVE_EDIT:
       DoEditPrimitiveEscape();
@@ -166,14 +173,5 @@ void AeSysView::OnEditModeEscape() {
     case ID_MODE_PRIMITIVE_MEND:
       MendStateEscape();
       break;
-
-    default: {
-      auto* editState = EditState(this);
-      if (editState != nullptr && (editState->PreviousOp() == ID_OP4 || editState->PreviousOp() == ID_OP5)) {
-        editState->UnhighlightOp(this);
-        RubberBandingDisable();
-      }
-      break;
-    }
   }
 }

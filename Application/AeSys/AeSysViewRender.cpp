@@ -267,7 +267,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         DisplayGrid(&m_backBufferDC);
         EoGsRenderDeviceGdi renderDevice(&m_backBufferDC);
         document->DisplayAllLayers(this, &renderDevice);
-        document->DisplayUniquePoints();
+        document->RenderUniquePoints(this, &renderDevice);
         // State overlay: called after scene so states can draw mode-specific
         // overlays on top (e.g., preview geometry, selection hints).
         auto* state = GetCurrentState();
@@ -314,7 +314,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         DisplayGrid(deviceContext);
         EoGsRenderDeviceGdi renderDevice(deviceContext);
         document->DisplayAllLayers(this, &renderDevice);
-        document->DisplayUniquePoints();
+        document->RenderUniquePoints(this, &renderDevice);
         if (needsWhiteBg) {
           Eo::ColorPalette[0] = sAci0;
           Eo::ColorPalette[7] = sAci7;

@@ -224,25 +224,29 @@ void AeSysView::OnDrawModeReturn() {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      pts.Add(cursorPosition);
-
-      if (numberOfPoints == 1) { return; }
+      if (numberOfPoints == 1) {
+        // Second click — record intermediate point and wait for the end point.
+        pts.Add(cursorPosition);
+        return;
+      }
+      // Third click — validate before committing so a colinear click is ignored
+      // and the gesture stays alive with pts[0..1] intact.
       EoGePoint3d start{pts[0]};
       const EoGePoint3d intermediate{pts[1]};
-      EoGePoint3d end{pts[2]};
+      EoGePoint3d end{cursorPosition};
       auto* radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, end);
       if (radialArc == nullptr) {
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
-        return;
+        return;  // Do NOT add the point — gesture stays alive with pts[0..1] intact.
       }
-      radialArc->SetColor(Gs::renderState.Color());
-      radialArc->SetLineTypeName(Gs::renderState.LineTypeName());
-
       if (std::abs(radialArc->SweepAngle()) < Eo::geometricTolerance) {
         delete radialArc;
         app.AddStringToMessageList(IDS_MSG_PTS_COLINEAR);
-        return;
+        return;  // Same — do not add.
       }
+      radialArc->SetColor(Gs::renderState.Color());
+      radialArc->SetLineTypeName(Gs::renderState.LineTypeName());
+      pts.Add(cursorPosition);  // pts[2] committed only after validation passes.
       group = new EoDbGroup(radialArc);
       break;
     }
@@ -268,15 +272,21 @@ void AeSysView::OnDrawModeReturn() {
         app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
         return;
       }
-      pts.Add(cursorPosition);
       if (numberOfPoints == 1) {
+        // Second click — record major-axis endpoint and wait for the third click.
+        pts.Add(cursorPosition);
         SetCursorPosition(pts[0]);
         return;
       }
+      // Third click — validate minor axis before committing so a degenerate click
+      // is silently ignored and the user can try again without resetting the gesture.
       const EoGeVector3d majorAxis(pts[0], pts[1]);
-      const EoGeVector3d minorAxis(pts[0], pts[2]);
-
-      if (minorAxis.Length() < Eo::geometricTolerance) { break; }
+      const EoGeVector3d minorAxis(pts[0], cursorPosition);
+      if (minorAxis.Length() < Eo::geometricTolerance) {
+        app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
+        return;  // Do NOT add the point — gesture stays alive with pts[0..1] intact.
+      }
+      pts.Add(cursorPosition);  // pts[2] committed only after validation passes.
       auto extrusion = CrossProduct(majorAxis, minorAxis);
       extrusion.Unitize();
       const double ratio = minorAxis.Length() / majorAxis.Length();
@@ -314,7 +324,12 @@ void AeSysView::OnDrawModeShiftReturn() {
   if (drawState == nullptr) { return; }
   auto& pts = drawState->Points();
   auto previousDrawCommand = drawState->PreviousDrawCommand();
-  if (previousDrawCommand == ID_OP3) {
+  if (previousDrawCommand == ID_OP3 && pts.GetSize() >= 2) {
+    // Include cursor position as the final vertex so ShiftReturn commits to
+    // where the cursor is now, matching the same behaviour as Return.
+    const auto cursorPosition = SnapPointToAxis(pts[pts.GetSize() - 1], GetCursorPosition());
+    if (cursorPosition != pts[pts.GetSize() - 1]) { pts.Add(cursorPosition); }
+
     auto* group = new EoDbGroup(new EoDbPolyline(pts));
     auto* document = GetDocument();
     document->AddWorkLayerGroup(group);
@@ -323,124 +338,11 @@ void AeSysView::OnDrawModeShiftReturn() {
   ModeLineUnhighlightOp(previousDrawCommand);
   drawState->SetPreviousDrawCommand(0);
   pts.RemoveAll();
+  m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateScene();
 }
 void AeSysView::OnDrawCommand(UINT command) {
   auto* state = GetCurrentState();
-  if (state != nullptr) { state->HandleCommand(this, command); }
+  if (state != nullptr) { [[maybe_unused]] auto consumed = state->HandleCommand(this, command); }
 }
-void AeSysView::DoDrawModeMouseMove() {
-  auto* drawState = DrawState(this);
-  if (drawState == nullptr) { return; }
-  auto& pts = drawState->Points();
-  const EoDbHandleSuppressionScope suppressHandles;
-  auto cursorPosition = GetCursorPosition();
-  const auto numberOfPoints = pts.GetSize();
-  const std::uint16_t previousDrawCommand = drawState->PreviousDrawCommand();
-
-  switch (previousDrawCommand) {
-    case ID_OP2:
-      VERIFY(pts.GetSize() > 0);
-
-      if (pts[0] != cursorPosition) {
-        cursorPosition = SnapPointToAxis(pts[0], cursorPosition);
-        pts.Add(cursorPosition);
-
-        m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-        m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-        InvalidateOverlay();
-      }
-      break;
-
-    case ID_OP3:
-      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
-      pts.Add(cursorPosition);
-
-      m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-      if (numberOfPoints == 1) {
-        m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-      } else {
-        m_PreviewGroup.AddTail(new EoDbPolygon(pts));
-      }
-      InvalidateOverlay();
-      break;
-
-    case ID_OP4:
-      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
-      pts.Add(cursorPosition);
-
-      if (numberOfPoints == 2) {
-        pts.Add(pts[0] + EoGeVector3d(pts[1], cursorPosition));
-        pts.Add(pts[0]);
-      }
-      m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-      m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-      InvalidateOverlay();
-      break;
-
-    case ID_OP5:
-      pts.Add(cursorPosition);
-
-      m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-
-      if (numberOfPoints == 1) { m_PreviewGroup.AddTail(new EoDbPolyline(pts)); }
-      if (numberOfPoints == 2) {
-        EoGePoint3d start{pts[0]};
-        const EoGePoint3d intermediate{pts[1]};
-        EoGePoint3d end{pts[2]};
-        const auto normal = CrossProduct({start, intermediate}, {start, end});
-        if (normal.IsNearNull()) {
-          m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-        } else {
-          auto radialArc = EoDbConic::CreateRadialArcFrom3Points(start, intermediate, end);
-          if (radialArc == nullptr) { break; }
-
-          radialArc->SetColor(Gs::renderState.Color());
-          radialArc->SetLineTypeName(Gs::renderState.LineTypeName());
-          m_PreviewGroup.AddTail(radialArc);
-        }
-      }
-      InvalidateOverlay();
-      break;
-
-    case ID_OP6:
-      pts.Add(cursorPosition);
-
-      m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-      m_PreviewGroup.AddTail(new EoDbSpline(pts));
-      InvalidateOverlay();
-      break;
-
-    case ID_OP7: {
-      const double radius = EoGePoint3d::Distance(pts[0], cursorPosition);
-      if (radius > Eo::geometricTolerance) {
-        m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-        m_PreviewGroup.AddTail(EoDbConic::CreateCircleInView(pts[0], radius));
-        InvalidateOverlay();
-      }
-    } break;
-
-    case ID_OP8:
-      pts.Add(cursorPosition);
-
-      m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-      if (numberOfPoints == 1) {
-        m_PreviewGroup.AddTail(new EoDbPolyline(pts));
-      } else {
-        const EoGeVector3d majorAxis(pts[0], pts[1]);
-        const EoGeVector3d minorAxis(pts[0], cursorPosition);
-
-        if (minorAxis.Length() < Eo::geometricTolerance) { break; }
-        auto extrusion = CrossProduct(majorAxis, minorAxis);
-        extrusion.Unitize();
-        const double ratio = minorAxis.Length() / majorAxis.Length();
-        auto* ellipse = EoDbConic::CreateEllipse(pts[0], extrusion, majorAxis, ratio);
-        ellipse->SetColor(Gs::renderState.Color());
-        ellipse->SetLineTypeName(Gs::renderState.LineTypeName());
-
-        m_PreviewGroup.AddTail(ellipse);
-      }
-      InvalidateOverlay();
-      break;
-  }
-  pts.SetSize(numberOfPoints);
-}
+// DoDrawModeMouseMove has been removed — preview logic now lives in DrawModeState::OnMouseMove.

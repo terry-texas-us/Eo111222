@@ -370,61 +370,7 @@ void AeSysView::OnNodalModeEscape() {
   }
 }
 void AeSysView::DoNodalModeMouseMove() {
-  auto* state = NodalState(this);
-  if (state == nullptr) { return; }
-  auto& points = state->Points();
-
-  const EoDbHandleSuppressionScope suppressHandles;
-  auto cursorPosition = GetCursorPosition();
-  const auto numberOfPoints = points.GetSize();
-  auto* document = GetDocument();
-
-  switch (state->PreviousCommand()) {
-    case ID_OP4:
-      VERIFY(points.GetSize() > 0);
-
-      if (points[0] != cursorPosition) {
-        cursorPosition = SnapPointToAxis(points[0], cursorPosition);
-        points.Add(cursorPosition);
-
-        const EoGeVector3d translate(points[0], cursorPosition);
-
-        m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-
-        auto maskedPrimitivePosition = document->GetFirstMaskedPrimitivePosition();
-        while (maskedPrimitivePosition != nullptr) {
-          auto* maskedPrimitive = document->GetNextMaskedPrimitive(maskedPrimitivePosition);
-          auto* primitive = maskedPrimitive->GetPrimitive();
-          const auto mask = maskedPrimitive->GetMask();
-          m_PreviewGroup.AddTail(primitive->Copy(primitive));
-          static_cast<EoDbPrimitive*>(m_PreviewGroup.GetTail())->TranslateUsingMask(translate, mask);
-        }
-        auto uniquePointPosition = document->GetFirstUniquePointPosition();
-        while (uniquePointPosition != nullptr) {
-          const auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
-          const EoGePoint3d point = (uniquePoint->m_Point) + translate;
-          m_PreviewGroup.AddTail(new EoDbPoint(252, 8, point));
-        }
-        InvalidateOverlay();
-      }
-      break;
-
-    case ID_OP5:
-
-      if (points[0] != cursorPosition) {
-        cursorPosition = SnapPointToAxis(points[0], cursorPosition);
-        points.Add(cursorPosition);
-
-        const EoGeVector3d translate(points[0], cursorPosition);
-
-        m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-        ConstructPreviewGroupForNodalGroups();
-        m_PreviewGroup.Translate(translate);
-        InvalidateOverlay();
-      }
-      break;
-  }
-  points.SetSize(numberOfPoints);
+  // Preview logic moved to NodalModeState::OnMouseMove.
 }
 
 void AeSysView::ConstructPreviewGroup() {

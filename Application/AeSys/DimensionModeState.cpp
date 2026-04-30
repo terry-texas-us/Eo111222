@@ -9,6 +9,16 @@ void DimensionModeState::OnExit(AeSysView* context) {
   context->RubberBandingDisable();
 }
 
+bool DimensionModeState::OnReturn(AeSysView* context) {
+  context->OnDimensionModeReturn();
+  return true;
+}
+
+bool DimensionModeState::OnEscape(AeSysView* context) {
+  context->OnDimensionModeEscape();
+  return true;
+}
+
 void DimensionModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousCommand);
 }

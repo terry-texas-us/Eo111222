@@ -408,11 +408,7 @@ void AeSysView::OnAnnotateModeReturn() {
 
 void AeSysView::OnAnnotateModeEscape() {
   auto* state = AnnotateState(this);
-  if (state == nullptr) { return; }
-  m_PreviewGroup.DeletePrimitivesAndRemoveAll();
-  InvalidateOverlay();
-  state->Points().RemoveAll();
-  ModeLineUnhighlightOp(state->PreviousOpRef());
+  if (state != nullptr) { state->OnEscape(this); }
 }
 
 bool AeSysView::CorrectLeaderEndpoints(int beginType,

@@ -38,6 +38,9 @@ class LpdModeState : public AeSysState {
   LpdModeState& operator=(LpdModeState&&) = delete;
 
   void OnExit(AeSysView* context) override;
+  void OnMouseMove(AeSysView* context, UINT nFlags, CPoint point) override;
+  bool OnReturn(AeSysView* context) override;
+  bool OnEscape(AeSysView* context) override;
 
   /// Unhighlights the active op pane (if any) and resets sequence state to idle.
   /// Safe to call repeatedly — clears preview, restores any hidden original

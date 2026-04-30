@@ -16,6 +16,8 @@
 class CutModeState final : public AeSysState {
  public:
   void OnExit(AeSysView* context) override;
+  bool OnReturn(AeSysView* context) override;
+  bool OnEscape(AeSysView* context) override;
 
   /// Resets `m_previousOp` to 0 via reference so `ModeLineUnhighlightOp`
   /// can clear it. Used by `OnCutModeReturn` / `OnCutModeEscape` to abort

@@ -298,35 +298,6 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   }
   DisplayOdometer();
 
-  switch (app.CurrentMode()) {
-    case ID_MODE_ANNOTATE:
-      DoAnnotateModeMouseMove();
-      break;
-
-    case ID_MODE_DRAW:
-      DoDrawModeMouseMove();
-      break;
-
-    case ID_MODE_DRAW2:
-      DoDraw2ModeMouseMove();
-      break;
-
-    case ID_MODE_LPD:
-      DoDuctModeMouseMove();
-      break;
-
-    case ID_MODE_NODAL:
-      DoNodalModeMouseMove();
-      break;
-
-    case ID_MODE_PIPE:
-      DoPipeModeMouseMove();
-      break;
-
-    case ID_MODE_POWER:
-      DoPowerModeMouseMove();
-      break;
-  }
   if (m_rubberbandType == Lines || m_rubberbandType == Rectangles) {
     if (m_useD2D) {
       // D2D path: update endpoint and invalidate — rubberband drawn as overlay in OnDraw
@@ -639,7 +610,7 @@ void AeSysView::SetModeCursor(int mode) {
   // Draw mode uses RCDATA (not CURSOR) because the .cur file contains PNG-compressed images that rc.exe cannot parse.
   // LoadCursorFromRcData handles the directory parsing and calls CreateIconFromResourceEx with the best-match image.
   HCURSOR cursorHandle{};
-  if (mode == ID_MODE_DRAW || mode == ID_MODE_TRAP || mode == ID_MODE_TRAPR) {
+  if (mode == ID_MODE_ANNOTATE || mode == ID_MODE_DRAW || mode == ID_MODE_TRAP || mode == ID_MODE_TRAPR) {
     const auto desiredSize = static_cast<int>(GetDpiForWindow(GetSafeHwnd()));
     cursorHandle = LoadCursorFromRcData(resourceIdentifier, desiredSize);
   }

@@ -2,6 +2,7 @@
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
+#include "AeSysView.h"
 #include "EoDb.h"
 #include "EoDbGroup.h"
 #include "EoDbMaskedPrimitive.h"
@@ -9,6 +10,7 @@
 #include "EoDbPrimitive.h"
 #include "EoGePoint3d.h"
 #include "EoGeUniquePoint.h"
+#include "EoGsRenderDevice.h"
 
 void AeSysDoc::DeleteNodalResources() {
   auto uniquePointPosition = GetFirstUniquePointPosition();
@@ -62,6 +64,14 @@ void AeSysDoc::DisplayUniquePoints() {
   }
   UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &group);
   group.DeletePrimitivesAndRemoveAll();
+}
+void AeSysDoc::RenderUniquePoints(AeSysView* view, EoGsRenderDevice* renderDevice) {
+  auto uniquePointPosition = GetFirstUniquePointPosition();
+  while (uniquePointPosition != nullptr) {
+    const EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
+    EoDbPoint pointPrimitive(252, 8, uniquePoint->m_Point);
+    pointPrimitive.Display(view, renderDevice);
+  }
 }
 int AeSysDoc::RemoveUniquePoint(const EoGePoint3d& point) {
   int references{};
