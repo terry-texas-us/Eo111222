@@ -22,7 +22,7 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
 #include "Resource.h"
-#include "DimensionModeState.h"
+#include "EoMsDimension.h"
 
 namespace {
 

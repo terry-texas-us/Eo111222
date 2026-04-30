@@ -10,10 +10,9 @@ class AeSysView;
 /// @brief Transient pick-and-drag sub-mode state, pushed on top of the primary mode
 /// state when the user presses `;` (primitive edit) or `:` (group edit).
 ///
-/// Phase 2D: owns all edit sub-mode data previously scattered across AeSysView members
-/// (m_SubModeEditGroup, m_SubModeEditPrimitive, m_SubModeEditBeginPoint,
-/// m_SubModeEditEndPoint, m_tmEditSeg).  Escape pops this state and returns cleanly
-/// to the primary mode below it on the stack — no PrimaryMode sidecar needed.
+/// Owns all edit sub-mode data: group, primitive, begin/end points, and transform
+/// segment (m_tmEditSeg). Escape pops this state and returns cleanly to the primary
+/// mode below it on the stack.
 ///
 /// app.CurrentMode() is still set to ID_MODE_PRIMITIVE_EDIT / ID_MODE_GROUP_EDIT so
 /// the existing OnOp* handlers (transform, copy, rotate) work without changes.

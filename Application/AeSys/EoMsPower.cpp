@@ -5,7 +5,8 @@
 #include "EoDbLine.h"
 #include "EoDbPrimitive.h"
 #include "EoGsRenderState.h"
-#include "PowerModeState.h"
+#include "EoMsPower.h"
+#include "Resource.h"
 
 void PowerModeState::OnExit(AeSysView* context) {
   ATLTRACE2(traceGeneral, 2, L"PowerModeState::OnExit\n");
@@ -49,5 +50,32 @@ bool PowerModeState::OnEscape(AeSysView* context) {
 
 void PowerModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousOp);
+}
+
+void PowerModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+  // RMB commits the current conductor run (same as Enter).
+  OnReturn(context);
+}
+
+bool PowerModeState::HandleCommand(AeSysView* context, UINT command) {
+  if (command < ID_OP0 || command > ID_OP9) { return false; }
+  static constexpr UINT opToPowerCommand[] = {
+      0,                     // ID_OP0
+      0,                     // ID_OP1
+      ID_POWER_MODE_CIRCUIT, // ID_OP2
+      0,                     // ID_OP3
+      ID_POWER_MODE_GROUND,  // ID_OP4
+      ID_POWER_MODE_HOT,     // ID_OP5
+      ID_POWER_MODE_SWITCH,  // ID_OP6
+      ID_POWER_MODE_NEUTRAL, // ID_OP7
+      ID_POWER_MODE_HOME,    // ID_OP8
+      0,                     // ID_OP9
+  };
+  const auto opIndex = command - ID_OP0;
+  if (opToPowerCommand[opIndex] != 0) {
+    context->SendMessage(WM_COMMAND, opToPowerCommand[opIndex]);
+    return true;
+  }
+  return false;
 }
 

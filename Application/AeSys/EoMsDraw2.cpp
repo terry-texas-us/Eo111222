@@ -1,11 +1,12 @@
 #include "Stdafx.h"
 
 #include "AeSysView.h"
-#include "Draw2ModeState.h"
+#include "EoMsDraw2.h"
 #include "EoDbLine.h"
 #include "EoDbPrimitive.h"
 #include "EoGeLine.h"
 #include "EoGsRenderState.h"
+#include "Resource.h"
 
 void Draw2ModeState::OnExit(AeSysView* context) {
   ATLTRACE2(traceGeneral, 2, L"Draw2ModeState::OnExit\n");
@@ -47,6 +48,26 @@ bool Draw2ModeState::OnReturn(AeSysView* context) {
 bool Draw2ModeState::OnEscape(AeSysView* context) {
   context->OnDraw2ModeEscape();
   return true;
+}
+
+void Draw2ModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT nFlags, [[maybe_unused]] CPoint point) {
+  OnReturn(context);
+}
+
+bool Draw2ModeState::HandleCommand(AeSysView* context, UINT command) {
+  if (command < ID_OP0 || command > ID_OP9) { return false; }
+  static constexpr UINT opToDraw2Command[] = {
+      0,                  // ID_OP0
+      ID_DRAW2_MODE_JOIN, // ID_OP1
+      ID_DRAW2_MODE_WALL, // ID_OP2
+      0, 0, 0, 0, 0, 0, 0 // ID_OP3..ID_OP9
+  };
+  const auto opIndex = command - ID_OP0;
+  if (opToDraw2Command[opIndex] != 0) {
+    context->SendMessage(WM_COMMAND, opToDraw2Command[opIndex]);
+    return true;
+  }
+  return false;
 }
 
 void Draw2ModeState::UnhighlightOp(AeSysView* context) {

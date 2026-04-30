@@ -9,7 +9,7 @@
 #include "EoDbPrimitive.h"
 #include "EoGeUniquePoint.h"
 #include "EoGsRenderState.h"
-#include "NodalModeState.h"
+#include "EoMsNodal.h"
 #include "Resource.h"
 
 double NodalModePickTolerance{0.05};

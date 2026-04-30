@@ -9,7 +9,7 @@ class EoDbGroup;
 class EoDbLayer;
 class EoDbPrimitive;
 
-/// @brief Abstract base for all undoable document commands (Phase 3A).
+/// @brief Abstract base for all undoable document commands.
 ///
 /// Each concrete command owns the data needed to undo and redo itself.
 /// The Execute/Undo contract:
@@ -44,7 +44,7 @@ class EoDocCommand {
   virtual void Discard(AeSysDoc* /*doc*/) noexcept {}
 };
 
-/// @brief Fixed-capacity undo/redo stack living on AeSysDoc (Phase 3A).
+/// @brief Fixed-capacity undo/redo stack living on AeSysDoc.
 ///
 /// Pushing a new command clears the redo branch — standard linear undo model.
 /// The stack owns all commands via unique_ptr.
@@ -108,7 +108,7 @@ class EoDocCommandStack {
   std::vector<std::unique_ptr<EoDocCommand>> m_redo{};
 };
 
-/// @brief Undoable delete-group command (Phase 3B).
+/// @brief Undoable delete-group command.
 ///
 /// Execute: removes the group from its layer and all views (already done by the
 ///          caller before Push — ownership transferred here).
@@ -142,7 +142,7 @@ class EoDocCmdDeleteGroup final : public EoDocCommand {
   void Discard(AeSysDoc* doc) noexcept override;  ///< Unregister handles when group is permanently evicted.
 };
 
-/// @brief Undoable delete-last-group command (Phase 3B — Backspace).
+/// @brief Undoable delete-last-group command (Backspace).
 ///
 /// Same ownership model as EoDocCmdDeleteGroup.  The layer is captured from
 /// AnyLayerRemove at delete time so Undo can restore to the exact original layer.
@@ -163,7 +163,7 @@ class EoDocCmdDeleteLastGroup final : public EoDocCommand {
   EoDbLayer* m_layer{nullptr};
 };
 
-/// @brief Undoable trap-cut command (Phase 3C).
+/// @brief Undoable trap-cut command.
 ///
 /// Captures all currently trapped groups with their origin layers, removes them
 /// from the document (same visual effect as DeleteAllTrappedGroups), and keeps
@@ -197,7 +197,7 @@ class EoDocCmdTrapCut final : public EoDocCommand {
   std::vector<Entry> m_entries{};
 };
 
-/// @brief Undoable primitive-delete command (Phase 3D).
+/// @brief Undoable primitive-delete command.
 ///
 /// Two sub-cases depending on whether the primitive was the sole occupant of
 /// its group:
@@ -238,7 +238,7 @@ class EoDocCmdDeletePrimitive final : public EoDocCommand {
   EoDbPrimitive* m_primitive{nullptr};           ///< The extracted primitive (multi only).
 };
 
-/// @brief Undoable add-group command (Phase 3E).
+/// @brief Undoable add-group command.
 ///
 /// Wraps every interactive group creation (AddWorkLayerGroup choke point).
 /// The command is constructed and pushed AFTER the group has already been added
@@ -272,7 +272,7 @@ class EoDocCmdAddGroup final : public EoDocCommand {
   std::unique_ptr<EoDbGroup> m_ownedGroup{};  ///< Owns the group while on the undo branch.
 };
 
-/// @brief Undoable transform command for trapped groups (Phase 3F).
+/// @brief Undoable transform command for trapped groups.
 ///
 /// Covers all trap-level geometric operations: move, rotate, scale, flip, mirror.
 /// Groups remain in the document throughout — this command holds only non-owning

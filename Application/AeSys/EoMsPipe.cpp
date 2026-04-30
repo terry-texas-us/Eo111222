@@ -4,7 +4,8 @@
 #include "EoDbPrimitive.h"
 #include "EoGsRenderState.h"
 #include "EoPipeGeometry.h"
-#include "PipeModeState.h"
+#include "EoMsPipe.h"
+#include "Resource.h"
 
 void PipeModeState::OnExit(AeSysView* context) {
   ATLTRACE2(traceGeneral, 2, L"PipeModeState::OnExit\n");
@@ -56,5 +57,32 @@ bool PipeModeState::OnEscape(AeSysView* context) {
 
 void PipeModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousOp);
+}
+
+void PipeModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+  // RMB commits the current segment (same as Enter) — pipe runs are chain-committed.
+  OnReturn(context);
+}
+
+bool PipeModeState::HandleCommand(AeSysView* context, UINT command) {
+  if (command < ID_OP0 || command > ID_OP9) { return false; }
+  static constexpr UINT opToPipeCommand[] = {
+      0,                    // ID_OP0
+      0,                    // ID_OP1
+      ID_PIPE_MODE_LINE,    // ID_OP2
+      ID_PIPE_MODE_FITTING, // ID_OP3
+      ID_PIPE_MODE_DROP,    // ID_OP4
+      ID_PIPE_MODE_RISE,    // ID_OP5
+      0,                    // ID_OP6
+      0,                    // ID_OP7
+      ID_PIPE_MODE_SYMBOL,  // ID_OP8
+      ID_PIPE_MODE_WYE,     // ID_OP9
+  };
+  const auto opIndex = command - ID_OP0;
+  if (opToPipeCommand[opIndex] != 0) {
+    context->SendMessage(WM_COMMAND, opToPipeCommand[opIndex]);
+    return true;
+  }
+  return false;
 }
 

@@ -5,7 +5,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "DrawModeState.h"
+#include "EoMsDraw.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
 #include "EoDbGroup.h"
@@ -317,6 +317,57 @@ void AeSysView::OnDrawModeEscape() {
   if (drawState != nullptr) { drawState->Points().RemoveAll(); }
   ModeLineUnhighlightOp(previousDrawCommand);
   if (drawState != nullptr) { drawState->SetPreviousDrawCommand(0); }
+}
+
+void AeSysView::OnDrawModeFinish() {
+  // RMB commit: close the current gesture from already-collected pts only.
+  // No cursor position is appended — this distinguishes RMB from Enter (OnDrawModeReturn).
+  auto* drawState = DrawState(this);
+  if (drawState == nullptr) { return; }
+  auto previousDrawCommand = drawState->PreviousDrawCommand();
+  if (previousDrawCommand == 0) { return; }
+  auto& pts = drawState->Points();
+  const auto numberOfPoints = pts.GetSize();
+  auto* document = GetDocument();
+  EoDbGroup* group{};
+
+  switch (previousDrawCommand) {
+    case ID_OP3: {
+      // Polygon — need at least 3 points to close.
+      if (numberOfPoints >= 3) {
+        auto* primitive = (new EoDbPolygon(pts))->WithProperties(Gs::renderState);
+        group = new EoDbGroup(primitive);
+      }
+      break;
+    }
+    case ID_OP6: {
+      // B-spline — need at least 2 control points.
+      if (numberOfPoints >= 2) {
+        auto* primitive = (new EoDbSpline(pts))->WithProperties(Gs::renderState);
+        group = new EoDbGroup(primitive);
+      }
+      break;
+    }
+
+    default:
+      // All other ops (line, arc, quad, circle, ellipse) require the second point to
+      // have already been collected via a second LMB/key press — OnReturn handles those.
+      // With only 1 point in pts, treat RMB as cancel.
+      OnDrawModeEscape();
+      return;
+  }
+
+  if (group != nullptr) {
+    document->AddWorkLayerGroup(group);
+    m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+    InvalidateScene();
+    pts.RemoveAll();
+    ModeLineUnhighlightOp(previousDrawCommand);
+    drawState->SetPreviousDrawCommand(0);
+  } else {
+    // Not enough points — cancel silently.
+    OnDrawModeEscape();
+  }
 }
 
 void AeSysView::OnDrawModeShiftReturn() {

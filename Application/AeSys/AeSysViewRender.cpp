@@ -58,7 +58,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
     Eo::GrayPalette[7] = RGB(0x22, 0x22, 0x22);
     Eo::GrayPalette[0] = RGB(0xdd, 0xdd, 0xdd);
 
-    // Phase 7: D2D DC render target for anti-aliased hard copy output
+    // D2D DC render target for anti-aliased hard copy output
     bool renderedWithD2D{};
     auto* factory = app.D2DFactory();
     if (m_useD2DForPrint && factory != nullptr) {

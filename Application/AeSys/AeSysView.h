@@ -100,18 +100,18 @@ public:
   EoGsViewport m_Viewport;
   EoGsViewTransform m_ViewTransform;
 
-  // Off-screen back buffer (Phase 4)
+  // Off-screen back buffer
   CDC m_backBufferDC;
   CBitmap m_backBuffer;
   CSize m_backBufferSize{0, 0};
   bool m_sceneInvalid{true};
   bool m_overlayDirty{};
 
-  // Direct2D render target (Phase 6)
+  // Direct2D render target
   Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> m_d2dRenderTarget;
   bool m_useD2D{true};
   bool m_d2dAliased{};
-  bool m_useD2DForPrint{true};  ///< Phase 7: use D2D DC render target for printing (GDI fallback if false)
+  bool m_useD2DForPrint{true};  ///< Use D2D DC render target for printing (GDI fallback if false)
 
   CBitmap m_backgroundImageBitmap{};
   CPalette m_backgroundImagePalette{};
@@ -526,9 +526,6 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
    */
   void DisplayOdometer();
 
-  /** Streams a sequence of characters as WM_KEYDOWN or WM_CHAR window messages.
-   */
-  void DoCustomMouseClick(const CString& characters);
   void DoCameraRotate(int iDir);
   void DoWindowPan(double ratio);
 
@@ -610,7 +607,6 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   void PreviewPrimitiveEdit();
   void PreviewGroupEdit();
 
-  // Phase 2E: Mend sub-mode state owned by PrimitiveMendState on the stack.
   void MendStateReturn();
   void MendStateEscape();
 
@@ -688,6 +684,7 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnDrawModeReturn();
   afx_msg void OnDrawModeEscape();
   afx_msg void OnDrawModeShiftReturn();
+  void OnDrawModeFinish();
 
   /// Draw Mode2 Interface //////////////////////////////////////////////////////
 
@@ -1190,7 +1187,6 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnSetupDimAngle();
   afx_msg void OnSetupUnits();
   afx_msg void OnSetupConstraints();
-  afx_msg void OnSetupMouseButtons();
   afx_msg void OnModePrimitiveEdit();
   afx_msg void OnModeGroupEdit();
   afx_msg void OnModePrimitiveMend();

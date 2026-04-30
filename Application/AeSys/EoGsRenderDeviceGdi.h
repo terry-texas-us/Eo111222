@@ -3,9 +3,7 @@
 /// @file EoGsRenderDeviceGdi.h
 /// @brief GDI backend for EoGsRenderDevice — wraps CDC* behind the abstract interface.
 ///
-/// Phase 2 of the Direct2D migration plan. Every abstract method delegates to
-/// the corresponding CDC call. Existing rendering code continues to work unchanged
-/// once Display() signatures are migrated (Phase 3).
+/// Every abstract method delegates to the corresponding CDC call.
 
 #include "EoGsRenderDevice.h"
 

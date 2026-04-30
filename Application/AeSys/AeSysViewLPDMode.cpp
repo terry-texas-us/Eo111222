@@ -18,7 +18,7 @@
 #include "EoGeReferenceSystem.h"
 #include "EoGsRenderState.h"
 #include "EoLpdGeometry.h"
-#include "LpdModeState.h"
+#include "EoMsLpd.h"
 #include "Section.h"
 
 namespace {

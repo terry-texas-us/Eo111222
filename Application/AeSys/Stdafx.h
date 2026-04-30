@@ -36,7 +36,7 @@
 #include <atltrace.h>
 const int traceGeneral = static_cast<int>(atlTraceGeneral);
 
-// Direct2D / DirectWrite — Phase 6 of the rendering migration
+// Direct2D / DirectWrite
 #include <d2d1.h>
 #include <dwrite.h>
 #include <wrl/client.h>

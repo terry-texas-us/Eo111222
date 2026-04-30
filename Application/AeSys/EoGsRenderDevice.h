@@ -3,9 +3,9 @@
 /// @file EoGsRenderDevice.h
 /// @brief Abstract rendering device interface — API-agnostic replacement for CDC*.
 ///
-/// Phase 1 of the Direct2D migration plan. All primitive Display() methods and
-/// rendering helpers will eventually accept EoGsRenderDevice* instead of CDC*.
-/// Phase 2 provides the concrete GDI backend (EoGsRenderDeviceGdi).
+/// All primitive Display() methods and rendering helpers accept EoGsRenderDevice*
+/// instead of CDC*. The GDI backend (EoGsRenderDeviceGdi) and the Direct2D backend
+/// (EoGsRenderDeviceDirect2D) are the two concrete implementations.
 ///
 /// Design principles:
 /// - Methods accept arrays/spans, not single points — batch-oriented.
@@ -22,7 +22,7 @@
 /// entity Display() pipeline, the polyline dash-pattern renderer, the grid
 /// display, hatch fill, background-image blitting, and viewport clipping.
 ///
-/// Concrete backends: EoGsRenderDeviceGdi (Phase 2), EoGsRenderDeviceDirect2D (Phase 6).
+/// Concrete backends: EoGsRenderDeviceGdi, EoGsRenderDeviceDirect2D.
 class EoGsRenderDevice {
  public:
   EoGsRenderDevice() = default;

@@ -1,11 +1,12 @@
 #include "Stdafx.h"
 
 #include "AeSysView.h"
-#include "AnnotateModeState.h"
+#include "EoMsAnnotate.h"
 #include "EoDbLine.h"
 #include "EoDbPolyline.h"
 #include "EoDbPrimitive.h"
 #include "EoGePoint3d.h"
+#include "Resource.h"
 
 void AnnotateModeState::OnExit(AeSysView* context) {
   ATLTRACE2(traceGeneral, 2, L"AnnotateModeState::OnExit\n");
@@ -23,7 +24,7 @@ void AnnotateModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nF
   const auto numberOfPoints = m_points.GetSize();
 
   // Build a local preview copy — never mutate m_points from OnMouseMove.
-  EoGePoint3dArray previewPoints{m_points};
+  EoGePoint3dArray previewPoints{}; previewPoints.Copy(m_points);
   previewPoints.Add(cursorPosition);
 
   context->PreviewGroup().DeletePrimitivesAndRemoveAll();
@@ -68,6 +69,33 @@ bool AnnotateModeState::OnEscape(AeSysView* context) {
   m_points.RemoveAll();
   context->ModeLineUnhighlightOp(m_previousOp);
   return true;
+}
+
+void AnnotateModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT nFlags, [[maybe_unused]] CPoint point) {
+  // RMB = "break the sequence" — resets the active gesture, ready for a new leader.
+  OnEscape(context);
+}
+
+bool AnnotateModeState::HandleCommand(AeSysView* context, UINT command) {
+  if (command < ID_OP0 || command > ID_OP9) { return false; }
+  static constexpr UINT opToAnnotateCommand[] = {
+      0,                                  // ID_OP0
+      0,                                  // ID_OP1
+      ID_ANNOTATE_MODE_LINE,              // ID_OP2
+      ID_ANNOTATE_MODE_ARROW,             // ID_OP3
+      ID_ANNOTATE_MODE_BUBBLE,            // ID_OP4
+      ID_ANNOTATE_MODE_HOOK,              // ID_OP5
+      ID_ANNOTATE_MODE_UNDERLINE,         // ID_OP6
+      ID_ANNOTATE_MODE_BOX,               // ID_OP7
+      ID_ANNOTATE_MODE_CUT_IN,            // ID_OP8
+      ID_ANNOTATE_MODE_CONSTRUCTION_LINE, // ID_OP9
+  };
+  const auto opIndex = command - ID_OP0;
+  if (opToAnnotateCommand[opIndex] != 0) {
+    context->SendMessage(WM_COMMAND, opToAnnotateCommand[opIndex]);
+    return true;
+  }
+  return false;
 }
 
 void AnnotateModeState::UnhighlightOp(AeSysView* context) {

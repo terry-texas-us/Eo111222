@@ -9,7 +9,8 @@
 #include "EoGeLine.h"
 #include "Eo.h"
 #include "EoLpdGeometry.h"
-#include "LpdModeState.h"
+#include "EoMsLpd.h"
+#include "Resource.h"
 #include "Section.h"
 
 namespace {
@@ -144,6 +145,32 @@ bool LpdModeState::OnReturn(AeSysView* context) {
 bool LpdModeState::OnEscape(AeSysView* context) {
   context->OnLpdModeEscape();
   return true;
+}
+
+void LpdModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT nFlags, [[maybe_unused]] CPoint point) {
+  OnReturn(context);
+}
+
+bool LpdModeState::HandleCommand(AeSysView* context, UINT command) {
+  if (command < ID_OP0 || command > ID_OP9) { return false; }
+  static constexpr UINT opToLpdCommand[] = {
+      0,                      // ID_OP0
+      ID_LPD_MODE_JOIN,       // ID_OP1
+      ID_LPD_MODE_DUCT,       // ID_OP2
+      ID_LPD_MODE_TRANSITION, // ID_OP3
+      ID_LPD_MODE_TAP,        // ID_OP4
+      ID_LPD_MODE_ELL,        // ID_OP5
+      ID_LPD_MODE_TEE,        // ID_OP6
+      ID_LPD_MODE_UP_DOWN,    // ID_OP7
+      0,                      // ID_OP8
+      ID_LPD_MODE_SIZE,       // ID_OP9
+  };
+  const auto opIndex = command - ID_OP0;
+  if (opToLpdCommand[opIndex] != 0) {
+    context->SendMessage(WM_COMMAND, opToLpdCommand[opIndex]);
+    return true;
+  }
+  return false;
 }
 
 void LpdModeState::ResetSequence(AeSysView* context) {

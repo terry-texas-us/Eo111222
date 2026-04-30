@@ -814,7 +814,6 @@ class AeSysDoc : public CDocument {
   afx_msg void OnToolsGroupDelete();
   afx_msg void OnToolsGroupDeletelast();
 
-  // Phase 3A — undo/redo stack
   afx_msg void OnEditUndo();
   afx_msg void OnEditRedo();
   afx_msg void OnUpdateEditUndo(CCmdUI* cmdUI);

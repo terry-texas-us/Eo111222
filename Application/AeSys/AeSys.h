@@ -57,10 +57,6 @@ class AeSys : public CWinAppEx {
   void PreLoadState() override;
 
  public:
-  CString CustomLButtonDownCharacters{};
-  CString CustomLButtonUpCharacters{L"{13}"};
-  CString CustomRButtonDownCharacters{};
-  CString CustomRButtonUpCharacters{L"{27}"};
   EoApOptions m_Options;
 
  private:
@@ -94,7 +90,7 @@ class AeSys : public CWinAppEx {
   bool m_TrapHighlighted{};
   bool m_TrapModeAddGroups{true};
 
-  // Direct2D / DirectWrite factory singletons (Phase 6)
+  // Direct2D / DirectWrite factory singletons
   Microsoft::WRL::ComPtr<ID2D1Factory> m_d2dFactory;
   Microsoft::WRL::ComPtr<IDWriteFactory> m_dwriteFactory;
 

@@ -3,10 +3,8 @@
 /// @file EoGePolyline.h
 /// @brief Thin polyline:: namespace wrappers delegating to a global EoGsVertexBuffer.
 ///
-/// Phase 5: The vertex accumulation / rendering / selection state that was previously
-/// file-scope mutable data (EoGePoint4dArray pts_, bool LoopLine) now lives inside
-/// EoGsVertexBuffer. The polyline:: free functions are retained for call-site
-/// compatibility — they delegate to the single global instance.
+/// Thin polyline:: namespace wrappers delegating to the global EoGsVertexBuffer
+/// instance. Retained for call-site compatibility.
 ///
 /// Standalone geometry helpers (GeneratePointsForNPoly, TessellateArcSegment) and the
 /// explicit-points SelectUsingRectangle overload have no vertex-buffer dependency

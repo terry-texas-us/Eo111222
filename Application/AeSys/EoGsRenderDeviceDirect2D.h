@@ -3,9 +3,8 @@
 /// @file EoGsRenderDeviceDirect2D.h
 /// @brief Direct2D backend for EoGsRenderDevice — hardware-accelerated 2D rendering.
 ///
-/// Phase 6 of the Direct2D migration plan. Implements all abstract methods from
-/// EoGsRenderDevice using ID2D1HwndRenderTarget, ID2D1SolidColorBrush, and
-/// IDWriteFactory / IDWriteTextFormat for text.
+/// Implements all abstract methods from EoGsRenderDevice using
+/// ID2D1HwndRenderTarget, ID2D1SolidColorBrush, and IDWriteFactory / IDWriteTextFormat.
 ///
 /// Ownership: the caller owns the render target and write factory; this device
 /// holds non-owning pointers and manages only per-frame brush/stroke resources.

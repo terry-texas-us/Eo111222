@@ -11,19 +11,7 @@
 
 #include "AeSysState.h"
 
-void AeSysView::DoCustomMouseClick(const CString& characters) {
-  int position{};
 
-  while (position < characters.GetLength()) {
-    if (characters.Find(L'{', position) == position) {
-      position++;
-      CString virtualKey = characters.Tokenize(L"}", position);
-      PostMessageW(WM_KEYDOWN, static_cast<WPARAM>(_wtoi(virtualKey)), 0L);
-    } else {
-      PostMessageW(WM_CHAR, characters[position++], 0L);
-    }
-  }
-}
 BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
   auto* state = GetCurrentState();
   if (pMsg->message == WM_KEYDOWN) {
@@ -45,19 +33,13 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
     state->OnLButtonDown(this, flags, point);
     return;
   }
-  if (app.CustomLButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
-    CView::OnLButtonDown(flags, point);
-  } else {
-    DoCustomMouseClick(app.CustomLButtonDownCharacters);
-  }
+  CView::OnLButtonDown(flags, point);
 }
 
 void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
-  if (app.CustomLButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
-    CView::OnLButtonUp(flags, point);
-  } else {
-    DoCustomMouseClick(app.CustomLButtonUpCharacters);
-  }
+  auto* state = GetCurrentState();
+  if (state != nullptr) { state->OnLButtonUp(this, flags, point); return; }
+  CView::OnLButtonUp(flags, point);
 }
 
 void AeSysView::OnLButtonDblClk([[maybe_unused]] UINT flags, CPoint point) {
@@ -217,19 +199,16 @@ void AeSysView::RestoreViewportTransform() {
 }
 
 void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
-  if (app.CustomRButtonDownCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
-    CView::OnRButtonDown(flags, point);
-  } else {
-    DoCustomMouseClick(app.CustomRButtonDownCharacters);
-  }
+  // Do not suppress WM_RBUTTONDOWN when a state is active — Windows needs the
+  // paired down/up to keep mouse-capture and WM_CONTEXTMENU state consistent.
+  // No concrete state overrides OnRButtonDown; action happens in OnRButtonUp.
+  CView::OnRButtonDown(flags, point);
 }
 
 void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
-  if (app.CustomRButtonUpCharacters.IsEmpty() || !(GetKeyState(VK_SHIFT) & 0x8000)) {
-    CView::OnRButtonUp(flags, point);
-  } else {
-    DoCustomMouseClick(app.CustomRButtonUpCharacters);
-  }
+  auto* state = GetCurrentState();
+  if (state != nullptr) { state->OnRButtonUp(this, flags, point); return; }
+  CView::OnRButtonUp(flags, point);
 }
 
 void AeSysView::OnMButtonDown([[maybe_unused]] UINT flags, CPoint point) {

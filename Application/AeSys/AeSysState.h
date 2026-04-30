@@ -32,13 +32,32 @@ class AeSysState {
       [[maybe_unused]] UINT nFlags) {
     return false;
   }
-  virtual void OnLButtonDown([[maybe_unused]] AeSysView* context,
+  /// Returns the op-command ID that is currently "active" in this mode (e.g.
+  /// ID_OP2 while a line gesture is in progress). Used by the default
+  /// OnLButtonDown to re-fire the same command on each successive click.
+  /// Override in each concrete state to return its named m_previous* field.
+  [[nodiscard]] virtual UINT GetActiveOp() const noexcept { return 0; }
+
+  /// Default LMB handler: re-fires the currently active op through HandleCommand
+  /// so that each click advances the gesture (e.g. adds a polygon vertex).
+  /// States that need richer LMB behaviour (e.g. PickAndDrag) override this.
+  virtual void OnLButtonDown(AeSysView* context,
+      [[maybe_unused]] UINT nFlags,
+      [[maybe_unused]] CPoint point) {
+    (void)HandleCommand(context, GetActiveOp());
+  }
+  virtual void OnLButtonUp([[maybe_unused]] AeSysView* context,
+      [[maybe_unused]] UINT nFlags,
+      [[maybe_unused]] CPoint point) {}
+  virtual void OnRButtonDown([[maybe_unused]] AeSysView* context,
+      [[maybe_unused]] UINT nFlags,
+      [[maybe_unused]] CPoint point) {}
+  virtual void OnRButtonUp([[maybe_unused]] AeSysView* context,
       [[maybe_unused]] UINT nFlags,
       [[maybe_unused]] CPoint point) {}
   virtual void OnMouseMove([[maybe_unused]] AeSysView* context,
       [[maybe_unused]] UINT nFlags,
       [[maybe_unused]] CPoint point) {}
-  // Add more: OnRButtonDown, etc., as needed from AeSysView.cpp
 
   // Command handling (delegate MFC ON_COMMAND).
   // Return true to consume the command and prevent it reaching the legacy CurrentMode() switch.

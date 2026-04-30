@@ -3,7 +3,7 @@
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "EditModeState.h"
+#include "EoMsEdit.h"
 #include "EoDlgEditOptions.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"

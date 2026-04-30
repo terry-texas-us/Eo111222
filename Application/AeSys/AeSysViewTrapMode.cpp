@@ -6,7 +6,7 @@
 #include "EoDbPolygon.h"
 #include "EoDlgTrapModify.h"
 #include "Resource.h"
-#include "TrapModeState.h"
+#include "EoMsTrap.h"
 
 namespace {
 /// Returns the active TrapModeState from the view's state stack, or nullptr when

@@ -8,9 +8,8 @@ class EoDbPrimitive;
 /// @brief Transient mend sub-mode state, pushed on top of the primary mode state
 /// when the user presses `M` (Primitive Mend).
 ///
-/// Phase 2E: owns all mend sub-mode data previously scattered across AeSysView
-/// members (m_PrimitiveToMend, m_PrimitiveToMendCopy, m_MendPrimitiveBegin,
-/// m_MendPrimitiveVertexIndex).  Return commits the drag; Escape reverts it.
+/// Owns all mend sub-mode data: primitive-to-mend, its owning copy for Escape,
+/// begin point, and vertex index. Return commits the drag; Escape reverts it.
 /// Both pop back cleanly to the primary mode.
 class PrimitiveMendState : public AeSysState {
  public:

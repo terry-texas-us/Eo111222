@@ -18,7 +18,7 @@
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
 #include "EoPipeGeometry.h"
-#include "PipeModeState.h"
+#include "EoMsPipe.h"
 #include "Resource.h"
 
 namespace {

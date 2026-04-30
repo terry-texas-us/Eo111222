@@ -2,7 +2,7 @@
 
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "Draw2ModeState.h"
+#include "EoMsDraw2.h"
 #include "EoDb.h"
 #include "EoDbGroup.h"
 #include "EoDbLine.h"

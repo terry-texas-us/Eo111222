@@ -24,8 +24,7 @@
  *
  *  ## DXF Round-Trip
  *  - `ExportToDxf()` writes a DXF ATTRIB entity with full alignment, style, and attribute fields.
- *    The parent INSERT entity's `ExportToDxf()` is responsible for writing SEQEND after all ATTRIBs
- *    (deferred to Phase 4).
+ *    The parent INSERT entity's `ExportToDxf()` writes SEQEND after all ATTRIBs.
  */
 class EoDbAttrib : public EoDbText {
   std::wstring m_tagString;  ///< Attribute tag name (DXF group code 2)

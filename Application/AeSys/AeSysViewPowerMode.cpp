@@ -13,7 +13,7 @@
 #include "EoGePoint3d.h"
 #include "EoGsRenderState.h"
 #include "EoPowerGeometry.h"
-#include "PowerModeState.h"
+#include "EoMsPower.h"
 #include "Resource.h"
 
 namespace {

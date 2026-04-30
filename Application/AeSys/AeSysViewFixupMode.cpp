@@ -18,7 +18,7 @@
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
-#include "FixupModeState.h"
+#include "EoMsFixup.h"
 #include "Resource.h"
 
 /** @todo Color and lineType assignment for chamfer/fillet operations

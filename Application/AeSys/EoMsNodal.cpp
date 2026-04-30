@@ -5,7 +5,8 @@
 #include "EoDbPoint.h"
 #include "EoDbPrimitive.h"
 #include "EoGsRenderState.h"
-#include "NodalModeState.h"
+#include "EoMsNodal.h"
+#include "Resource.h"
 
 void NodalModeState::OnExit(AeSysView* context) {
   ATLTRACE2(traceGeneral, 2, L"NodalModeState::OnExit\n");
@@ -74,5 +75,31 @@ bool NodalModeState::OnEscape(AeSysView* context) {
 
 void NodalModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousCommand);
+}
+
+void NodalModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
+  OnEscape(context);
+}
+
+bool NodalModeState::HandleCommand(AeSysView* context, UINT command) {
+  if (command < ID_OP0 || command > ID_OP9) { return false; }
+  static constexpr UINT opToNodalCommand[] = {
+      0,                       // ID_OP0
+      ID_NODAL_MODE_POINT,     // ID_OP1
+      ID_NODAL_MODE_LINE,      // ID_OP2
+      ID_NODAL_MODE_AREA,      // ID_OP3
+      ID_NODAL_MODE_MOVE,      // ID_OP4
+      ID_NODAL_MODE_COPY,      // ID_OP5
+      ID_NODAL_MODE_TOLINE,    // ID_OP6
+      ID_NODAL_MODE_TOPOLYGON, // ID_OP7
+      ID_NODAL_MODE_EMPTY,     // ID_OP8
+      ID_NODAL_MODE_ENGAGE,    // ID_OP9
+  };
+  const auto opIndex = command - ID_OP0;
+  if (opToNodalCommand[opIndex] != 0) {
+    context->SendMessage(WM_COMMAND, opToNodalCommand[opIndex]);
+    return true;
+  }
+  return false;
 }
 

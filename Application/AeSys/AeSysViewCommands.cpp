@@ -16,7 +16,6 @@
 #include "EoDlgSetScale.h"
 #include "EoDlgSetUnitsAndPrecision.h"
 #include "EoDlgSetupConstraints.h"
-#include "EoDlgSetupCustomMouseCharacters.h"
 #include "EoGePoint3d.h"
 #include "EoGeTransformMatrix.h"
 #include "EoGeVector3d.h"
@@ -338,11 +337,6 @@ void AeSysView::OnSetupConstraints() {
   EoDlgSetupConstraints dialog(this);
 
   if (dialog.DoModal() == IDOK) { UpdateStateInformation(All); }
-}
-
-void AeSysView::OnSetupMouseButtons() {
-  EoDlgSetupCustomMouseCharacters dialog;
-  if (dialog.DoModal() == IDOK) {}
 }
 
 void AeSysView::OnRelativeMovesEngDown() {
@@ -773,18 +767,18 @@ void AeSysView::SetWorldScale(double scale) {
   }
 }
 
-#include "DrawModeState.h"
-#include "EditModeState.h"
-#include "PipeModeState.h"
-#include "PowerModeState.h"
-#include "TrapModeState.h"
-#include "AnnotateModeState.h"
-#include "CutModeState.h"
-#include "DimensionModeState.h"
-#include "Draw2ModeState.h"
-#include "FixupModeState.h"
-#include "LpdModeState.h"
-#include "NodalModeState.h"
+#include "EoMsDraw.h"
+#include "EoMsEdit.h"
+#include "EoMsPipe.h"
+#include "EoMsPower.h"
+#include "EoMsTrap.h"
+#include "EoMsAnnotate.h"
+#include "EoMsCut.h"
+#include "EoMsDimension.h"
+#include "EoMsDraw2.h"
+#include "EoMsFixup.h"
+#include "EoMsLpd.h"
+#include "EoMsNodal.h"
 
 void AeSysView::OnModeAnnotate() {
   PopAllModeStates();

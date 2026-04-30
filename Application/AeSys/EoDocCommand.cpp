@@ -156,7 +156,7 @@ void EoDocCmdDeletePrimitive::Undo(AeSysDoc* doc) {
   }
 }
 
-// --- EoDocCmdAddGroup (Phase 3E) ---
+// --- EoDocCmdAddGroup ---
 
 void EoDocCmdAddGroup::Execute(AeSysDoc* doc) {
   // Redo: re-add the group to the layer and all views.
@@ -182,7 +182,7 @@ void EoDocCmdAddGroup::Discard(AeSysDoc* doc) noexcept {
   }
 }
 
-// --- EoDocCmdTransformGroups (Phase 3F) ---
+// --- EoDocCmdTransformGroups ---
 
 static void ApplyTransformToGroups(AeSysDoc* doc,
     const std::vector<EoDbGroup*>& groups,

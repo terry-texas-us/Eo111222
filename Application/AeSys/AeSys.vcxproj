@@ -196,12 +196,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
-    <ClCompile Include="AnnotateModeState.cpp" />
-    <ClCompile Include="CutModeState.cpp" />
-    <ClCompile Include="DimensionModeState.cpp" />
-    <ClCompile Include="Draw2ModeState.cpp" />
-    <ClCompile Include="DrawModeState.cpp" />
-    <ClCompile Include="EditModeState.cpp" />
+    <ClCompile Include="EoMsAnnotate.cpp" />
+    <ClCompile Include="EoMsCut.cpp" />
+    <ClCompile Include="EoMsDimension.cpp" />
+    <ClCompile Include="EoMsDraw2.cpp" />
+    <ClCompile Include="EoMsDraw.cpp" />
+    <ClCompile Include="EoMsEdit.cpp" />
     <ClCompile Include="EoCtrlColorComboBox.cpp" />
     <ClCompile Include="EoCtrlLayerComboBox.cpp" />
     <ClCompile Include="EoCtrlLineWeightComboBox.cpp" />
@@ -215,12 +215,12 @@
     <ClCompile Include="EoMfStatusBar.cpp" />
     <ClCompile Include="EoPipeGeometry.cpp" />
     <ClCompile Include="EoPowerGeometry.cpp" />
-    <ClCompile Include="FixupModeState.cpp" />
-    <ClCompile Include="LpdModeState.cpp" />
-    <ClCompile Include="NodalModeState.cpp" />
+    <ClCompile Include="EoMsFixup.cpp" />
+    <ClCompile Include="EoMsLpd.cpp" />
+    <ClCompile Include="EoMsNodal.cpp" />
     <ClCompile Include="PickAndDragState.cpp" />
-    <ClCompile Include="PipeModeState.cpp" />
-    <ClCompile Include="PowerModeState.cpp" />
+    <ClCompile Include="EoMsPipe.cpp" />
+    <ClCompile Include="EoMsPower.cpp" />
     <ClCompile Include="PrimitiveMendState.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -334,7 +334,6 @@
     <ClCompile Include="EoDlgSetUnitsAndPrecision.cpp" />
     <ClCompile Include="EoDlgSetupColor.cpp" />
     <ClCompile Include="EoDlgSetupConstraints.cpp" />
-    <ClCompile Include="EoDlgSetupCustomMouseCharacters.cpp" />
     <ClCompile Include="EoDlgSetupHatch.cpp" />
     <ClCompile Include="EoDlgSetupHomePoint.cpp" />
     <ClCompile Include="EoDlgSetupLineType.cpp" />
@@ -369,7 +368,7 @@
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="ModeLine.cpp" />
     <ClCompile Include="Section.cpp" />
-    <ClCompile Include="TrapModeState.cpp" />
+    <ClCompile Include="EoMsTrap.cpp" />
     <ClCompile Include="WndProcKeyPlan.cpp" />
     <ClCompile Include="WndProcPreview.cpp" />
   </ItemGroup>
@@ -382,14 +381,20 @@
     <ClInclude Include="AeSysState.h" />
     <ClInclude Include="AeSysView.h" />
     <ClInclude Include="AnnotateModeState.h" />
-    <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="CutModeState.h" />
-    <ClInclude Include="DdeCmds.h" />
-    <ClInclude Include="DdeGItms.h" />
     <ClInclude Include="DimensionModeState.h" />
     <ClInclude Include="Draw2ModeState.h" />
     <ClInclude Include="DrawModeState.h" />
     <ClInclude Include="EditModeState.h" />
+    <ClInclude Include="EoMsAnnotate.h" />
+    <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="EoMsCut.h" />
+    <ClInclude Include="DdeCmds.h" />
+    <ClInclude Include="DdeGItms.h" />
+    <ClInclude Include="EoMsDimension.h" />
+    <ClInclude Include="EoMsDraw2.h" />
+    <ClInclude Include="EoMsDraw.h" />
+    <ClInclude Include="EoMsEdit.h" />
     <ClInclude Include="Eo.h" />
     <ClInclude Include="EoApOptions.h" />
     <ClInclude Include="EoCtrlColorComboBox.h" />
@@ -463,7 +468,6 @@
     <ClInclude Include="EoDlgSetUnitsAndPrecision.h" />
     <ClInclude Include="EoDlgSetupColor.h" />
     <ClInclude Include="EoDlgSetupConstraints.h" />
-    <ClInclude Include="EoDlgSetupCustomMouseCharacters.h" />
     <ClInclude Include="EoDlgSetupHatch.h" />
     <ClInclude Include="EoDlgSetupLineType.h" />
     <ClInclude Include="EoDlgSetupNote.h" />
@@ -505,23 +509,28 @@
     <ClInclude Include="EoOdaConverter.h" />
     <ClInclude Include="EoPipeGeometry.h" />
     <ClInclude Include="EoPowerGeometry.h" />
+    <ClInclude Include="EoMsFixup.h" />
     <ClInclude Include="FixupModeState.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="lex.yy.h" />
     <ClInclude Include="LexTable.h" />
+    <ClInclude Include="EoMsLpd.h" />
     <ClInclude Include="LpdModeState.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="EoMsNodal.h" />
     <ClInclude Include="NodalModeState.h" />
     <ClInclude Include="PickAndDragState.h" />
+    <ClInclude Include="EoMsPipe.h" />
+    <ClInclude Include="EoMsPower.h" />
     <ClInclude Include="PipeModeState.h" />
     <ClInclude Include="PowerModeState.h" />
     <ClInclude Include="PrimitiveMendState.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="Stdafx.h" />
-    <ClInclude Include="TrapModeState.h" />
+    <ClInclude Include="EoMsTrap.h" />
     <ClInclude Include="WndProcPreview.h" />
   </ItemGroup>
   <ItemGroup>

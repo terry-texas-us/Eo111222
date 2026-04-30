@@ -360,7 +360,6 @@ void AeSysDoc::OnLayersStaticAll() {
 void AeSysDoc::OnLayersRemoveEmpty() {
   RemoveEmptyLayers();
 }
-// Phase 3A -- undo/redo stack
 void AeSysDoc::OnEditUndo() {
   m_commandStack.Undo(this);
 }

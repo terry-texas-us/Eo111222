@@ -1,4 +1,4 @@
-// Microsoft Visual C++ generated resource script.
+﻿// Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
 
@@ -497,7 +497,6 @@ BEGIN
             MENUITEM "&All",                        ID_RESET_ALL
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Mouse Buttons...",           ID_SETUP_MOUSEBUTTONS
         POPUP "&Options\tO", GRAYED
         BEGIN
             MENUITEM "&Draw...",                    ID_SETUP_OPTIONS_DRAW
@@ -763,7 +762,6 @@ BEGIN
     ".",            ID_SETUP_DIMLENGTH,     ASCII,  NOINVERT
     "G",            ID_SETUP_GOTOPOINT,     VIRTKEY, NOINVERT
     "L",            ID_SETUP_LINETYPE,      VIRTKEY, NOINVERT
-    "M",            ID_SETUP_MOUSEBUTTONS,  VIRTKEY, CONTROL, NOINVERT
     "T",            ID_SETUP_NOTE,          VIRTKEY, NOINVERT
     "P",            ID_SETUP_PENCOLOR,      VIRTKEY, NOINVERT
     "H",            ID_SETUP_SAVEPOINT,     VIRTKEY, NOINVERT
@@ -1456,26 +1454,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,65,2,33,14
 END
 
-IDD_MOUSEKEYS DIALOGEX 8, 8, 255, 49
-STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Mouse Key Assignments"
-FONT 8, "MS Shell Dlg 2", 0, 0, 0x0
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,217,26,30,14
-    PUSHBUTTON      "Cancel",IDCANCEL,215,2,38,15
-    GROUPBOX        "Left",-1,6,5,100,40
-    RTEXT           "Down:",-1,7,18,25,8
-    RTEXT           "Up:",-1,16,28,16,8
-    EDITTEXT        IDC_LEFT_DOWN,34,16,64,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LEFT_UP,34,30,64,12,ES_AUTOHSCROLL
-    GROUPBOX        "Right",-1,110,5,100,40
-    EDITTEXT        IDC_RIGHT_DOWN,138,16,64,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_RIGHT_UP,138,30,64,12,ES_AUTOHSCROLL
-    RTEXT           "Down:",-1,113,17,22,8
-    RTEXT           "Up:",-1,119,29,16,8
-END
-
 IDD_DRAW_OPTIONS DIALOGEX 8, 8, 335, 38
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
@@ -2108,10 +2086,6 @@ BEGIN
     IDD_PASTE_POSITION, DIALOG
     BEGIN
         RIGHTMARGIN, 114
-    END
-
-    IDD_MOUSEKEYS, DIALOG
-    BEGIN
     END
 
     IDD_DRAW_OPTIONS, DIALOG

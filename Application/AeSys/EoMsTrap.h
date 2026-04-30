@@ -5,7 +5,7 @@
 
 class AeSysView;
 
-/// @brief Mode state for Trap / Trapr modes (Phase 2B-2).
+/// @brief Mode state for Trap / Trapr modes.
 /// Owns the per-mode interaction state previously stored on AeSysView:
 ///   * m_previousOp     — the active stitch/field gesture op (ID_OP2 line, ID_OP4 rectangle).
 ///   * m_previousPoint  — the anchor point captured on the first click of a two-click gesture.
@@ -22,6 +22,9 @@ class TrapModeState : public AeSysState {
 
   void OnExit(AeSysView* context) override;
   bool OnEscape(AeSysView* context) override;
+  void OnRButtonUp(AeSysView* context, UINT flags, CPoint point) override;
+  [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousOp; }
+  [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
 
   /// Unhighlights the active op pane (if any) via the view's status bar API.
   /// Passes m_previousOp by reference so it is also reset to 0 by ModeLineUnhighlightOp.

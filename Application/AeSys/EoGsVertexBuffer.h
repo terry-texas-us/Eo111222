@@ -3,14 +3,9 @@
 /// @file EoGsVertexBuffer.h
 /// @brief Retained vertex buffer — object-oriented replacement for polyline:: namespace state.
 ///
-/// Phase 5 of the Direct2D migration plan. Encapsulates the file-scope mutable
-/// EoGePoint4dArray + bool LoopLine that previously lived in polyline:: namespace
-/// (OpenGL heritage). Rendering methods use EoGsRenderDevice* instead of CDC*,
-/// eliminating the GDI dependency from the polyline rendering pipeline.
-///
-/// A single global instance is accessed via polyline::VertexBuffer() during the
-/// transitional period. Phase 8 (batch geometry submission) will introduce
-/// per-batch or per-primitive vertex buffers.
+/// Encapsulates the vertex accumulation state (EoGePoint4dArray + LoopLine flag)
+/// for the polyline rendering pipeline. Rendering methods use EoGsRenderDevice*
+/// rather than CDC*. A single global instance is accessed via polyline::VertexBuffer().
 
 #include <cstdint>
 #include <string>

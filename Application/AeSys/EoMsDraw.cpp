@@ -2,7 +2,7 @@
 
 #include "AeSys.h"
 #include "AeSysView.h"
-#include "DrawModeState.h"
+#include "EoMsDraw.h"
 #include "EoDbConic.h"
 #include "EoDbPolygon.h"
 #include "EoDbPolyline.h"
@@ -42,7 +42,7 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nFlags
 
       if (m_points[0] != cursorPosition) {
         cursorPosition = context->SnapPointToAxis(m_points[0], cursorPosition);
-        EoGePoint3dArray previewPoints{m_points};
+        EoGePoint3dArray previewPoints{}; previewPoints.Copy(m_points);
         previewPoints.Add(cursorPosition);
 
         context->PreviewGroup().DeletePrimitivesAndRemoveAll();
@@ -54,7 +54,7 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nFlags
     case ID_OP3: {
       if (numberOfPoints == 0) { break; }
       cursorPosition = context->SnapPointToAxis(m_points[numberOfPoints - 1], cursorPosition);
-      EoGePoint3dArray previewPoints{m_points};
+      EoGePoint3dArray previewPoints{}; previewPoints.Copy(m_points);
       previewPoints.Add(cursorPosition);
 
       context->PreviewGroup().DeletePrimitivesAndRemoveAll();
@@ -69,7 +69,7 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nFlags
     case ID_OP4: {
       if (numberOfPoints == 0) { break; }
       cursorPosition = context->SnapPointToAxis(m_points[numberOfPoints - 1], cursorPosition);
-      EoGePoint3dArray previewPoints{m_points};
+      EoGePoint3dArray previewPoints{}; previewPoints.Copy(m_points);
       previewPoints.Add(cursorPosition);
 
       if (numberOfPoints == 2) {
@@ -82,7 +82,7 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nFlags
     } break;
 
     case ID_OP5: {
-      EoGePoint3dArray previewPoints{m_points};
+      EoGePoint3dArray previewPoints{}; previewPoints.Copy(m_points);
       previewPoints.Add(cursorPosition);
 
       context->PreviewGroup().DeletePrimitivesAndRemoveAll();
@@ -107,7 +107,7 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nFlags
     } break;
 
     case ID_OP6: {
-      EoGePoint3dArray previewPoints{m_points};
+      EoGePoint3dArray previewPoints{}; previewPoints.Copy(m_points);
       previewPoints.Add(cursorPosition);
 
       context->PreviewGroup().DeletePrimitivesAndRemoveAll();
@@ -130,7 +130,7 @@ void DrawModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nFlags
 
     case ID_OP8: {
       if (numberOfPoints == 0) { break; }
-      EoGePoint3dArray previewPoints{m_points};
+      EoGePoint3dArray previewPoints{}; previewPoints.Copy(m_points);
       previewPoints.Add(cursorPosition);
 
       context->PreviewGroup().DeletePrimitivesAndRemoveAll();
@@ -162,4 +162,31 @@ bool DrawModeState::OnReturn(AeSysView* context) {
 bool DrawModeState::OnEscape(AeSysView* context) {
   context->OnDrawModeEscape();
   return true;
+}
+
+void DrawModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT nFlags, [[maybe_unused]] CPoint point) {
+  // RMB finishes the gesture from already-collected points without appending cursor position.
+  context->OnDrawModeFinish();
+}
+
+bool DrawModeState::HandleCommand(AeSysView* context, UINT command) {
+  if (command < ID_OP0 || command > ID_OP9) { return false; }
+  static constexpr UINT opToDrawCommand[] = {
+      0,                    // ID_OP0 — no Draw mapping
+      0,                    // ID_OP1
+      ID_DRAW_MODE_LINE,    // ID_OP2
+      ID_DRAW_MODE_POLYGON, // ID_OP3
+      ID_DRAW_MODE_QUAD,    // ID_OP4
+      ID_DRAW_MODE_ARC,     // ID_OP5
+      ID_DRAW_MODE_BSPLINE, // ID_OP6
+      ID_DRAW_MODE_CIRCLE,  // ID_OP7
+      ID_DRAW_MODE_ELLIPSE, // ID_OP8
+      0,                    // ID_OP9
+  };
+  const auto opIndex = command - ID_OP0;
+  if (opToDrawCommand[opIndex] != 0) {
+    context->SendMessage(WM_COMMAND, opToDrawCommand[opIndex]);
+    return true;
+  }
+  return false;
 }
