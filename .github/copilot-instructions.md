@@ -862,4 +862,206 @@ Call sites that obtain a layer via `AnyLayerRemove(group)` MUST handle null retu
 | `AeSys\AeSysDocLayers.cpp` | `AddWorkLayerGroup` — pushes `EoDocCmdAddGroup` after add |
 | `AeSys\EoDbTrappedGroups.cpp` | `TransformTrappedGroups` / `TranslateTrappedGroups` — push `EoDocCmdTransformGroups` |
 
+## RMB Context Sensitivity
+
+### Architecture Overview
+RMB context menus are mode- and gesture-aware. Each concrete `AeSysState` subclass overrides `BuildContextMenu(AeSysView*, CMenu&)` to return a context-sensitive popup; the base returns `false` (no menu). `OnRButtonUp` in `AeSysViewInput.cpp` first captures the world-space cursor position, then calls `state->BuildContextMenu`; if it returns `true`, the menu is shown synchronously via `TrackPopupMenuEx(... | TPM_RETURNCMD | TPM_NONOTIFY)`. The chosen command ID is dispatched via `SendMessage(WM_COMMAND, chosenId)` **after** the cursor position is restored with `SetCursorPosition` so commit handlers (Pipe/LPD/Draw2 return, Edit place, Trap stitch) operate on the intended click point, not on the menu-item screen position.
+
+### Per-Mode Context Menu Design
+| Mode | Idle RMB | Mid-gesture RMB |
+|------|----------|----------------|
+| Draw | — | Polygon: Close / Finish as Polyline / Undo Last / Cancel; B-Spline: Close / Undo Last / Cancel; multi-click ops: Undo Last / Cancel when ≥2 points; single ops: Cancel |
+| Trap | Trap-action submenu when trap non-empty | Finish Trapping (stitch or field depending on active op) / Cancel |
+| Edit | Transform submenu when trap non-empty | Place Here / Cancel |
+| Cut | — | Commit Slice / Cancel |
+| Pipe/LPD | — | Commit Segment / Cancel |
+| Draw2 | — | Commit / Cancel |
+| Other modes | — | Cancel only |
+
+### `OnDrawModeFinish` Idle Guard
+`OnDrawModeFinish` checks `previousDrawCommand == 0` and returns early before entering the switch — an idle RMB in Draw mode does nothing. The `default` branch handles non-closeable ops with too few points by delegating to `OnDrawModeEscape`. Never remove the idle guard.
+
+### Polyline as First-Class Citizen
+`OnDrawModeFinishPolyline()` commits an open polyline using only the already-collected points — the RMB click point is never appended. The Draw context menu exposes "Finish as Polyline" (grayed when fewer than 2 points) alongside "Close Polygon" (grayed when fewer than 3).
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysState.h` | `BuildContextMenu` virtual — default `false` |
+| `AeSys\EoMsDraw.cpp` | Draw-mode context menu; `OnDrawModeFinishPolyline`; idle guard in `OnDrawModeFinish` |
+| `AeSys\EoMsTrap.cpp` | Trap idle/gesture menus |
+| `AeSys\EoMsEdit.cpp` | Edit move/copy place menus |
+| `AeSys\EoMsCut.cpp` | Cut slice commit menu |
+| `AeSys\AeSysViewInput.cpp` | `OnRButtonUp` — synchronous dispatch + cursor restore |
+
+## Overlay Rendering Architecture
+
+### Overview
+Rendering is split into three independent layers to avoid redrawing the static scene for every transient update:
+
+| Layer | Buffer | Invalidated by |
+|-------|--------|---------------|
+| **Static scene** | `m_d2dSceneTarget` (D2D) / offscreen GDI bitmap | Document change, zoom/pan, trap add/remove |
+| **GDI overlay** | `m_overlayBitmap` / `m_overlayDC` | Rubber-band moves, hover tooltip show/hide, transient markers |
+| **Composite** | On-screen DC | Any `Invalidate()` call |
+
+`OnDraw()` composites the scene onto the back buffer, then alpha-blends the GDI overlay on top via `GdiAlphaBlend`, then calls `state->OnDraw(pDC)` for any state-owned additive overlay.
+
+### Rubber-Band Composition
+Rubber bands are drawn into the GDI overlay (not XOR-on-screen). The variant is selected from:
+
+```
+enum class ERubs { None, Lines, Rectangles, RectanglesRemove, RectanglesWindow, RectanglesWindowRemove };
+```
+
+| Variant | Fill | Border | Meaning |
+|---------|------|--------|---------|
+| `Rectangles` | Transparent green ~30% | Solid green 1px | Crossing add |
+| `RectanglesRemove` | Transparent red ~30% | Dashed red 1px | Crossing remove |
+| `RectanglesWindow` | Transparent blue ~30% | Dashed blue 1px | Whole-window add |
+| `RectanglesWindowRemove` | Transparent red ~30% | Dashed red 1px | Whole-window remove |
+
+`RubberBandingStartAtEnable()` accepts the desired variant; `RubberBandingDisable()` clears it. The variant is **snapshotted before** `RubberBandingDisable()` is called in the second-click commit path so the window/crossing decision survives the clear.
+
+### D2D Scene Cache
+`m_d2dSceneTarget` is an `ID2D1BitmapRenderTarget` recreated on resize. `InvalidateScene()` marks it dirty and calls `Invalidate(FALSE)`; `Invalidate(FALSE)` alone redraws only the overlay and composite. States that add/remove from the trap or change document geometry must call `InvalidateScene()`.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysViewRender.cpp` | Overlay composition, D2D scene cache, rubber-band drawing dispatch |
+| `AeSys\AeSysView.h` | `ERubs` enum, `m_overlayBitmap`/`m_overlayDC`, `m_d2dSceneTarget`, `m_rubberbandType` |
+
+## Idle LMB Trap-Pick / Shift-Remove
+
+### Behavior
+In **any** mode (even when a mode state is active), a single LMB click that hits a visible group adds that group to the trap and highlights it in ACI `kTrapHighlightAci`. Shift+LMB click on a group already in the trap removes it from the trap. The click is consumed by the trap-pick path — it does **not** propagate to the active mode state.
+
+### Implementation
+At the top of `OnLButtonDown()`, before the state dispatch, the view performs a `SelectGroupAndPrimitive` hit test. On a hit:
+- If not Shift: add group to `m_trappedGroups`, call `InvalidateScene()`.
+- If Shift and group already trapped: remove group from `m_trappedGroups`, call `InvalidateScene()`.
+- In both cases `return` — mode state does not receive the click.
+
+On a miss, normal mode-state dispatch continues.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysViewInput.cpp` | `OnLButtonDown` — idle trap-pick precedes state dispatch |
+
+## Two-Click Field Trap
+
+### Semantics
+Field trap uses two separate LMB clicks (not click-drag) to define the selection rectangle. The behavior matches AutoCAD left-to-right / right-to-left semantics:
+
+- **Left-to-right drag direction** → whole-window selection (`RectanglesWindow`): only groups whose every primitive is wholly inside the rectangle are trapped.
+- **Right-to-left drag direction** → crossing selection (`Rectangles`): any group intersecting the rectangle is trapped.
+
+### State Fields
+| Field | Type | Purpose |
+|-------|------|---------|
+| `m_fieldTrapAnchorSet` | `bool` | First corner has been clicked |
+| `m_fieldTrapAnchorPoint` | `EoGePoint3d` | World-space first corner |
+| `m_fieldTrapIsRemove` | `bool` | Shift was held on first corner → remove mode |
+
+### Sequence
+1. **First click** (no Shift or Shift): sets `m_fieldTrapAnchorSet = true`, records world point, selects `Rectangles`/`RectanglesRemove`, calls `RubberBandingStartAtEnable`.
+2. **Mouse move**: `OnMouseMove` reads drag direction to switch rubber band between crossing and window variants live.
+3. **Second click**: snapshots `m_rubberbandType`, calls `RubberBandingDisable`, iterates layers with `IsWhollyContainedByRectangle` (window) or `SelectUsingRectangle` (crossing), adds or removes matched groups from trap, calls `InvalidateScene`, resets anchor state.
+4. **ESC** or **RMB**: cancels the armed anchor — calls `RubberBandingDisable`, resets `m_fieldTrapAnchorSet`.
+
+### Trap Mode Integration
+Trap mode op `4` (field trap) uses the same two-click field path. The context menu exposes "Finish Trapping" only when a gesture is active.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\AeSysViewInput.cpp` | `OnLButtonDown` (first/second click), `OnMouseMove` (live direction switch), `PreTranslateMessage` (ESC cancel), `OnRButtonUp` (RMB cancel for armed anchor) |
+| `AeSys\AeSysViewRender.cpp` | Rubber-band fill/border dispatch for all four rectangle variants |
+
+## Whole-Window Rectangle Selection
+
+### New Primitive Contract
+`EoDbPrimitive` carries a non-pure virtual:
+```cpp
+virtual bool IsWhollyContainedByRectangle(AeSysView* view,
+    const EoGePoint3d& minCorner, const EoGePoint3d& maxCorner) const;
+```
+Default returns `false` (safe for display-only primitives). Derived classes override to test that all their geometric content lies inside the axis-aligned rectangle in view/device coordinates.
+
+### Implementations by Type
+| Primitive | Strategy |
+|-----------|----------|
+| `EoDbLine` | Both endpoints via `EoGeLine::IsWhollyContainedXY()` |
+| `EoDbPolyline` | Tessellated points via `polyline::IsWhollyContainedByRectangle()` |
+| `EoDbConic` | `GenerateApproximationVertices()` then polyline helper |
+| `EoDbPolygon` | Explicit vertex array via point-array helper |
+| `EoDbSpline` | `m_pts` control point array |
+| `EoDbEllipse` | `GenPts()` then polyline helper |
+| `EoDbFace` | Vertex loop via polyline helper |
+| `EoDbPoint` | Delegates to `SelectUsingRectangle` |
+| `EoDbGroup` | All primitives must pass — returns `false` on first failure |
+| `EoDbBlockReference` | Pushes insert transform, delegates to referenced block's `IsWhollyContainedByRectangle`, restores transform |
+
+### Helper Functions
+- `EoGeLine::IsWhollyContainedXY(minCorner, maxCorner)` — both endpoints inside.
+- `polyline::IsWhollyContainedByRectangle(view, min, max)` — vertex-buffer overload.
+- `polyline::IsWhollyContainedByRectangle(view, points, min, max)` — explicit-array overload.
+- `EoGsVertexBuffer::IsWhollyContainedByRectangle(view, min, max)` — active buffer overload.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoDbPrimitive.h` | Non-pure virtual declaration |
+| `AeSys\EoDbLine/Polyline/Conic/Polygon/Spline/Ellipse/Face/Point.cpp` | Per-type implementations |
+| `AeSys\EoDbGroup.cpp` | Group-level whole-window test |
+| `AeSys\EoDbBlockReference.cpp` | INSERT whole-window test (transform + block delegation) |
+| `AeSys\EoGeLine.h/.cpp` | `IsWhollyContainedXY` helper |
+| `AeSys\EoGePolyline.h/.cpp` | Shared polyline/array helpers |
+| `AeSys\EoGsVertexBuffer.h/.cpp` | Vertex-buffer helper |
+
+## Primitive Reporting Refactor
+
+### Overview
+`FormatExtra` and `AddReportToMessageList` are non-pure virtuals on `EoDbPrimitive` with base implementations. All derived classes call the base first and then append type-specific metadata — eliminating duplicate handle/owner/layer/color/linetype formatting in every subclass.
+
+### TypeLabel Virtual
+```cpp
+[[nodiscard]] virtual const wchar_t* TypeLabel() const noexcept;
+```
+Returns a human-readable type name (e.g., `L"Line"`, `L"Circle"`, `L"Text"`). Appears as the **first field** in both the tooltip popup and the message list report.
+
+### Release-Build Filtering
+`#ifdef _DEBUG` gates the Handle and Owner fields in both `FormatExtra` and `AddReportToMessageList`. Release builds omit handle-space internals while debug builds expose them for diagnostics. All other fields (Layer, Color, LineType, type-specific geometry) appear in both configurations.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoDbPrimitive.h/.cpp` | Base implementations of `FormatExtra`, `AddReportToMessageList`, `TypeLabel` |
+| All derived primitive `.cpp` files | Call base then append type-specific fields; implement `TypeLabel()` |
+
+## Primitive Hover Tooltip
+
+### Custom Popup (`EoMfPrimitiveTooltip`)
+A custom `CWnd`-derived owner-drawn popup replaces the standard `CToolTipCtrl`. It supports **bold labels** (field name) and **normal values** on alternating regions within each row, matching the `Name;Value\t`-delimited output of `FormatExtra`.
+
+### Behavior
+- A `WM_TIMER` (`kHoverTimerId`, 1500 ms delay) fires when the mouse has not moved by more than 1px since arm time.
+- On timer: `SelectGroupAndPrimitive` hit-tests the last known cursor point. On a hit, `FormatExtra` is called and the popup is positioned near the cursor.
+- Any mouse movement beyond 1px dismisses the popup and rearms the timer.
+- The popup auto-dismisses on `WM_KILLFOCUS`.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoMfPrimitiveTooltip.h/.cpp` | Custom popup — owner-draw, bold label rendering, `ShowForPrimitive(primitive, screenPt)` |
+| `AeSys\AeSysViewRender.cpp` | `OnTimer` — hit test, format, show/hide lifecycle |
+| `AeSys\AeSysView.h` | `kHoverTimerId`, `kHoverDelayMs`, `m_hoverTooltip` (`EoMfPrimitiveTooltip`) |
+
+## Trap Highlight Color
+
+`Eo::kTrapHighlightAci` (= `150`, a medium blue-grey ACI) is the named constant for the trap group highlight color. It replaces the former magic number `15`. Defined in `Eo.h`; `AeSys.cpp` initializes `m_TrapHighlightColor` from it.
+
+To change the highlight color globally, update `kTrapHighlightAci` in `Eo.h`.
 
