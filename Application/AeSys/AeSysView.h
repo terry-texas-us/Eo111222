@@ -20,6 +20,7 @@
 #include "EoGsViewport.h"
 #include "EoLpdGeometry.h"
 #include "EoMfLayoutTabBar.h"
+#include "EoMfPrimitiveTooltip.h"
 #include "EoModeConfig.h"
 #include "EoPipeGeometry.h"
 #include "EoPowerGeometry.h"
@@ -403,8 +404,7 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   // Hover tooltip — fires kHoverTimerId ms after the last mouse-move with no hit.
   static constexpr UINT_PTR kHoverTimerId{1};
   static constexpr UINT kHoverDelayMs{1500};
-  CToolTipCtrl m_hoverTooltip{};
-  CString m_hoverTooltipText{};  // storage kept alive for the lifetime of the tip
+  EoMfPrimitiveTooltip m_hoverTooltip;
 
   ERubs m_rubberbandType{None};
   EoGePoint3d m_rubberbandBegin{};

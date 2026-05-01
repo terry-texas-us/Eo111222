@@ -345,11 +345,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   if (point != lastMousePoint) {
     lastMousePoint = point;
     KillTimer(kHoverTimerId);
-    TOOLINFOW ti{};
-    ti.cbSize = sizeof(ti);
-    ti.hwnd = GetSafeHwnd();
-    ti.uId = 1;
-    m_hoverTooltip.SendMessage(TTM_TRACKACTIVATE, FALSE, reinterpret_cast<LPARAM>(&ti));
+    m_hoverTooltip.Hide();
     SetTimer(kHoverTimerId, kHoverDelayMs, nullptr);
   }
   auto* state = GetCurrentState();

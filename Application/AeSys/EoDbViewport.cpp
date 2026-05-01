@@ -71,7 +71,6 @@ void EoDbViewport::swap(EoDbViewport& other) noexcept {
 }
 
 void EoDbViewport::AddReportToMessageList(const EoGePoint3d& point) {
-  app.AddStringToMessageList(L"<Viewport>");
   EoDbPrimitive::AddReportToMessageList(point);
   CString message;
   message.Format(L"  Id: %d  Center: (%.4f, %.4f, %.4f)  Size: %.3f x %.3f",

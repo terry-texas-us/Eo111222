@@ -206,22 +206,15 @@ void EoDbBlockReference::ExportToDxf(EoDxfInterface* writer) const {
   }
 }
 void EoDbBlockReference::AddReportToMessageList(const EoGePoint3d& point) {
-  app.AddStringToMessageList(L"<BlockReference>");
   EoDbPrimitive::AddReportToMessageList(point);
   CString message;
-  message.Format(L"  BlockName: %s", m_blockName.GetString());
-  app.AddStringToMessageList(message);
   message.Format(L"  InsertionPoint: %s", m_insertionPoint.ToString().GetString());
-  app.AddStringToMessageList(message);
-  message.Format(L"  Scale Factors: %s", m_scaleFactors.ToString().GetString());
   app.AddStringToMessageList(message);
   message.Format(L"  Normal: %s", m_normal.ToString().GetString());
   app.AddStringToMessageList(message);
-  message.Format(L"  Rotation Angle: %f", m_rotation);
+  message.Format(L"  Scale Factors: %s", m_scaleFactors.ToString().GetString());
   app.AddStringToMessageList(message);
   if (!m_attributeHandles.empty()) {
-    message.Format(L"  Attributes: %zu", m_attributeHandles.size());
-    app.AddStringToMessageList(message);
     for (const auto attributeHandle : m_attributeHandles) {
       message.Format(L"    ATTRIB Handle: %I64X", attributeHandle);
       app.AddStringToMessageList(message);

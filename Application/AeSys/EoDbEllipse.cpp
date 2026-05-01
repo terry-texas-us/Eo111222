@@ -464,10 +464,9 @@ void EoDbEllipse::ExportToDxf(EoDxfInterface* writer) const {
 }
 
 void EoDbEllipse::AddReportToMessageList(const EoGePoint3d& point) {
-  CString message;
-  app.AddStringToMessageList(L"<Ellipse>");
   EoDbPrimitive::AddReportToMessageList(point);
 
+  CString message;
   message.Format(L"  SweepAngle: %f  MajorAxisLength: %f", m_sweepAngle, m_majorAxis.Length());
   app.AddStringToMessageList(message);
 }

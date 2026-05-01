@@ -126,7 +126,6 @@ void EoDbSpline::ExportToDxf(EoDxfInterface* writer) const {
 }
 
 void EoDbSpline::AddReportToMessageList(const EoGePoint3d& point) {
-  app.AddStringToMessageList(CString(L"<Spline>"));
   EoDbPrimitive::AddReportToMessageList(point);
 
   CString detailLine;

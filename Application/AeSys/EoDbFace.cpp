@@ -125,8 +125,6 @@ EoDbFace* EoDbFace::CreateFromTrace(const EoGePoint3d& v0,
   return face;
 }
 
-// ── EoDbPrimitive Virtual Contract ───────────────────────────────────────────
-
 void EoDbFace::AddReportToMessageList(const EoGePoint3d& point) {
   EoDbPrimitive::AddReportToMessageList(point);
 

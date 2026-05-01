@@ -196,6 +196,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="EoMfPrimitiveTooltip.cpp" />
     <ClCompile Include="EoMsAnnotate.cpp" />
     <ClCompile Include="EoMsCut.cpp" />
     <ClCompile Include="EoMsDimension.cpp" />
@@ -386,6 +387,7 @@
     <ClInclude Include="Draw2ModeState.h" />
     <ClInclude Include="DrawModeState.h" />
     <ClInclude Include="EditModeState.h" />
+    <ClInclude Include="EoMfPrimitiveTooltip.h" />
     <ClInclude Include="EoMsAnnotate.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="EoMsCut.h" />

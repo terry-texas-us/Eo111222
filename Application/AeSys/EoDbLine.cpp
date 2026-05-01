@@ -141,7 +141,6 @@ void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {
   app.FormatLength(lengthAsString, app.GetUnits(), length);
   app.FormatAngle(angleAsString, angle, 8, 3);
 
-  app.AddStringToMessageList(L"<Line>");
   EoDbPrimitive::AddReportToMessageList(point);
   CString message;
   message.Format(L"  %s @ %s", lengthAsString.TrimLeft().GetString(), angleAsString.GetString());

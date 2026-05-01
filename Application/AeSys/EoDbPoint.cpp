@@ -165,7 +165,6 @@ void EoDbPoint::ExportToDxf(EoDxfInterface* writer) const {
 }
 
 void EoDbPoint::AddReportToMessageList(const EoGePoint3d& point) {
-  app.AddStringToMessageList(CString(L"<Point>"));
   EoDbPrimitive::AddReportToMessageList(point);
 }
 

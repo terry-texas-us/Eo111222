@@ -32,7 +32,6 @@
     <ClCompile Include="DdeAeSysRegistration.cpp" />
     <ClCompile Include="DdeCmds.cpp" />
     <ClCompile Include="DdeGItms.cpp" />
-    <ClCompile Include="DrawModeState.cpp" />
     <ClCompile Include="Eo.cpp" />
     <ClCompile Include="EoApOptions.cpp" />
     <ClCompile Include="EoCtrlColorsButton.cpp" />
@@ -95,7 +94,6 @@
     <ClCompile Include="EoDlgSetUnitsAndPrecision.cpp" />
     <ClCompile Include="EoDlgSetupColor.cpp" />
     <ClCompile Include="EoDlgSetupConstraints.cpp" />
-    <ClCompile Include="EoDlgSetupCustomMouseCharacters.cpp" />
     <ClCompile Include="EoDlgSetupHatch.cpp" />
     <ClCompile Include="EoDlgSetupHomePoint.cpp" />
     <ClCompile Include="EoDlgSetupLineType.cpp" />
@@ -153,20 +151,22 @@
     <ClCompile Include="EoDocCommand.cpp" />
     <ClCompile Include="PickAndDragState.cpp" />
     <ClCompile Include="PrimitiveMendState.cpp" />
-    <ClCompile Include="TrapModeState.cpp" />
-    <ClCompile Include="EditModeState.cpp" />
-    <ClCompile Include="PipeModeState.cpp" />
-    <ClCompile Include="PowerModeState.cpp" />
-    <ClCompile Include="Draw2ModeState.cpp" />
-    <ClCompile Include="AnnotateModeState.cpp" />
-    <ClCompile Include="DimensionModeState.cpp" />
-    <ClCompile Include="CutModeState.cpp" />
-    <ClCompile Include="NodalModeState.cpp" />
-    <ClCompile Include="FixupModeState.cpp" />
-    <ClCompile Include="LpdModeState.cpp" />
     <ClCompile Include="EoLpdGeometry.cpp" />
     <ClCompile Include="EoPipeGeometry.cpp" />
     <ClCompile Include="EoPowerGeometry.cpp" />
+    <ClCompile Include="EoMsAnnotate.cpp" />
+    <ClCompile Include="EoMsCut.cpp" />
+    <ClCompile Include="EoMsDimension.cpp" />
+    <ClCompile Include="EoMsDraw2.cpp" />
+    <ClCompile Include="EoMsDraw.cpp" />
+    <ClCompile Include="EoMsEdit.cpp" />
+    <ClCompile Include="EoMsFixup.cpp" />
+    <ClCompile Include="EoMsLpd.cpp" />
+    <ClCompile Include="EoMsNodal.cpp" />
+    <ClCompile Include="EoMsPipe.cpp" />
+    <ClCompile Include="EoMsPower.cpp" />
+    <ClCompile Include="EoMsTrap.cpp" />
+    <ClCompile Include="EoMfPrimitiveTooltip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -241,7 +241,6 @@
     <ClInclude Include="EoDlgSetUnitsAndPrecision.h" />
     <ClInclude Include="EoDlgSetupColor.h" />
     <ClInclude Include="EoDlgSetupConstraints.h" />
-    <ClInclude Include="EoDlgSetupCustomMouseCharacters.h" />
     <ClInclude Include="EoDlgSetupHatch.h" />
     <ClInclude Include="EoDlgSetupLineType.h" />
     <ClInclude Include="EoDlgSetupNote.h" />
@@ -301,7 +300,6 @@
     <ClInclude Include="PickAndDragState.h" />
     <ClInclude Include="PrimitiveMendState.h" />
     <ClInclude Include="EditModeState.h" />
-    <ClInclude Include="TrapModeState.h" />
     <ClInclude Include="PipeModeState.h" />
     <ClInclude Include="PowerModeState.h" />
     <ClInclude Include="Draw2ModeState.h" />
@@ -315,6 +313,19 @@
     <ClInclude Include="EoPipeGeometry.h" />
     <ClInclude Include="EoPowerGeometry.h" />
     <ClInclude Include="EoModeConfig.h" />
+    <ClInclude Include="EoMsAnnotate.h" />
+    <ClInclude Include="EoMsCut.h" />
+    <ClInclude Include="EoMsDimension.h" />
+    <ClInclude Include="EoMsDraw2.h" />
+    <ClInclude Include="EoMsDraw.h" />
+    <ClInclude Include="EoMsEdit.h" />
+    <ClInclude Include="EoMsFixup.h" />
+    <ClInclude Include="EoMsLpd.h" />
+    <ClInclude Include="EoMsNodal.h" />
+    <ClInclude Include="EoMsPipe.h" />
+    <ClInclude Include="EoMsPower.h" />
+    <ClInclude Include="EoMsTrap.h" />
+    <ClInclude Include="EoMfPrimitiveTooltip.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />
@@ -370,6 +381,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\Hatches\DefaultSet.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
+    <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />
     <Text Include="res\LineTypes\*.txt" />

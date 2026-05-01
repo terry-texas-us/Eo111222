@@ -140,7 +140,6 @@ void EoDbLabeledLine::Display(AeSysView* view, EoGsRenderDevice* renderDevice) {
 }
 
 void EoDbLabeledLine::AddReportToMessageList(const EoGePoint3d& point) {
-  app.AddStringToMessageList(CString(L"<LabeledLine>"));
   EoDbPrimitive::AddReportToMessageList(point);
 
   const auto length = Length();
