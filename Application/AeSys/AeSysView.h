@@ -62,7 +62,7 @@ class AeSysView : public CView {
     Layer = 0x0200,
     All = BothCounts | Pen | Line | TextHeight | WndRatio | Scale | DimLen | DimAng | Layer
   };
-  enum ERubs { None, Lines, Rectangles };
+  enum ERubs { None, Lines, Rectangles, RectanglesRemove };
 
 private:
  std::stack<std::unique_ptr<AeSysState>> m_stateStack;
@@ -412,7 +412,10 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   CPoint m_rubberbandLogicalEnd{};
 
   // True after the first corner of a two-click field-trap rectangle has been placed.
+  // m_fieldTrapIsRemove captures the shift state at first-corner time; the second
+  // click does not need shift held to complete a removal.
   bool m_fieldTrapAnchorSet{};
+  bool m_fieldTrapIsRemove{};
 
   /** @brief Disables rubber banding by erasing the current rubber band from the view.
    * @note When Direct2D is active, simply clears the rubberband type and invalidates the scene — the next

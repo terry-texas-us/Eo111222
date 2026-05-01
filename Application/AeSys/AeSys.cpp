@@ -502,7 +502,7 @@ void AeSys::InitGbls(CDC* deviceContext) {
   SetDimensionAngle(45.0);
 
   m_TrapHighlighted = true;
-  m_TrapHighlightColor = 15;
+  m_TrapHighlightColor = Eo::kTrapHighlightAci;
 
   Gs::renderState.SetPen(nullptr, deviceContext, Eo::defaultColor, 1);
   Gs::renderState.SetPointStyle(0);

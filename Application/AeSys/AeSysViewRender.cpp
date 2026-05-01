@@ -227,15 +227,31 @@ void AeSysView::OnDraw(CDC* deviceContext) {
               D2D1::Point2F(static_cast<float>(m_rubberbandLogicalEnd.x), static_cast<float>(m_rubberbandLogicalEnd.y));
           if (m_rubberbandType == Lines) {
             m_d2dRenderTarget->DrawLine(begin, end, rubberbandBrush.Get(), 1.0f);
-          } else if (m_rubberbandType == Rectangles) {
+          } else if (m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove) {
             const auto rect = D2D1::RectF(
                 std::min(begin.x, end.x), std::min(begin.y, end.y),
                 std::max(begin.x, end.x), std::max(begin.y, end.y));
-            // Semi-transparent green fill for field-trap drag rectangle.
+            // Semi-transparent fill: green for add, red for remove.
             Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> fillBrush;
-            m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.6f, 0.2f, 0.18f), &fillBrush);
+            if (m_rubberbandType == RectanglesRemove) {
+              m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.7f, 0.0f, 0.0f, 0.18f), &fillBrush);
+            } else {
+              m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.6f, 0.2f, 0.18f), &fillBrush);
+            }
             if (fillBrush) { m_d2dRenderTarget->FillRectangle(rect, fillBrush.Get()); }
-            m_d2dRenderTarget->DrawRectangle(rect, rubberbandBrush.Get(), 1.0f);
+            // Dashed border for remove mode; solid for add.
+            if (m_rubberbandType == RectanglesRemove) {
+              Microsoft::WRL::ComPtr<ID2D1Factory> factory;
+              m_d2dRenderTarget->GetFactory(&factory);
+              const float dashes[] = {5.0f, 3.0f};
+              D2D1_STROKE_STYLE_PROPERTIES dashProps = D2D1::StrokeStyleProperties();
+              dashProps.dashStyle = D2D1_DASH_STYLE_CUSTOM;
+              Microsoft::WRL::ComPtr<ID2D1StrokeStyle> dashStyle;
+              factory->CreateStrokeStyle(dashProps, dashes, 2, &dashStyle);
+              m_d2dRenderTarget->DrawRectangle(rect, rubberbandBrush.Get(), 1.0f, dashStyle.Get());
+            } else {
+              m_d2dRenderTarget->DrawRectangle(rect, rubberbandBrush.Get(), 1.0f);
+            }
           }
         }
       }
@@ -343,18 +359,23 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         // This eliminates XOR color artifacts and keeps the rubberband on the same clean
         // compose path used by the D2D target.
         if (m_rubberbandType != None) {
-          CPen rubberbandPen(PS_SOLID, 0, Eo::RubberbandColor());
-          auto* prevPen = m_overlayDC.SelectObject(&rubberbandPen);
           if (m_rubberbandType == Lines) {
+            CPen linePen(PS_SOLID, 0, Eo::RubberbandColor());
+            auto* prevPen = m_overlayDC.SelectObject(&linePen);
             m_overlayDC.MoveTo(m_rubberbandLogicalBegin);
             m_overlayDC.LineTo(m_rubberbandLogicalEnd);
-          } else if (m_rubberbandType == Rectangles) {
+            m_overlayDC.SelectObject(prevPen);
+          } else if (m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove) {
+            // Dashed border for remove mode; solid for add.
+            const int penStyle = (m_rubberbandType == RectanglesRemove) ? PS_DASH : PS_SOLID;
+            CPen rectPen(penStyle, 0, Eo::RubberbandColor());
+            auto* prevPen = m_overlayDC.SelectObject(&rectPen);
             auto* prevBrush = m_overlayDC.SelectStockObject(NULL_BRUSH);
             m_overlayDC.Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
                 m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
             m_overlayDC.SelectObject(prevBrush);
+            m_overlayDC.SelectObject(prevPen);
           }
-          m_overlayDC.SelectObject(prevPen);
         }
 
         // State overlay: mode-specific overlays (preview geometry, selection hints).

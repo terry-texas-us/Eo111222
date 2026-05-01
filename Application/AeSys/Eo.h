@@ -62,6 +62,9 @@ constexpr COLORREF bitmapMaskColor = chromeColors.paneBackground;
 constexpr COLORREF colorRubberband = RGB(120, 118, 112);
 constexpr COLORREF colorViewBackground = RGB(40, 40, 36);
 
+/// @brief ACI index used to highlight trapped primitives (ACI 150 — vivid sky-blue RGB(0,127,255)).
+constexpr std::int16_t kTrapHighlightAci{150};
+
 /// @brief Returns the model-space background color for the active view background setting.
 [[nodiscard]] inline COLORREF ModelSpaceBackgroundColor() noexcept {
   return (activeViewBackground == ViewBackground::Dark) ? colorViewBackground : colorWhite;

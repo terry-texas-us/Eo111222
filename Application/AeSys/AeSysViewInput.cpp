@@ -18,6 +18,7 @@ BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
   if (pMsg->message == WM_KEYDOWN) {
     if (pMsg->wParam == VK_ESCAPE && m_fieldTrapAnchorSet) {
       m_fieldTrapAnchorSet = false;
+      m_fieldTrapIsRemove = false;
       RubberBandingDisable();
       return TRUE;
     }
@@ -48,13 +49,15 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
       const EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
       const EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
       EoDbPolygon::EdgeToEvaluate() = 0;
-      const bool shiftHeld = (flags & MK_SHIFT) != 0;
+      // Remove mode is determined entirely by the shift state at the FIRST corner.
+      const bool isRemove = m_fieldTrapIsRemove;
+      m_fieldTrapIsRemove = false;
       bool anyChanged = false;
       auto position = GetFirstVisibleGroupPosition();
       while (position != nullptr) {
         auto* group = GetNextVisibleGroup(position);
-        if (shiftHeld) {
-          // Shift+second-click: remove all trapped groups inside the rectangle.
+        if (isRemove) {
+          // Remove all trapped groups that intersect the rectangle.
           if (document->FindTrappedGroup(group) != nullptr &&
               group->SelectUsingRectangle(this, ptMin, ptMax)) {
             document->RemoveTrappedGroup(group);
@@ -72,6 +75,8 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
         UpdateStateInformation(TrapCount);
         InvalidateScene();
       }
+    } else {
+      m_fieldTrapIsRemove = false;
     }
     return;
   }
@@ -105,8 +110,10 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
   if (state != nullptr) {
     // If the state has no active gesture (idle op), start a field-trap rectangle instead.
     if (state->GetActiveOp() == 0) {
+      const bool shiftHeld = (flags & MK_SHIFT) != 0;
+      m_fieldTrapIsRemove = shiftHeld;
       m_fieldTrapAnchorSet = true;
-      RubberBandingStartAtEnable(worldPoint, Rectangles);
+      RubberBandingStartAtEnable(worldPoint, shiftHeld ? RectanglesRemove : Rectangles);
       return;
     }
     state->OnLButtonDown(this, flags, point);
@@ -114,8 +121,12 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
   }
 
   // --- Fully idle: start field-trap rectangle ---
-  m_fieldTrapAnchorSet = true;
-  RubberBandingStartAtEnable(worldPoint, Rectangles);
+  {
+    const bool shiftHeld = (flags & MK_SHIFT) != 0;
+    m_fieldTrapIsRemove = shiftHeld;
+    m_fieldTrapAnchorSet = true;
+    RubberBandingStartAtEnable(worldPoint, shiftHeld ? RectanglesRemove : Rectangles);
+  }
 }
 
 void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
@@ -288,6 +299,16 @@ void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
 }
 
 void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
+  // RMB cancels an in-progress idle field-trap anchor (first corner placed,
+  // waiting for second corner).  This mirrors the ESC key behaviour and is
+  // intuitive: right-click in empty space = "never mind".
+  if (m_fieldTrapAnchorSet) {
+    m_fieldTrapAnchorSet = false;
+    m_fieldTrapIsRemove = false;
+    RubberBandingDisable();
+    return;
+  }
+
   auto* state = GetCurrentState();
   if (state != nullptr) {
     CMenu menu;
@@ -399,7 +420,7 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   }
   DisplayOdometer();
 
-  if (m_rubberbandType == Lines || m_rubberbandType == Rectangles) {
+  if (m_rubberbandType == Lines || m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove) {
     // Both D2D and GDI paths: update endpoint and trigger an overlay-only repaint.
     // Rubberband is drawn into the overlay buffer in OnDraw — no XOR-on-screen needed.
     m_rubberbandLogicalEnd = point;

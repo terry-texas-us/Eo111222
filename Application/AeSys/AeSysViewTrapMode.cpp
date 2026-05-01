@@ -108,9 +108,9 @@ void AeSysView::OnTrapModeField() {
     RubberBandingDisable();
     trapState->UnhighlightOp(this);
     UpdateStateInformation(TrapCount);
+    InvalidateScene();
   }
 }
-
 void AeSysView::OnTrapModeLast() {
   auto* document = GetDocument();
 
@@ -232,7 +232,7 @@ void AeSysView::OnTraprModeField() {
 
   if (trapState->PreviousOp() != ID_OP4) {
     trapState->SetPreviousPoint(GetCursorPosition());
-    RubberBandingStartAtEnable(trapState->PreviousPoint(), Rectangles);
+    RubberBandingStartAtEnable(trapState->PreviousPoint(), RectanglesRemove);
     trapState->SetPreviousOp(ModeLineHighlightOp(ID_OP4));
   } else {
     const auto cursorPosition = GetCursorPosition();
@@ -241,7 +241,6 @@ void AeSysView::OnTraprModeField() {
     auto* document = GetDocument();
 
     EoGePoint4d ptView[] = {EoGePoint4d(trapState->PreviousPoint()), EoGePoint4d(cursorPosition)};
-
     ModelViewTransformPoints(2, ptView);
 
     const EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
@@ -250,7 +249,6 @@ void AeSysView::OnTraprModeField() {
     auto position = document->GetFirstTrappedGroupPosition();
     while (position != nullptr) {
       auto* group = document->GetNextTrappedGroup(position);
-
       if (group->SelectUsingRectangle(this, ptMin, ptMax)) {
         document->RemoveTrappedGroupAt(document->FindTrappedGroup(group));
         document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
@@ -259,6 +257,7 @@ void AeSysView::OnTraprModeField() {
     RubberBandingDisable();
     trapState->UnhighlightOp(this);
     UpdateStateInformation(TrapCount);
+    InvalidateScene();
   }
 }
 void AeSysView::OnTraprModeLast() {

@@ -56,8 +56,15 @@ bool TrapModeState::BuildContextMenu(AeSysView* context, CMenu& menu) {
     return true;
   }
 
-  // ── Idle: show trap-action menu only when something is trapped ──
-  if (document->IsTrapEmpty()) { return false; }
+  // ── Idle: show trap-action menu ──
+  if (document->IsTrapEmpty()) {
+    // Nothing trapped — offer only a way to exit the mode so RMB doesn't
+    // silently do nothing (AutoCAD users expect RMB to always produce a menu
+    // in a mode context).
+    const UINT exitCmd = isTrapMode ? ID_TRAP_MODE_ESCAPE : ID_TRAPR_MODE_ESCAPE;
+    menu.AppendMenu(MF_STRING, exitCmd, isTrapMode ? L"Exit Trap Mode\tEsc" : L"Exit Trapr Mode\tEsc");
+    return true;
+  }
 
   if (isTrapMode) {
     menu.AppendMenu(MF_STRING, ID_EDIT_TRAPQUIT,   L"&Release Trap");
