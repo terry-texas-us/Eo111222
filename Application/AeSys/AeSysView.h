@@ -104,11 +104,21 @@ public:
   CDC m_backBufferDC;
   CBitmap m_backBuffer;
   CSize m_backBufferSize{0, 0};
+  // Overlay composite buffer — holds (scene + transient overlays). Composited from
+  // m_backBuffer on every overlay-dirty paint; used as the source of the screen BitBlt
+  // so simple expose events become a single BitBlt with no GDI primitive calls.
+  CDC m_overlayDC;
+  CBitmap m_overlayBuffer;
   bool m_sceneInvalid{true};
   bool m_overlayDirty{};
 
   // Direct2D render target
   Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> m_d2dRenderTarget;
+  // Cached scene bitmap target — DisplayAllLayers renders into this once per scene
+  // change. Per-frame composition copies the bitmap to the HWND target and draws
+  // transient overlays (unique points, preview, rubberband) over it. Eliminates
+  // per-frame entity rendering when only overlays change (e.g. rubberband drag).
+  Microsoft::WRL::ComPtr<ID2D1BitmapRenderTarget> m_d2dSceneTarget;
   bool m_useD2D{true};
   bool m_d2dAliased{};
   bool m_useD2DForPrint{true};  ///< Use D2D DC render target for printing (GDI fallback if false)
@@ -496,6 +506,9 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 
   /// @brief Creates (or recreates) the Direct2D HWND render target for this view.
   void CreateD2DRenderTarget();
+
+  /// @brief Creates the cached scene bitmap render target sized to the current viewport.
+  void CreateD2DSceneTarget();
 
   /// @brief Releases the Direct2D render target and all device-dependent resources.
   void DiscardD2DResources();

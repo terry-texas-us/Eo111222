@@ -61,7 +61,7 @@ void AeSysView::OnNodalModePoint() {
     }
   }
   points.RemoveAll();
-  InvalidateScene();
+  InvalidateOverlay();
 }
 
 void AeSysView::OnNodalModeLine() {
@@ -81,7 +81,7 @@ void AeSysView::OnNodalModeLine() {
 
     for (int i = 0; i < points.GetSize(); i++) { document->UpdateNodalList(group, primitive, mask, i, points[i]); }
     points.RemoveAll();
-    InvalidateScene();
+    InvalidateOverlay();
   }
 }
 
@@ -125,7 +125,7 @@ void AeSysView::OnNodalModeArea() {
     }
     RubberBandingDisable();
     ModeLineUnhighlightOp(state->PreviousCommandRef());
-    InvalidateScene();
+    InvalidateOverlay();
   }
 }
 

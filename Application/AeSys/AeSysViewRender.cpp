@@ -114,18 +114,6 @@ void AeSysView::OnDraw(CDC* deviceContext) {
   if (m_useD2D && !m_d2dRenderTarget) { CreateD2DRenderTarget(); }
   if (m_useD2D && m_d2dRenderTarget) {
     if (m_sceneInvalid || m_overlayDirty) {
-      m_d2dRenderTarget->BeginDraw();
-      m_d2dRenderTarget->SetAntialiasMode(
-          m_d2dAliased ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-
-      // Clip rendering to the drawing area (excludes the tab bar at the bottom).
-      // The D2D render target is sized to the full HWND client area to prevent
-      // scaling; the clip rect keeps Clear() and entity rendering out of the
-      // tab-bar region.
-      const auto drawingClipRect =
-          D2D1::RectF(0.0f, 0.0f, static_cast<float>(m_Viewport.Width()), static_cast<float>(m_Viewport.Height()));
-      m_d2dRenderTarget->PushAxisAlignedClip(drawingClipRect, D2D1_ANTIALIAS_MODE_ALIASED);
-
       auto* document = GetDocument();
       assert(document != nullptr);
       const bool isPaperSpace = document->ActiveSpace() == EoDxf::Space::PaperSpace;
@@ -134,8 +122,6 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       const auto bgColor = isBlockEdit ? Eo::BlockEditBackgroundColor() : Eo::ViewBackgroundColorForSpace(isPaperSpace);
       const auto bkColor =
           D2D1::ColorF(GetRValue(bgColor) / 255.0f, GetGValue(bgColor) / 255.0f, GetBValue(bgColor) / 255.0f);
-      m_d2dRenderTarget->Clear(bkColor);
-      EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
 
       // White background (paper space) — force ACI 7→black so entities using the
       // default color are visible on the white sheet, matching print-path behavior.
@@ -155,7 +141,55 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       // rendering, which mutates Gs::renderState via SetPen calls. Restore afterward so that
       // UpdateStateInformation reads the user's selection, not the last-rendered entity's state.
       const auto savedUserState = Gs::renderState.Save();
-      document->DisplayAllLayers(this, &renderDevice);
+
+      // (Re)create the cached scene target if missing or sized to a stale viewport.
+      if (m_sceneInvalid) {
+        if (!m_d2dSceneTarget) { CreateD2DSceneTarget(); }
+        if (m_d2dSceneTarget) {
+          m_d2dSceneTarget->BeginDraw();
+          m_d2dSceneTarget->SetAntialiasMode(
+              m_d2dAliased ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+          const auto sceneClip =
+              D2D1::RectF(0.0f, 0.0f, static_cast<float>(m_Viewport.Width()), static_cast<float>(m_Viewport.Height()));
+          m_d2dSceneTarget->PushAxisAlignedClip(sceneClip, D2D1_ANTIALIAS_MODE_ALIASED);
+          m_d2dSceneTarget->Clear(bkColor);
+          EoGsRenderDeviceDirect2D sceneDevice(m_d2dSceneTarget.Get(), app.D2DFactory(), app.DWriteFactory());
+          document->DisplayAllLayers(this, &sceneDevice);
+          m_d2dSceneTarget->PopAxisAlignedClip();
+          const HRESULT hrScene = m_d2dSceneTarget->EndDraw();
+          if (hrScene == D2DERR_RECREATE_TARGET) {
+            DiscardD2DResources();
+            InvalidateScene();
+            return;
+          }
+        }
+      }
+
+      // Composite cached scene + transient overlays onto the HWND render target.
+      m_d2dRenderTarget->BeginDraw();
+      m_d2dRenderTarget->SetAntialiasMode(
+          m_d2dAliased ? D2D1_ANTIALIAS_MODE_ALIASED : D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+
+      const auto drawingClipRect =
+          D2D1::RectF(0.0f, 0.0f, static_cast<float>(m_Viewport.Width()), static_cast<float>(m_Viewport.Height()));
+      m_d2dRenderTarget->PushAxisAlignedClip(drawingClipRect, D2D1_ANTIALIAS_MODE_ALIASED);
+
+      if (m_d2dSceneTarget) {
+        Microsoft::WRL::ComPtr<ID2D1Bitmap> sceneBitmap;
+        if (SUCCEEDED(m_d2dSceneTarget->GetBitmap(&sceneBitmap)) && sceneBitmap) {
+          m_d2dRenderTarget->DrawBitmap(sceneBitmap.Get(), drawingClipRect, 1.0f,
+              D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR, drawingClipRect);
+        } else {
+          m_d2dRenderTarget->Clear(bkColor);
+        }
+      } else {
+        // Scene target unavailable — fall back to direct render so the screen is not blank.
+        m_d2dRenderTarget->Clear(bkColor);
+        EoGsRenderDeviceDirect2D fallbackDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
+        document->DisplayAllLayers(this, &fallbackDevice);
+      }
+
+      EoGsRenderDeviceDirect2D renderDevice(m_d2dRenderTarget.Get(), app.D2DFactory(), app.DWriteFactory());
       document->RenderUniquePoints(this, &renderDevice);
 
       // Preview group overlay — rendered on top of the committed scene.
@@ -267,11 +301,6 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         DisplayGrid(&m_backBufferDC);
         EoGsRenderDeviceGdi renderDevice(&m_backBufferDC);
         document->DisplayAllLayers(this, &renderDevice);
-        document->RenderUniquePoints(this, &renderDevice);
-        // State overlay: called after scene so states can draw mode-specific
-        // overlays on top (e.g., preview geometry, selection hints).
-        auto* state = GetCurrentState();
-        if (state != nullptr) { state->OnDraw(this, &m_backBufferDC); }
       }
 
       if (needsWhiteBackground) {
@@ -285,11 +314,57 @@ void AeSysView::OnDraw(CDC* deviceContext) {
 
     // Blit back buffer to screen (or fall back to direct rendering if no back buffer yet)
     if (m_backBufferDC.GetSafeHdc() != nullptr) {
+      // Recompose the overlay buffer when overlays or scene changed.
+      // Otherwise the cached overlay buffer is reused — simple expose events
+      // (uncover, focus changes) become a single BitBlt to the screen with no
+      // GDI primitive calls and no overlay redraw.
+      if (m_overlayDirty && m_overlayDC.GetSafeHdc() != nullptr) {
+        m_overlayDC.BitBlt(0, 0, m_backBufferSize.cx, m_backBufferSize.cy, &m_backBufferDC, 0, 0, SRCCOPY);
+
+        // Draw transient overlays into the overlay buffer.
+        // When a viewport is active, push the viewport's model-space transform so
+        // model-space markers/preview render in the correct position.
+        EoGsRenderDeviceGdi overlayDevice(&m_overlayDC);
+        const bool viewportActive = IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive);
+
+        document->RenderUniquePoints(this, &overlayDevice);
+
+        if (!m_PreviewGroup.IsEmpty()) {
+          m_PreviewGroup.Display(this, &overlayDevice);
+        }
+
+        // Rubberband — GDI path draws into the overlay buffer instead of XOR-on-screen.
+        // This eliminates XOR color artifacts and keeps the rubberband on the same clean
+        // compose path used by the D2D target.
+        if (m_rubberbandType != None) {
+          CPen rubberbandPen(PS_SOLID, 0, Eo::RubberbandColor());
+          auto* prevPen = m_overlayDC.SelectObject(&rubberbandPen);
+          if (m_rubberbandType == Lines) {
+            m_overlayDC.MoveTo(m_rubberbandLogicalBegin);
+            m_overlayDC.LineTo(m_rubberbandLogicalEnd);
+          } else if (m_rubberbandType == Rectangles) {
+            auto* prevBrush = m_overlayDC.SelectStockObject(NULL_BRUSH);
+            m_overlayDC.Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,
+                m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
+            m_overlayDC.SelectObject(prevBrush);
+          }
+          m_overlayDC.SelectObject(prevPen);
+        }
+
+        // State overlay: mode-specific overlays (preview geometry, selection hints).
+        auto* state = GetCurrentState();
+        if (state != nullptr) { state->OnDraw(this, &m_overlayDC); }
+
+        if (viewportActive) { RestoreViewportTransform(); }
+      }
+
+      // Blit overlay (or back buffer if overlay not yet allocated) to screen.
+      auto* sourceDC = m_overlayDC.GetSafeHdc() != nullptr ? &m_overlayDC : &m_backBufferDC;
       deviceContext->BitBlt(clipRect.left,
           clipRect.top,
           clipRect.Width(),
           clipRect.Height(),
-          &m_backBufferDC,
+          sourceDC,
           clipRect.left,
           clipRect.top,
           SRCCOPY);
@@ -321,20 +396,6 @@ void AeSysView::OnDraw(CDC* deviceContext) {
           Eo::GrayPalette[0] = sGray0;
           Eo::GrayPalette[7] = sGray7;
         }
-      }
-    }
-
-    // Preview group overlay — rendered on the screen DC, not into the back buffer,
-    // so it does not require a full scene re-render on each mouse move.
-    // When a viewport is active, push the viewport's model-space transform so
-    // model-space preview points render in the correct position.
-    if (!m_PreviewGroup.IsEmpty()) {
-      EoGsRenderDeviceGdi overlayDevice(deviceContext);
-      if (IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive)) {
-        m_PreviewGroup.Display(this, &overlayDevice);
-        RestoreViewportTransform();
-      } else {
-        m_PreviewGroup.Display(this, &overlayDevice);
       }
     }
 
@@ -743,18 +804,30 @@ void AeSysView::RecreateBackBuffer(int width, int height) {
     m_backBuffer.DeleteObject();
     m_backBufferDC.DeleteDC();
   }
+  if (m_overlayDC.GetSafeHdc() != nullptr) {
+    m_overlayDC.SelectObject(static_cast<CBitmap*>(nullptr));
+    m_overlayBuffer.DeleteObject();
+    m_overlayDC.DeleteDC();
+  }
 
   m_backBufferDC.CreateCompatibleDC(screenDC);
   m_backBuffer.CreateCompatibleBitmap(screenDC, width, height);
   m_backBufferDC.SelectObject(&m_backBuffer);
+
+  m_overlayDC.CreateCompatibleDC(screenDC);
+  m_overlayBuffer.CreateCompatibleBitmap(screenDC, width, height);
+  m_overlayDC.SelectObject(&m_overlayBuffer);
+
   m_backBufferSize.SetSize(width, height);
   m_sceneInvalid = true;
+  m_overlayDirty = true;
 
   ReleaseDC(screenDC);
 }
 
 void AeSysView::InvalidateScene() {
   m_sceneInvalid = true;
+  m_overlayDirty = true;  // overlay must be recomposited from refreshed scene
   InvalidateRect(nullptr, FALSE);
 }
 
@@ -789,7 +862,24 @@ void AeSysView::CreateD2DRenderTarget() {
 }
 
 void AeSysView::DiscardD2DResources() {
+  m_d2dSceneTarget.Reset();
   m_d2dRenderTarget.Reset();
+}
+
+void AeSysView::CreateD2DSceneTarget() {
+  if (m_d2dSceneTarget) { return; }
+  if (!m_d2dRenderTarget) { return; }
+
+  const double width = m_Viewport.Width();
+  const double height = m_Viewport.Height();
+  if (width <= 0.0 || height <= 0.0) { return; }
+
+  const D2D1_SIZE_F sizeF = D2D1::SizeF(static_cast<float>(width), static_cast<float>(height));
+  const HRESULT hr = m_d2dRenderTarget->CreateCompatibleRenderTarget(sizeF, &m_d2dSceneTarget);
+  if (FAILED(hr)) {
+    ATLTRACE2(traceGeneral, 0, L"AeSysView<%p>::CreateD2DSceneTarget() FAILED hr=0x%08X\n", this, hr);
+    m_d2dSceneTarget.Reset();
+  }
 }
 
 void AeSysView::OnContextMenu(CWnd*, CPoint point) {
@@ -845,6 +935,8 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
         const D2D1_SIZE_U size = D2D1::SizeU(static_cast<UINT32>(cx), static_cast<UINT32>(cy));
         const HRESULT hr = m_d2dRenderTarget->Resize(size);
         if (FAILED(hr)) { DiscardD2DResources(); }
+        // Scene cache must be re-created at the new viewport size on next OnDraw.
+        m_d2dSceneTarget.Reset();
         m_sceneInvalid = true;
       } else {
         // D2D creation failed — could be early OnSize before HWND is presentable.

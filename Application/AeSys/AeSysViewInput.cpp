@@ -307,43 +307,10 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   DisplayOdometer();
 
   if (m_rubberbandType == Lines || m_rubberbandType == Rectangles) {
-    if (m_useD2D) {
-      // D2D path: update endpoint and invalidate — rubberband drawn as overlay in OnDraw
-      m_rubberbandLogicalEnd = point;
-      InvalidateScene();
-    } else if (m_rubberbandType == Lines) {
-      auto* deviceContext = GetDC();
-      const auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-      CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
-      auto* pen = deviceContext->SelectObject(&grayPen);
-
-      deviceContext->MoveTo(m_rubberbandLogicalBegin);
-      deviceContext->LineTo(m_rubberbandLogicalEnd);
-
-      m_rubberbandLogicalEnd = point;
-      deviceContext->MoveTo(m_rubberbandLogicalBegin);
-      deviceContext->LineTo(m_rubberbandLogicalEnd);
-      deviceContext->SelectObject(pen);
-      deviceContext->SetROP2(drawMode);
-      ReleaseDC(deviceContext);
-    } else {  // Rectangles, GDI path
-      auto* deviceContext = GetDC();
-      const auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-      CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
-      auto* pen = deviceContext->SelectObject(&grayPen);
-      auto* brush = deviceContext->SelectStockObject(NULL_BRUSH);
-
-      deviceContext->Rectangle(
-          m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
-
-      m_rubberbandLogicalEnd = point;
-      deviceContext->Rectangle(
-          m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
-      deviceContext->SelectObject(brush);
-      deviceContext->SelectObject(pen);
-      deviceContext->SetROP2(drawMode);
-      ReleaseDC(deviceContext);
-    }
+    // Both D2D and GDI paths: update endpoint and trigger an overlay-only repaint.
+    // Rubberband is drawn into the overlay buffer in OnDraw — no XOR-on-screen needed.
+    m_rubberbandLogicalEnd = point;
+    InvalidateOverlay();
   }
 }
 
@@ -360,30 +327,10 @@ BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
 
 void AeSysView::RubberBandingDisable() {
   if (m_rubberbandType != None) {
-    if (m_useD2D) {
-      // D2D path: just clear the type — next OnDraw omits the rubberband overlay
-      m_rubberbandType = None;
-      InvalidateScene();
-      return;
-    }
-    auto* deviceContext = GetDC();
-    const auto drawMode = deviceContext->SetROP2(R2_XORPEN);
-    CPen grayPen(PS_SOLID, 0, Eo::RubberbandColor());
-    auto* pen = deviceContext->SelectObject(&grayPen);
-
-    if (m_rubberbandType == Lines) {
-      deviceContext->MoveTo(m_rubberbandLogicalBegin);
-      deviceContext->LineTo(m_rubberbandLogicalEnd);
-    } else if (m_rubberbandType == Rectangles) {
-      auto* brush = static_cast<CBrush*>(deviceContext->SelectStockObject(NULL_BRUSH));
-      deviceContext->Rectangle(
-          m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y, m_rubberbandLogicalEnd.x, m_rubberbandLogicalEnd.y);
-      deviceContext->SelectObject(brush);
-    }
-    deviceContext->SelectObject(pen);
-    deviceContext->SetROP2(drawMode);
-    ReleaseDC(deviceContext);
     m_rubberbandType = None;
+    // Both D2D and GDI paths: next overlay compose will omit the rubberband since
+    // m_rubberbandType is now None. A single overlay-only repaint cleans it up.
+    InvalidateOverlay();
   }
 }
 
