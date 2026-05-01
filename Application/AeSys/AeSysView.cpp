@@ -432,6 +432,20 @@ int AeSysView::OnCreate(LPCREATESTRUCT createStructure) {
     return -1;
   }
 
+  // Hover tooltip — TTF_TRACK for programmatic positioning and activation.
+  m_hoverTooltip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX);
+  m_hoverTooltip.SetMaxTipWidth(400);
+  {
+    TOOLINFOW ti{};
+    ti.cbSize = sizeof(ti);
+    ti.uFlags = TTF_TRACK | TTF_ABSOLUTE;
+    ti.hwnd = GetSafeHwnd();
+    ti.uId = 1;
+    GetClientRect(&ti.rect);
+    ti.lpszText = const_cast<LPWSTR>(L"");
+    m_hoverTooltip.SendMessage(TTM_ADDTOOLW, 0, reinterpret_cast<LPARAM>(&ti));
+  }
+
   return 0;
 }
 

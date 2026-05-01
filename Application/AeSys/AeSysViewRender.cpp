@@ -228,7 +228,13 @@ void AeSysView::OnDraw(CDC* deviceContext) {
           if (m_rubberbandType == Lines) {
             m_d2dRenderTarget->DrawLine(begin, end, rubberbandBrush.Get(), 1.0f);
           } else if (m_rubberbandType == Rectangles) {
-            const auto rect = D2D1::RectF(begin.x, begin.y, end.x, end.y);
+            const auto rect = D2D1::RectF(
+                std::min(begin.x, end.x), std::min(begin.y, end.y),
+                std::max(begin.x, end.x), std::max(begin.y, end.y));
+            // Semi-transparent green fill for field-trap drag rectangle.
+            Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> fillBrush;
+            m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.6f, 0.2f, 0.18f), &fillBrush);
+            if (fillBrush) { m_d2dRenderTarget->FillRectangle(rect, fillBrush.Get()); }
             m_d2dRenderTarget->DrawRectangle(rect, rubberbandBrush.Get(), 1.0f);
           }
         }
@@ -926,6 +932,16 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
     }
     m_OverviewViewTransform = m_ViewTransform;
 
+    // Keep the hover tooltip tool rect covering the drawing area.
+    if (m_hoverTooltip.GetSafeHwnd() != nullptr) {
+      TOOLINFOW ti{};
+      ti.cbSize = sizeof(ti);
+      ti.hwnd = GetSafeHwnd();
+      ti.uId = 1;
+      ti.rect = {0, 0, cx, drawingHeight};
+      m_hoverTooltip.SendMessage(TTM_NEWTOOLRECTW, 0, reinterpret_cast<LPARAM>(&ti));
+    }
+
     if (m_useD2D) {
       if (!m_d2dRenderTarget) { CreateD2DRenderTarget(); }
       if (m_d2dRenderTarget) {
@@ -951,6 +967,70 @@ void AeSysView::OnSize(UINT type, int cx, int cy) {
 
 void AeSysView::OnTimer(UINT_PTR nIDEvent) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnTimer(%i)\n", this, nIDEvent);
+
+  if (nIDEvent == kHoverTimerId) {
+    KillTimer(kHoverTimerId);
+
+    // Hit-test at the current cursor position.
+    const auto worldPoint = GetCursorPosition();
+    auto* group = SelectGroupAndPrimitive(worldPoint);
+    auto* primitive = (group != nullptr) ? m_EngagedPrimitive : nullptr;
+
+    if (primitive != nullptr) {
+      // Build tooltip text from FormatExtra (Name;Value\t pairs) + FormatGeometry.
+      CString extra;
+      primitive->FormatExtra(extra);
+      CString geometry;
+      primitive->FormatGeometry(geometry);
+      if (!geometry.IsEmpty()) { extra += L'\t' + geometry; }
+
+      // Convert "Name;Value\tName;Value\t..." into "Name: Value\nName: Value\n..."
+      CString tipText;
+      int pos = 0;
+      while (pos < extra.GetLength()) {
+        const int tabPos = extra.Find(L'\t', pos);
+        const int pairEnd = (tabPos >= 0) ? tabPos : extra.GetLength();
+        CString pair = extra.Mid(pos, pairEnd - pos);
+        pair.TrimRight();
+        if (!pair.IsEmpty()) {
+          const int semi = pair.Find(L';');
+          if (semi >= 0) {
+            if (!tipText.IsEmpty()) { tipText += L'\n'; }
+            tipText += pair.Left(semi) + L": " + pair.Mid(semi + 1);
+          }
+        }
+        pos = (tabPos >= 0) ? tabPos + 1 : extra.GetLength();
+      }
+
+      if (!tipText.IsEmpty()) {
+        m_hoverTooltipText = tipText;
+
+        // Build a TOOLINFO matching the tool registered in OnCreate (uId=1, no TTF_IDISHWND).
+        TOOLINFOW ti{};
+        ti.cbSize = sizeof(ti);
+        ti.hwnd = GetSafeHwnd();
+        ti.uId = 1;
+        ti.lpszText = const_cast<LPWSTR>(m_hoverTooltipText.GetString());
+
+        // Update text, position, then activate.
+        m_hoverTooltip.SendMessage(TTM_UPDATETIPTEXTW, 0, reinterpret_cast<LPARAM>(&ti));
+
+        CPoint cursorScreen;
+        ::GetCursorPos(&cursorScreen);
+        m_hoverTooltip.SendMessage(TTM_TRACKPOSITION, 0,
+            static_cast<LPARAM>(MAKELONG(cursorScreen.x + 16, cursorScreen.y + 16)));
+        m_hoverTooltip.SendMessage(TTM_TRACKACTIVATE, TRUE, reinterpret_cast<LPARAM>(&ti));
+      }
+    } else {
+      // No hit — dismiss any active tooltip.
+      TOOLINFOW ti{};
+      ti.cbSize = sizeof(ti);
+      ti.hwnd = GetSafeHwnd();
+      ti.uId = 1;
+      m_hoverTooltip.SendMessage(TTM_TRACKACTIVATE, FALSE, reinterpret_cast<LPARAM>(&ti));
+    }
+    return;
+  }
 
   CView::OnTimer(nIDEvent);
 }

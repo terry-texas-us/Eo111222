@@ -4,6 +4,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoDbPolygon.h"
 #include "EoDbViewport.h"
 #include "EoGePoint3d.h"
 #include "EoGePoint4d.h"
@@ -15,6 +16,11 @@
 BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
   auto* state = GetCurrentState();
   if (pMsg->message == WM_KEYDOWN) {
+    if (pMsg->wParam == VK_ESCAPE && m_fieldTrapAnchorSet) {
+      m_fieldTrapAnchorSet = false;
+      RubberBandingDisable();
+      return TRUE;
+    }
     if (state != nullptr && state->HandleKeypad(this, static_cast<UINT>(pMsg->wParam), 1, static_cast<UINT>(pMsg->lParam))) {
       return TRUE;  // Handled by state
     }
@@ -28,12 +34,88 @@ BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
 }
 
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
+  auto* document = GetDocument();
+  const auto worldPoint = GetCursorPosition();
+
+  // --- Two-click field-trap: second click commits the rectangle ---
+  if (m_fieldTrapAnchorSet) {
+    m_fieldTrapAnchorSet = false;
+    RubberBandingDisable();
+
+    if (document != nullptr && !(m_rubberbandBegin == worldPoint)) {
+      EoGePoint4d ptView[] = {EoGePoint4d(m_rubberbandBegin), EoGePoint4d(worldPoint)};
+      ModelViewTransformPoints(2, ptView);
+      const EoGePoint3d ptMin = EoGePoint3d{EoGePoint4d::Min(ptView[0], ptView[1])};
+      const EoGePoint3d ptMax = EoGePoint3d{EoGePoint4d::Max(ptView[0], ptView[1])};
+      EoDbPolygon::EdgeToEvaluate() = 0;
+      const bool shiftHeld = (flags & MK_SHIFT) != 0;
+      bool anyChanged = false;
+      auto position = GetFirstVisibleGroupPosition();
+      while (position != nullptr) {
+        auto* group = GetNextVisibleGroup(position);
+        if (shiftHeld) {
+          // Shift+second-click: remove all trapped groups inside the rectangle.
+          if (document->FindTrappedGroup(group) != nullptr &&
+              group->SelectUsingRectangle(this, ptMin, ptMax)) {
+            document->RemoveTrappedGroup(group);
+            anyChanged = true;
+          }
+        } else {
+          if (document->FindTrappedGroup(group) != nullptr) { continue; }
+          if (group->SelectUsingRectangle(this, ptMin, ptMax)) {
+            document->AddGroupToTrap(group);
+            anyChanged = true;
+          }
+        }
+      }
+      if (anyChanged) {
+        UpdateStateInformation(TrapCount);
+        InvalidateScene();
+      }
+    }
+    return;
+  }
+
+  // --- LMB trap-pick: hit-test visible groups first (any mode) ---
+  // Plain click adds to trap; Shift+click removes from trap.
+  // When a group is hit the click is consumed — the mode state does not see it.
+  if (document != nullptr) {
+    auto* group = SelectGroupAndPrimitive(worldPoint);
+    if (group != nullptr) {
+      const bool shiftHeld = (flags & MK_SHIFT) != 0;
+      if (shiftHeld) {
+        if (document->FindTrappedGroup(group) != nullptr) {
+          document->RemoveTrappedGroup(group);
+          UpdateStateInformation(TrapCount);
+          InvalidateScene();
+        }
+      } else {
+        if (document->FindTrappedGroup(group) == nullptr) {
+          document->AddGroupToTrap(group);
+          UpdateStateInformation(TrapCount);
+          InvalidateScene();
+        }
+      }
+      return;
+    }
+  }
+
+  // --- Delegate to active mode state ---
   auto* state = GetCurrentState();
   if (state != nullptr) {
+    // If the state has no active gesture (idle op), start a field-trap rectangle instead.
+    if (state->GetActiveOp() == 0) {
+      m_fieldTrapAnchorSet = true;
+      RubberBandingStartAtEnable(worldPoint, Rectangles);
+      return;
+    }
     state->OnLButtonDown(this, flags, point);
     return;
   }
-  CView::OnLButtonDown(flags, point);
+
+  // --- Fully idle: start field-trap rectangle ---
+  m_fieldTrapAnchorSet = true;
+  RubberBandingStartAtEnable(worldPoint, Rectangles);
 }
 
 void AeSysView::OnLButtonUp(UINT flags, CPoint point) {
@@ -255,6 +337,21 @@ void AeSysView::OnMButtonUp([[maybe_unused]] UINT flags, [[maybe_unused]] CPoint
 
 void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView::OnMouseMove - flags: %u, point: (%d, %d)\n", flags, point.x, point.y);
+
+  // Reset hover timer only when the cursor pixel position actually changes.
+  // The tooltip window appearing near the cursor generates a spurious WM_MOUSEMOVE
+  // from Windows; ignoring same-pixel moves prevents the tooltip from flashing.
+  static CPoint lastMousePoint{-1, -1};
+  if (point != lastMousePoint) {
+    lastMousePoint = point;
+    KillTimer(kHoverTimerId);
+    TOOLINFOW ti{};
+    ti.cbSize = sizeof(ti);
+    ti.hwnd = GetSafeHwnd();
+    ti.uId = 1;
+    m_hoverTooltip.SendMessage(TTM_TRACKACTIVATE, FALSE, reinterpret_cast<LPARAM>(&ti));
+    SetTimer(kHoverTimerId, kHoverDelayMs, nullptr);
+  }
   auto* state = GetCurrentState();
   if (state != nullptr) { state->OnMouseMove(this, flags, point); }
   if (m_middleButtonPanInProgress) {

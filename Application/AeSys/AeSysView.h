@@ -400,10 +400,19 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   CPoint m_middleButtonPanStartPoint{};
   bool m_middleButtonPanInProgress{};
 
+  // Hover tooltip — fires kHoverTimerId ms after the last mouse-move with no hit.
+  static constexpr UINT_PTR kHoverTimerId{1};
+  static constexpr UINT kHoverDelayMs{1500};
+  CToolTipCtrl m_hoverTooltip{};
+  CString m_hoverTooltipText{};  // storage kept alive for the lifetime of the tip
+
   ERubs m_rubberbandType{None};
   EoGePoint3d m_rubberbandBegin{};
   CPoint m_rubberbandLogicalBegin{};
   CPoint m_rubberbandLogicalEnd{};
+
+  // True after the first corner of a two-click field-trap rectangle has been placed.
+  bool m_fieldTrapAnchorSet{};
 
   /** @brief Disables rubber banding by erasing the current rubber band from the view.
    * @note When Direct2D is active, simply clears the rubberband type and invalidates the scene — the next
