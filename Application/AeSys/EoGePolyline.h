@@ -45,6 +45,12 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
 /// @brief Tests if any segment of an explicit point array is contained within a rectangle.
 bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2, const EoGePoint3dArray& pts);
 
+/// @brief Tests if all segments of the accumulated vertex buffer are wholly inside a rectangle.
+bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
+
+/// @brief Tests if all segments of an explicit point array are wholly inside a rectangle.
+bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2, const EoGePoint3dArray& pts);
+
 /// @brief Determines points necessary to represent an N-Polygon with line segments.
 void GeneratePointsForNPoly(const EoGePoint3d& centerPoint,
     EoGeVector3d majorAxis,

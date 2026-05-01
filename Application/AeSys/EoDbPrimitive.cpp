@@ -292,3 +292,10 @@ EoDbHandleManager* EoDbPrimitive::SuspendHandleAssignment() noexcept {
 void EoDbPrimitive::ResumeHandleAssignment(EoDbHandleManager* saved) noexcept {
   sm_handleManager = saved;
 }
+
+bool EoDbPrimitive::IsWhollyContainedByRectangle(
+    [[maybe_unused]] AeSysView* view,
+    [[maybe_unused]] EoGePoint3d lowerLeft,
+    [[maybe_unused]] EoGePoint3d upperRight) {
+  return false;
+}

@@ -332,6 +332,14 @@ bool EoDbLine::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
 
+bool EoDbLine::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  EoGePoint4d begin(m_line.begin), end(m_line.end);
+  view->ModelViewTransformPoint(begin);
+  view->ModelViewTransformPoint(end);
+  const EoGeLine seg(EoGePoint3d{begin}, EoGePoint3d{end});
+  return seg.IsWhollyContainedXY(pt1, pt2);
+}
+
 void EoDbLine::Square(const AeSysView* view) {
   const auto begin = view->SnapPointToGrid(m_line.begin);
   auto end = view->SnapPointToGrid(m_line.end);

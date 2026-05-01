@@ -56,6 +56,7 @@ class EoDbPoint : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray&) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) override;
+  bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d lowerLeft, EoGePoint3d upperRight) override;
   void Transform(const EoGeTransformMatrix&) override;
   void Translate(const EoGeVector3d& v) noexcept override { m_Point += v; }
   void TranslateUsingMask(EoGeVector3d, const DWORD) override;

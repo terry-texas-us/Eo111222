@@ -227,20 +227,27 @@ void AeSysView::OnDraw(CDC* deviceContext) {
               D2D1::Point2F(static_cast<float>(m_rubberbandLogicalEnd.x), static_cast<float>(m_rubberbandLogicalEnd.y));
           if (m_rubberbandType == Lines) {
             m_d2dRenderTarget->DrawLine(begin, end, rubberbandBrush.Get(), 1.0f);
-          } else if (m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove) {
+          } else if (m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove ||
+                     m_rubberbandType == RectanglesWindow || m_rubberbandType == RectanglesWindowRemove) {
             const auto rect = D2D1::RectF(
                 std::min(begin.x, end.x), std::min(begin.y, end.y),
                 std::max(begin.x, end.x), std::max(begin.y, end.y));
-            // Semi-transparent fill: green for add, red for remove.
+            // Fill color: green for crossing-add, blue for window-add,
+            //             same hues (same opacity) for remove variants.
             Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> fillBrush;
-            if (m_rubberbandType == RectanglesRemove) {
-              m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.7f, 0.0f, 0.0f, 0.18f), &fillBrush);
+            if (m_rubberbandType == RectanglesWindow) {
+              m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.47f, 1.0f, 0.18f), &fillBrush);
+            } else if (m_rubberbandType == RectanglesWindowRemove) {
+              m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.47f, 1.0f, 0.18f), &fillBrush);
+            } else if (m_rubberbandType == RectanglesRemove) {
+              m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.6f, 0.2f, 0.18f), &fillBrush);
             } else {
               m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.6f, 0.2f, 0.18f), &fillBrush);
             }
             if (fillBrush) { m_d2dRenderTarget->FillRectangle(rect, fillBrush.Get()); }
-            // Dashed border for remove mode; solid for add.
-            if (m_rubberbandType == RectanglesRemove) {
+            // Border: dashed for window variants, solid for crossing variants.
+            const bool isDashed = (m_rubberbandType == RectanglesWindow || m_rubberbandType == RectanglesWindowRemove);
+            if (isDashed) {
               Microsoft::WRL::ComPtr<ID2D1Factory> factory;
               m_d2dRenderTarget->GetFactory(&factory);
               const float dashes[] = {5.0f, 3.0f};
@@ -365,10 +372,11 @@ void AeSysView::OnDraw(CDC* deviceContext) {
             m_overlayDC.MoveTo(m_rubberbandLogicalBegin);
             m_overlayDC.LineTo(m_rubberbandLogicalEnd);
             m_overlayDC.SelectObject(prevPen);
-          } else if (m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove) {
-            // Dashed border for remove mode; solid for add.
-            const int penStyle = (m_rubberbandType == RectanglesRemove) ? PS_DASH : PS_SOLID;
-            CPen rectPen(penStyle, 0, Eo::RubberbandColor());
+          } else if (m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove ||
+                     m_rubberbandType == RectanglesWindow || m_rubberbandType == RectanglesWindowRemove) {
+            // Dashed border for window variants (left-to-right); solid for crossing variants.
+            const bool isDashed = (m_rubberbandType == RectanglesWindow || m_rubberbandType == RectanglesWindowRemove);
+            CPen rectPen(isDashed ? PS_DASH : PS_SOLID, 0, Eo::RubberbandColor());
             auto* prevPen = m_overlayDC.SelectObject(&rectPen);
             auto* prevBrush = m_overlayDC.SelectStockObject(NULL_BRUSH);
             m_overlayDC.Rectangle(m_rubberbandLogicalBegin.x, m_rubberbandLogicalBegin.y,

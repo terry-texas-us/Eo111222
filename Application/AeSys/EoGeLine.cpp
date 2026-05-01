@@ -256,6 +256,11 @@ bool EoGeLine::IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3
   }
 }
 
+bool EoGeLine::IsWhollyContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const noexcept {
+  return (begin.RelationshipToRectangle(lowerLeftPoint, upperRightPoint) == 0 &&
+          end.RelationshipToRectangle(lowerLeftPoint, upperRightPoint) == 0);
+}
+
 bool EoGeLine::IsSelectedByPointXY(const EoGePoint3d& point,
     double aperture,
     EoGePoint3d& projectedPoint,

@@ -337,6 +337,24 @@ bool EoDbBlockReference::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, 
   view->PopModelTransform();
   return bResult;
 }
+
+bool EoDbBlockReference::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  EoDbBlock* block{};
+
+  if (AeSysDoc::GetDoc()->LookupBlock(m_blockName, block) == 0) { return false; }
+
+  const auto basePoint = block->BasePoint();
+
+  const EoGeTransformMatrix transformMatrix = BuildTransformMatrix(basePoint);
+
+  view->PushModelTransform();
+  view->SetLocalModelTransform(transformMatrix);
+
+  const bool bResult = block->IsWhollyContainedByRectangle(view, pt1, pt2);
+
+  view->PopModelTransform();
+  return bResult;
+}
 bool EoDbBlockReference::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& ptProj) {
   bool bResult{};
 

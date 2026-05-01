@@ -288,6 +288,16 @@ bool EoDbGroup::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
   }
   return false;
 }
+
+bool EoDbGroup::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  auto position = GetHeadPosition();
+  if (position == nullptr) { return false; }
+  while (position != nullptr) {
+    auto* primitive = GetNext(position);
+    if (!primitive->IsWhollyContainedByRectangle(view, pt1, pt2)) { return false; }
+  }
+  return true;
+}
 void EoDbGroup::ModifyNotes(const EoDbFontDefinition& fontDefinition,
     const EoDbCharacterCellDefinition& characterCellDefinition,
     int attributes) {

@@ -413,6 +413,12 @@ bool EoDbFace::SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeft, EoGe
   return polyline::SelectUsingRectangle(view, lowerLeft, upperRight);
 }
 
+bool EoDbFace::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d lowerLeft, EoGePoint3d upperRight) {
+  polyline::BeginLineLoop();
+  for (int i = 0; i < m_vertexCount; ++i) { polyline::SetVertex(m_vertices[i]); }
+  return polyline::IsWhollyContainedByRectangle(view, lowerLeft, upperRight);
+}
+
 void EoDbFace::Transform(const EoGeTransformMatrix& transformMatrix) {
   for (int i = 0; i < m_vertexCount; ++i) { m_vertices[i] = transformMatrix * m_vertices[i]; }
 }

@@ -89,6 +89,7 @@ class EoDbGroup : public CObList {
   bool SelectUsingLine(AeSysView* view, const EoGePoint3d& pt1, const EoGePoint3d& pt2);
   bool SelectUsingPoint_(AeSysView* view, EoGePoint4d point);
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
+  bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2);
 
   /** @brief Sorts text primitives in the group by their Y coordinate in descending order, with text primitives
    * appearing before non-text primitives. This method uses a bubble sort algorithm to reorder the primitives in the

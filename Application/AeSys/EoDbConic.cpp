@@ -926,6 +926,12 @@ bool EoDbConic::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
 
+bool EoDbConic::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  polyline::BeginLineStrip();
+  GenerateApproximationVertices(m_center, m_majorAxis);
+  return polyline::IsWhollyContainedByRectangle(view, pt1, pt2);
+}
+
 void EoDbConic::Transform(const EoGeTransformMatrix& transformMatrix) {
   // Snapshot arc endpoints and minor axis BEFORE any member variables change.
   // Both are needed to reconstruct parametric angles in the new OCS below.

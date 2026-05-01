@@ -761,8 +761,13 @@ bool EoDbPolygon::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint
 bool EoDbPolygon::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   EoGePoint3dArray pts;
   for (auto i = 0; i < m_numberOfVertices; i++) { pts.Add(m_vertices[i]); }
-
   return polyline::SelectUsingRectangle(view, pt1, pt2, pts);
+}
+
+bool EoDbPolygon::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  EoGePoint3dArray pts;
+  for (auto i = 0; i < m_numberOfVertices; i++) { pts.Add(m_vertices[i]); }
+  return polyline::IsWhollyContainedByRectangle(view, pt1, pt2, pts);
 }
 void EoDbPolygon::ModifyState() {
   EoDbPrimitive::ModifyState();

@@ -232,6 +232,11 @@ bool EoDbPoint::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint
 
   return ((pt.x >= pt1.x && pt.x <= pt2.x && pt.y >= pt1.y && pt.y <= pt2.y) ? true : false);
 }
+
+bool EoDbPoint::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  return SelectUsingRectangle(view, pt1, pt2);
+}
+
 bool EoDbPoint::IsPointOnControlPoint(AeSysView* view, const EoGePoint4d& point) {
   EoGePoint4d pt(m_Point);
   view->ModelViewTransformPoint(pt);

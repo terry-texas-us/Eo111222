@@ -62,7 +62,7 @@ class AeSysView : public CView {
     Layer = 0x0200,
     All = BothCounts | Pen | Line | TextHeight | WndRatio | Scale | DimLen | DimAng | Layer
   };
-  enum ERubs { None, Lines, Rectangles, RectanglesRemove };
+  enum ERubs { None, Lines, Rectangles, RectanglesRemove, RectanglesWindow, RectanglesWindowRemove };
 
 private:
  std::stack<std::unique_ptr<AeSysState>> m_stateStack;

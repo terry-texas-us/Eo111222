@@ -777,6 +777,12 @@ bool EoDbPolyline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePo
   BuildTessellatedPoints(tessellatedPoints);
   return polyline::SelectUsingRectangle(view, pt1, pt2, tessellatedPoints);
 }
+
+bool EoDbPolyline::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  EoGePoint3dArray tessellatedPoints;
+  BuildTessellatedPoints(tessellatedPoints);
+  return polyline::IsWhollyContainedByRectangle(view, pt1, pt2, tessellatedPoints);
+}
 void EoDbPolyline::Transform(const EoGeTransformMatrix& transformMatrix) {
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i] = transformMatrix * m_pts[i]; }
 }

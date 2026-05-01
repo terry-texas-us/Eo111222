@@ -41,6 +41,9 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
   // --- Two-click field-trap: second click commits the rectangle ---
   if (m_fieldTrapAnchorSet) {
     m_fieldTrapAnchorSet = false;
+    // Snapshot the rubberband type BEFORE RubberBandingDisable() clears it —
+    // isWindow depends on the live direction that OnMouseMove last set.
+    const ERubs committedRubs = m_rubberbandType;
     RubberBandingDisable();
 
     if (document != nullptr && !(m_rubberbandBegin == worldPoint)) {
@@ -51,21 +54,23 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
       EoDbPolygon::EdgeToEvaluate() = 0;
       // Remove mode is determined entirely by the shift state at the FIRST corner.
       const bool isRemove = m_fieldTrapIsRemove;
+      // Window mode (left-to-right) uses wholly-inside test; crossing uses intersection test.
+      const bool isWindow = (committedRubs == RectanglesWindow || committedRubs == RectanglesWindowRemove);
       m_fieldTrapIsRemove = false;
       bool anyChanged = false;
       auto position = GetFirstVisibleGroupPosition();
       while (position != nullptr) {
         auto* group = GetNextVisibleGroup(position);
+        const bool hit = isWindow
+            ? group->IsWhollyContainedByRectangle(this, ptMin, ptMax)
+            : group->SelectUsingRectangle(this, ptMin, ptMax);
         if (isRemove) {
-          // Remove all trapped groups that intersect the rectangle.
-          if (document->FindTrappedGroup(group) != nullptr &&
-              group->SelectUsingRectangle(this, ptMin, ptMax)) {
+          if (hit && document->FindTrappedGroup(group) != nullptr) {
             document->RemoveTrappedGroup(group);
             anyChanged = true;
           }
         } else {
-          if (document->FindTrappedGroup(group) != nullptr) { continue; }
-          if (group->SelectUsingRectangle(this, ptMin, ptMax)) {
+          if (hit && document->FindTrappedGroup(group) == nullptr) {
             document->AddGroupToTrap(group);
             anyChanged = true;
           }
@@ -420,10 +425,20 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   }
   DisplayOdometer();
 
-  if (m_rubberbandType == Lines || m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove) {
+  if (m_rubberbandType == Lines || m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove ||
+      m_rubberbandType == RectanglesWindow || m_rubberbandType == RectanglesWindowRemove) {
     // Both D2D and GDI paths: update endpoint and trigger an overlay-only repaint.
     // Rubberband is drawn into the overlay buffer in OnDraw — no XOR-on-screen needed.
     m_rubberbandLogicalEnd = point;
+
+    // AutoCAD direction convention: left-to-right = window (wholly-inside, blue dashed);
+    // right-to-left = crossing (any-intersection, green solid).
+    // Switch rubberband type live as the cursor crosses the anchor's x coordinate.
+    if (m_rubberbandType == Rectangles || m_rubberbandType == RectanglesWindow) {
+      m_rubberbandType = (point.x > m_rubberbandLogicalBegin.x) ? RectanglesWindow : Rectangles;
+    } else if (m_rubberbandType == RectanglesRemove || m_rubberbandType == RectanglesWindowRemove) {
+      m_rubberbandType = (point.x > m_rubberbandLogicalBegin.x) ? RectanglesWindowRemove : RectanglesRemove;
+    }
     InvalidateOverlay();
   }
 }

@@ -91,6 +91,9 @@ class EoDbPrimitive : public CObject {
   virtual bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) = 0;
   virtual bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d&) = 0;
   virtual bool SelectUsingRectangle(AeSysView* view, EoGePoint3d, EoGePoint3d) = 0;
+  /// @brief Returns true only when the entire primitive lies within the rectangle (window selection).
+  /// Default returns false — safe for primitives whose geometry is not yet window-tested.
+  virtual bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d lowerLeft, EoGePoint3d upperRight);
   virtual void Transform(const EoGeTransformMatrix&) = 0;
   virtual void Translate(const EoGeVector3d&) = 0;
   virtual void TranslateUsingMask(EoGeVector3d, const DWORD) = 0;

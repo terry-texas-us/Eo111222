@@ -61,6 +61,7 @@ class EoGsVertexBuffer {
 
   /// @brief Tests if any polyline segment is contained within a rectangle.
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint);
+  bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint);
 
   /// @brief Read-only access to the accumulated 4D points.
   [[nodiscard]] const EoGePoint4dArray& Points() const noexcept { return m_points; }

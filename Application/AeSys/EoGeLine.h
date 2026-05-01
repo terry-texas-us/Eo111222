@@ -105,6 +105,7 @@ class EoGeLine {
    * @return true if the line segment is wholly or partially within the window; otherwise, false.
    */
   bool IsContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const;
+  [[nodiscard]] bool IsWhollyContainedXY(const EoGePoint3d& lowerLeftPoint, const EoGePoint3d& upperRightPoint) const noexcept;
 
   /** @brief Determines if a point is selected by the line segment within a specified aperture in the XY plane.
   * @param point The point to evaluate.

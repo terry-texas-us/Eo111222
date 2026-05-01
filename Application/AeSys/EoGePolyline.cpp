@@ -50,7 +50,28 @@ bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint
   return vertexBuffer_.SelectUsingRectangle(view, lowerLeftPoint, upperRightPoint);
 }
 
-// ── Standalone geometry helpers (no vertex-buffer dependency) ──────────
+bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint) {
+  return vertexBuffer_.IsWhollyContainedByRectangle(view, lowerLeftPoint, upperRightPoint);
+}
+
+bool IsWhollyContainedByRectangle(AeSysView* view,
+    EoGePoint3d lowerLeftPoint,
+    EoGePoint3d upperRightPoint,
+    const EoGePoint3dArray& pts) {
+  if (pts.GetSize() < 1) { return false; }
+  EoGePoint4d begin(pts[0]);
+  view->ModelViewTransformPoint(begin);
+  if (EoGePoint3d{begin}.RelationshipToRectangle(lowerLeftPoint, upperRightPoint) != 0) { return false; }
+
+  for (std::uint16_t w = 1; w < pts.GetSize(); w++) {
+    EoGePoint4d end(pts[w]);
+    view->ModelViewTransformPoint(end);
+    const EoGeLine lineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
+    if (!lineSegment.IsWhollyContainedXY(lowerLeftPoint, upperRightPoint)) { return false; }
+    begin = end;
+  }
+  return true;
+}
 
 // Not considering possible closure
 bool SelectUsingRectangle(AeSysView* view,

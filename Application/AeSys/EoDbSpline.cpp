@@ -243,6 +243,10 @@ bool EoDbSpline::SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3
 bool EoDbSpline::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
   return polyline::SelectUsingRectangle(view, pt1, pt2, m_pts);
 }
+
+bool EoDbSpline::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  return polyline::IsWhollyContainedByRectangle(view, pt1, pt2, m_pts);
+}
 void EoDbSpline::Transform(const EoGeTransformMatrix& transformMatrix) {
   for (auto i = 0; i < m_pts.GetSize(); i++) { m_pts[i] = transformMatrix * m_pts[i]; }
 }

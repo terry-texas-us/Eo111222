@@ -262,3 +262,19 @@ bool EoGsVertexBuffer::SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLe
   }
   return false;
 }
+
+bool EoGsVertexBuffer::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d lowerLeftPoint, EoGePoint3d upperRightPoint) {
+  if (m_points.GetSize() < 1) { return false; }
+  EoGePoint4d begin(m_points[0]);
+  view->ModelViewTransformPoint(begin);
+  if (EoGePoint3d{begin}.RelationshipToRectangle(lowerLeftPoint, upperRightPoint) != 0) { return false; }
+
+  for (std::uint16_t w = 1; w < m_points.GetSize(); w++) {
+    EoGePoint4d end(m_points[w]);
+    view->ModelViewTransformPoint(end);
+    const EoGeLine lineSegment(EoGePoint3d{begin}, EoGePoint3d{end});
+    if (!lineSegment.IsWhollyContainedXY(lowerLeftPoint, upperRightPoint)) { return false; }
+    begin = end;
+  }
+  return true;
+}

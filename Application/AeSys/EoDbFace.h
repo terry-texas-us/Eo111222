@@ -143,6 +143,7 @@ class EoDbFace : public EoDbPrimitive {
   bool SelectUsingLine(AeSysView* view, EoGeLine line, EoGePoint3dArray& intersections) override;
   bool SelectUsingPoint(AeSysView* view, EoGePoint4d point, EoGePoint3d& foundPoint) override;
   bool SelectUsingRectangle(AeSysView* view, EoGePoint3d lowerLeft, EoGePoint3d upperRight) override;
+  bool IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d lowerLeft, EoGePoint3d upperRight) override;
   void Transform(const EoGeTransformMatrix& transformMatrix) override;
   void Translate(const EoGeVector3d& v) override;
   void TranslateUsingMask(EoGeVector3d v, const DWORD mask) override;

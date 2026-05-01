@@ -870,6 +870,12 @@ bool EoDbEllipse::SelectUsingRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoi
   return polyline::SelectUsingRectangle(view, pt1, pt2);
 }
 
+bool EoDbEllipse::IsWhollyContainedByRectangle(AeSysView* view, EoGePoint3d pt1, EoGePoint3d pt2) {
+  polyline::BeginLineStrip();
+  GenPts(m_center, m_majorAxis, m_minorAxis, m_sweepAngle);
+  return polyline::IsWhollyContainedByRectangle(view, pt1, pt2);
+}
+
 void EoDbEllipse::Transform(const EoGeTransformMatrix& transformMatrix) {
   m_center = transformMatrix * m_center;
   m_majorAxis = transformMatrix * m_majorAxis;
