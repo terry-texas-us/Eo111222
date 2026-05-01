@@ -1,5 +1,7 @@
 #include "Stdafx.h"
 
+#include "AeSys.h"
+#include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Resource.h"
 #include "EoMsTrap.h"
@@ -25,6 +27,52 @@ void TrapModeState::UnhighlightOp(AeSysView* context) {
 
 void TrapModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
   OnEscape(context);
+}
+
+bool TrapModeState::BuildContextMenu(AeSysView* context, CMenu& menu) {
+  const auto* document = context->GetDocument();
+  const bool isTrapMode = (app.CurrentMode() == ID_MODE_TRAP);
+
+  // ── Mid-fence gesture: Stitch (line) or Field (rectangle) in progress ──
+  if (m_previousOp != 0) {
+    // Use the command that matches the active gesture so the handler takes the
+    // second-click (commit) branch, not the first-click (start) branch.
+    // ID_OP2 = Stitch (line fence), ID_OP4 = Field (rectangle fence).
+    UINT finishCmd{};
+    if (m_previousOp == ID_OP2) {
+      finishCmd = isTrapMode ? ID_TRAP_MODE_STITCH : ID_TRAPR_MODE_STITCH;
+    } else if (m_previousOp == ID_OP4) {
+      finishCmd = isTrapMode ? ID_TRAP_MODE_FIELD : ID_TRAPR_MODE_FIELD;
+    } else {
+      // Unknown mid-gesture op — offer only Cancel.
+      const UINT cancelCmd = isTrapMode ? ID_TRAP_MODE_ESCAPE : ID_TRAPR_MODE_ESCAPE;
+      menu.AppendMenu(MF_STRING, cancelCmd, L"C&ancel\tEsc");
+      return true;
+    }
+    const UINT cancelCmd = isTrapMode ? ID_TRAP_MODE_ESCAPE : ID_TRAPR_MODE_ESCAPE;
+    menu.AppendMenu(MF_STRING, finishCmd, L"Finish &Trapping");
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, cancelCmd, L"C&ancel\tEsc");
+    return true;
+  }
+
+  // ── Idle: show trap-action menu only when something is trapped ──
+  if (document->IsTrapEmpty()) { return false; }
+
+  if (isTrapMode) {
+    menu.AppendMenu(MF_STRING, ID_EDIT_TRAPQUIT,   L"&Release Trap");
+    menu.AppendMenu(MF_STRING, ID_EDIT_TRAPDELETE, L"&Delete Trapped");
+    menu.AppendMenu(MF_STRING, ID_EDIT_TRAPCUT,    L"C&ut Trapped\tCtrl+X");
+    menu.AppendMenu(MF_STRING, ID_EDIT_TRAPCOPY,   L"&Copy Trapped\tCtrl+C");
+  } else {
+    // Trapr (remove) mode: minimal set
+    menu.AppendMenu(MF_STRING, ID_EDIT_TRAPQUIT, L"&Release Trap");
+  }
+  menu.AppendMenu(MF_SEPARATOR);
+  menu.AppendMenu(MF_STRING,
+      isTrapMode ? ID_TRAP_MODE_ESCAPE : ID_TRAPR_MODE_ESCAPE,
+      L"C&ancel\tEsc");
+  return true;
 }
 
 bool TrapModeState::HandleCommand(AeSysView* context, UINT command) {

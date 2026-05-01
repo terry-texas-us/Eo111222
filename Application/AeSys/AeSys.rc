@@ -1,4 +1,4 @@
-﻿// Microsoft Visual C++ generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #pragma code_page(65001)
 
@@ -601,6 +601,60 @@ BEGIN
         MENUITEM "Cu&t",                        ID_EDIT_CUT
         MENUITEM "&Copy",                       ID_EDIT_COPY
         MENUITEM "&Paste",                      ID_EDIT_PASTE
+    END
+END
+
+IDR_CONTEXT_DRAW_MODE MENU
+BEGIN
+    POPUP "_DRAW_"
+    BEGIN
+        MENUITEM "&Finish",                    ID_DRAW_MODE_FINISH
+        MENUITEM "Undo &Last Point",           ID_DRAW_MODE_UNDO_LAST
+        MENUITEM SEPARATOR
+        MENUITEM "&Cancel\tEsc",               ID_DRAW_MODE_ESCAPE
+    END
+END
+
+IDR_CONTEXT_TRAP_MODE MENU
+BEGIN
+    POPUP "_TRAP_"
+    BEGIN
+        MENUITEM "Finish &Fence",              ID_TRAP_MODE_STITCH
+        MENUITEM SEPARATOR
+        MENUITEM "&Release Trap",              ID_EDIT_TRAPQUIT
+        MENUITEM "&Delete Trapped",            ID_EDIT_TRAPDELETE
+        MENUITEM "C&ut Trapped\tCtrl+X",       ID_EDIT_TRAPCUT
+        MENUITEM "&Copy Trapped\tCtrl+C",      ID_EDIT_TRAPCOPY
+        MENUITEM SEPARATOR
+        MENUITEM "C&ancel\tEsc",               ID_TRAP_MODE_ESCAPE
+    END
+END
+
+IDR_CONTEXT_TRAPR_MODE MENU
+BEGIN
+    POPUP "_TRAPR_"
+    BEGIN
+        MENUITEM "Finish &Fence",              ID_TRAPR_MODE_STITCH
+        MENUITEM SEPARATOR
+        MENUITEM "&Release Trap",              ID_EDIT_TRAPQUIT
+        MENUITEM "C&ancel\tEsc",               ID_TRAPR_MODE_ESCAPE
+    END
+END
+
+IDR_CONTEXT_EDIT_MODE MENU
+BEGIN
+    POPUP "_EDIT_"
+    BEGIN
+        MENUITEM "&Place Here",                ID_EDIT_MODE_MOVE
+        MENUITEM "Place &Copy Here",           ID_EDIT_MODE_COPY
+        MENUITEM SEPARATOR
+        MENUITEM "Rotat&e CCW",                ID_EDIT_MODE_ROTCCW
+        MENUITEM "Rotate C&W",                 ID_EDIT_MODE_ROTCW
+        MENUITEM "Fli&p",                      ID_EDIT_MODE_FLIP
+        MENUITEM "&Reduce",                    ID_EDIT_MODE_REDUCE
+        MENUITEM "&Enlarge",                   ID_EDIT_MODE_ENLARGE
+        MENUITEM SEPARATOR
+        MENUITEM "C&ancel\tEsc",               ID_EDIT_MODE_ESCAPE
     END
 END
 

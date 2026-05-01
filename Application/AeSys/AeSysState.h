@@ -59,6 +59,16 @@ class AeSysState {
       [[maybe_unused]] UINT nFlags,
       [[maybe_unused]] CPoint point) {}
 
+  /// Populate \menu\ with context-sensitive items for an RMB click.
+  /// Return true if the menu has at least one item and should be shown; false to fall
+  /// through to the default cancel (OnRButtonUp) behaviour.
+  /// Override in states that want a context menu instead of a plain cancel.
+  [[nodiscard]] virtual bool BuildContextMenu(
+      [[maybe_unused]] AeSysView* context,
+      [[maybe_unused]] CMenu& menu) {
+    return false;
+  }
+
   // Command handling (delegate MFC ON_COMMAND).
   // Return true to consume the command and prevent it reaching the legacy CurrentMode() switch.
   [[nodiscard]] virtual bool HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT command) {

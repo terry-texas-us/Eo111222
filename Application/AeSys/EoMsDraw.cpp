@@ -164,6 +164,44 @@ bool DrawModeState::OnEscape(AeSysView* context) {
   return true;
 }
 
+bool DrawModeState::BuildContextMenu([[maybe_unused]] AeSysView* context, CMenu& menu) {
+  // No gesture in progress — let the dispatcher fall through to the default cancel.
+  if (m_previousDrawCommand == 0) { return false; }
+
+  const auto nPoints = m_points.GetSize();
+
+  // Finish (close as Polygon) is available for polygon op with 3+ collected points.
+  const bool canFinishPolygon = (m_previousDrawCommand == ID_OP3 && nPoints >= 3);
+  // Finish as Polyline (open) is available for polygon op with 2+ collected points.
+  const bool canFinishPolyline = (m_previousDrawCommand == ID_OP3 && nPoints >= 2);
+  // Finish (close) for b-spline needs 2+ control points.
+  const bool canFinishSpline = (m_previousDrawCommand == ID_OP6 && nPoints >= 2);
+  const bool canFinish = canFinishPolygon || canFinishSpline;
+
+  // Undo Last Point is available for multi-click ops once at least two points exist.
+  const bool canUndoLast = (nPoints >= 2)
+      && (m_previousDrawCommand == ID_OP3   // polygon — accumulates vertices
+       || m_previousDrawCommand == ID_OP4   // quad — 3-click
+       || m_previousDrawCommand == ID_OP5   // arc — 3-click
+       || m_previousDrawCommand == ID_OP6   // bspline — accumulates control points
+       || m_previousDrawCommand == ID_OP8); // ellipse — 3-click
+
+  const UINT finishFlags    = MF_STRING | (canFinish        ? MF_ENABLED : MF_GRAYED);
+  const UINT polylineFlags  = MF_STRING | (canFinishPolyline ? MF_ENABLED : MF_GRAYED);
+  const UINT undoLastFlags  = MF_STRING | (canUndoLast       ? MF_ENABLED : MF_GRAYED);
+
+  if (m_previousDrawCommand == ID_OP3) {
+    menu.AppendMenu(finishFlags,   ID_DRAW_MODE_FINISH,   L"&Close as Polygon");
+    menu.AppendMenu(polylineFlags, ID_DRAW_MODE_POLYLINE, L"Finish as &Polyline");
+  } else {
+    menu.AppendMenu(finishFlags,   ID_DRAW_MODE_FINISH,   L"&Finish");
+  }
+  menu.AppendMenu(undoLastFlags, ID_DRAW_MODE_UNDO_LAST, L"Undo &Last Point");
+  menu.AppendMenu(MF_SEPARATOR);
+  menu.AppendMenu(MF_STRING,     ID_DRAW_MODE_ESCAPE,    L"&Cancel");
+  return true;
+}
+
 void DrawModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT nFlags, [[maybe_unused]] CPoint point) {
   // RMB finishes the gesture from already-collected points without appending cursor position.
   context->OnDrawModeFinish();

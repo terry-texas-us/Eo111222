@@ -21,6 +21,7 @@ class CutModeState final : public AeSysState {
   void OnRButtonUp(AeSysView* context, UINT flags, CPoint point) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousOp; }
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
+  [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
 
   /// Resets `m_previousOp` to 0 via reference so `ModeLineUnhighlightOp`
   /// can clear it. Used by `OnCutModeReturn` / `OnCutModeEscape` to abort

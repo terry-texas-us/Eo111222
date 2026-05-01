@@ -64,6 +64,14 @@ void PipeModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags,
   OnReturn(context);
 }
 
+bool PipeModeState::BuildContextMenu([[maybe_unused]] AeSysView* context, CMenu& menu) {
+  if (m_previousOp == 0) { return false; }
+  menu.AppendMenu(MF_STRING, ID_PIPE_MODE_RETURN, L"&Commit Segment\tEnter");
+  menu.AppendMenu(MF_SEPARATOR);
+  menu.AppendMenu(MF_STRING, ID_PIPE_MODE_ESCAPE, L"C&ancel\tEsc");
+  return true;
+}
+
 bool PipeModeState::HandleCommand(AeSysView* context, UINT command) {
   if (command < ID_OP0 || command > ID_OP9) { return false; }
   static constexpr UINT opToPipeCommand[] = {

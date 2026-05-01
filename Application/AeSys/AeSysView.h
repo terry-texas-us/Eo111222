@@ -684,7 +684,9 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnDrawModeReturn();
   afx_msg void OnDrawModeEscape();
   afx_msg void OnDrawModeShiftReturn();
-  void OnDrawModeFinish();
+  afx_msg void OnDrawModeUndoLast();
+  afx_msg void OnDrawModeFinish();
+  afx_msg void OnDrawModeFinishPolyline();
 
   /// Draw Mode2 Interface //////////////////////////////////////////////////////
 

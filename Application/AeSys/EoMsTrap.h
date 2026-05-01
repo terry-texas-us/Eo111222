@@ -25,6 +25,7 @@ class TrapModeState : public AeSysState {
   void OnRButtonUp(AeSysView* context, UINT flags, CPoint point) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousOp; }
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
+  [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
 
   /// Unhighlights the active op pane (if any) via the view's status bar API.
   /// Passes m_previousOp by reference so it is also reset to 0 by ModeLineUnhighlightOp.

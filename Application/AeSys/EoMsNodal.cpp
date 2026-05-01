@@ -42,7 +42,7 @@ void NodalModeState::OnMouseMove(AeSysView* context, [[maybe_unused]] UINT nFlag
       while (uniquePointPosition != nullptr) {
         const auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
         const EoGePoint3d translatedPoint = uniquePoint->m_Point + translate;
-        context->PreviewGroup().AddTail(new EoDbPoint(252, 8, translatedPoint));
+        context->PreviewGroup().AddTail(new EoDbPoint(252, 65, translatedPoint));
       }
       context->InvalidateOverlay();
       break;
@@ -79,6 +79,24 @@ void NodalModeState::UnhighlightOp(AeSysView* context) {
 
 void NodalModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
   OnEscape(context);
+}
+
+bool NodalModeState::BuildContextMenu([[maybe_unused]] AeSysView* context, CMenu& menu) {
+  if (m_previousCommand == 0) { return false; }
+  if (m_previousCommand == ID_OP4) {
+    menu.AppendMenu(MF_STRING, ID_NODAL_MODE_RETURN, L"&Place Here\tEnter");
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, ID_NODAL_MODE_ESCAPE, L"C&ancel Move\tEsc");
+    return true;
+  }
+  if (m_previousCommand == ID_OP5) {
+    menu.AppendMenu(MF_STRING, ID_NODAL_MODE_RETURN, L"Place &Copy Here\tEnter");
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, ID_NODAL_MODE_ESCAPE, L"C&ancel Copy\tEsc");
+    return true;
+  }
+  menu.AppendMenu(MF_STRING, ID_NODAL_MODE_ESCAPE, L"C&ancel\tEsc");
+  return true;
 }
 
 bool NodalModeState::HandleCommand(AeSysView* context, UINT command) {

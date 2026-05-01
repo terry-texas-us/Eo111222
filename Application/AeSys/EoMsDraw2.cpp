@@ -54,6 +54,14 @@ void Draw2ModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT nFlag
   OnReturn(context);
 }
 
+bool Draw2ModeState::BuildContextMenu([[maybe_unused]] AeSysView* context, CMenu& menu) {
+  if (m_previousOp == 0) { return false; }
+  menu.AppendMenu(MF_STRING, ID_DRAW2_MODE_RETURN, L"&Commit Segment\tEnter");
+  menu.AppendMenu(MF_SEPARATOR);
+  menu.AppendMenu(MF_STRING, ID_DRAW2_MODE_ESCAPE, L"C&ancel\tEsc");
+  return true;
+}
+
 bool Draw2ModeState::HandleCommand(AeSysView* context, UINT command) {
   if (command < ID_OP0 || command > ID_OP9) { return false; }
   static constexpr UINT opToDraw2Command[] = {

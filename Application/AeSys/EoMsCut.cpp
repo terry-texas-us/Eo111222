@@ -28,6 +28,21 @@ void CutModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags, 
   OnEscape(context);
 }
 
+bool CutModeState::BuildContextMenu([[maybe_unused]] AeSysView* context, CMenu& menu) {
+  if (m_previousOp == 0) { return false; }
+  // Mid-slice or mid-field: offer commit and cancel.
+  if (m_previousOp == ID_OP2) {
+    menu.AppendMenu(MF_STRING, ID_CUT_MODE_SLICE, L"Commit &Slice");
+  } else if (m_previousOp == ID_OP4) {
+    menu.AppendMenu(MF_STRING, ID_CUT_MODE_FIELD, L"Commit &Field");
+  } else if (m_previousOp == ID_OP7) {
+    menu.AppendMenu(MF_STRING, ID_CUT_MODE_CLIP, L"Commit C&lip");
+  }
+  menu.AppendMenu(MF_SEPARATOR);
+  menu.AppendMenu(MF_STRING, ID_CUT_MODE_ESCAPE, L"C&ancel\tEsc");
+  return true;
+}
+
 bool CutModeState::HandleCommand(AeSysView* context, UINT command) {
   if (command < ID_OP0 || command > ID_OP9) { return false; }
   static constexpr UINT opToCutCommand[] = {

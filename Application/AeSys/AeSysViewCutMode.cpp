@@ -100,6 +100,7 @@ void AeSysView::OnCutModeSlice() {
         auto* primitive = group->GetNext(primitivePosition);
 
         ln = EoGeLine(EoGePoint3d{ptView[0]}, EoGePoint3d{ptView[1]});
+        intersections.RemoveAll();
         primitive->SelectUsingLine(this, ln, intersections);
         for (auto i = 0; i < intersections.GetSize(); i++) {
           auto* newGroup = new EoDbGroup;

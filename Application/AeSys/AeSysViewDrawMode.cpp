@@ -319,6 +319,21 @@ void AeSysView::OnDrawModeEscape() {
   if (drawState != nullptr) { drawState->SetPreviousDrawCommand(0); }
 }
 
+void AeSysView::OnDrawModeUndoLast() {
+  auto* drawState = DrawState(this);
+  if (drawState == nullptr) { return; }
+  auto& pts = drawState->Points();
+  const auto numberOfPoints = pts.GetSize();
+  // Must retain the anchor point (index 0) so the gesture can continue.
+  if (numberOfPoints < 2) { return; }
+  pts.RemoveAt(numberOfPoints - 1);
+  m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  // Snap the cursor back to the new last point so the next OnMouseMove preview
+  // starts from there rather than from an arbitrary screen position.
+  SetCursorPosition(pts[pts.GetSize() - 1]);
+  InvalidateOverlay();
+}
+
 void AeSysView::OnDrawModeFinish() {
   // RMB commit: close the current gesture from already-collected pts only.
   // No cursor position is appended — this distinguishes RMB from Enter (OnDrawModeReturn).
@@ -368,6 +383,29 @@ void AeSysView::OnDrawModeFinish() {
     // Not enough points — cancel silently.
     OnDrawModeEscape();
   }
+}
+
+void AeSysView::OnDrawModeFinishPolyline() {
+  // Context-menu commit: produce an open EoDbPolyline from already-collected pts only.
+  // No cursor position is appended — mirrors OnDrawModeFinish but leaves the path open.
+  auto* drawState = DrawState(this);
+  if (drawState == nullptr) { return; }
+  auto previousDrawCommand = drawState->PreviousDrawCommand();
+  if (previousDrawCommand != ID_OP3) { return; }
+  auto& pts = drawState->Points();
+  if (pts.GetSize() < 2) {
+    OnDrawModeEscape();
+    return;
+  }
+  auto* primitive = (new EoDbPolyline(pts))->WithProperties(Gs::renderState);
+  auto* group = new EoDbGroup(primitive);
+  auto* document = GetDocument();
+  document->AddWorkLayerGroup(group);
+  m_PreviewGroup.DeletePrimitivesAndRemoveAll();
+  InvalidateScene();
+  pts.RemoveAll();
+  ModeLineUnhighlightOp(previousDrawCommand);
+  drawState->SetPreviousDrawCommand(0);
 }
 
 void AeSysView::OnDrawModeShiftReturn() {

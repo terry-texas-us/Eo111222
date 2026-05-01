@@ -156,7 +156,7 @@ void AeSysView::OnDraw(CDC* deviceContext) {
       // UpdateStateInformation reads the user's selection, not the last-rendered entity's state.
       const auto savedUserState = Gs::renderState.Save();
       document->DisplayAllLayers(this, &renderDevice);
-      document->DisplayUniquePoints();
+      document->RenderUniquePoints(this, &renderDevice);
 
       // Preview group overlay — rendered on top of the committed scene.
       // When a viewport is active, the preview points are in model-space coordinates

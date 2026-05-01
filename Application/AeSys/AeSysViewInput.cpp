@@ -207,7 +207,36 @@ void AeSysView::OnRButtonDown(UINT flags, CPoint point) {
 
 void AeSysView::OnRButtonUp(UINT flags, CPoint point) {
   auto* state = GetCurrentState();
-  if (state != nullptr) { state->OnRButtonUp(this, flags, point); return; }
+  if (state != nullptr) {
+    CMenu menu;
+    if (!menu.CreatePopupMenu()) { state->OnRButtonUp(this, flags, point); return; }
+    if (state->BuildContextMenu(this, menu)) {
+      // Snapshot the world-space cursor position at RMB-up time, before the
+      // menu is shown.  TrackPopupMenuEx with TPM_RETURNCMD is synchronous and
+      // returns the chosen command ID (or 0 for dismiss) without posting a
+      // WM_COMMAND message.  We then restore the cursor to the RMB point so
+      // that any commit handler (Pipe/LPD/Draw2 return, Edit move/copy place,
+      // Trap stitch) reads the correct world position rather than the position
+      // of the menu item that was clicked.
+      const EoGePoint3d rmbWorldPoint = GetCursorPosition();
+
+      CPoint screenPoint{point};
+      ClientToScreen(&screenPoint);
+      const UINT chosenCommand = menu.TrackPopupMenuEx(
+          TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY,
+          screenPoint.x, screenPoint.y, this, nullptr);
+
+      if (chosenCommand != 0) {
+        // Restore the world cursor to the RMB click position before dispatch
+        // so commit handlers use the intended point.
+        SetCursorPosition(rmbWorldPoint);
+        SendMessage(WM_COMMAND, MAKEWPARAM(chosenCommand, 0));
+      }
+      return;
+    }
+    state->OnRButtonUp(this, flags, point);
+    return;
+  }
   CView::OnRButtonUp(flags, point);
 }
 

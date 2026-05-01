@@ -27,7 +27,7 @@ void AeSysDoc::UpdateNodalList(EoDbGroup* group, EoDbPrimitive* primitive, DWORD
       if (!FindNodalGroup(group)) { AddNodalGroup(group); }
       AddPrimitiveBit(primitive, bit);
       if (AddUniquePoint(point) == 1) {
-        EoDbPoint pointPrimitive(252, 8, point);
+        EoDbPoint pointPrimitive(252, 65, point);
         UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, &pointPrimitive);
       }
     }
@@ -36,7 +36,7 @@ void AeSysDoc::UpdateNodalList(EoDbGroup* group, EoDbPrimitive* primitive, DWORD
       RemovePrimitiveBit(primitive, bit);
 
       if (RemoveUniquePoint(point) == 0) {
-        EoDbPoint pointPrimitive(252, 8, point);
+        EoDbPoint pointPrimitive(252, 65, point);
         UpdateAllViews(nullptr, EoDb::kPrimitiveEraseSafe, &pointPrimitive);
       }
     }
@@ -60,7 +60,7 @@ void AeSysDoc::DisplayUniquePoints() {
   auto uniquePointPosition = GetFirstUniquePointPosition();
   while (uniquePointPosition != nullptr) {
     const EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
-    group.AddTail(new EoDbPoint(252, 8, uniquePoint->m_Point));
+    group.AddTail(new EoDbPoint(252, 65, uniquePoint->m_Point));
   }
   UpdateAllViews(nullptr, EoDb::kGroupEraseSafe, &group);
   group.DeletePrimitivesAndRemoveAll();
@@ -69,7 +69,7 @@ void AeSysDoc::RenderUniquePoints(AeSysView* view, EoGsRenderDevice* renderDevic
   auto uniquePointPosition = GetFirstUniquePointPosition();
   while (uniquePointPosition != nullptr) {
     const EoGeUniquePoint* uniquePoint = GetNextUniquePoint(uniquePointPosition);
-    EoDbPoint pointPrimitive(252, 8, uniquePoint->m_Point);
+    EoDbPoint pointPrimitive(252, 65, uniquePoint->m_Point);
     pointPrimitive.Display(view, renderDevice);
   }
 }

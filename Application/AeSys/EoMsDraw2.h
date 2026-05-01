@@ -37,6 +37,7 @@ class Draw2ModeState : public AeSysState {
   bool OnEscape(AeSysView* context) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousOp; }
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
+  [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
 
   void UnhighlightOp(AeSysView* context);
 

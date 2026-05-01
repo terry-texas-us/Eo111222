@@ -25,6 +25,7 @@ class DrawModeState : public AeSysState {
   bool OnReturn(AeSysView* context) override;
   bool OnEscape(AeSysView* context) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousDrawCommand; }
+  [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
 
   [[nodiscard]] std::uint16_t PreviousDrawCommand() const noexcept { return m_previousDrawCommand; }

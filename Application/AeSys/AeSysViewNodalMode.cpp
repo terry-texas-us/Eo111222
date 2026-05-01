@@ -61,6 +61,7 @@ void AeSysView::OnNodalModePoint() {
     }
   }
   points.RemoveAll();
+  InvalidateScene();
 }
 
 void AeSysView::OnNodalModeLine() {
@@ -80,6 +81,7 @@ void AeSysView::OnNodalModeLine() {
 
     for (int i = 0; i < points.GetSize(); i++) { document->UpdateNodalList(group, primitive, mask, i, points[i]); }
     points.RemoveAll();
+    InvalidateScene();
   }
 }
 
@@ -123,6 +125,7 @@ void AeSysView::OnNodalModeArea() {
     }
     RubberBandingDisable();
     ModeLineUnhighlightOp(state->PreviousCommandRef());
+    InvalidateScene();
   }
 }
 
@@ -387,7 +390,7 @@ void AeSysView::ConstructPreviewGroup() {
   auto uniquePointPosition = document->GetFirstUniquePointPosition();
   while (uniquePointPosition != nullptr) {
     const auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
-    m_PreviewGroup.AddTail(new EoDbPoint(252, 8, uniquePoint->m_Point));
+    m_PreviewGroup.AddTail(new EoDbPoint(252, 65, uniquePoint->m_Point));
   }
 }
 void AeSysView::ConstructPreviewGroupForNodalGroups() {
@@ -406,6 +409,6 @@ void AeSysView::ConstructPreviewGroupForNodalGroups() {
   auto uniquePointPosition = document->GetFirstUniquePointPosition();
   while (uniquePointPosition != nullptr) {
     const auto* uniquePoint = document->GetNextUniquePoint(uniquePointPosition);
-    m_PreviewGroup.AddTail(new EoDbPoint(252, 8, uniquePoint->m_Point));
+    m_PreviewGroup.AddTail(new EoDbPoint(252, 65, uniquePoint->m_Point));
   }
 }

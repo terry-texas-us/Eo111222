@@ -1,5 +1,7 @@
 #include "Stdafx.h"
 
+#include "AeSys.h"
+#include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "EoMsEdit.h"
 #include "Resource.h"
@@ -36,6 +38,38 @@ void EditModeState::UnhighlightOp(AeSysView* context) {
 
 void EditModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags, [[maybe_unused]] CPoint point) {
   OnEscape(context);
+}
+
+bool EditModeState::BuildContextMenu(AeSysView* context, CMenu& menu) {
+  // ── Mid-Move or mid-Copy gesture ──
+  if (m_previousOp == ID_OP4) {
+    menu.AppendMenu(MF_STRING, ID_EDIT_MODE_MOVE, L"&Place Here");
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, ID_EDIT_MODE_ESCAPE, L"C&ancel Move\tEsc");
+    return true;
+  }
+  if (m_previousOp == ID_OP5) {
+    menu.AppendMenu(MF_STRING, ID_EDIT_MODE_COPY, L"Place &Copy Here");
+    menu.AppendMenu(MF_SEPARATOR);
+    menu.AppendMenu(MF_STRING, ID_EDIT_MODE_ESCAPE, L"C&ancel Copy\tEsc");
+    return true;
+  }
+
+  // ── Idle: show transform menu only when trap is non-empty ──
+  const auto* document = context->GetDocument();
+  if (document->IsTrapEmpty()) { return false; }
+
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_MOVE,    L"&Move...");
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_COPY,    L"&Copy...");
+  menu.AppendMenu(MF_SEPARATOR);
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_ROTCCW,  L"Rotat&e CCW");
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_ROTCW,   L"Rotate C&W");
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_FLIP,    L"Fli&p");
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_REDUCE,  L"&Reduce");
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_ENLARGE, L"&Enlarge");
+  menu.AppendMenu(MF_SEPARATOR);
+  menu.AppendMenu(MF_STRING, ID_EDIT_MODE_ESCAPE,  L"C&ancel\tEsc");
+  return true;
 }
 
 bool EditModeState::HandleCommand(AeSysView* context, UINT command) {

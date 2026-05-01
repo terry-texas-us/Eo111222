@@ -28,6 +28,12 @@ void FixupModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT flags
   OnEscape(context);
 }
 
+bool FixupModeState::BuildContextMenu([[maybe_unused]] AeSysView* context, CMenu& menu) {
+  if (m_previousCommand == 0) { return false; }
+  menu.AppendMenu(MF_STRING, ID_FIXUP_MODE_ESCAPE, L"C&ancel\tEsc");
+  return true;
+}
+
 bool FixupModeState::HandleCommand(AeSysView* context, UINT command) {
   if (command < ID_OP0 || command > ID_OP9) { return false; }
   static constexpr UINT opToFixupCommand[] = {

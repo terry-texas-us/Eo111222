@@ -151,6 +151,12 @@ void LpdModeState::OnRButtonUp(AeSysView* context, [[maybe_unused]] UINT nFlags,
   OnReturn(context);
 }
 
+bool LpdModeState::BuildContextMenu([[maybe_unused]] AeSysView* context, CMenu& menu) {
+  if (m_previousOp == 0) { return false; }
+  menu.AppendMenu(MF_STRING, ID_LPD_MODE_ESCAPE, L"C&ancel\tEsc");
+  return true;
+}
+
 bool LpdModeState::HandleCommand(AeSysView* context, UINT command) {
   if (command < ID_OP0 || command > ID_OP9) { return false; }
   static constexpr UINT opToLpdCommand[] = {

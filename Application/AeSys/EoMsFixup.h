@@ -24,6 +24,7 @@ class FixupModeState final : public AeSysState {
   void OnRButtonUp(AeSysView* context, UINT flags, CPoint point) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousCommand; }
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
+  [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
 
   /// Resets `m_previousCommand` to 0 via reference so `ModeLineUnhighlightOp`
   /// can clear it. Used by `OnFixupModeReturn` / `OnFixupModeEscape`.

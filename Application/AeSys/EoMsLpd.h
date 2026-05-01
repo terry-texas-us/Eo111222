@@ -44,6 +44,7 @@ class LpdModeState : public AeSysState {
   bool OnEscape(AeSysView* context) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousOp; }
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
+  [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
 
   /// Unhighlights the active op pane (if any) and resets sequence state to idle.
   /// Safe to call repeatedly — clears preview, restores any hidden original
