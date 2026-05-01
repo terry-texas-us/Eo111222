@@ -54,6 +54,7 @@ class EoDbAttrib : public EoDbText {
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbAttrib*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void ExportToDxf(EoDxfInterface* writer) const override;
+  [[nodiscard]] CString TypeLabel() const override { return L"Attrib"; }
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& str) override;
 

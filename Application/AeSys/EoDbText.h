@@ -57,6 +57,7 @@ class EoDbText : public EoDbPrimitive {
   void ExportToDxf(EoDxfInterface* writer) const override;
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
+  [[nodiscard]] CString TypeLabel() const override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;

@@ -269,6 +269,19 @@ void EoDbFace::ExportToDxf(EoDxfInterface* writer) const {
   }
 }
 
+CString EoDbFace::TypeLabel() const {
+  switch (m_sourceType) {
+    case SourceType::Face3d:
+      return L"3DFace";
+    case SourceType::Solid:
+      return L"Solid";
+    case SourceType::Trace:
+      return L"Trace";
+    default:
+      return L"Face";
+  }
+}
+
 void EoDbFace::FormatExtra(CString& extra) {
   EoDbPrimitive::FormatExtra(extra);
   const wchar_t* sourceLabel = L"Face3d";
@@ -283,7 +296,7 @@ void EoDbFace::FormatExtra(CString& extra) {
       sourceLabel = L"Trace";
       break;
   }
-  extra.AppendFormat(L"\tSource;%s\tVertices;%d", sourceLabel, static_cast<int>(m_vertexCount));
+  extra.AppendFormat(L"Source;%s\tVertices;%d", sourceLabel, static_cast<int>(m_vertexCount));
   if (m_sourceType == SourceType::Face3d && m_edgeFlags != AllVisible) {
     extra.AppendFormat(L"\tEdgeFlags;0x%02X", m_edgeFlags);
   }

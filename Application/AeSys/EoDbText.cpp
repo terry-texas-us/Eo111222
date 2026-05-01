@@ -285,9 +285,13 @@ void EoDbText::AddReportToMessageList(const EoGePoint3d& point) {
   }
 }
 
+CString EoDbText::TypeLabel() const {
+  return m_mtextProperties.has_value() ? L"MText" : L"Text";
+}
+
 void EoDbText::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tFont;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tSource;%s\tText;%s",
+  str.AppendFormat(L"Font;%s\tPrecision;%s\tPath;%s\tAlignment;(%s,%s)\tSpacing;%f\tLength;%d\tSource;%s\tText;%s",
       m_fontDefinition.FontName().GetString(),
       m_fontDefinition.FormatPrecision().GetString(),
       m_fontDefinition.FormatPath().GetString(),

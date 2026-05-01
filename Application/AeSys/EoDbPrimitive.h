@@ -78,6 +78,7 @@ class EoDbPrimitive : public CObject {
   virtual void Display(AeSysView* view, EoGsRenderDevice* renderDevice) = 0;
   virtual void FormatExtra(CString& extra);
   virtual void FormatGeometry(CString& str) = 0;
+  [[nodiscard]] virtual CString TypeLabel() const { return L"Primitive"; }
   virtual void GetAllPoints(EoGePoint3dArray& points) = 0;
   virtual EoGePoint3d GetControlPoint() = 0;
   virtual void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) = 0;

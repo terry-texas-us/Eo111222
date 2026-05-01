@@ -200,9 +200,11 @@ void EoDbPrimitive::ModifyState() {
 }
 
 void EoDbPrimitive::FormatExtra(CString& extra) {
-  extra.Format(L"Handle;%I64X\tOwner;%I64X\tLayer;%s\tColor;%s\tLineType;%s\tLineWeight;%hd\tLineTypeScale;%g",
-      m_handle,
-      m_ownerHandle,
+  extra.Format(L"Type;%s\t", TypeLabel().GetString());
+#ifdef _DEBUG
+  extra.AppendFormat(L"Handle;%I64X\tOwner;%I64X\t", m_handle, m_ownerHandle);
+#endif
+  extra.AppendFormat(L"Layer;%s\tColor;%s\tLineType;%s\tLineWeight;%hd\tLineTypeScale;%g\t",
       m_layerName.empty() ? L"" : m_layerName.c_str(),
       FormatPenColor().GetString(),
       FormatLineType().GetString(),
@@ -210,17 +212,26 @@ void EoDbPrimitive::FormatExtra(CString& extra) {
       m_lineTypeScale);
 }
 
-void EoDbPrimitive::AddReportToMessageList(const EoGePoint3d&) {
-  CString message;
-  message.Format(L"Handle: %I64X  Owner: %I64X  Layer: %s  Color: %s  LineType: %s  LineWeight: %hd  LineTypeScale: %g",
-      m_handle,
-      m_ownerHandle,
-      m_layerName.empty() ? L"" : m_layerName.c_str(),
-      FormatPenColor().GetString(),
-      FormatLineType().GetString(),
-      static_cast<std::int16_t>(m_lineWeight),
-      m_lineTypeScale);
-  app.AddStringToMessageList(message);
+void EoDbPrimitive::AddReportToMessageList([[maybe_unused]] const EoGePoint3d& point) {
+  CString extra;
+  FormatExtra(extra);
+
+  // Emit each Name;Value pair from FormatExtra as a separate message line.
+  int pos = 0;
+  while (pos < extra.GetLength()) {
+    const int tabPos = extra.Find(L'\t', pos);
+    const int pairEnd = (tabPos >= 0) ? tabPos : extra.GetLength();
+    CString pair = extra.Mid(pos, pairEnd - pos);
+    pair.TrimRight();
+    if (!pair.IsEmpty()) {
+      const int semi = pair.Find(L';');
+      if (semi >= 0) {
+        CString line = L"  " + pair.Left(semi) + L": " + pair.Mid(semi + 1);
+        app.AddStringToMessageList(line);
+      }
+    }
+    pos = (tabPos >= 0) ? tabPos + 1 : extra.GetLength();
+  }
 }
 
 int EoDbPrimitive::ControlPointIndex() noexcept {

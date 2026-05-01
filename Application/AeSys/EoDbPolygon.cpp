@@ -672,7 +672,7 @@ CString EoDbPolygon::FormatIntStyle() {
 }
 void EoDbPolygon::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tPoints;%d", m_numberOfVertices);
+  str.AppendFormat(L"Points;%d", m_numberOfVertices);
   str += L'\t';
 }
 EoGePoint3d EoDbPolygon::GetControlPoint() {

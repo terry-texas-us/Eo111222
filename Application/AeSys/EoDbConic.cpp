@@ -539,6 +539,10 @@ void EoDbConic::FormatGeometry(CString& geometry) {
 #endif
 }
 
+CString EoDbConic::TypeLabel() const {
+  return SubClassName(m_ratio, m_startAngle, m_endAngle);
+}
+
 void EoDbConic::FormatExtra(CString& extra) {
   EoDbPrimitive::FormatExtra(extra);
   switch (Subclass()) {

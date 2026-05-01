@@ -69,6 +69,7 @@ class EoDbPolygon : public EoDbPrimitive {
   EoDbPrimitive*& Copy(EoDbPrimitive*&) override;
   void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void ExportToDxf(EoDxfInterface* writer) const override;
+  [[nodiscard]] CString TypeLabel() const override { return L"Polygon"; }
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;

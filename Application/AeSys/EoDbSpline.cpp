@@ -145,7 +145,7 @@ void EoDbSpline::FormatGeometry(CString& str) {
 
 void EoDbSpline::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tDegree;%d\tFlags;0x%04X\tControl Points;%d\tKnots;%zu\tWeights;%zu",
+  str.AppendFormat(L"Degree;%d\tFlags;0x%04X\tControl Points;%d\tKnots;%zu\tWeights;%zu",
       static_cast<int>(m_degree),
       static_cast<int>(m_flags),
       static_cast<int>(m_pts.GetSize()),

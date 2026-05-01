@@ -236,7 +236,7 @@ void EoDbBlockReference::GetAllPoints(EoGePoint3dArray& points) {
 
 void EoDbBlockReference::FormatExtra(CString& extra) {
   EoDbPrimitive::FormatExtra(extra);
-  extra.AppendFormat(L"\tSegment Name;%s\tRotation Angle;%f\tAttributes;%zu",
+  extra.AppendFormat(L"Block Name;%s\tRotation Angle;%f\tAttributes;%zu",
       m_blockName.GetString(),
       m_rotation,
       m_attributeHandles.size());

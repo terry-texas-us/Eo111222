@@ -189,6 +189,7 @@ class EoDbConic : public EoDbPrimitive {
   void GetAllPoints(EoGePoint3dArray& points) override;
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& geometry) override;
+  [[nodiscard]] CString TypeLabel() const override;
   [[nodiscard]] EoGePoint3d GetControlPoint() override { return m_center; }
   void GetExtents(AeSysView* view, EoGePoint3d&, EoGePoint3d&, const EoGeTransformMatrix&) override;
   EoGePoint3d GoToNextControlPoint() override;

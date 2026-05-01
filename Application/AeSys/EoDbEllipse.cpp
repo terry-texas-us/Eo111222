@@ -506,7 +506,7 @@ void EoDbEllipse::FormatGeometry(CString& str) {
 
 void EoDbEllipse::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tSweep Angle;%f\tMajor Axis Length;%f", m_sweepAngle, m_majorAxis.Length());
+  str.AppendFormat(L"Sweep Angle;%f\tMajor Axis Length;%f", m_sweepAngle, m_majorAxis.Length());
   str += L'\t';
 }
 

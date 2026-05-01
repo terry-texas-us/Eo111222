@@ -143,7 +143,7 @@ void EoDbViewport::Display([[maybe_unused]] AeSysView* view, [[maybe_unused]] Eo
 void EoDbViewport::FormatExtra(CString& extra) {
   EoDbPrimitive::FormatExtra(extra);
   extra.AppendFormat(
-      L"\tViewportId;%d\tStatus;%d\tWidth;%.3f\tHeight;%.3f", m_viewportId, m_viewportStatus, m_width, m_height);
+      L"ViewportId;%d\tStatus;%d\tWidth;%.3f\tHeight;%.3f", m_viewportId, m_viewportStatus, m_width, m_height);
   extra += L'\t';
 }
 

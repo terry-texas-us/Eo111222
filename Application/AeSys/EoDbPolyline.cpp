@@ -452,7 +452,7 @@ void EoDbPolyline::FormatGeometry(CString& str) {
 
 void EoDbPolyline::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tPoints;%d\tClosed;%s\tBulge;%s\tWidth;%s",
+  str.AppendFormat(L"Points;%d\tClosed;%s\tBulge;%s\tWidth;%s",
       static_cast<int>(m_pts.GetSize()),
       IsClosed() ? L"Yes" : L"No",
       HasBulge() ? L"Yes" : L"No",

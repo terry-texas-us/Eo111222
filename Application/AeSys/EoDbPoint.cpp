@@ -171,7 +171,7 @@ void EoDbPoint::AddReportToMessageList(const EoGePoint3d& point) {
 
 void EoDbPoint::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
-  str.AppendFormat(L"\tStyle;%d", m_pointStyle);
+  str.AppendFormat(L"Style;%d", m_pointStyle);
   str += L'\t';
 }
 void EoDbPoint::FormatGeometry(CString& str) {

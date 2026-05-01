@@ -127,6 +127,7 @@ class EoDbFace : public EoDbPrimitive {
   void ExportToDxf(EoDxfInterface* writer) const override;
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& str) override;
+  [[nodiscard]] CString TypeLabel() const override;
   void GetAllPoints(EoGePoint3dArray& points) override;
   EoGePoint3d GetControlPoint() override;
   void GetExtents(AeSysView* view,

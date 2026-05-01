@@ -82,6 +82,7 @@ class EoDbPolyline : public EoDbPrimitive {
   void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
   void ExportToDxf(EoDxfInterface* writer) const override;
   void GetAllPoints(EoGePoint3dArray& points) override;
+  [[nodiscard]] CString TypeLabel() const override { return L"Polyline"; }
   void FormatExtra(CString& str) override;
   void FormatGeometry(CString& str) override;
   EoGePoint3d GetControlPoint() override;

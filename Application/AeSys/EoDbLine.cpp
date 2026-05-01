@@ -160,7 +160,7 @@ void EoDbLine::FormatExtra(CString& str) {
   EoDbPrimitive::FormatExtra(str);
   CString formattedLength;
   app.FormatLength(formattedLength, app.GetUnits(), Length());
-  str.AppendFormat(L"\tLength;%s\tZ-Angle;%f",
+  str.AppendFormat(L"Length;%s\tZ-Angle;%f",
       formattedLength.TrimLeft().GetString(),
       Eo::RadianToDegree(m_line.AngleFromXAxisXY()));
   str += L'\t';

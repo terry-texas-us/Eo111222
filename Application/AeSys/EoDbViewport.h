@@ -41,6 +41,7 @@ class EoDbViewport : public EoDbPrimitive {
   void Assign(EoDbPrimitive* primitive) override { *this = *static_cast<EoDbViewport*>(primitive); }
   EoDbPrimitive*& Copy(EoDbPrimitive*& primitive) override;
   void Display(AeSysView* view, EoGsRenderDevice* renderDevice) override;
+  [[nodiscard]] CString TypeLabel() const override { return L"Viewport"; }
   void FormatExtra(CString& extra) override;
   void FormatGeometry(CString& str) override;
   void GetAllPoints(EoGePoint3dArray& points) override;
