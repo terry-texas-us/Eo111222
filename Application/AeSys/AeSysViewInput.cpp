@@ -11,6 +11,7 @@
 #include "Resource.h"
 
 #include "AeSysState.h"
+#include "GripDragState.h"
 
 
 BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
@@ -37,6 +38,18 @@ BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
   auto* document = GetDocument();
   const auto worldPoint = GetCursorPosition();
+
+  // --- Exclusive transient states own LMB unconditionally ---
+  // GripDragState (and any future exclusive sub-mode) must receive LMB before
+  // the trap-pick or field-trap logic, otherwise the commit click is silently
+  // consumed by the still-trapped group hit-test and never reaches the state.
+  {
+    auto* state = GetCurrentState();
+    if (dynamic_cast<GripDragState*>(state) != nullptr) {
+      state->OnLButtonDown(this, flags, point);
+      return;
+    }
+  }
 
   // --- Two-click field-trap: second click commits the rectangle ---
   if (m_fieldTrapAnchorSet) {
@@ -84,6 +97,37 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
       m_fieldTrapIsRemove = false;
     }
     return;
+  }
+
+  // --- Grip hit-test: if the cursor is on a control-point grip of a trapped primitive,
+  //     start a GripDragState instead of doing a normal trap-pick. ---
+  if (document != nullptr && m_gripHoveredPrimitive != nullptr && m_gripHoveredControlPointIndex >= 0) {
+    EoDbGroup* gripGroup{};
+    auto trappedPos = document->GetFirstTrappedGroupPosition();
+    while (trappedPos != nullptr && gripGroup == nullptr) {
+      auto* g = document->GetNextTrappedGroup(trappedPos);
+      if (g == nullptr) { continue; }
+      auto primPos = g->GetHeadPosition();
+      while (primPos != nullptr) {
+        if (g->GetNext(primPos) == m_gripHoveredPrimitive) { gripGroup = g; break; }
+      }
+    }
+    if (gripGroup != nullptr) {
+      auto* primitive = m_gripHoveredPrimitive;
+      const int cpIndex = m_gripHoveredControlPointIndex;
+      // Capture the exact control-point world position as the drag anchor.
+      EoGePoint3dArray controlPoints;
+      primitive->GetAllPoints(controlPoints);
+      const EoGePoint3d anchorPoint = (cpIndex < static_cast<int>(controlPoints.GetSize()))
+          ? controlPoints[cpIndex]
+          : worldPoint;
+      const DWORD mask = 1U << static_cast<DWORD>(cpIndex);
+      // Clear hover state before pushing — the new state will own the drag.
+      m_gripHoveredPrimitive = nullptr;
+      m_gripHoveredControlPointIndex = -1;
+      PushState(std::make_unique<GripDragState>(gripGroup, primitive, mask, anchorPoint));
+      return;
+    }
   }
 
   // --- LMB trap-pick: hit-test visible groups first (any mode) ---
@@ -424,6 +468,55 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
     }
   }
   DisplayOdometer();
+
+  // Grip hover detection: pure proximity test against control points of trapped primitives.
+  // We use GetAllPoints + device-space distance so this scan is entirely non-mutating —
+  // SelectAtControlPoint is NOT used here because it writes to static selection state
+  // and can snap the cursor as a side effect.
+  {
+    auto* document = GetDocument();
+    // Use the raw device point to avoid triggering GetCursorPosition's grid-snap logic
+    // for a pure screen-proximity test.
+    constexpr int kGripHitRadius{5};  // pixels — slightly larger than kGripHalfSize(4)
+
+    EoDbPrimitive* newHoveredPrimitive{};
+    int newHoveredIndex{-1};
+
+    if (document != nullptr && dynamic_cast<GripDragState*>(GetCurrentState()) == nullptr) {
+      auto trappedPosition = document->GetFirstTrappedGroupPosition();
+      while (trappedPosition != nullptr && newHoveredPrimitive == nullptr) {
+        auto* group = document->GetNextTrappedGroup(trappedPosition);
+        if (group == nullptr) { continue; }
+        auto primitivePosition = group->GetHeadPosition();
+        while (primitivePosition != nullptr && newHoveredPrimitive == nullptr) {
+          auto* primitive = group->GetNext(primitivePosition);
+          if (primitive == nullptr) { continue; }
+
+          EoGePoint3dArray controlPoints;
+          primitive->GetAllPoints(controlPoints);
+          for (int i = 0; i < static_cast<int>(controlPoints.GetSize()); ++i) {
+            EoGePoint4d ndcPt(controlPoints[i]);
+            ModelViewTransformPoint(ndcPt);
+            if (ndcPt.w < Eo::geometricTolerance) { continue; }
+            const CPoint devPt = ProjectToClient(ndcPt);
+            const int dx = point.x - devPt.x;
+            const int dy = point.y - devPt.y;
+            if (dx * dx + dy * dy <= kGripHitRadius * kGripHitRadius) {
+              newHoveredPrimitive = primitive;
+              newHoveredIndex = i;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (newHoveredPrimitive != m_gripHoveredPrimitive || newHoveredIndex != m_gripHoveredControlPointIndex) {
+      m_gripHoveredPrimitive = newHoveredPrimitive;
+      m_gripHoveredControlPointIndex = newHoveredIndex;
+      InvalidateOverlay();
+    }
+  }
 
   if (m_rubberbandType == Lines || m_rubberbandType == Rectangles || m_rubberbandType == RectanglesRemove ||
       m_rubberbandType == RectanglesWindow || m_rubberbandType == RectanglesWindowRemove) {

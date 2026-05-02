@@ -219,6 +219,8 @@
     <ClCompile Include="EoMsFixup.cpp" />
     <ClCompile Include="EoMsLpd.cpp" />
     <ClCompile Include="EoMsNodal.cpp" />
+    
+    <ClCompile Include="GripDragState.cpp" />
     <ClCompile Include="PickAndDragState.cpp" />
     <ClCompile Include="EoMsPipe.cpp" />
     <ClCompile Include="EoMsPower.cpp" />
@@ -513,6 +515,7 @@
     <ClInclude Include="EoPowerGeometry.h" />
     <ClInclude Include="EoMsFixup.h" />
     <ClInclude Include="FixupModeState.h" />
+    <ClInclude Include="GripDragState.h" />
     <ClInclude Include="Hatch.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Lex.h" />
@@ -523,11 +526,11 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="EoMsNodal.h" />
     <ClInclude Include="NodalModeState.h" />
-    <ClInclude Include="PickAndDragState.h" />
     <ClInclude Include="EoMsPipe.h" />
     <ClInclude Include="EoMsPower.h" />
     <ClInclude Include="PipeModeState.h" />
     <ClInclude Include="PowerModeState.h" />
+    <ClInclude Include="PickAndDragState.h" />
     <ClInclude Include="PrimitiveMendState.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Section.h" />
@@ -647,3 +650,4 @@
     </VisualStudio>
   </ProjectExtensions>
 </Project>
+

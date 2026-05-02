@@ -167,6 +167,7 @@
     <ClCompile Include="EoMsPower.cpp" />
     <ClCompile Include="EoMsTrap.cpp" />
     <ClCompile Include="EoMfPrimitiveTooltip.cpp" />
+    <ClCompile Include="GripDragState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -326,6 +327,7 @@
     <ClInclude Include="EoMsPower.h" />
     <ClInclude Include="EoMsTrap.h" />
     <ClInclude Include="EoMfPrimitiveTooltip.h" />
+    <ClInclude Include="GripDragState.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />

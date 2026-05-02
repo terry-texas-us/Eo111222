@@ -22,6 +22,7 @@
 #include "EoMfLayoutTabBar.h"
 #include "EoMfPrimitiveTooltip.h"
 #include "EoModeConfig.h"
+#include "GripDragState.h"
 #include "EoPipeGeometry.h"
 #include "EoPowerGeometry.h"
 #include "Section.h"
@@ -417,6 +418,11 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   bool m_fieldTrapAnchorSet{};
   bool m_fieldTrapIsRemove{};
 
+  // Grip hover state — updated every OnMouseMove by hit-testing control points of
+  // trapped primitives.  Used by the overlay to highlight the hovered grip square.
+  EoDbPrimitive* m_gripHoveredPrimitive{};
+  int m_gripHoveredControlPointIndex{-1};
+
   /** @brief Disables rubber banding by erasing the current rubber band from the view.
    * @note When Direct2D is active, simply clears the rubberband type and invalidates the scene — the next
    * OnDraw omits the rubberband overlay. When GDI is active, erases the rubber band using R2_XORPEN by
@@ -432,6 +438,18 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
    * specified type.
    */
   void RubberBandingStartAtEnable(EoGePoint3d point, ERubs type);
+
+  /// @brief Draws hollow-square grip markers at every control point of all trapped primitives.
+  /// Called from the overlay compose path. Highlights the grip at m_gripHoveredControlPointIndex
+  /// on m_gripHoveredPrimitive with a filled (hot) color.
+  void DrawGripMarkers(CDC* dc);
+  /// @brief Draws a cyan diamond snap marker during an active grip drag (GDI path).
+  void DrawSnapMarker(CDC* dc);
+
+  /// @brief Draws grip markers using Direct2D (used in the D2D render path).
+  void DrawGripMarkersD2D(ID2D1RenderTarget* rt);
+  /// @brief Draws a cyan diamond snap marker during an active grip drag (D2D path).
+  void DrawSnapMarkerD2D(ID2D1RenderTarget* rt);
 
   EoGePoint3d m_ptCursorPosDev{};
   EoGePoint3d m_ptCursorPosWorld{};

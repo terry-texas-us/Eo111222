@@ -26,6 +26,7 @@
 #include "MainFrm.h"
 
 #include "AeSysState.h"
+#include "GripDragState.h"
 
 #ifdef USING_DDE
 #include "Dde.h"
@@ -263,6 +264,11 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         }
       }
 
+      // Grip markers and snap marker — drawn before PopAxisAlignedClip so they are
+      // clipped to the client area just like the rubberband and scene geometry.
+      DrawGripMarkersD2D(m_d2dRenderTarget.Get());
+      DrawSnapMarkerD2D(m_d2dRenderTarget.Get());
+
       m_d2dRenderTarget->PopAxisAlignedClip();
 
       const HRESULT hr = m_d2dRenderTarget->EndDraw();
@@ -357,6 +363,11 @@ void AeSysView::OnDraw(CDC* deviceContext) {
         const bool viewportActive = IsViewportActive() && ConfigureViewportTransform(m_activeViewportPrimitive);
 
         document->RenderUniquePoints(this, &overlayDevice);
+
+        // Grip markers: hollow squares at every control point of trapped primitives.
+        DrawGripMarkers(&m_overlayDC);
+        // Snap marker: cyan diamond at snap target during active grip drag.
+        DrawSnapMarker(&m_overlayDC);
 
         if (!m_PreviewGroup.IsEmpty()) {
           m_PreviewGroup.Display(this, &overlayDevice);
@@ -869,6 +880,149 @@ void AeSysView::InvalidateScene() {
 void AeSysView::InvalidateOverlay() {
   m_overlayDirty = true;
   InvalidateRect(nullptr, FALSE);
+}
+
+void AeSysView::DrawGripMarkers(CDC* dc) {
+  auto* document = GetDocument();
+  if (document == nullptr) { return; }
+
+  // Only draw grips when there are trapped groups and no active drag gesture.
+  auto* currentState = GetCurrentState();
+  if (dynamic_cast<GripDragState*>(currentState) != nullptr) { return; }
+
+  constexpr int kGripHalfSize{4};  // half-size of grip square in device pixels
+  constexpr COLORREF kGripColor{RGB(0, 148, 255)};    // blue  — cold grip
+  constexpr COLORREF kGripHotColor{RGB(0, 200, 80)};  // green — hover: ready to drag
+
+  CPen nullPen(PS_NULL, 0, kGripColor);
+  CBrush coldBrush(kGripColor);
+  CBrush hotBrush(kGripHotColor);
+
+  auto* prevPen = dc->SelectObject(&nullPen);
+
+  auto trappedPosition = document->GetFirstTrappedGroupPosition();
+  while (trappedPosition != nullptr) {
+    auto* group = document->GetNextTrappedGroup(trappedPosition);
+    if (group == nullptr) { continue; }
+
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
+      if (primitive == nullptr) { continue; }
+
+      EoGePoint3dArray controlPoints;
+      primitive->GetAllPoints(controlPoints);
+
+      for (int i = 0; i < static_cast<int>(controlPoints.GetSize()); ++i) {
+        EoGePoint4d ndcPoint(controlPoints[i]);
+        ModelViewTransformPoint(ndcPoint);
+        if (ndcPoint.w < Eo::geometricTolerance) { continue; }
+        const CPoint devicePt = ProjectToClient(ndcPoint);
+
+        const bool isHot = (primitive == m_gripHoveredPrimitive && i == m_gripHoveredControlPointIndex);
+        auto* brush = isHot ? static_cast<CBrush*>(&hotBrush) : static_cast<CBrush*>(&coldBrush);
+        auto* prevBrush = dc->SelectObject(brush);
+        dc->Rectangle(devicePt.x - kGripHalfSize, devicePt.y - kGripHalfSize,
+            devicePt.x + kGripHalfSize, devicePt.y + kGripHalfSize);
+        dc->SelectObject(prevBrush);
+      }
+    }
+  }
+  dc->SelectObject(prevPen);
+}
+
+void AeSysView::DrawSnapMarker(CDC* dc) {
+  auto* gripState = dynamic_cast<GripDragState*>(GetCurrentState());
+  if (gripState == nullptr || !gripState->IsSnapped()) { return; }
+  EoGePoint4d snapNdc(gripState->SnapTarget());
+  ModelViewTransformPoint(snapNdc);
+  if (snapNdc.w < Eo::geometricTolerance) { return; }
+  const CPoint sc = ProjectToClient(snapNdc);
+  constexpr int kDia{6};
+  constexpr COLORREF kSnapColor{RGB(0, 230, 230)};  // cyan
+  CPen snapPen(PS_SOLID, 1, kSnapColor);
+  CBrush snapBrush(kSnapColor);
+  auto* prevPen = dc->SelectObject(&snapPen);
+  auto* prevBrush = dc->SelectObject(&snapBrush);
+  POINT diamond[4] = {{sc.x, sc.y - kDia}, {sc.x + kDia, sc.y}, {sc.x, sc.y + kDia}, {sc.x - kDia, sc.y}};
+  dc->Polygon(diamond, 4);
+  dc->SelectObject(prevBrush);
+  dc->SelectObject(prevPen);
+}
+
+void AeSysView::DrawGripMarkersD2D(ID2D1RenderTarget* rt) {
+  if (rt == nullptr) { return; }
+  auto* document = GetDocument();
+  if (document == nullptr) { return; }
+  if (dynamic_cast<GripDragState*>(GetCurrentState()) != nullptr) { return; }
+
+  constexpr float kGripHalf{4.0f};
+  constexpr D2D1_COLOR_F kCold{0.0f, 0.58f, 1.0f, 1.0f};    // blue
+  constexpr D2D1_COLOR_F kHot{0.0f, 0.78f, 0.31f, 1.0f};    // green — hover: ready to drag
+
+  Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> coldBrush;
+  Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> hotBrush;
+  rt->CreateSolidColorBrush(kCold, &coldBrush);
+  rt->CreateSolidColorBrush(kHot, &hotBrush);
+  if (!coldBrush || !hotBrush) { return; }
+
+  auto trappedPosition = document->GetFirstTrappedGroupPosition();
+  while (trappedPosition != nullptr) {
+    auto* group = document->GetNextTrappedGroup(trappedPosition);
+    if (group == nullptr) { continue; }
+
+    auto primitivePosition = group->GetHeadPosition();
+    while (primitivePosition != nullptr) {
+      auto* primitive = group->GetNext(primitivePosition);
+      if (primitive == nullptr) { continue; }
+
+      EoGePoint3dArray controlPoints;
+      primitive->GetAllPoints(controlPoints);
+
+      for (int i = 0; i < static_cast<int>(controlPoints.GetSize()); ++i) {
+        EoGePoint4d ndcPoint(controlPoints[i]);
+        ModelViewTransformPoint(ndcPoint);
+        if (ndcPoint.w < Eo::geometricTolerance) { continue; }
+        const CPoint devicePt = ProjectToClient(ndcPoint);
+        const auto fx = static_cast<float>(devicePt.x);
+        const auto fy = static_cast<float>(devicePt.y);
+        const D2D1_RECT_F rect = D2D1::RectF(fx - kGripHalf, fy - kGripHalf, fx + kGripHalf, fy + kGripHalf);
+        const bool isHot = (primitive == m_gripHoveredPrimitive && i == m_gripHoveredControlPointIndex);
+        rt->FillRectangle(rect, isHot ? hotBrush.Get() : coldBrush.Get());
+      }
+    }
+  }
+}
+
+void AeSysView::DrawSnapMarkerD2D(ID2D1RenderTarget* rt) {
+  auto* gripState = dynamic_cast<GripDragState*>(GetCurrentState());
+  if (gripState == nullptr || !gripState->IsSnapped()) { return; }
+  EoGePoint4d snapNdc(gripState->SnapTarget());
+  ModelViewTransformPoint(snapNdc);
+  if (snapNdc.w < Eo::geometricTolerance) { return; }
+  const CPoint sc = ProjectToClient(snapNdc);
+  constexpr float kDia{6.0f};
+  constexpr D2D1_COLOR_F kSnap{0.0f, 0.9f, 0.9f, 1.0f};  // cyan
+  Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> snapBrush;
+  rt->CreateSolidColorBrush(kSnap, &snapBrush);
+  if (!snapBrush) { return; }
+  const auto fx = static_cast<float>(sc.x);
+  const auto fy = static_cast<float>(sc.y);
+  const D2D1_POINT_2F pts[4] = {
+      {fx, fy - kDia}, {fx + kDia, fy}, {fx, fy + kDia}, {fx - kDia, fy}};
+  Microsoft::WRL::ComPtr<ID2D1Factory> factory;
+  rt->GetFactory(&factory);
+  Microsoft::WRL::ComPtr<ID2D1PathGeometry> path;
+  if (factory && SUCCEEDED(factory->CreatePathGeometry(&path))) {
+    Microsoft::WRL::ComPtr<ID2D1GeometrySink> sink;
+    if (SUCCEEDED(path->Open(&sink))) {
+      sink->BeginFigure(pts[0], D2D1_FIGURE_BEGIN_FILLED);
+      sink->AddLines(pts + 1, 3);
+      sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+      sink->Close();
+      rt->FillGeometry(path.Get(), snapBrush.Get());
+    }
+  }
 }
 
 void AeSysView::CreateD2DRenderTarget() {

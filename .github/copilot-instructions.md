@@ -1065,3 +1065,71 @@ A custom `CWnd`-derived owner-drawn popup replaces the standard `CToolTipCtrl`. 
 
 To change the highlight color globally, update `kTrapHighlightAci` in `Eo.h`.
 
+## Grip Editing — Level 1 (Control-Point Drag)
+
+### Architecture Overview
+Grip editing is a transient sub-mode (`GripDragState`) that allows direct manipulation of individual primitive control points without entering a named mode. It coexists with all primary modes — grips appear whenever groups are in the trap.
+
+### Visual Feedback
+| Marker | Color | Meaning |
+|--------|-------|---------|
+| Cold grip square (~8px) | ACI blue `RGB(0,148,255)` | Selectable control point on a trapped primitive |
+| Hot grip square (~8px, filled) | Green `RGB(0,200,80)` | Hovered — ready to drag |
+| Cyan diamond | Cyan `RGB(0,220,220)` | Snap candidate on any visible primitive |
+
+Grip markers are drawn in `DrawGripMarkers(CDC*)` / `DrawGripMarkersD2D(ID2D1RenderTarget*)` in the overlay compose path. They are suppressed while a `GripDragState` is active (the drag itself provides feedback). The snap diamond is drawn by `DrawSnapMarker(CDC*)` / `DrawSnapMarkerD2D(ID2D1RenderTarget*)`, which are called **after** `DrawGripMarkers` and are visible **only** during an active drag.
+
+### GripDragState Lifecycle
+1. **Launch** (`AeSysViewInput.cpp::OnLButtonDown`): when `m_gripHoveredPrimitive` is non-null and the click is within the grip square, a `GripDragState` is pushed **before** trap-pick logic runs. The exact control-point world position becomes the drag anchor; `mask = 1U << cpIndex`.
+2. **Drag** (`OnMouseMove`): restores the primitive from `m_originalCopy` snapshot, scans all visible primitives for snap candidates within `kSnapRadiusPx` device pixels, then calls `TranslateUsingMask(delta, mask)` using either the snap target or the live cursor.
+3. **Commit** (LMB or Return): discards the snapshot, pops state.
+4. **Revert** (RMB or Escape): restores `m_originalCopy` into the live primitive, discards snapshot, pops state.
+
+### Snapshot / Restore Contract
+`OnEnter` calls `m_primitive->Copy(m_originalCopy)` to capture the pre-drag geometry. `OnMouseMove` always calls `m_primitive->Assign(m_originalCopy)` **before** applying a new translation — this prevents drift. `OnEscape` calls `Assign` once more as the final restore. The direction is always `primitive->Assign(copy)` (never reversed).
+
+### Hover Scan (non-mutating)
+`AeSysView::OnMouseMove` scans trapped primitive control points in device space to set `m_gripHoveredPrimitive` / `m_gripHoveredControlPointIndex`. It uses `GetAllPoints` + `ModelViewTransformPoint` + `ProjectToClient` — **never** `SelectAtControlPoint`, which has cursor-snap and selection side effects.
+
+### Snap Scan
+`GripDragState::OnMouseMove` iterates **all visible groups** (not just trapped) to find the nearest control point within `kSnapRadiusPx` pixels. It skips **all** points on `m_primitive` (not just the dragged index) to avoid self-snap — important for the midpoint grip where both endpoints move.
+
+### Control Points by Primitive Type
+`GetAllPoints()` defines what is snappable and what shows grip markers:
+
+| Primitive | Points | Notes |
+|-----------|--------|-------|
+| `EoDbLine` | begin(0), end(1), midpoint(2) | Midpoint grip moves whole line rigidly (both endpoints) |
+| `EoDbPolyline` / `EoDbSpline` | all vertices | |
+| `EoDbPolygon` | all vertices | Midpoint grips on edges deferred |
+| `EoDbConic` (arc/circle) | center only | No quadrant grips yet |
+| `EoDbEllipse` | center only | No quadrant grips yet |
+| `EoDbFace` | all vertices | |
+| `EoDbText` / `EoDbAttrib` | reference origin | |
+| `EoDbBlockReference` | insertion point | Only point; often hard to find visually |
+| `EoDbPoint` | the point | |
+| `EoDbViewport` | four corners | |
+
+### EoDbLine Midpoint Grip — TranslateUsingMask Contract
+`EoDbLine::TranslateUsingMask` bit semantics:
+- Bit 0 (`mask & 1`): translate begin point only
+- Bit 1 (`mask & 2`): translate end point only
+- Bit 2 (`mask & 4`): translate **both** begin and end (midpoint/rigid-move grip)
+
+### Deferred
+- Midpoint grips on polyline segments and polygon edges
+- Quadrant and tangent snaps for arcs/circles/ellipses
+- Multi-grip stretch (select 2+ grips before dragging)
+- Grip cycling via Tab key
+- Hover-to-show grips on untrapped objects
+- Snap type glyph differentiation (square=endpoint, circle=center, triangle=midpoint)
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\GripDragState.h/.cpp` | Transient drag state — snapshot, drag, snap scan, commit/revert |
+| `AeSys\AeSysView.h` | `m_gripHoveredPrimitive`, `m_gripHoveredControlPointIndex`, marker helper declarations |
+| `AeSys\AeSysViewInput.cpp` | Hover scan in `OnMouseMove`; grip launch in `OnLButtonDown` before trap-pick |
+| `AeSys\AeSysViewRender.cpp` | `DrawGripMarkers`, `DrawGripMarkersD2D`, `DrawSnapMarker`, `DrawSnapMarkerD2D` |
+| `AeSys\EoDbLine.cpp` | `GetAllPoints` (3 points), `TranslateUsingMask` (3-bit contract) |
+

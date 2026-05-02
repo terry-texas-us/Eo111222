@@ -173,6 +173,10 @@ void EoDbLine::GetAllPoints(EoGePoint3dArray& points) {
   points.SetSize(0);
   points.Add(m_line.begin);
   points.Add(m_line.end);
+  // Index 2: midpoint grip — dragging it moves the whole line rigidly.
+  points.Add(EoGePoint3d{(m_line.begin.x + m_line.end.x) * 0.5,
+      (m_line.begin.y + m_line.end.y) * 0.5,
+      (m_line.begin.z + m_line.end.z) * 0.5});
 }
 
 void EoDbLine::GetExtents(AeSysView* view,
@@ -360,6 +364,12 @@ void EoDbLine::TranslateUsingMask(EoGeVector3d v, const DWORD mask) {
   if ((mask & 1) == 1) { SetBeginPoint(m_line.begin + v); }
 
   if ((mask & 2) == 2) { SetEndPoint(m_line.end + v); }
+
+  // Bit 2 (mask & 4): midpoint grip — translate both endpoints to move the whole line.
+  if ((mask & 4) == 4) {
+    SetBeginPoint(m_line.begin + v);
+    SetEndPoint(m_line.end + v);
+  }
 }
 EoDbLine* EoDbLine::ReadFromPeg(CFile& file) {
   const auto color = EoDb::ReadInt16(file);
