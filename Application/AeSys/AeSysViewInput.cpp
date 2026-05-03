@@ -114,7 +114,9 @@ void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
 
   // --- Grip hit-test: if the cursor is on a control-point grip of a trapped primitive,
   //     start a GripDragState instead of doing a normal trap-pick. ---
-  if (document != nullptr && m_gripHoveredPrimitive != nullptr && m_gripHoveredControlPointIndex >= 0) {
+  // Suppressed during CLI coordinate injection — synthetic LMB clicks must never
+  // launch a grip drag; they are only meant to advance the active drawing gesture.
+  if (!m_isInjectingPoint && document != nullptr && m_gripHoveredPrimitive != nullptr && m_gripHoveredControlPointIndex >= 0) {
     EoDbGroup* gripGroup{};
     auto trappedPos = document->GetFirstTrappedGroupPosition();
     while (trappedPos != nullptr && gripGroup == nullptr) {
@@ -683,11 +685,15 @@ void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
 LRESULT AeSysView::OnCmdLineInjectPoint([[maybe_unused]] WPARAM wParam, LPARAM lParam) {
   // Ownership of the heap object is transferred to this handler — always delete.
   std::unique_ptr<EoGePoint3d> worldPoint{reinterpret_cast<EoGePoint3d*>(lParam)};
-  if (worldPoint == nullptr) { return 0; }
+  if (!worldPoint) { return 0; }
 
   // Pin the world point so GetCursorPosition() returns it exactly throughout
   // the down/up cycle, bypassing the OS cursor pixel read-back.
   m_pinnedCursorWorld = *worldPoint;
+
+  // Block GripDragState launch during synthetic LMB: grip editing and CLI
+  // coordinate injection must not interleave (see OnLButtonDown guard).
+  m_isInjectingPoint = true;
 
   // Also move the OS cursor so rubber-banding and visual feedback stay coherent.
   SetCursorPosition(*worldPoint);
@@ -698,6 +704,8 @@ LRESULT AeSysView::OnCmdLineInjectPoint([[maybe_unused]] WPARAM wParam, LPARAM l
   // the pinned world point unconditionally.
   OnLButtonDown(0, CPoint{0, 0});
   OnLButtonUp(0, CPoint{0, 0});
+
+  m_isInjectingPoint = false;
 
   // Release the pin so normal OS cursor tracking resumes.
   m_pinnedCursorWorld.reset();

@@ -18,6 +18,13 @@ EoCommandRegistry::EoCommandRegistry() {
 }
 
 void EoCommandRegistry::Register(const EoCommandEntry& entry, const std::vector<std::wstring>& aliases) {
+  // Detect duplicate canonical names — indicates a copy-paste error in RegisterDefaults.
+  if (m_lookup.count(entry.canonicalName) != 0) {
+    ATLTRACE2(traceGeneral, 1, L"EoCommandRegistry::Register: duplicate canonical name '%s' ignored\n",
+        entry.canonicalName.c_str());
+    ATLASSERT(false && "Duplicate canonical command name registered");
+    return;
+  }
   const auto index = m_entries.size();
   m_entries.push_back(entry);
   m_lookup[entry.canonicalName] = index;

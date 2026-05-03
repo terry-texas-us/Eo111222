@@ -11,7 +11,185 @@ You are running in full autonomous Agent mode with Planning enabled.
 ## General Context
 The local project repo is in a folder called `D:\Projects\Eo111222`.
 
-DXF reading via `EoDxfLib` is operational for core entity types (3DFACE, ARC, ATTRIB, CIRCLE, ELLIPSE, HATCH, MTEXT, INSERT, LINE, LWPOLYLINE, POLYLINE, SOLID, SPLINE, TEXT, TRACE, VIEWPORT), following the ezdxf architecture model. Parsed entities are converted to `EoDbPrimitive`-derived objects and stored in `AeSysDoc` layers. See `Peg & Tra File Formats.md` for the legacy file structure.
+## Command Line Interface (CLI)
+
+### Architecture Overview
+AeSys has a fully implemented AutoCAD-style command line UI that coexists with the existing keystroke/mode system. The CLI is hosted as a third tab ("Command") inside the existing dockable output pane (`EoMfOutputDockablePane`). It does **not** replace the keyboard mode system — both run simultaneously.
+
+### Activation
+- **Backtick** (`` ` ``, `VK_OEM_3`) — global prefix key; focuses the Command tab from any mode without disturbing the active mode state.
+- **Esc** in the edit control — clears partial input if non-empty; otherwise returns focus to the active MDI view.
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoMfCommandTab.h/.cpp` | Composite tab window: history list + command edit; `ExecuteCommand`, `ShowModePrompt`, `TryTabComplete`, history recall |
+| `AeSys\EoCtrlCommandEdit.h/.cpp` | Single-line `CEdit` subclass; handles Enter/Esc/Up/Down/Tab in `PreTranslateMessage` |
+| `AeSys\EoCommandRegistry.h/.cpp` | Singleton registry: maps upper-case names + aliases to `EoCommandEntry` (modeId/opId or functor) |
+| `AeSys\EoCommandTokenizer.h/.cpp` | Tokenizer + coordinate parser: absolute, relative `@`, polar `dist<angle` |
+| `AeSys\EoCommandLineMessages.h` | `WM_CMDLINE_INJECT_POINT (WM_APP+1)` — injects typed world coordinates as synthetic LMB clicks |
+| `AeSys\AeSysViewInput.cpp` | Backtick intercept; `OnCmdLineInjectPoint`; `GetCursorPosition` short-circuits to `m_pinnedCursorWorld` when set |
+
+### Command Dispatch — Three Modes
+1. **modeId + opId**: sends two sequential `WM_COMMAND` messages (mode switch then sub-command). Example: `LINE` → `ID_MODE_DRAW` then `ID_DRAW_MODE_LINE`.
+2. **modeId only**: sends a single `WM_COMMAND` (mode switch, no sub-op). Example: `TRAP`.
+3. **Functor**: `std::function<void()>` called directly; `modeId`/`opId` are 0. Used for all global/mode-independent commands.
+
+### Coordinate Input Grammar
+```
+verb [coord] [coord] ...    -- typed command with inline coordinates
+coord [coord] ...           -- coordinate-only continuation (verb inferred from active mode)
+
+coord  ::=  x,y[,z]           -- absolute world coords
+         |  @x,y[,z]          -- relative to last point
+         |  dist<angle         -- polar absolute (angle in degrees from East)
+         |  @dist<angle        -- polar relative
+```
+Coordinates are injected as `WM_CMDLINE_INJECT_POINT` messages carrying heap-allocated `EoGePoint3d*`. The first coordinate for draw-activation commands (LINE, CIRCLE, etc.) is **pinned** before the mode `WM_COMMAND` fires so the draw handler captures the typed point, not the parked mouse position.
+
+### Registered Commands (complete list as of current build)
+
+**Draw primitives** (mode switch + op):
+`LINE`/`L`, `POLYLINE`/`PL`, `POLYGON`/`POL`, `QUAD`, `ARC`/`A`, `CIRCLE`/`C`, `ELLIPSE`/`EL`, `BSPLINE`/`SPL`/`SPLINE`, `INSERT`/`I`
+
+**Edit operations** (mode switch + op):
+`MOVE`/`M`, `COPY`/`CO`/`CP`, `ROTATE`/`RO`/`ROT`, `ROTCW`, `FLIP`, `REDUCE`, `ENLARGE`, `PIVOT`
+
+**Selection** (mode switch):
+`TRAP`, `FIELD`/`WIN`, `STITCH`
+
+**Cut** (mode switch + op):
+`CUT`, `SLICE`
+
+**Dimension** (mode switch + op):
+`DIMENSION`/`DIM`, `DIMLINE`, `DIMRADIUS`, `DIMDIAMETER`, `DIMANGLE`
+
+**Annotation** (mode switch):
+`ANNOTATE`/`ANN`
+
+**Fixup** (mode switch + op):
+`FIXUP`, `MEND`, `CHAMFER`/`CHA`, `FILLET`/`F`, `PARALLEL`
+
+**Domain modes** (mode switch):
+`PIPE`, `LPD`/`DUCT`, `POWER`, `NODAL`, `DRAW2`/`WALL`
+
+**Primitive/group edit** (mode switch):
+`PEDIT`, `GEDIT`
+
+**Global functors** (mode-independent, direct invocation):
+`ERASE`/`E`/`DELETE`/`DEL`, `DELETELAST`/`OOPS`, `DELPRIM`/`ERASEPRIM`,
+`BREAK`, `EXCHANGE`,
+`UNDO`/`U`, `REDO`,
+`SNAP`/`Q`/`ENGAGE`, `SNAPEND`/`ENDPOINT`,
+`COLOR`/`PENCOLOR`/`COL`, `LINETYPE`/`LT`/`LTYPE`,
+`FILL`, `FILLSOLID`, `FILLHATCH`, `FILLPATTERN`,
+`SCALE`/`WORLDSCALE`, `DIMLENGTH`, `DIMANGLE`,
+`HOMEPOINT`/`H`/`SAVEHOME`, `GOHOME`/`G`,
+`REFRESH`/`REDRAW`/`R`,
+`ZOOMIN`/`ZI`, `ZOOMOUT`/`ZO`, `ZOOMLAST`/`ZL`, `ZOOMSHEET`/`ZS`,
+`ZOOM`/`Z`, `ZE`/`ZOOMEXTENTS`/`EXTENTS`, `PAN`,
+`NEW`, `OPEN`, `SAVE`, `SAVEAS`, `PLOT`/`PRINT`,
+`UNITS`/`UN`, `PURGE`/`PU`
+
+**Built-in** (not in registry): `HELP` / `?` — lists all registered commands.
+
+### UX Features Implemented
+- **History list** — scrollable read-only log of commands issued and results.
+- **Command recall** — Up/Down arrows cycle through submitted command history.
+- **Tab completion** — Tab cycles through all registry keys (canonical + aliases) whose upper-case form starts with the current partial text. Resets on text change.
+- **Mode prompt** — when the Command tab gains focus, `ShowModePrompt()` appends the active mode's `PromptString()` as a hint (e.g. `"Draw -- choose sub-command (LINE CIRCLE POLYLINE ...)"`).
+- **Coordinate-only continuation** — a line containing only coordinates (no verb) is treated as continued input to the active mode, injecting points sequentially.
+- **Startup banner** — "Command line ready. Type a command and press Enter."
+
+### Mode Prompt Strings (`PromptString()` virtual on `AeSysState`)
+All 12 primary mode states implement `PromptString()`. The default case uses plain ASCII (`--`, `...`) to avoid CP1252 encoding issues in the list box. Sub-command active states return context-specific "Specify next point…" strings.
+
+### Encoding Rule
+All `PromptString()` literals **must** use plain ASCII only — no Unicode em dash (`—`), ellipsis (`…`), or other non-ASCII characters. Use `--` and `...` instead. The history list box renders through CP1252; UTF-8 bytes produce mojibake.
+
+### Known Gaps vs AutoCAD CLI (Deferred)
+- No `_` sub-command qualifier syntax (`LINE` vs `_LINE`).
+- No transparent commands (`'ZOOM`, `'PAN` while another command is active).
+- No repeat-last-command on bare Enter.
+- No `OPTIONS` / `SETTINGS` command opening a consolidated dialog.
+- No scripting / batch command file execution.
+- No `OFFSET`, `TRIM`, `EXTEND`, `MIRROR`, `ARRAY`, `HATCH`, `TEXT`, `DTEXT` as named commands (these exist as mode sub-commands but lack dedicated registry entries with their AutoCAD names).
+- FIELD/STITCH trap lacks the live crossing/window visual feedback from the CLI path (works from mouse but not from typed second-corner coordinate).
+- `ZOOM EXTENTS` as a two-token command is not yet parsed; use `ZE` or `EXTENTS` instead.
+- Dynamic input tooltip field edits (tabbing between X/Y or Distance/Angle fields to type values) are deferred; the tooltip is currently display-only.
+
+## Dynamic Input Cursor Tooltip
+
+### Architecture Overview
+A near-cursor floating overlay (`EoDynInputTooltip`) provides AutoCAD F12-style dynamic input feedback during active drawing gestures. It is **display-only** — no field editing yet. It is never shown at idle.
+
+### Display Logic
+- **Hidden**: when no drawing gesture is active (`HasActiveGesture()` returns `false` for the current mode state).
+- **Phase 1 — first point** (no anchor yet): shows `X  n.nnnn      Y  n.nnnn` absolute world coordinates. In AeSys this state is typically brief because most draw commands start from the current cursor position.
+- **Phase 2 — subsequent points** (anchor placed): shows `n.nnnn  >  n.nnn°` — distance from the anchor, then the AeSys angle convention using `>` as the separator (not AutoCAD's `<`). The angle is measured in degrees from East (0°), CCW positive.
+
+### Angle Convention
+AeSys uses `.` for length and `>` (shift-`.`) for angle throughout the UI — the tooltip follows this convention. AutoCAD uses `<` for polar angles. Do **not** use `<` in tooltip formatting.
+
+### Context Prompt Strings
+Each mode state supplies a context-specific prompt string via `GesturePrompt() const noexcept` (virtual on `AeSysState`, default `L""`). The tooltip displays this on its first row with a fallback of `"Specify point"` when the string is empty.
+
+`DrawModeState` implements per-op, per-click-count prompts:
+| Op | Points so far | Prompt |
+|----|--------------|--------|
+| LINE | 0 | `Specify first point` |
+| LINE | ≥1 | `Specify next point` |
+| POLYGON/POLYLINE | 0 | `Specify first vertex` |
+| POLYGON/POLYLINE | ≥1 | `Specify next vertex` |
+| CIRCLE | 0 | `Specify center point` |
+| CIRCLE | 1 | `Specify point on circle` |
+| ARC | 0 | `Specify first arc point` |
+| ARC | 1 | `Specify second arc point` |
+| ARC | 2 | `Specify third arc point` |
+| ELLIPSE | 0 | `Specify center point` |
+| ELLIPSE | 1 | `Specify end of major axis` |
+| ELLIPSE | 2 | `Specify end of minor axis` |
+| BSPLINE | 0 | `Specify first control point` |
+| BSPLINE | ≥1 | `Specify next control point` |
+| QUAD | 0 | `Specify first corner` |
+| QUAD | ≥1 | `Specify opposite corner` |
+
+Other mode states (`PipeModeState`, `LpdModeState`, etc.) return `L""` by default and receive the `"Specify point"` fallback. Override `GesturePrompt()` to add context to those modes as needed.
+
+### State Virtual Contract (`AeSysState`)
+```cpp
+[[nodiscard]] virtual bool HasActiveGesture() const noexcept;   // default false
+[[nodiscard]] virtual EoGePoint3d GestureAnchorWorld() const noexcept;  // default {}
+[[nodiscard]] virtual const wchar_t* GesturePrompt() const noexcept;    // default L""
+```
+`GestureAnchorWorld()` returns `EoGePoint3d{}` (zero-initialized) when no anchor is placed. The tooltip distinguishes no-anchor from has-anchor by testing `!(anchor == EoGePoint3d{})`.
+
+### Visual Style
+| Property | Value |
+|----------|-------|
+| Background | `RGB(30, 30, 34)` — near-black |
+| Prompt row | `RGB(200, 210, 240)` — muted blue-white |
+| Value row | `RGB(230, 230, 220)` — warm near-white |
+| Border | `RGB(60, 100, 160)` — accent blue |
+| Opacity | ~82% (`SetLayeredWindowAttributes(0, 210, LWA_ALPHA)`) |
+| Cursor offset | 14px horizontal, 14px vertical (equal) |
+| Font | System message-box font + 2pt larger (via `SPI_GETNONCLIENTMETRICS`) |
+
+### Key Files
+| File | Role |
+|------|------|
+| `AeSys\EoDynInputTooltip.h/.cpp` | Layered popup — `Create`, `Show(cursorScreen, worldPos, anchorWorld, prompt)`, `Hide`, `OnPaint` |
+| `AeSys\AeSysView.h` | `m_dynInputTooltip` (`EoDynInputTooltip`), `m_dynInputEnabled` |
+| `AeSys\AeSysViewInput.cpp` | `OnMouseMove` — gates on `HasActiveGesture()`, calls `Show` or `Hide` |
+| `AeSys\AeSysState.h` | `HasActiveGesture`, `GestureAnchorWorld`, `GesturePrompt` virtuals |
+| `AeSys\EoMsDraw.h/.cpp` | `DrawModeState` overrides all three virtuals; `GesturePrompt()` is op+point-count aware |
+
+### Deferred
+- Tabbed field editing (click into Distance or Angle field, type a value, Tab to the next field).
+- Dynamic input for non-Draw mode states (Pipe, LPD, Dimension, etc.).
+- Visual input-field rectangles around the value row (AutoCAD-style boxed edit fields).
+
+DXF reading via `EoDxfLib` is operational for core entity types
 
 The AE2026 (V2) handle architecture is **implemented**: `EoDbPrimitive` carries `m_handle`/`m_ownerHandle` (`std::uint64_t`), assigned via `EoDbHandleManager`. Entity→layer/linetype handle linkage covers current import/export needs. Extension dictionaries are **deferred** — see the **Handle Architecture** section below.
 

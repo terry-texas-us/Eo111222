@@ -280,6 +280,10 @@ void EoMfCommandTab::ExecuteCommand(const std::wstring& commandLine) {
       mainFrame->SendMessageW(WM_COMMAND, MAKEWPARAM(entry->opId, 0), 0);
     }
   }
+  // For mode-only commands (opId == 0, e.g. TRAP, ANNOTATE) injectStart stays 0
+  // so all parsed coordinates are injected as synthetic clicks into the newly
+  // activated mode.  This is intentional: the mode-switch does not consume any
+  // coordinate, so every parsed coordinate reaches the mode's LMB handler.
 
   // Post the remaining coordinates as inject messages (one per pump cycle, in order).
   if (activeView != nullptr) {

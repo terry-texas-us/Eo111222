@@ -231,15 +231,14 @@ bool DrawModeState::HandleCommand(AeSysView* context, UINT command) {
 
 const wchar_t* DrawModeState::PromptString() const noexcept {
   switch (m_previousDrawCommand) {
-    case ID_DRAW_MODE_LINE:     return L"Specify next point or [Undo/Return=finish]";
-    case ID_DRAW_MODE_POLYLINE: return L"Specify next vertex or [Undo/Return=finish]";
-    case ID_DRAW_MODE_POLYGON:  return L"Specify next vertex or [Return=close/Undo]";
-    case ID_DRAW_MODE_QUAD:     return L"Specify quad corner";
-    case ID_DRAW_MODE_ARC:      return L"Specify arc pass-through point";
-    case ID_DRAW_MODE_CIRCLE:   return L"Specify point on circle circumference";
-    case ID_DRAW_MODE_ELLIPSE:  return L"Specify ellipse axis endpoint";
-    case ID_DRAW_MODE_BSPLINE:  return L"Specify next spline control point or [Return=finish]";
-    default:                    return L"Draw -- choose sub-command (LINE CIRCLE POLYLINE ...)";
+    case ID_OP2: return L"Specify next point or [Undo/Return=finish]";
+    case ID_OP3: return L"Specify next vertex or [Return=close/Undo]";
+    case ID_OP4: return L"Specify quad corner";
+    case ID_OP5: return L"Specify arc pass-through point";
+    case ID_OP6: return L"Specify next spline control point or [Return=finish]";
+    case ID_OP7: return L"Specify point on circle circumference";
+    case ID_OP8: return L"Specify ellipse axis endpoint";
+    default:     return L"Draw -- choose sub-command (LINE CIRCLE POLYLINE ...)";
   }
 }
 

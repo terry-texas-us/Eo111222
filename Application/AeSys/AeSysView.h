@@ -469,6 +469,11 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   /// the injected world point is used regardless of pixel rounding.
   std::optional<EoGePoint3d> m_pinnedCursorWorld{};
 
+  /// @brief True while OnCmdLineInjectPoint is executing a synthetic LMB cycle.
+  /// Guards OnLButtonDown against launching GripDragState during command-line
+  /// coordinate injection — grip editing and CLI coordinate injection must not interleave.
+  bool m_isInjectingPoint{false};
+
   /** @brief Retrieves the current cursor position in world coordinates.
    * @return The current cursor position world coordinates.
    * @note This function gets the current cursor position in device coordinates, converts it to world coordinates using

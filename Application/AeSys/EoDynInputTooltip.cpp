@@ -67,8 +67,23 @@ void EoDynInputTooltip::PositionAndShow(CPoint cursorScreen) {
 
   int x = cursorScreen.x + kOffsetX;
   int y = cursorScreen.y + kOffsetY;
-  if (x + w > ::GetSystemMetrics(SM_CXSCREEN)) { x = cursorScreen.x - w - kOffsetX; }
-  if (y + h > ::GetSystemMetrics(SM_CYSCREEN)) { y = cursorScreen.y - h - kOffsetY; }
+
+  // Clamp to the monitor that contains the cursor, not the primary monitor,
+  // so the tooltip remains visible on secondary monitors.
+  HMONITOR hMon = ::MonitorFromPoint(cursorScreen, MONITOR_DEFAULTTONEAREST);
+  MONITORINFO mi{};
+  mi.cbSize = sizeof(mi);
+  if (::GetMonitorInfo(hMon, &mi)) {
+    const RECT& wa = mi.rcWork;
+    if (x + w > wa.right)  { x = cursorScreen.x - w - kOffsetX; }
+    if (y + h > wa.bottom) { y = cursorScreen.y - h - kOffsetY; }
+    if (x < wa.left)  { x = wa.left; }
+    if (y < wa.top)   { y = wa.top; }
+  } else {
+    // Fallback: primary monitor only (legacy path).
+    if (x + w > ::GetSystemMetrics(SM_CXSCREEN)) { x = cursorScreen.x - w - kOffsetX; }
+    if (y + h > ::GetSystemMetrics(SM_CYSCREEN)) { y = cursorScreen.y - h - kOffsetY; }
+  }
 
   SetWindowPos(&wndTopMost, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
   m_visible = true;
@@ -86,6 +101,11 @@ void EoDynInputTooltip::OnPaint() {
   CPaintDC dc(this);
   CRect clientRect;
   GetClientRect(clientRect);
+
+  // EnsureFont() is normally called from Show(), but guard here in case WM_PAINT
+  // fires before Show() (e.g. WM_ERASEBKGND, theme changes) to avoid SelectObject
+  // of a null CFont which asserts in debug.
+  EnsureFont();
 
   const COLORREF bgColor     = RGB(30, 30, 34);
   const COLORREF promptColor = RGB(200, 210, 240);  // slightly blue-tinted
