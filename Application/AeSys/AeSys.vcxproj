@@ -196,6 +196,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <!-- Creates the PCH -->
+    <ClCompile Include="EoCommandRegistry.cpp" />
+    <ClCompile Include="EoCommandTokenizer.cpp" />
+    <ClCompile Include="EoCtrlCommandEdit.cpp" />
+    <ClCompile Include="EoDynInputTooltip.cpp" />
+    <ClCompile Include="EoMfCommandTab.cpp" />
     <ClCompile Include="EoMfPrimitiveTooltip.cpp" />
     <ClCompile Include="EoMsAnnotate.cpp" />
     <ClCompile Include="EoMsCut.cpp" />
@@ -219,7 +224,6 @@
     <ClCompile Include="EoMsFixup.cpp" />
     <ClCompile Include="EoMsLpd.cpp" />
     <ClCompile Include="EoMsNodal.cpp" />
-    
     <ClCompile Include="GripDragState.cpp" />
     <ClCompile Include="PickAndDragState.cpp" />
     <ClCompile Include="EoMsPipe.cpp" />
@@ -389,6 +393,12 @@
     <ClInclude Include="Draw2ModeState.h" />
     <ClInclude Include="DrawModeState.h" />
     <ClInclude Include="EditModeState.h" />
+    <ClInclude Include="EoCommandLineMessages.h" />
+    <ClInclude Include="EoCommandRegistry.h" />
+    <ClInclude Include="EoCommandTokenizer.h" />
+    <ClInclude Include="EoCtrlCommandEdit.h" />
+    <ClInclude Include="EoDynInputTooltip.h" />
+    <ClInclude Include="EoMfCommandTab.h" />
     <ClInclude Include="EoMfPrimitiveTooltip.h" />
     <ClInclude Include="EoMsAnnotate.h" />
     <ClInclude Include="ChildFrm.h" />
@@ -526,11 +536,11 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="EoMsNodal.h" />
     <ClInclude Include="NodalModeState.h" />
+    <ClInclude Include="PickAndDragState.h" />
     <ClInclude Include="EoMsPipe.h" />
     <ClInclude Include="EoMsPower.h" />
     <ClInclude Include="PipeModeState.h" />
     <ClInclude Include="PowerModeState.h" />
-    <ClInclude Include="PickAndDragState.h" />
     <ClInclude Include="PrimitiveMendState.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Section.h" />
@@ -650,4 +660,3 @@
     </VisualStudio>
   </ProjectExtensions>
 </Project>
-

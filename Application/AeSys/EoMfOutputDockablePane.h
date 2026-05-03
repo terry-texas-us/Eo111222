@@ -1,5 +1,8 @@
 ﻿#pragma once
+#include <memory>
 #include <string>
+
+class EoMfCommandTab;
 
 class EoMfOutputListBox : public CListBox {
  public:  // Construction
@@ -39,6 +42,7 @@ class EoMfOutputDockablePane : public CDockablePane {
 
   EoMfOutputListBox m_OutputMessagesList;
   EoMfOutputListBox m_OutputReportsList;
+  std::unique_ptr<EoMfCommandTab> m_CommandTab;
 
  public:  // Implementation
   virtual ~EoMfOutputDockablePane();
@@ -46,6 +50,9 @@ class EoMfOutputDockablePane : public CDockablePane {
 
   void AddStringToMessageList(const std::wstring& message) { m_OutputMessagesList.AddString(message.c_str()); }
   void AddStringToReportsList(const std::wstring& message) { m_OutputReportsList.AddString(message.c_str()); }
+
+  /// @brief Activates the Command tab and sets focus to the command edit control.
+  void FocusCommandLine();
 
   /// @brief Applies the active color scheme to both output list boxes.
   void ApplyColorScheme();

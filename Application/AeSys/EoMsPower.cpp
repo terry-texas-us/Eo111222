@@ -87,3 +87,8 @@ bool PowerModeState::HandleCommand(AeSysView* context, UINT command) {
   return false;
 }
 
+const wchar_t* PowerModeState::PromptString() const noexcept {
+  if (m_previousOp != 0) { return L"Specify next circuit point"; }
+  return L"Power  —  choose sub-command";
+}
+

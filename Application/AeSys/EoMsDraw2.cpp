@@ -82,3 +82,11 @@ void Draw2ModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousOp);
 }
 
+const wchar_t* Draw2ModeState::PromptString() const noexcept {
+  switch (m_previousOp) {
+    case ID_DRAW2_MODE_WALL: return L"Specify next wall segment end point";
+    case ID_DRAW2_MODE_JOIN: return L"Select wall to join";
+    default:                 return L"Draw2 (parallel wall) -- choose sub-command";
+  }
+}
+

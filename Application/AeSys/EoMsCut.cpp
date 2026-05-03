@@ -64,3 +64,12 @@ bool CutModeState::HandleCommand(AeSysView* context, UINT command) {
   }
   return false;
 }
+
+const wchar_t* CutModeState::PromptString() const noexcept {
+  switch (m_previousOp) {
+    case ID_CUT_MODE_SLICE: return L"Specify slice line second point";
+    case ID_CUT_MODE_FIELD: return L"Specify field-cut second corner";
+    case ID_CUT_MODE_CLIP:  return L"Specify clip boundary second corner";
+    default:                return L"Cut -- choose sub-command (SLICE FIELD CLIP...)";
+  }
+}

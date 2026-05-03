@@ -55,3 +55,13 @@ bool DimensionModeState::HandleCommand(AeSysView* context, UINT command) {
   }
   return false;
 }
+
+const wchar_t* DimensionModeState::PromptString() const noexcept {
+  switch (m_previousCommand) {
+    case ID_DIMENSION_MODE_LINE:     return L"Specify dimension line location";
+    case ID_DIMENSION_MODE_RADIUS:   return L"Specify radius dimension location";
+    case ID_DIMENSION_MODE_DIAMETER: return L"Specify diameter dimension location";
+    case ID_DIMENSION_MODE_ANGLE:    return L"Specify angle dimension location";
+    default:                         return L"Dimension -- choose sub-command";
+  }
+}

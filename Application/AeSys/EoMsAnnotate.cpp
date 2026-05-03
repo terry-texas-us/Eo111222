@@ -109,3 +109,15 @@ bool AnnotateModeState::HandleCommand(AeSysView* context, UINT command) {
 void AnnotateModeState::UnhighlightOp(AeSysView* context) {
   context->ModeLineUnhighlightOp(m_previousOp);
 }
+
+const wchar_t* AnnotateModeState::PromptString() const noexcept {
+  switch (m_previousOp) {
+    case ID_ANNOTATE_MODE_LINE:               return L"Specify annotation line start point";
+    case ID_ANNOTATE_MODE_ARROW:              return L"Specify arrow leader start point";
+    case ID_ANNOTATE_MODE_BUBBLE:             return L"Specify bubble center";
+    case ID_ANNOTATE_MODE_HOOK:               return L"Specify hook leader start point";
+    case ID_ANNOTATE_MODE_BOX:               return L"Specify box corner";
+    case ID_ANNOTATE_MODE_CONSTRUCTION_LINE: return L"Specify construction line point";
+    default:                                  return L"Annotate -- choose sub-command";
+  }
+}

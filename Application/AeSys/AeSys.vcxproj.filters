@@ -168,6 +168,11 @@
     <ClCompile Include="EoMsTrap.cpp" />
     <ClCompile Include="EoMfPrimitiveTooltip.cpp" />
     <ClCompile Include="GripDragState.cpp" />
+    <ClCompile Include="EoCtrlCommandEdit.cpp" />
+    <ClCompile Include="EoMfCommandTab.cpp" />
+    <ClCompile Include="EoCommandRegistry.cpp" />
+    <ClCompile Include="EoCommandTokenizer.cpp" />
+    <ClCompile Include="EoDynInputTooltip.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -328,6 +333,12 @@
     <ClInclude Include="EoMsTrap.h" />
     <ClInclude Include="EoMfPrimitiveTooltip.h" />
     <ClInclude Include="GripDragState.h" />
+    <ClInclude Include="EoMfCommandTab.h" />
+    <ClInclude Include="EoCtrlCommandEdit.h" />
+    <ClInclude Include="EoCommandRegistry.h" />
+    <ClInclude Include="EoCommandTokenizer.h" />
+    <ClInclude Include="EoCommandLineMessages.h" />
+    <ClInclude Include="EoDynInputTooltip.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />

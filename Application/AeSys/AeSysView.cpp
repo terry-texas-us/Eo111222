@@ -7,6 +7,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoCommandLineMessages.h"
 #include "MainFrm.h"
 #include "Resource.h"
 
@@ -322,6 +323,7 @@ ON_COMMAND(ID_NODAL_MODE_ENGAGE, &AeSysView::OnNodalModeEngage)
 ON_COMMAND(ID_NODAL_MODE_RETURN, &AeSysView::OnNodalModeReturn)
 ON_COMMAND(ID_NODAL_MODE_ESCAPE, &AeSysView::OnNodalModeEscape)
 ON_REGISTERED_MESSAGE(AFX_WM_CHANGE_ACTIVE_TAB, &AeSysView::OnLayoutTabChange)
+ON_MESSAGE(WM_CMDLINE_INJECT_POINT, &AeSysView::OnCmdLineInjectPoint)
 END_MESSAGE_MAP()
 
 /// AeSysView construction/destruction ////////////////////////////////////////
@@ -349,6 +351,7 @@ void AeSysView::PushState(std::unique_ptr<AeSysState> newState) {
   newState->OnEnter(this);
   m_stateStack.push(std::move(newState));
   Invalidate();  // Trigger redraw
+  if (auto* mf = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd())) { mf->UpdateCmdPane(this); }
 }
 
 void AeSysView::PopState() {
@@ -358,6 +361,7 @@ void AeSysView::PopState() {
     if (!m_stateStack.empty()) { m_stateStack.top()->OnEnter(this); }
     Invalidate();
   }
+  if (auto* mf = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd())) { mf->UpdateCmdPane(this); }
 }
 
 AeSysState* AeSysView::GetCurrentState() const noexcept {
@@ -369,6 +373,7 @@ void AeSysView::PopAllModeStates() {
     m_stateStack.top()->OnExit(this);
     m_stateStack.pop();
   }
+  if (auto* mf = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd())) { mf->UpdateCmdPane(this); }
 }
 AeSysDoc* AeSysView::GetDocument() const {
 #ifdef _DEBUG
@@ -434,6 +439,9 @@ int AeSysView::OnCreate(LPCREATESTRUCT createStructure) {
 
   // Hover tooltip — custom owner-drawn popup for bold label formatting.
   m_hoverTooltip.Create(this);
+
+  // Dynamic input tooltip — near-cursor coordinate/prompt overlay (F12 toggleable).
+  m_dynInputTooltip.Create(this);
 
   return 0;
 }

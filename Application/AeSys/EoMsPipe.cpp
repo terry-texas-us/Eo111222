@@ -94,3 +94,14 @@ bool PipeModeState::HandleCommand(AeSysView* context, UINT command) {
   return false;
 }
 
+const wchar_t* PipeModeState::PromptString() const noexcept {
+  switch (m_previousOp) {
+    case ID_PIPE_MODE_LINE:    return L"Specify next pipe segment end point";
+    case ID_PIPE_MODE_FITTING: return L"Specify fitting location";
+    case ID_PIPE_MODE_DROP:    return L"Specify drop location";
+    case ID_PIPE_MODE_RISE:    return L"Specify rise location";
+    case ID_PIPE_MODE_WYE:     return L"Specify wye location";
+    default:                   return L"Pipe -- choose sub-command (LINE FITTING DROP...)";
+  }
+}
+

@@ -3,6 +3,8 @@
 #include <cstdint>
 
 #include "EoDxfLineWeights.h"
+
+class AeSysView;
 #include "EoMfOutputDockablePane.h"
 #include "EoMfPropertiesDockablePane.h"
 #include "EoMfStatusBar.h"
@@ -141,4 +143,15 @@ class CMainFrame : public CMDIFrameWndEx {
 
   /// @brief Synchronizes the toolbar layer combo box with the current work layer.
   void SyncLayerCombo(const CString& layerName);
+
+  /// @brief Activates the Command tab in the Output pane and focuses the edit control.
+  void FocusCommandLine();
+
+  /// @brief Lights or extinguishes the CMD status bar indicator (pane 3).
+  /// Call with active=true when the command edit gains focus; active=false on kill-focus.
+  void SetCommandLineActive(bool active);
+
+  /// @brief Refreshes the CMD pane text with the current mode name (e.g. "Draw", "Ready").
+  /// Call after every mode push/pop so the pane always reflects the active state.
+  void UpdateCmdPane(const AeSysView* hint = nullptr);
 };

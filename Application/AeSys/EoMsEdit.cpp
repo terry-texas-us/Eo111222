@@ -93,3 +93,11 @@ bool EditModeState::HandleCommand(AeSysView* context, UINT command) {
   }
   return false;
 }
+
+const wchar_t* EditModeState::PromptString() const noexcept {
+  switch (m_previousOp) {
+    case ID_EDIT_MODE_MOVE:   return L"Specify destination point (move)";
+    case ID_EDIT_MODE_COPY:   return L"Specify destination point (copy)";
+    default:                  return L"Edit -- trap groups then MOVE COPY ROTATE FLIP...";
+  }
+}

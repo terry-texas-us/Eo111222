@@ -228,3 +228,50 @@ bool DrawModeState::HandleCommand(AeSysView* context, UINT command) {
   }
   return false;
 }
+
+const wchar_t* DrawModeState::PromptString() const noexcept {
+  switch (m_previousDrawCommand) {
+    case ID_DRAW_MODE_LINE:     return L"Specify next point or [Undo/Return=finish]";
+    case ID_DRAW_MODE_POLYLINE: return L"Specify next vertex or [Undo/Return=finish]";
+    case ID_DRAW_MODE_POLYGON:  return L"Specify next vertex or [Return=close/Undo]";
+    case ID_DRAW_MODE_QUAD:     return L"Specify quad corner";
+    case ID_DRAW_MODE_ARC:      return L"Specify arc pass-through point";
+    case ID_DRAW_MODE_CIRCLE:   return L"Specify point on circle circumference";
+    case ID_DRAW_MODE_ELLIPSE:  return L"Specify ellipse axis endpoint";
+    case ID_DRAW_MODE_BSPLINE:  return L"Specify next spline control point or [Return=finish]";
+    default:                    return L"Draw -- choose sub-command (LINE CIRCLE POLYLINE ...)";
+  }
+}
+
+const wchar_t* DrawModeState::GesturePrompt() const noexcept {
+  const auto n = m_points.GetSize();
+  switch (m_previousDrawCommand) {
+    case ID_OP2:  // Line
+      return (n == 0) ? L"Specify first point"
+                      : L"Specify next point";
+    case ID_OP3:  // Polygon / Polyline
+      if (n == 0) { return L"Specify first vertex"; }
+      if (n == 1) { return L"Specify next vertex"; }
+      return L"Specify next vertex  [Return=close]";  // >= 3: close available
+    case ID_OP4:  // Quad
+      if (n == 0) { return L"Specify first corner"; }
+      if (n == 1) { return L"Specify opposite corner"; }
+      return L"Specify quad corner";
+    case ID_OP5:  // Arc
+      if (n == 0) { return L"Specify arc start point"; }
+      if (n == 1) { return L"Specify arc pass-through point"; }
+      return L"Specify arc end point";
+    case ID_OP6:  // B-Spline
+      return (n == 0) ? L"Specify first control point"
+                      : L"Specify next control point  [Return=finish]";
+    case ID_OP7:  // Circle
+      return (n == 0) ? L"Specify center point"
+                      : L"Specify point on circumference";
+    case ID_OP8:  // Ellipse
+      if (n == 0) { return L"Specify ellipse center"; }
+      if (n == 1) { return L"Specify major axis endpoint"; }
+      return L"Specify minor axis endpoint";
+    default:
+      return L"";
+  }
+}

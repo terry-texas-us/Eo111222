@@ -103,3 +103,11 @@ bool TrapModeState::HandleCommand(AeSysView* context, UINT command) {
   }
   return false;
 }
+
+const wchar_t* TrapModeState::PromptString() const noexcept {
+  switch (m_previousOp) {
+    case ID_TRAP_MODE_STITCH: return L"Specify stitch-trap first corner";
+    case ID_TRAP_MODE_FIELD:  return L"Specify field-trap second corner";
+    default:                  return L"Trap (selection)  —  click group or STITCH FIELD";
+  }
+}

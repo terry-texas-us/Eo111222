@@ -80,7 +80,11 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// @brief Applies the current color scheme to the state controls.
   void ApplyColorScheme();
 
-  /// @brief Records the last-activated viewport so it can be reactivated via the space label.
+  /// @brief Updates the World Scale button text (e.g. "1:1", "1:96").
+  /// Called from AeSysView::UpdateStateInformation(Scale) in place of status bar pane 14.
+  void UpdateWorldScale(double scale);
+
+  /// @brief Records the last-activated viewport
   /// Called from AeSysView::SetActiveViewportPrimitive when a viewport is activated.
   void SetLastActiveViewport(EoDbViewport* viewport) noexcept { m_lastActiveViewport = viewport; }
 
@@ -108,7 +112,7 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   bool m_populating{false};
 
   // --- State controls (positioned to the right of the tab strip) ---
-  // Layout order: Space Label → Lock Button → Scale Combo
+  // Layout order: Space Label → World Scale → Lock Button → Scale Combo
 
   /// @brief Space state label — three-state button (MODEL / PAPER).
   /// In model space: "MODEL" (click → paper space).
@@ -116,7 +120,13 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   /// In paper space, viewport active: "MODEL" (click → deactivate viewport).
   CButton m_spaceLabel;
 
-  /// @brief Viewport display lock toggle. Shows a lock/unlock glyph.
+  /// @brief World scale display/edit button — shows "1:1", "1:96", etc.
+  /// Visible in model space only; hidden when a viewport is active in paper space
+  /// (the viewport scale combo already describes the paper↔model mapping in that context).
+  /// Click opens ID_SETUP_SCALE dialog; matches the status bar pane 14 double-click path.
+  CButton m_worldScaleButton;
+
+  /// @brief Viewport display lock toggle.
   /// Visible only when a viewport is activated in paper space. Position 2 (after label).
   CButton m_lockButton;
 
@@ -175,6 +185,7 @@ class EoMfLayoutTabBar : public CMFCTabCtrl {
   afx_msg HBRUSH OnCtlColor(CDC* deviceContext, CWnd* childWindow, UINT controlType);
   afx_msg void OnDrawItem(int controlId, LPDRAWITEMSTRUCT drawItem);
   afx_msg void OnSpaceLabelClicked();
+  afx_msg void OnWorldScaleClicked();
   afx_msg void OnScaleComboChanged();
   afx_msg void OnLockButtonClicked();
   afx_msg void OnSpaceTransferClicked();

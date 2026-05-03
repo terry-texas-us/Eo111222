@@ -6,6 +6,7 @@
 
 #include "AeSys.h"
 #include "Eo.h"
+#include "EoMfCommandTab.h"
 #include "EoMfOutputDockablePane.h"
 #include "Resource.h"
 
@@ -43,9 +44,16 @@ int EoMfOutputDockablePane::OnCreate(LPCREATESTRUCT createStruct) {
   m_OutputMessagesList.SetFont(&m_Font);
   m_OutputReportsList.SetFont(&m_Font);
 
+  m_CommandTab = std::make_unique<EoMfCommandTab>();
+  if (!m_CommandTab->Create(emptyRect, &m_wndTabs, 6)) {
+    ATLTRACE2(traceGeneral, 3, L"Failed to create command tab\n");
+    return -1;
+  }
+
   // Attach list windows to tab:
   m_wndTabs.AddTab(&m_OutputMessagesList, App::LoadStringResource(IDS_OUTPUT_MESSAGES));
   m_wndTabs.AddTab(&m_OutputReportsList, App::LoadStringResource(IDS_OUTPUT_REPORTS));
+  m_wndTabs.AddTab(m_CommandTab.get(), App::LoadStringResource(IDS_OUTPUT_COMMAND));
 
   // Dummy data
   m_OutputMessagesList.AddString(L"Message output is being displayed here.");
@@ -63,6 +71,13 @@ void EoMfOutputDockablePane::OnSize(UINT type, int cx, int cy) {
 void EoMfOutputDockablePane::ApplyColorScheme() {
   m_OutputMessagesList.SetColors(Eo::chromeColors.paneBackground, Eo::chromeColors.paneText);
   m_OutputReportsList.SetColors(Eo::chromeColors.paneBackground, Eo::chromeColors.paneText);
+  if (m_CommandTab) { m_CommandTab->ApplyColorScheme(); }
+}
+void EoMfOutputDockablePane::FocusCommandLine() {
+  if (!m_CommandTab) { return; }
+  const int tabIndex = m_wndTabs.GetTabsNum() - 1;  // Command tab is the last added.
+  if (tabIndex >= 0) { m_wndTabs.SetActiveTab(tabIndex); }
+  m_CommandTab->FocusCommandEdit();
 }
 EoMfOutputListBox::EoMfOutputListBox() {}
 EoMfOutputListBox::~EoMfOutputListBox() {}

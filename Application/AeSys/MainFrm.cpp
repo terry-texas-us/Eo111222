@@ -10,6 +10,7 @@
 #include "EoCtrlLineTypeComboBox.h"
 #include "EoCtrlLineWeightComboBox.h"
 #include "EoCtrlTextStyleComboBox.h"
+#include "AeSysView.h"
 #include "EoMfVisualManager.h"
 #include "MainFrm.h"
 #include "Resource.h"
@@ -19,8 +20,9 @@ namespace {
 constexpr int statusInfo = 0;
 constexpr int statusLength = 1;
 constexpr int statusAngle = 2;
-constexpr int statusScale = 13;
-constexpr int statusZoom = 14;
+constexpr int statusCmd = 3;   // mode name / CMD focus indicator
+constexpr int statusScale = 14;
+constexpr int statusZoom = 15;
 constexpr int maxUserToolbars = 10;
 constexpr unsigned int firstUserToolBarId = AFX_IDW_CONTROLBAR_FIRST + 40;
 constexpr unsigned int lastUserToolBarId = firstUserToolBarId + maxUserToolbars - 1;
@@ -28,7 +30,8 @@ constexpr unsigned int indicators[] = {
     ID_SEPARATOR,  // 0: message pane (fixed ~36 characters)
     ID_INDICATOR_LENGTH,  // 1: dimension length display
     ID_INDICATOR_ANGLE,  // 2: dimension angle display
-    ID_OP0,  // 3–12: mode key-command help panes
+    ID_INDICATOR_CMD,  // 3: mode name when idle; "CMD" accent when command tab is focused
+    ID_OP0,  // 4–13: mode key-command help panes
     ID_OP1,
     ID_OP2,
     ID_OP3,
@@ -38,9 +41,9 @@ constexpr unsigned int indicators[] = {
     ID_OP7,
     ID_OP8,
     ID_OP9,
-    ID_INDICATOR_SCALE,  // 13: world scale display
-    ID_INDICATOR_ZOOM,  // 14: zoom ratio display
-    ID_SEPARATOR,  // 15: stretch filler — absorbs remaining space
+    ID_INDICATOR_SCALE,  // 14: world scale display
+    ID_INDICATOR_ZOOM,  // 15: zoom ratio display
+    ID_SEPARATOR,  // 16: stretch filler — absorbs remaining space
 };
 }  // namespace
 
@@ -178,12 +181,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   m_statusBar.SetPaneInfo(statusLength, ID_INDICATOR_LENGTH, SBPS_NOBORDERS, 120);
   m_statusBar.SetPaneInfo(statusAngle, ID_INDICATOR_ANGLE, SBPS_NOBORDERS, 100);
 
-  // World Scale and Zoom Ratio panes: fixed width, placed after mode panes
-  m_statusBar.SetPaneInfo(statusScale, ID_INDICATOR_SCALE, SBPS_NOBORDERS, 120);
-  m_statusBar.SetPaneInfo(statusZoom, ID_INDICATOR_ZOOM, SBPS_NOBORDERS, 100);
+  // CMD pane: shows current mode name when idle; accent style when command tab is focused
+  m_statusBar.SetPaneInfo(statusCmd, ID_INDICATOR_CMD, SBPS_NOBORDERS, 90);
+  m_statusBar.SetPaneText(statusCmd, L"Ready");
+
+  // World Scale and Zoom Ratio moved off the status bar — both zeroed out.
+  // World Scale is now on the layout tab bar. Zoom Ratio is removed entirely.
+  m_statusBar.SetPaneInfo(statusScale, ID_INDICATOR_SCALE, SBPS_NOBORDERS | SBPS_DISABLED, 0);
+  m_statusBar.SetPaneInfo(statusZoom, ID_INDICATOR_ZOOM, SBPS_NOBORDERS | SBPS_DISABLED, 0);
 
   // Trailing stretch filler: absorbs remaining space after all fixed panes
-  m_statusBar.SetPaneStyle(15, SBPS_STRETCH | SBPS_NOBORDERS);
+  m_statusBar.SetPaneStyle(16, SBPS_STRETCH | SBPS_NOBORDERS);
 
   if (!CreateDockablePanes()) {
     ATLTRACE2(traceGeneral, 3, L"Failed to create dockable panes\n");
@@ -660,4 +668,43 @@ void CMainFrame::SyncLayerCombo(const CString& layerName) {
       }
     }
   }
+}
+
+void CMainFrame::FocusCommandLine() {
+  // Make sure the Output pane is visible before activating the Command tab.
+  ShowPane(&m_outputPane, TRUE, FALSE, TRUE);
+  m_outputPane.FocusCommandLine();
+  SetCommandLineActive(true);
+}
+
+void CMainFrame::SetCommandLineActive(bool active) {
+  if (active) {
+    // Soft highlight: menuHighlightBackground is less visually loud than captionActive,
+    // correctly conveying "mode ops suspended while typing" rather than "you are editing."
+    m_statusBar.SetPaneBackgroundColor(statusCmd, Eo::chromeColors.menuHighlightBackground);
+    m_statusBar.SetPaneTextColor(statusCmd, Eo::chromeColors.statusBarText);
+    m_statusBar.SetPaneText(statusCmd, L"CMD");
+  } else {
+    m_statusBar.SetPaneBackgroundColor(statusCmd);  // reset to default
+    m_statusBar.SetPaneTextColor(statusCmd, Eo::chromeColors.statusBarText);
+    // Restore the mode name so the pane always shows the current context.
+    UpdateCmdPane();
+  }
+}
+
+void CMainFrame::UpdateCmdPane(const AeSysView* hint) {
+  // Display the current mode name (e.g. "Draw", "Trap", "Edit") in the CMD pane.
+  // hint is used when the view is not yet the MDI active child (e.g. during OnInitialUpdate).
+  const AeSysView* view = AeSysView::GetActiveView();
+  if (view == nullptr) { view = hint; }
+  CString modeLabel;
+  if (view != nullptr) {
+    if (const auto* state = view->GetCurrentState(); state != nullptr) {
+      const wchar_t* label = state->ModeLabel();
+      if (label != nullptr && *label != L'\0') { modeLabel = label; }
+    }
+  }
+  m_statusBar.SetPaneText(statusCmd, modeLabel);
+  m_statusBar.SetPaneBackgroundColor(statusCmd);
+  m_statusBar.SetPaneTextColor(statusCmd, Eo::chromeColors.statusBarText);
 }

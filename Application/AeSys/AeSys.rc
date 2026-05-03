@@ -2975,6 +2975,7 @@ STRINGTABLE
 BEGIN
     ID_INDICATOR_SCALE      "Scale"
     ID_INDICATOR_ZOOM       "Zoom"
+    ID_INDICATOR_CMD        "CMD"
     ID_INDICATOR_LENGTH     "Length"
     ID_INDICATOR_ANGLE      "Angle"
     ID_VIEW_PROPERTIESWND   "Show or hide the properties bar\nToggle Properities"
@@ -3107,6 +3108,7 @@ BEGIN
     IDS_OUTPUT              "Output"
     IDS_OUTPUT_MESSAGES     "Messages"
     IDS_OUTPUT_REPORTS      "Reports"
+    IDS_OUTPUT_COMMAND      "Command"
 END
 
 STRINGTABLE

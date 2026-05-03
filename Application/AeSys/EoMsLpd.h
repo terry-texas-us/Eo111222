@@ -43,6 +43,8 @@ class LpdModeState : public AeSysState {
   bool OnReturn(AeSysView* context) override;
   bool OnEscape(AeSysView* context) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousOp; }
+  [[nodiscard]] const wchar_t* PromptString() const noexcept override;
+  [[nodiscard]] const wchar_t* ModeLabel() const noexcept override { return L"Duct"; }
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
   [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
 

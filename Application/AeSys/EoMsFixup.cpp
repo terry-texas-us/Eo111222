@@ -53,3 +53,13 @@ bool FixupModeState::HandleCommand(AeSysView* context, UINT command) {
   }
   return false;
 }
+
+const wchar_t* FixupModeState::PromptString() const noexcept {
+  switch (m_previousCommand) {
+    case ID_FIXUP_MODE_MEND:     return L"Select vertex to mend";
+    case ID_FIXUP_MODE_CHAMFER:  return L"Select second line for chamfer";
+    case ID_FIXUP_MODE_FILLET:   return L"Select second line for fillet";
+    case ID_FIXUP_MODE_PARALLEL: return L"Specify parallel offset distance";
+    default:                     return L"Fixup -- choose sub-command (MEND CHAMFER FILLET...)";
+  }
+}

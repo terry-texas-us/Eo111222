@@ -2,6 +2,8 @@
 
 #include <afxwin.h>
 
+#include "EoGePoint3d.h"
+
 class AeSysView;
 
 // Base state interface
@@ -74,6 +76,30 @@ class AeSysState {
   [[nodiscard]] virtual bool HandleCommand([[maybe_unused]] AeSysView* context, [[maybe_unused]] UINT command) {
     return false;
   }
+
+  /// Returns the prompt string the command line should display while this mode
+  /// state is active, e.g. L"Specify next point or [Undo/Close]".
+  /// Returns an empty string when the state has no prompt to offer.
+  [[nodiscard]] virtual const wchar_t* PromptString() const noexcept { return L""; }
+
+  /// Returns a short mode name for display in the CMD status bar pane
+  /// (e.g. L"Draw", L"Trap", L"Edit"). Shown when the command tab is not focused.
+  /// Base returns empty string; concrete states override with their label.
+  [[nodiscard]] virtual const wchar_t* ModeLabel() const noexcept { return L""; }
+
+  /// Returns true when a drawing gesture is in progress and the dynamic input
+  /// tooltip should be shown near the cursor.
+  [[nodiscard]] virtual bool HasActiveGesture() const noexcept { return false; }
+
+  /// Returns the world-space anchor point for the current gesture segment
+  /// (the previously placed point).  Only meaningful when HasActiveGesture() is true.
+  /// Returns a zero point by default.
+  [[nodiscard]] virtual EoGePoint3d GestureAnchorWorld() const noexcept { return {}; }
+
+  /// Returns a context-sensitive prompt string for the dynamic input tooltip.
+  /// More specific than PromptString() -- varies per click count within the op.
+  /// Base returns L"" -- tooltip uses its own fallback text.
+  [[nodiscard]] virtual const wchar_t* GesturePrompt() const noexcept { return L""; }
 
   /// Return true to block a WM_COMMAND from reaching the document/view handlers.
   /// Sub-modes that hold raw pointers into document data (PickAndDragState,

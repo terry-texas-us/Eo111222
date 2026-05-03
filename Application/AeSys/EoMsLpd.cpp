@@ -213,3 +213,8 @@ void LpdModeState::ResetSequence(AeSysView* context) {
   m_previousPoint = EoGePoint3d{};
 }
 
+const wchar_t* LpdModeState::PromptString() const noexcept {
+  if (m_previousOp != 0) { return L"Specify next duct segment end point"; }
+  return L"LPD (low-pressure duct)  —  choose sub-command";
+}
+

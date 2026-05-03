@@ -1282,18 +1282,13 @@ void AeSysView::UpdateStateInformation(EStateInformationItem item) {
   }
   if ((item & TextHeight) == TextHeight) { mainFrame->SyncTextStyleCombo(Gs::renderState.TextStyleName()); }
   if ((item & Scale) == Scale) {
-    CString scaleText;
-    scaleText.Format(L"1:%.2f", GetWorldScale());
-    mainFrame->SetPaneText(13, scaleText);
+    // World scale is now displayed on the layout tab bar (left of MODEL/PAPER label).
+    // Status bar pane 14 is kept at zero-width and no longer written.
+    m_layoutTabBar.UpdateWorldScale(GetWorldScale());
   }
   if ((item & WndRatio) == WndRatio) {
-    const double widthInInches = WidthInInches();
-    const double uExtent = UExtent();
-    CString zoomText{L"---"};
-    if (widthInInches > Eo::geometricTolerance && uExtent > Eo::geometricTolerance) {
-      zoomText.Format(L"%.6f", widthInInches / uExtent);
-    }
-    mainFrame->SetPaneText(14, zoomText);
+    // Zoom ratio pane removed — no longer displayed.
+    (void)item;  // suppress unused-variable warning if WndRatio is the only remaining flag
   }
   if ((item & DimAng) == DimAng) {
     CString angle;

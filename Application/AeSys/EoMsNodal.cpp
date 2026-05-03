@@ -121,3 +121,13 @@ bool NodalModeState::HandleCommand(AeSysView* context, UINT command) {
   return false;
 }
 
+const wchar_t* NodalModeState::PromptString() const noexcept {
+  switch (m_previousCommand) {
+    case ID_NODAL_MODE_MOVE:      return L"Specify nodal move destination";
+    case ID_NODAL_MODE_COPY:      return L"Specify nodal copy destination";
+    case ID_NODAL_MODE_TOLINE:    return L"Specify to-line target";
+    case ID_NODAL_MODE_TOPOLYGON: return L"Specify to-polygon vertex";
+    default:                      return L"Nodal  —  choose sub-command";
+  }
+}
+

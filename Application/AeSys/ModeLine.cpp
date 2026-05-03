@@ -6,7 +6,7 @@
 #include "Resource.h"
 
 namespace {
-constexpr int statusOp0{3};  // mode panes start at index 3 (after message, length, angle)
+constexpr int statusOp0{4};  // mode panes start at index 4 (after message, length, angle, cmd)
 }
 
 void AeSysView::ModeLineDisplay() {

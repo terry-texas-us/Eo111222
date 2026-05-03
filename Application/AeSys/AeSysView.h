@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <d2d1.h>
 #include <wrl/client.h>
 
@@ -21,6 +22,7 @@
 #include "EoLpdGeometry.h"
 #include "EoMfLayoutTabBar.h"
 #include "EoMfPrimitiveTooltip.h"
+#include "EoDynInputTooltip.h"
 #include "EoModeConfig.h"
 #include "GripDragState.h"
 #include "EoPipeGeometry.h"
@@ -407,6 +409,14 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   static constexpr UINT kHoverDelayMs{1500};
   EoMfPrimitiveTooltip m_hoverTooltip;
 
+  // Dynamic input cursor tooltip (F12).
+  // Level 1: coordinate echo.  Level 2: polar tracking + mode prompt.
+  EoDynInputTooltip m_dynInputTooltip;
+  bool m_dynInputEnabled{true};
+
+  /// @brief Toggles dynamic input on/off (bound to F12).
+  void ToggleDynInput() noexcept { m_dynInputEnabled = !m_dynInputEnabled; if (!m_dynInputEnabled) { m_dynInputTooltip.Hide(); } }
+
   ERubs m_rubberbandType{None};
   EoGePoint3d m_rubberbandBegin{};
   CPoint m_rubberbandLogicalBegin{};
@@ -454,6 +464,11 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   EoGePoint3d m_ptCursorPosDev{};
   EoGePoint3d m_ptCursorPosWorld{};
 
+  /// @brief When non-null, GetCursorPosition() returns this value directly,
+  /// bypassing the OS cursor read. Set by OnCmdLineInjectPoint to guarantee
+  /// the injected world point is used regardless of pixel rounding.
+  std::optional<EoGePoint3d> m_pinnedCursorWorld{};
+
   /** @brief Retrieves the current cursor position in world coordinates.
    * @return The current cursor position world coordinates.
    * @note This function gets the current cursor position in device coordinates, converts it to world coordinates using
@@ -466,6 +481,11 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
    * @param position The point in world coordinates to use for the cursor position.
    */
   void SetCursorPosition(const EoGePoint3d& position);
+
+  /// @brief Makes GetCursorPosition() return @p pt exactly until UnpinCursorWorld() is called.
+  void PinCursorWorld(const EoGePoint3d& pt) noexcept { m_pinnedCursorWorld = pt; }
+  /// @brief Releases the cursor pin so normal OS-cursor tracking resumes.
+  void UnpinCursorWorld() noexcept { m_pinnedCursorWorld.reset(); }
 
   void SetModeCursor(int mode);
 
@@ -1247,6 +1267,12 @@ afx_msg void OnDrawModeOptions();
   afx_msg void OnOp8();
   afx_msg void OnReturn();
   afx_msg void OnEscape();
+
+  /// @brief Handles a world-coordinate click injected by the command-line tab.
+  ///
+  /// LPARAM is a heap-allocated `EoGePoint3d*` owned by the sender; this handler
+  /// deletes it after use. WPARAM is reserved (0).
+  afx_msg LRESULT OnCmdLineInjectPoint(WPARAM wParam, LPARAM lParam);
 
  protected:
   DECLARE_MESSAGE_MAP()

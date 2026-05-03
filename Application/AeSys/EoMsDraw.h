@@ -25,6 +25,8 @@ class DrawModeState : public AeSysState {
   bool OnReturn(AeSysView* context) override;
   bool OnEscape(AeSysView* context) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousDrawCommand; }
+  [[nodiscard]] const wchar_t* PromptString() const noexcept override;
+  [[nodiscard]] const wchar_t* ModeLabel() const noexcept override { return L"Draw"; }
   [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
 
@@ -33,6 +35,12 @@ class DrawModeState : public AeSysState {
 
   [[nodiscard]] EoGePoint3dArray& Points() noexcept { return m_points; }
   [[nodiscard]] const EoGePoint3dArray& Points() const noexcept { return m_points; }
+
+  [[nodiscard]] bool HasActiveGesture() const noexcept override { return m_previousDrawCommand != 0; }
+  [[nodiscard]] EoGePoint3d GestureAnchorWorld() const noexcept override {
+    return m_points.GetSize() > 0 ? m_points[m_points.GetUpperBound()] : EoGePoint3d{};
+  }
+  [[nodiscard]] const wchar_t* GesturePrompt() const noexcept override;
 
  private:
   std::uint16_t m_previousDrawCommand{};

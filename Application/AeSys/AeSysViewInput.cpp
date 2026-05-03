@@ -4,6 +4,7 @@
 #include "AeSysDoc.h"
 #include "AeSysView.h"
 #include "Eo.h"
+#include "EoCommandLineMessages.h"
 #include "EoDbPolygon.h"
 #include "EoDbViewport.h"
 #include "EoGePoint3d.h"
@@ -12,6 +13,7 @@
 
 #include "AeSysState.h"
 #include "GripDragState.h"
+#include "MainFrm.h"
 
 
 BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
@@ -22,6 +24,17 @@ BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
       m_fieldTrapIsRemove = false;
       RubberBandingDisable();
       return TRUE;
+    }
+    // Backtick (VK_OEM_3) activates the command line: focus the Command tab in
+    // the Output pane. Suppressed when Shift is held (tilde is reserved for
+    // future text input). The command line coexists with key-based modes — it
+    // does not push a state or mutate the stack.
+    if (pMsg->wParam == VK_OEM_3 && (GetKeyState(VK_SHIFT) & 0x8000) == 0) {
+      auto* mainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+      if (mainFrame != nullptr) {
+        mainFrame->FocusCommandLine();
+        return TRUE;
+      }
     }
     if (state != nullptr && state->HandleKeypad(this, static_cast<UINT>(pMsg->wParam), 1, static_cast<UINT>(pMsg->lParam))) {
       return TRUE;  // Handled by state
@@ -534,6 +547,21 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
     }
     InvalidateOverlay();
   }
+
+  // Dynamic input cursor tooltip -- show during any active drawing gesture.
+  if (m_dynInputEnabled && m_dynInputTooltip.GetSafeHwnd() != nullptr) {
+    const auto* currentState = GetCurrentState();
+    if (currentState != nullptr && currentState->HasActiveGesture()) {
+      const EoGePoint3d worldPos = GetCursorPosition();
+      CPoint screenPt = point;
+      ClientToScreen(&screenPt);
+      m_dynInputTooltip.Show(screenPt, worldPos,
+          currentState->GestureAnchorWorld(),
+          currentState->GesturePrompt());
+    } else {
+      m_dynInputTooltip.Hide();
+    }
+  }
 }
 
 BOOL AeSysView::OnMouseWheel(UINT flags, std::int16_t zDelta, CPoint point) {
@@ -577,6 +605,11 @@ void AeSysView::RubberBandingStartAtEnable(EoGePoint3d point, ERubs type) {
 }
 
 EoGePoint3d AeSysView::GetCursorPosition() {
+  // When a command-line coordinate is being injected the world point is pinned
+  // to the exact injected value. Skip the OS cursor read entirely so that pixel
+  // round-trips and OS cursor lag cannot override the commanded position.
+  if (m_pinnedCursorWorld.has_value()) { return m_pinnedCursorWorld.value(); }
+
   CPoint cursorPosition;
 
   ::GetCursorPos(&cursorPosition);
@@ -645,6 +678,31 @@ void AeSysView::SetCursorPosition(const EoGePoint3d& position) {
 
   ClientToScreen(&clientPoint);
   ::SetCursorPos(clientPoint.x, clientPoint.y);
+}
+
+LRESULT AeSysView::OnCmdLineInjectPoint([[maybe_unused]] WPARAM wParam, LPARAM lParam) {
+  // Ownership of the heap object is transferred to this handler — always delete.
+  std::unique_ptr<EoGePoint3d> worldPoint{reinterpret_cast<EoGePoint3d*>(lParam)};
+  if (worldPoint == nullptr) { return 0; }
+
+  // Pin the world point so GetCursorPosition() returns it exactly throughout
+  // the down/up cycle, bypassing the OS cursor pixel read-back.
+  m_pinnedCursorWorld = *worldPoint;
+
+  // Also move the OS cursor so rubber-banding and visual feedback stay coherent.
+  SetCursorPosition(*worldPoint);
+
+  // Fire a complete left-button down/up cycle directly (not posted) so it executes
+  // in the same pump cycle as this message — one coordinate per pump tick, in order.
+  // CPoint(0,0) is unused: OnLButtonDown calls GetCursorPosition() which now returns
+  // the pinned world point unconditionally.
+  OnLButtonDown(0, CPoint{0, 0});
+  OnLButtonUp(0, CPoint{0, 0});
+
+  // Release the pin so normal OS cursor tracking resumes.
+  m_pinnedCursorWorld.reset();
+
+  return 0;
 }
 
 /// @brief Loads a cursor from an RCDATA resource containing a raw .cur file.

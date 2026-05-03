@@ -16,6 +16,7 @@ IMPLEMENT_DYNAMIC(EoMfLayoutTabBar, CMFCTabCtrl)
 
 BEGIN_MESSAGE_MAP(EoMfLayoutTabBar, CMFCTabCtrl)
 ON_BN_CLICKED(IDC_LAYOUT_SPACE_LABEL, &EoMfLayoutTabBar::OnSpaceLabelClicked)
+ON_BN_CLICKED(IDC_WORLD_SCALE_BUTTON, &EoMfLayoutTabBar::OnWorldScaleClicked)
 ON_BN_CLICKED(IDC_VIEWPORT_LOCK_BUTTON, &EoMfLayoutTabBar::OnLockButtonClicked)
 ON_BN_CLICKED(IDC_SPACE_TRANSFER_BUTTON, &EoMfLayoutTabBar::OnSpaceTransferClicked)
 ON_CBN_SELCHANGE(IDC_VIEWPORT_SCALE_COMBO, &EoMfLayoutTabBar::OnScaleComboChanged)
@@ -80,6 +81,12 @@ BOOL EoMfLayoutTabBar::CreateTabBar(CWnd* parentWindow, UINT controlId) {
   m_spaceLabel.Create(
       L"MODEL", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT, CRect(0, 0, 0, 0), this, IDC_LAYOUT_SPACE_LABEL);
   m_spaceLabel.SetFont(&m_controlFont);
+
+  // World scale button — shows "1:1", "1:96", etc. in model space.
+  // Hidden when a viewport is active in paper space (viewport scale combo covers that context).
+  m_worldScaleButton.Create(
+      L"1:1", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_FLAT, CRect(0, 0, 0, 0), this, IDC_WORLD_SCALE_BUTTON);
+  m_worldScaleButton.SetFont(&m_controlFont);
 
   // Scale combo — hidden until a viewport is activated
   m_scaleCombo.Create(
@@ -250,7 +257,9 @@ void EoMfLayoutTabBar::UpdateViewportState(const EoDbViewport* viewport, bool is
   }
 
   if (viewport != nullptr && isPaperSpace) {
-    // Show lock button and scale combo when a viewport is active in paper space
+    // Show lock button and scale combo when a viewport is active in paper space.
+    // World scale button is hidden — viewport scale combo describes the paper↔model mapping.
+    m_worldScaleButton.ShowWindow(SW_HIDE);
     m_lockButton.SetWindowTextW(viewport->IsDisplayLocked() ? L"\U0001F512" : L"\U0001F513");
     m_lockButton.ShowWindow(SW_SHOW);
 
@@ -261,7 +270,9 @@ void EoMfLayoutTabBar::UpdateViewportState(const EoDbViewport* viewport, bool is
     // Show space transfer button when trap is not empty
     UpdateSpaceTransferButton();
   } else {
-    // Hide viewport-specific controls when in model space or no viewport is active
+    // Hide viewport-specific controls when in model space or no viewport is active.
+    // World scale button is visible in both model space and paper space without active viewport.
+    m_worldScaleButton.ShowWindow(SW_SHOW);
     m_lockButton.ShowWindow(SW_HIDE);
     m_scaleCombo.ShowWindow(SW_HIDE);
     m_spaceTransferButton.ShowWindow(SW_HIDE);
@@ -319,11 +330,25 @@ void EoMfLayoutTabBar::RepositionControls() {
     xPosition -= controlGap;
   }
 
-  // Lock button (middle, if visible)
+  // Lock button (if visible)
   if (m_lockButton.IsWindowVisible()) {
     const int lockButtonWidth = controlHeight;  // square
     xPosition -= lockButtonWidth;
     m_lockButton.MoveWindow(xPosition, topMargin, lockButtonWidth, controlHeight);
+    xPosition -= controlGap;
+  }
+
+  // World scale button (if visible) — just left of the lock button or rightmost when no lock
+  if (m_worldScaleButton.IsWindowVisible()) {
+    CClientDC scaleDc(&m_worldScaleButton);
+    CFont* oldScaleFont = scaleDc.SelectObject(&m_controlFont);
+    CString scaleText;
+    m_worldScaleButton.GetWindowTextW(scaleText);
+    const CSize scaleSize = scaleDc.GetTextExtent(scaleText);
+    scaleDc.SelectObject(oldScaleFont);
+    const int scaleButtonWidth = scaleSize.cx + 16;
+    xPosition -= scaleButtonWidth;
+    m_worldScaleButton.MoveWindow(xPosition, topMargin, scaleButtonWidth, controlHeight);
     xPosition -= controlGap;
   }
 
@@ -384,6 +409,19 @@ double EoMfLayoutTabBar::ComputeViewportScale(const EoDbViewport* viewport) noex
   if (viewport == nullptr || viewport->ViewHeight() < 1e-10 || viewport->Height() < 1e-10) { return 1.0; }
   // Scale = paper-space viewport height / model-space view height
   return viewport->Height() / viewport->ViewHeight();
+}
+
+void EoMfLayoutTabBar::UpdateWorldScale(double scale) {
+  // Format identically to the legacy status-bar pane: "1:nn.nn", "1:1" when unity.
+  CString scaleText;
+  if (std::abs(scale - 1.0) < 0.001) {
+    scaleText = L"1:1";
+  } else {
+    scaleText.Format(L"1:%.2f", scale);
+  }
+  m_worldScaleButton.SetWindowTextW(scaleText);
+  // Button width depends on text length — reposition all controls to fit.
+  RepositionControls();
 }
 
 // --- Message handlers ---
@@ -537,6 +575,13 @@ void EoMfLayoutTabBar::OnScaleComboChanged() {
   if (parentView != nullptr) {
     parentView->InvalidateScene();
     parentView->SetFocus();
+  }
+}
+
+void EoMfLayoutTabBar::OnWorldScaleClicked() {
+  // Delegate to the existing world scale dialog (same as status bar pane double-click and '.' accelerator).
+  if (auto* view = AeSysView::GetActiveView()) {
+    view->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_SETUP_SCALE, 0), 0);
   }
 }
 

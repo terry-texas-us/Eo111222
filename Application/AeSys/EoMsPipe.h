@@ -27,6 +27,8 @@ class PipeModeState : public AeSysState {
   bool OnEscape(AeSysView* context) override;
   void OnRButtonUp(AeSysView* context, UINT flags, CPoint point) override;
   [[nodiscard]] UINT GetActiveOp() const noexcept override { return m_previousOp; }
+  [[nodiscard]] const wchar_t* PromptString() const noexcept override;
+  [[nodiscard]] const wchar_t* ModeLabel() const noexcept override { return L"Pipe"; }
   [[nodiscard]] bool HandleCommand(AeSysView* context, UINT command) override;
   [[nodiscard]] bool BuildContextMenu(AeSysView* context, CMenu& menu) override;
 
