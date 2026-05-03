@@ -43,4 +43,25 @@ struct EoCoordinate {
 ///        malformed component.
 [[nodiscard]] bool TryParseCoordinate(const std::wstring& token, EoCoordinate& out);
 
+/// @brief Returns true and sets @p out when @p token is a bare positive number
+///        with no comma, '@', or '<' — the Direct Distance Entry format.
+///        Used to detect "5" as "draw 5 units in the cursor direction."
+[[nodiscard]] bool TryParseDistance(const std::wstring& token, double& out);
+
+/// @brief Splits @p input on whitespace, but treats double-quoted spans as a
+///        single token (quotes stripped).  Single-word strings need not be
+///        quoted.  A lone closing quote without an opening quote is treated as
+///        a regular character.  Coordinate tokens ("1,2" etc.) are never
+///        confused with string tokens because they contain no whitespace.
+///
+/// Example:
+///   TEXT 0,0 "Hello World"  ->  {"TEXT", "0,0", "Hello World"}
+///   TEXT 0,0 Hello          ->  {"TEXT", "0,0", "Hello"}
+[[nodiscard]] std::vector<std::wstring> SplitTokensWithStrings(const std::wstring& input);
+
+/// @brief Returns true if @p token is a string argument — i.e. it is neither a
+///        coordinate nor a bare number.  Used by ExecuteCommand to distinguish
+///        text arguments from coordinate arguments in the post-verb token list.
+[[nodiscard]] bool IsStringArgument(const std::wstring& token);
+
 }  // namespace EoCommandTokenizer

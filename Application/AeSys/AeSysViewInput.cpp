@@ -50,6 +50,8 @@ BOOL AeSysView::PreTranslateMessage(MSG* pMsg) {
 
 void AeSysView::OnLButtonDown(UINT flags, CPoint point) {
   auto* document = GetDocument();
+  // Direct Distance Entry: clear the lock on any LMB click (real or synthetic).
+  m_lockedDistance = -1.0;
   const auto worldPoint = GetCursorPosition();
 
   // --- Exclusive transient states own LMB unconditionally ---
@@ -554,13 +556,32 @@ void AeSysView::OnMouseMove([[maybe_unused]] UINT flags, CPoint point) {
   if (m_dynInputEnabled && m_dynInputTooltip.GetSafeHwnd() != nullptr) {
     const auto* currentState = GetCurrentState();
     if (currentState != nullptr && currentState->HasActiveGesture()) {
-      const EoGePoint3d worldPos = GetCursorPosition();
+      // Direct Distance Entry: when a bare distance has been typed, override the
+      // cursor world position to lie exactly m_lockedDistance units from the gesture
+      // anchor in the direction of the raw OS cursor.  The tooltip shows this
+      // constrained point so the user can see where the distance lock lands.
+      EoGePoint3d worldPos = GetCursorPosition();
+      if (m_lockedDistance >= 0.0 && currentState->HasActiveGesture()) {
+        const EoGePoint3d anchor = currentState->GestureAnchorWorld();
+        const double dx = worldPos.x - anchor.x;
+        const double dy = worldPos.y - anchor.y;
+        const double dist = std::hypot(dx, dy);
+        if (dist > Eo::geometricTolerance) {
+          worldPos.x = anchor.x + dx * m_lockedDistance / dist;
+          worldPos.y = anchor.y + dy * m_lockedDistance / dist;
+        }
+        // Pin the cursor so rubber-banding snaps to the constrained point.
+        m_pinnedCursorWorld = worldPos;
+      } else {
+        m_pinnedCursorWorld.reset();
+      }
       CPoint screenPt = point;
       ClientToScreen(&screenPt);
       m_dynInputTooltip.Show(screenPt, worldPos,
           currentState->GestureAnchorWorld(),
           currentState->GesturePrompt());
     } else {
+      m_pinnedCursorWorld.reset();
       m_dynInputTooltip.Hide();
     }
   }

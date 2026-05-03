@@ -474,6 +474,15 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   /// coordinate injection — grip editing and CLI coordinate injection must not interleave.
   bool m_isInjectingPoint{false};
 
+  /// @brief Direct Distance Entry lock.  When non-negative, the command-line has
+  /// supplied a bare distance (e.g. "5") while a draw gesture is active.  OnMouseMove
+  /// synthesizes a polar coordinate in the current cursor direction at this distance
+  /// and injects it as a pinned cursor world point.  Cleared on the next LMB click.
+  double m_lockedDistance{-1.0};
+
+  /// @brief Sets the Direct Distance Entry lock distance.  A negative value clears it.
+  void SetLockedDistance(double d) noexcept { m_lockedDistance = d; }
+
   /** @brief Retrieves the current cursor position in world coordinates.
    * @return The current cursor position world coordinates.
    * @note This function gets the current cursor position in device coordinates, converts it to world coordinates using

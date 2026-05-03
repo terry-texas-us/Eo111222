@@ -49,7 +49,7 @@ const int traceGeneral = static_cast<int>(atlTraceGeneral);
 
 UINT AFXAPI HashKey(CString& str);
 
-// #define USING_DDE
+#define USING_DDE
 
 #ifdef USING_DDE
 #include <ddeml.h>

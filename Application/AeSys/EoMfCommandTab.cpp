@@ -217,10 +217,56 @@ void EoMfCommandTab::ExecuteCommand(const std::wstring& commandLine) {
     return;
   }
 
+  // --- Direct Distance Entry: a bare number while a draw gesture is active ---
+  // "5" means "draw 5 units forward in the direction I'm currently pointing."
+  // Store the distance on the view; OnMouseMove will project the cursor to that
+  // distance from the gesture anchor and pin it.  The user then clicks to commit.
+  {
+    double distance = 0.0;
+    if (tokens.size() == 1 && EoCommandTokenizer::TryParseDistance(tokens.front(), distance) &&
+        activeView != nullptr) {
+      auto* state = activeView->GetCurrentState();
+      if (state != nullptr && state->HasActiveGesture()) {
+        activeView->SetLockedDistance(distance);
+        AppendHistory(std::format(L"  Distance locked: {:.4f} -- click to place point", distance));
+        activeView->SetFocus();
+        return;
+      }
+    }
+  }
+
   const auto verb = EoCommandTokenizer::NormalizeCommand(tokens.front());
   if (verb.empty()) { return; }
 
   AppendHistory(L"> " + verb);
+
+  // --- ZOOM with sub-command: "ZOOM E/EXTENTS", "ZOOM W/WINDOW", "ZOOM IN/OUT/ALL/P" ---
+  // Parse the second token when the verb is ZOOM or Z so users can type
+  // AutoCAD-style "ZOOM E" or "ZOOM EXTENTS" without needing the ZE alias.
+  if ((verb == L"ZOOM" || verb == L"Z") && tokens.size() >= 2) {
+    const auto sub = EoCommandTokenizer::NormalizeCommand(tokens[1]);
+    auto* mainWnd = AfxGetMainWnd();
+    auto* view = AeSysView::GetActiveView();
+    if (sub == L"E" || sub == L"EXTENTS" || sub == L"A" || sub == L"ALL") {
+      if (view != nullptr) { view->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_WINDOW_BEST, 0), 0); }
+    } else if (sub == L"W" || sub == L"WINDOW") {
+      AppendHistory(L"  Specify first corner then second corner to zoom window.");
+      // Zoom window requires two interactive clicks; nothing more to do here.
+    } else if (sub == L"IN" || sub == L"I") {
+      if (view != nullptr) { view->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_WINDOW_ZOOMIN, 0), 0); }
+    } else if (sub == L"OUT" || sub == L"O") {
+      if (view != nullptr) { view->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_WINDOW_ZOOMOUT, 0), 0); }
+    } else if (sub == L"P" || sub == L"PREVIOUS" || sub == L"L" || sub == L"LAST") {
+      if (mainWnd != nullptr) { view->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_WINDOW_LAST, 0), 0); }
+    } else if (sub == L"S" || sub == L"SHEET") {
+      if (view != nullptr) { view->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_WINDOW_SHEET, 0), 0); }
+    } else {
+      AppendHistory(L"  Unknown ZOOM sub-command: " + sub +
+          L"  (E/EXTENTS, W/WINDOW, IN, OUT, ALL, P/PREVIOUS, S/SHEET)");
+    }
+    if (view != nullptr) { view->SetFocus(); }
+    return;
+  }
 
   // Built-in: HELP / ? lists registered commands without dispatching anything.
   if (verb == L"HELP" || verb == L"?") {
@@ -242,6 +288,17 @@ void EoMfCommandTab::ExecuteCommand(const std::wstring& commandLine) {
 
   auto* mainFrame = AfxGetMainWnd();
   if (mainFrame == nullptr) { return; }
+
+  // Parameterised-functor commands (TEXT, etc.) — re-tokenize with string support,
+  // pass all post-verb tokens directly to the functor, and return.
+  if (entry->argFunctor) {
+    const auto argTokens = EoCommandTokenizer::SplitTokensWithStrings(commandLine);
+    // argTokens[0] is the verb; pass everything after it.
+    std::vector<std::wstring> args(argTokens.begin() + (argTokens.empty() ? 0 : 1), argTokens.end());
+    entry->argFunctor(args);
+    if (activeView != nullptr) { activeView->SetFocus(); }
+    return;
+  }
 
   // Functor commands (ZOOM, UNITS, PURGE, etc.) — invoke directly, no WM_COMMAND.
   if (entry->functor) {

@@ -1101,7 +1101,7 @@ void AeSysDoc::OnPrimExtractStr() {
     string += L" was extracted from drawing";
     app.AddStringToMessageList(string);
 #ifdef USING_DDE
-    app.SetExtractedString(String);
+    app.SetExtractedString(string);
     dde::PostAdvise(dde::ExtStrInfo);
 #endif
   }

@@ -7,10 +7,14 @@
 
 /// @brief Single command entry in the command-line registry.
 ///
-/// Three dispatch modes — only one should be populated per entry:
+/// Four dispatch modes — only one should be populated per entry:
 ///   1. modeId + opId  — sends two sequential WM_COMMAND messages through CMainFrame.
 ///   2. modeId only    — sends a single WM_COMMAND (mode switch without a sub-op).
 ///   3. functor        — invokes a callable directly; modeId/opId are 0 and unused.
+///   4. argFunctor     — like functor but receives the remaining post-verb tokens
+///                       (coordinates and/or string arguments) as a vector. Used for
+///                       commands such as TEXT that need both a position and a string.
+///                       argFunctor takes priority over functor when both are set.
 ///
 /// Aliases are stored separately in m_lookup; the canonical entry owns helpText.
 struct EoCommandEntry {
@@ -19,6 +23,10 @@ struct EoCommandEntry {
   unsigned int opId{0};           ///< Optional op id (e.g. ID_DRAW_MODE_LINE). 0 = none.
   std::wstring helpText;          ///< Short one-line help for the HELP listing.
   std::function<void()> functor;  ///< Direct invocation; takes priority when non-null.
+  /// @brief Parameterised functor. Receives all post-verb tokens in source order.
+  /// Coordinate tokens retain their original text (e.g. "1.5,2"); string tokens
+  /// are the unquoted content. argFunctor takes priority over functor when set.
+  std::function<void(std::vector<std::wstring>)> argFunctor;
 };
 
 /// @brief Singleton registry mapping command names and aliases to mode/op ids or functors.

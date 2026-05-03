@@ -3,9 +3,21 @@
 #include "EoCommandRegistry.h"
 
 #include <algorithm>
+#include <format>
 
 #include "AeSys.h"
+#include "AeSysDoc.h"
 #include "AeSysView.h"
+#include "EoCommandTokenizer.h"
+#include "EoDb.h"
+#include "EoDbCharacterCellDefinition.h"
+#include "EoDbFontDefinition.h"
+#include "EoDbGroup.h"
+#include "EoDbText.h"
+#include "EoGePoint3d.h"
+#include "EoGeReferenceSystem.h"
+#include "EoGeVector3d.h"
+#include "EoGsRenderState.h"
 #include "Resource.h"
 
 EoCommandRegistry& EoCommandRegistry::Instance() {
@@ -180,11 +192,11 @@ void EoCommandRegistry::RegisterDefaults() {
       []() { if (auto* v = AeSysView::GetActiveView()) { v->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_SETUP_SCALE, 0), 0); } }},
       {L"WORLDSCALE"});
 
-  Register({L"DIMLENGTH", 0, 0, L"Set dimension length",
+  Register({L"DIAMONDLENGTH", 0, 0, L"Set dimension length",
       []() { if (auto* v = AeSysView::GetActiveView()) { v->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_SETUP_DIMLENGTH, 0), 0); } }},
       {});
 
-  Register({L"DIMANGLE", 0, 0, L"Set dimension angle",
+  Register({L"DIAMONDANGLE", 0, 0, L"Set dimension angle",
       []() { if (auto* v = AeSysView::GetActiveView()) { v->SendMessageW(WM_COMMAND, MAKEWPARAM(ID_SETUP_DIMANGLE, 0), 0); } }},
       {});
 
@@ -324,4 +336,76 @@ void EoCommandRegistry::RegisterDefaults() {
         }
       }},
       {});  // No H alias -- H stays with HOMEPOINT
+
+  // ---------------------------------------------------------------
+  // TEXT command — place a single text primitive at a given position.
+  //
+  // Syntax (typed in the CLI):
+  //   TEXT x,y "Hello World"
+  //   TEXT x,y Hello
+  //   TEXT 0,0 "Multi word string"
+  //
+  // The first post-verb token is parsed as a 2D/3D world coordinate.
+  // All remaining tokens are joined with a single space to form the
+  // text string, so quoting is optional for multi-word content.
+  // The primitive is created using the current render-state font and
+  // character-cell definition (height, rotation, etc.).
+  // ---------------------------------------------------------------
+  {
+    auto textFunctor = [](std::vector<std::wstring> args) {
+      auto* view = AeSysView::GetActiveView();
+      if (view == nullptr) { return; }
+      auto* document = view->GetDocument();
+      if (document == nullptr) { return; }
+
+      // Need at least a position and one text token.
+      if (args.size() < 2) {
+        ATLTRACE2(traceGeneral, 2, L"TEXT: usage: TEXT x,y <text string>\n");
+        return;
+      }
+
+      // Parse the first token as a coordinate.
+      EoCommandTokenizer::EoCoordinate coord{};
+      if (!EoCommandTokenizer::TryParseCoordinate(args[0], coord)) {
+        ATLTRACE2(traceGeneral, 2, L"TEXT: first argument must be a coordinate (x,y or x,y,z)\n");
+        return;
+      }
+      EoGePoint3d origin{coord.x, coord.y, coord.hasZ ? coord.z : 0.0};
+      if (coord.isRelative) {
+        const EoGePoint3d cursor = view->GetCursorPosition();
+        origin.x += cursor.x;
+        origin.y += cursor.y;
+        if (coord.hasZ) { origin.z += cursor.z; }
+      }
+
+      // Join remaining tokens as the text string.
+      std::wstring textContent = args[1];
+      for (std::size_t i = 2; i < args.size(); ++i) {
+        textContent += L' ';
+        textContent += args[i];
+      }
+      if (textContent.empty()) { return; }
+
+      // Build the reference system from the current render-state character cell.
+      const EoDbCharacterCellDefinition characterCell = Gs::renderState.CharacterCellDefinition();
+      EoGeReferenceSystem referenceSystem(origin, characterCell);
+
+      // Clone the current font definition so alignment can be overridden
+      // independently for this placement without disturbing the global state.
+      EoDbFontDefinition fontDefinition = Gs::renderState.FontDefinition();
+
+      auto* text = new EoDbText(fontDefinition, referenceSystem, textContent);
+      (void)text->WithProperties(Gs::renderState);
+
+      auto* group = new EoDbGroup(text);
+      document->AddWorkLayerGroup(group);
+      document->UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
+    };
+
+    EoCommandEntry entry;
+    entry.canonicalName = L"TEXT";
+    entry.helpText = L"Place text primitive: TEXT x,y <string>";
+    entry.argFunctor = textFunctor;
+    Register(entry, {L"T", L"DTEXT"});
+  }
 }
