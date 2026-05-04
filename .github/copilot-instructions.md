@@ -52,11 +52,20 @@ Coordinates are injected as `WM_CMDLINE_INJECT_POINT` messages carrying heap-all
 **Draw primitives** (mode switch + op):
 `LINE`/`L`, `POLYLINE`/`PL`, `POLYGON`/`POL`, `QUAD`, `ARC`/`A`, `CIRCLE`/`C`, `ELLIPSE`/`EL`, `BSPLINE`/`SPL`/`SPLINE`, `INSERT`/`I`
 
+**Draw commit** (functor — closes/commits the active draw gesture, equivalent to pressing Enter in draw mode):
+`DRAWRETURN`/`DRAWCLOSE`/`DR`
+
+**Draw cancel** (functor — abandons the current draw gesture, equivalent to Esc in draw mode):
+`DRAWESCAPE`/`DRAWCANCEL`
+
 **Edit operations** (mode switch + op):
 `MOVE`/`M`, `COPY`/`CO`/`CP`, `ROTATE`/`RO`/`ROT`, `ROTCW`, `FLIP`, `REDUCE`, `ENLARGE`, `PIVOT`
 
 **Selection** (mode switch):
 `TRAP`, `FIELD`/`WIN`, `STITCH`
+
+**Trap utilities** (functor):
+`CLEARTRAP`/`TRAPQUIT`/`QT`, `TRAPWORK`/`TW`
 
 **Cut** (mode switch + op):
 `CUT`, `SLICE`
@@ -88,7 +97,7 @@ Coordinates are injected as `WM_CMDLINE_INJECT_POINT` messages carrying heap-all
 `REFRESH`/`REDRAW`/`R`,
 `ZOOMIN`/`ZI`, `ZOOMOUT`/`ZO`, `ZOOMLAST`/`ZL`, `ZOOMSHEET`/`ZS`,
 `ZOOM`/`Z`, `ZE`/`ZOOMEXTENTS`/`EXTENTS`, `PAN`,
-`NEW`, `OPEN`, `SAVE`, `SAVEAS`, `PLOT`/`PRINT`,
+`NEW`, `OPEN`, `OPENFILE`, `SAVE`, `SAVEAS`, `PLOT`/`PRINT`,
 `UNITS`/`UN`, `PURGE`/`PU`
 
 **Built-in** (not in registry): `HELP` / `?` — lists all registered commands.
@@ -152,52 +161,163 @@ ERROR code=<n> message=<m>  command failed
 ```
 Tools\
   aespy\
-    __init__.py          # connect(), AeSysConnection class
-    _connection.py       # pipe transport (PipeConnection); DDE client (DdeConnection, for Excel testing only)
-    _queries.py          # query_room(), query_block(), query_trap() — to be implemented
-    _units.py            # unit conversion helpers — to be implemented
+    __init__.py          # Public API surface — exports all query helpers
+    _connection.py       # PipeConnection transport; DdeConnection (Excel only)
+    _queries.py          # All QUERY verb wrappers — fully implemented
+    _units.py            # Unit conversion helpers — to be implemented
     aec\
       hvac.py            # cfm_required(), duct_size() — to be implemented
       lighting.py        # fixture_count(), connected_load() — to be implemented
       area_schedule.py   # aggregate rooms into schedule — to be implemented
-  test_pipe.py           # pytest suite — passing
-  test_dde.py            # pytest suite — passing (DDE Excel path validation)
+  test_fixtures\
+    make_test_drawing.py # Generates aesys_test.dxf (seeded DXF fixture)
+    aesys_test.dxf       # Deterministic regression fixture (committed)
+  test_pipe.py           # 65-test pytest suite — all passing
+  test_dde.py            # DDE Excel path validation — passing
 ```
 
-### Pipe Protocol Extension — QUERY Verb (next phase)
-Add a `QUERY` verb alongside `CLI` in `MainFrm::OnPipeCommand`:
-```
-QUERY ROOM 24.1,18.6        →  OK value={"type":"room","area":342.5,...}
-QUERY BLOCK AT 24.1,18.6    →  OK value={"type":"block","name":"2x4-TROFFER",...}
-QUERY TRAP                  →  OK value={"groups":3,"total_area":1240.0,...}
-QUERY LAYER Floor Plan       →  OK value={"primitives":47,"visible":true,...}
-```
-JSON responses are hand-rolled `CString` formatting on the C++ side — no external JSON library needed for the shallow, flat structures required by AEC queries.
+### QUERY Verb — Fully Implemented
+`MainFrm::HandleQueryCommand` dispatches all structured query sub-commands.
+JSON responses are hand-rolled on the C++ side — no external JSON library.
 
-### AEC Query Roadmap
-| Phase | Work | Complexity |
-|-------|------|-----------|
-| 1 | `QUERY TRAP` — return trap contents, area, layer breakdown | Low — data already computed |
-| 2 | `QUERY BLOCK AT x,y` — hit-test, return block name + ATTRIB tag/values | Low — `SelectGroupAndPrimitive` + cast |
-| 3 | `QUERY ROOM x,y` — find enclosing closed polygon, area + perimeter | Medium — needs closed-boundary search |
-| 4 | `QUERY LAYER name` — primitive count, extents, visibility | Low |
-| 5 | Batch queries / layer-wide polygon enumeration | Medium |
+**Singular queries (point/name lookup):**
+```
+QUERY TRAP              →  OK value={"groups":N,"primitives":M,"bbox":{...},"items":[...]}
+QUERY BLOCK AT x,y[,z] →  OK value={"name":"...","layer":"...","x":F,"y":F,"z":F,
+                                     "rotation":F,"scale_x":F,"scale_y":F,"scale_z":F,
+                                     "attributes":[{"tag":"...","value":"..."},...]}
+QUERY ROOM x,y[,z]     →  OK value={"found":true,"area":F,"perimeter":F,
+                                     "vertex_count":N,"layer":"..."}
+QUERY LAYER name        →  OK value={"name":"...","visible":bool,"is_work":bool,
+                                     "groups":N,"primitives":M,
+                                     "extents":{"min_x":F,"min_y":F,"max_x":F,"max_y":F}}
+```
+
+**Batch queries (full enumeration):**
+```
+QUERY BLOCKS [layer]    →  OK value={"count":N,"blocks":[{same keys as BLOCK AT},...]}
+QUERY ROOMS [layer]     →  OK value={"count":N,"rooms":[{"area":F,"perimeter":F,
+                                     "centroid_x":F,"centroid_y":F,
+                                     "vertex_count":N,"layer":"..."},...]}
+QUERY LAYERS            →  OK value={"count":N,"layers":[{"name":"...","visible":bool,
+                                     "is_work":bool,"groups":N,"primitives":M},...]}
+```
+
+**Error codes:**
+| Code | Meaning |
+|------|---------|
+| `NO_DOC` | No document open |
+| `NO_VIEW` | No active view |
+| `BAD_ARGS` | Missing or malformed arguments |
+| `NOT_FOUND` | Named layer/room/block not found |
+| `NO_BLOCK` | No block reference near query point |
+| `UNKNOWN_QUERY` | Unrecognised sub-command |
+
+### QUERY Verb — Implementation Rules
+- **Verb parsing**: `HandleQueryCommand` receives `args` = everything after `"QUERY "`. It uppercases the whole string into `verb`, then dispatches by prefix. **Plural branches** (`BLOCKS`, `ROOMS`, `LAYERS`) are checked **before** their singular counterparts (`BLOCK`, `ROOM`, `LAYER`) to prevent prefix collisions.
+- **Prefix-collision guard**: every plural branch uses `isExact || (hasArg && verb.substr(0, kPlural.size()) == kPlural)` — the `starts-with` check is mandatory. Omitting it causes `"LAYER ROOMS"` (the uppercased form of a `QUERY LAYER Rooms` call) to accidentally match the ROOMS branch.
+- **BLOCK AT hit-test**: uses insertion-point world-space distance (tolerance 0.5 units) against all model-space layers — **not** `SelectGroupAndPrimitive`, which is view/aperture-dependent and unreliable for pipe queries.
+- **Layer iteration**: `CLayers` is a `CTypedPtrArray` — use `GetSize()` / index, not `GetHeadPosition()`/`GetNext()`. Groups within a layer do use `GetHeadPosition()`/`GetNext()`.
+- **Optional `[layer]` filter**: pass a non-empty layer name to `QUERY BLOCKS` / `QUERY ROOMS` to restrict results; comparison is `CompareNoCase`.
+- JSON is hand-rolled with `_snprintf_s(..., _TRUNCATE, ...)`. All string values are passed through `EncodeJsonString()` to escape `\` and `"`.
+
+### OPENFILE Command
+`OPENFILE <path>` is registered in `EoCommandRegistry.cpp` as an `argFunctor` that calls `AfxGetApp()->OpenDocumentFile(path)`. Used by the test suite to load the deterministic fixture without UI interaction.
+
+### Deterministic Test Fixture
+`Tools\test_fixtures\make_test_drawing.py` generates `aesys_test.dxf` using `ezdxf`:
+- **Layer `Rooms`**: two closed `LWPOLYLINE` room polygons (`(0,0)→(15,0)→(15,6)→(0,6)` and `(15,0)→(30,0)→(30,8)→(15,8)`), plus a `DESK` INSERT at `(5,4,0)`.
+- **Layer `Work`**: one line segment `(0,0)→(10,0)`.
+- **Block `DESK`**: `LWPOLYLINE` rectangle `(0,0)→(2,0)→(2,1)→(0,1)` (block-local coords) + `ATTDEF` tag `LABEL`. INSERT uses `add_blockref()` (not `add_auto_blockref()`) so the block name is `DESK` not `*U1`.
+- AeSys imports layer names as-is (case preserved from DXF); compare case-insensitively in tests.
+- The fixture is loaded in tests via `OPENFILE <abs-path>` and is the module-scoped `fixture_drawing` pytest fixture.
 
 ### Key Files
 | File | Role |
 |------|------|
-| `Application\EoSys\EoPipeProtocol.h` | Shared protocol constants, response builders/parsers |
+| `Application\EoSys\EoPipeProtocol.h` | Shared protocol constants, `ResponseOk()`, `ResponseOkValue()`, `ResponseError()` |
 | `Application\EoSys\EoNamedPipeServer.h/.cpp` | Background pipe server; marshals to UI thread via `WM_APP_PIPE_COMMAND` |
-| `Application\EoSys\MainFrm.cpp` | `OnPipeCommand` — current CLI dispatch; future QUERY branch |
+| `Application\AeSys\MainFrm.cpp` | `OnPipeCommand` → `HandleQueryCommand`; all QUERY sub-command implementations |
+| `Application\AeSys\EoCommandRegistry.cpp` | `OPENFILE` argFunctor registration |
 | `Tools\aespy\_connection.py` | `PipeConnection` transport; `DdeConnection` (Excel only) |
-| `Tools\test_pipe.py` | Pipe integration tests — keep passing as regression baseline |
-| `Tools\test_dde.py` | DDE integration tests — keep passing as regression baseline |
+| `Tools\aespy\_queries.py` | All query helper functions — `query_trap`, `query_block`, `query_blocks`, `query_room`, `query_rooms`, `query_layer`, `query_layers` |
+| `Tools\aespy\__init__.py` | Public exports — all query helpers re-exported |
+| `Tools\test_pipe.py` | 65-test regression suite — keep all passing |
+| `Tools\test_dde.py` | DDE integration tests — keep passing |
+| `Tools\test_fixtures\make_test_drawing.py` | Fixture generator — run to regenerate `aesys_test.dxf` |
 
 ### Implementation Rules
 - Scene invalidation: `AddWorkLayerGroup` calls `UpdateAllViews` — newly inserted geometry is visible immediately.
 - Trap/hover lifetime: `RemoveGroupFromAllViews` clears trap membership and grip-hover state before removal — prevents stale pointer crashes in `DrawGripMarkersD2D`.
 - `DeleteAllTrappedGroups` snapshots the trap list before iterating to avoid mutation during removal.
 - DDE client in `_connection.py` uses Unicode DDEML APIs (`DdeInitializeW`, `DdeCreateStringHandleW`, `CP_WINUNICODE`) to match the Unicode C++ server.
+
+## AEC Engineering — Python Layer
+
+### Design Philosophy (restated for AEC context)
+- **AeSys owns geometry**: room boundaries, block placements, layers, attributes, primitive counts, extents.
+- **Python owns engineering**: ASHRAE calculations, IES fixture counts, SMACNA duct sizing, area schedules, compliance checks, report generation.
+- **The pipe is the interface**: geometry facts flow out as JSON; CLI draw commands flow in to annotate results.
+- **AI agents drive AEC modules**: Python scripts are the primary authoring surface — no C++ rebuild required for new AEC calculations.
+
+### AEC Roadmap — Next Phases
+
+#### Phase A — Area Schedule (first AEC deliverable)
+Goal: produce a room-by-room area schedule from the drawing, output as CSV or JSON.
+
+| Step | Work |
+|------|------|
+| A1 | `query_rooms()` already returns area + layer — wire into `aec/area_schedule.py` |
+| A2 | `area_schedule.py`: `build_schedule(conn, layer="Rooms")` → list of `{"id", "area", "layer"}` dicts |
+| A3 | `area_schedule.py`: `export_csv(schedule, path)` and `export_json(schedule, path)` |
+| A4 | CLI command `SCHEDULE` (argFunctor) that runs the schedule and writes a file next to the drawing |
+| A5 | Tests: `test_aec.py` with fixture-backed schedule assertions |
+
+#### Phase B — HVAC Sizing
+Goal: compute CFM and select duct sizes for each room using ASHRAE guidelines.
+
+| Step | Work |
+|------|------|
+| B1 | `aec/hvac.py`: `cfm_required(area_sqft, occupancy_type)` — ASHRAE 62.1 ventilation rates |
+| B2 | `aec/hvac.py`: `duct_size(cfm, velocity_fpm=800)` — rectangular duct (SMACNA) or round duct |
+| B3 | `_units.py`: `sqft_to_sqm`, `cfm_to_ls`, `in_to_mm` helpers |
+| B4 | Integration: `query_rooms()` → compute CFM per room → annotate drawing via `ANNOTATE` CLI command |
+| B5 | Tests in `test_aec.py` |
+
+#### Phase C — Lighting Design
+Goal: fixture count and connected load per room.
+
+| Step | Work |
+|------|------|
+| C1 | `aec/lighting.py`: `fixture_count(area_sqft, footcandles, lamp_lumens, cu=0.65, ldd=0.8)` — zonal cavity |
+| C2 | `aec/lighting.py`: `connected_load_w(fixture_count, lamp_watts)` |
+| C3 | Integration: rooms from `query_rooms()`, fixture blocks from `query_blocks(layer="Lighting")` |
+| C4 | Tests |
+
+#### Phase D — Block-Based Equipment Schedules
+Goal: enumerate all INSERT instances by block name, aggregate attributes into a schedule.
+
+| Step | Work |
+|------|------|
+| D1 | `query_blocks()` already returns name + attributes — wire into `aec/equipment_schedule.py` |
+| D2 | `equipment_schedule.py`: `build_schedule(conn, block_name)` → list of attribute dicts |
+| D3 | Export to CSV/JSON |
+| D4 | Tests |
+
+#### Phase E — QUERY Verb Extensions (C++ side, if needed)
+| Verb | Purpose | Priority |
+|------|---------|---------|
+| `QUERY ROOM AREA layer` | Total area of all rooms on a layer | Medium |
+| `QUERY BLOCK COUNT name` | Count of a named block in model space | Low |
+| `QUERY EXTENTS` | Model-space bounding box | Low |
+| `QUERY ATTRIB block tag` | All attribute values for a given tag across all INSERTs | Medium |
+
+### AEC Coding Conventions
+- All AEC calculation functions are **pure Python** — no C++ changes needed.
+- Input units: the `_units.py` module normalises everything to SI at the boundary; internal AEC calculations use SI.
+- All functions accept a `PipeConnection` as first argument so they can be driven from `test_aec.py` against the live app.
+- Engineering constants (ASHRAE tables, IES LLF defaults, SMACNA velocity limits) live as `dict` or `dataclass` constants at module top — not hardcoded in function bodies.
+- New pytest files follow the `test_<module>.py` naming convention and use the same `fixture_drawing` module-scoped fixture pattern as `test_pipe.py`.
 
 ## Dynamic Input Cursor Tooltip
 

@@ -1,11 +1,11 @@
 #include "Stdafx.h"
 
+#include <cmath>
 #include <cstdint>
 
 #include "AeSys.h"
 #include "AeSysDoc.h"
 #include "AeSysView.h"
-#include "EoMsDraw.h"
 #include "EoDb.h"
 #include "EoDbConic.h"
 #include "EoDbGroup.h"
@@ -18,6 +18,7 @@
 #include "EoGePoint3d.h"
 #include "EoGeVector3d.h"
 #include "EoGsRenderState.h"
+#include "EoMsDraw.h"
 #include "Resource.h"
 
 // draw-mode handlers alias DrawModeState::Points() as a local `pts` reference to keep the body unchanged from when
@@ -192,11 +193,35 @@ void AeSysView::OnDrawModeReturn() {
       if (numberOfPoints == 1) { return; }
 
       if (pts[numberOfPoints - 1] == cursorPosition) {
-        app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
-        return;
+        // Cursor coincides with the last accumulated point.
+        // When triggered interactively this means the user double-clicked the
+        // same spot — reject.  When triggered via DRAWRETURN from the CLI the
+        // cursor is simply parked at the last injected coordinate; if enough
+        // points are already present, commit without appending a duplicate.
+        if (numberOfPoints < 3) {
+          app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
+          return;
+        }
+        // Fall through with existing pts — no new point added.
+      } else {
+        cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
+        pts.Add(cursorPosition);
       }
-      cursorPosition = SnapPointToAxis(pts[numberOfPoints - 1], cursorPosition);
-      pts.Add(cursorPosition);
+      // Guard against a degenerate (zero-area / collinear) polygon. EoDbPolygon with all collinear vertices produces a
+      // zero-area primitive that renders as a line and causes problems in area queries.
+      {
+        const auto n = pts.GetSize();
+        double signedArea = 0.0;
+        for (INT_PTR i = 0; i < n; ++i) {
+          const EoGePoint3d& a = pts[i];
+          const EoGePoint3d& b = pts[(i + 1) % n];
+          signedArea += a.x * b.y - b.x * a.y;
+        }
+        if (std::abs(signedArea * 0.5) < Eo::geometricTolerance) {
+          app.AddStringToMessageList(IDS_MSG_PTS_COINCIDE);
+          return;
+        }
+      }
       group = new EoDbGroup(new EoDbPolygon(pts));
       break;
 

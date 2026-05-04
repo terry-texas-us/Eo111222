@@ -626,6 +626,7 @@
     <Image Include="res\Icons\AeSys.ico" />
     <Image Include="res\Icons\output_wnd.ico" />
     <Image Include="res\Icons\output_wnd_hc.ico" />
+    <Image Include="res\Icons\PegAEsys.ico" />
     <Image Include="res\Icons\properties_wnd.ico" />
     <Image Include="res\Icons\properties_wnd_hc.ico" />
     <Image Include="res\Toolbar Bitmaps\BlockEditLayout.bmp" />

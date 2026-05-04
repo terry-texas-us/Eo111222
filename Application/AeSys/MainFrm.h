@@ -93,6 +93,10 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM name);
   afx_msg LRESULT OnPipeCommand(WPARAM wp, LPARAM lp);
 
+  /// @brief Handles QUERY verb pipe requests and returns a JSON payload via ctx->responseUtf8.
+  /// @return true when the query was recognised and ctx->responseUtf8 was filled; false otherwise.
+  bool HandleQueryCommand(EoNamedPipeServer::CommandContext* ctx, const std::wstring& args);
+
   DECLARE_MESSAGE_MAP()
 
   BOOL OnShowPopupMenu(CMFCPopupMenu* pMenuPopup) override;

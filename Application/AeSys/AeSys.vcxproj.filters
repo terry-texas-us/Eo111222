@@ -469,6 +469,7 @@
     <Image Include="res\Toolbar Bitmaps\TextEditStyle.bmp" />
     <Image Include="res\Toolbar Bitmaps\LayerManageButton.bmp" />
     <Image Include="res\Toolbar Bitmaps\BlockEditLayout.bmp" />
+    <Image Include="res\Icons\PegAEsys.ico" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="AeSys.manifest" />

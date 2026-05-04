@@ -72,9 +72,9 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\Icons\\AeSys.ico"
+IDR_MAINFRAME           ICON                    "res\\Icons\\PegAEsys.ico"
 
-IDR_PEGTYPE             ICON                    "res\\Icons\\AeSys.ico"
+IDR_PEGTYPE             ICON                    "res\\Icons\\PegAEsys.ico"
 
 IDI_OUTPUT_WND_HC       ICON                    "res\\Icons\\output_wnd_hc.ico"
 
