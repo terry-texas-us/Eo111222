@@ -24,9 +24,7 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
-#ifdef USING_DDE
 #include "ddeGItms.h"
-#endif
 
 EoDbLine::EoDbLine(const EoGePoint3d& begin, const EoGePoint3d& end) : EoDbPrimitive(), m_line{begin, end} {}
 
@@ -149,10 +147,8 @@ void EoDbLine::AddReportToMessageList(const EoGePoint3d& point) {
   app.SetEngagedLength(length);
   app.SetEngagedAngle(angle);
 
-#ifdef USING_DDE
-  dde::PostAdvise(dde::EngLenInfo);
-  dde::PostAdvise(dde::EngAngZInfo);
-#endif
+dde::PostAdvise(dde::EngLenInfo);
+dde::PostAdvise(dde::EngAngZInfo);
 }
 
 void EoDbLine::FormatExtra(CString& str) {

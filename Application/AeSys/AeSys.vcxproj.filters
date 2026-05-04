@@ -173,6 +173,7 @@
     <ClCompile Include="EoCommandRegistry.cpp" />
     <ClCompile Include="EoCommandTokenizer.cpp" />
     <ClCompile Include="EoDynInputTooltip.cpp" />
+    <ClCompile Include="EoNamedPipeServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AeSys.h" />
@@ -339,6 +340,8 @@
     <ClInclude Include="EoCommandTokenizer.h" />
     <ClInclude Include="EoCommandLineMessages.h" />
     <ClInclude Include="EoDynInputTooltip.h" />
+    <ClInclude Include="EoNamedPipeServer.h" />
+    <ClInclude Include="EoPipeProtocol.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="lex_rules.l" />

@@ -118,6 +118,87 @@ All `PromptString()` literals **must** use plain ASCII only — no Unicode em da
 - `ZOOM EXTENTS` as a two-token command is not yet parsed; use `ZE` or `EXTENTS` instead.
 - Dynamic input tooltip field edits (tabbing between X/Y or Distance/Angle fields to type values) are deferred; the tooltip is currently display-only.
 
+## Python Scripting Integration
+
+### Architecture Overview
+AeSys exposes a **named-pipe command channel** at `\\.\pipe\AeSys` that allows Python scripts (and AI agents) to drive the full CLI command set and, in future phases, query geometric data back as JSON. This is the primary extension surface for AEC engineering calculations — HVAC sizing, lighting design, area schedules, code compliance — without modifying the C++ core.
+
+### Design Philosophy
+- **AeSys owns geometry**: spatial relationships, layers, blocks, attributes, primitive data.
+- **Python owns engineering**: calculations, standards tables (ASHRAE, IES, SMACNA), aggregation, reporting, export.
+- **The pipe is a narrow interface**: CLI commands flow in; OK/ERROR acknowledgements and JSON query results flow out.
+- **AI agents are first-class consumers**: the Python layer is intentionally scripted so agents can write, test, and iterate AEC modules in a single conversation without a C++ rebuild cycle.
+
+### Transport — Named Pipe (stable, use this)
+```
+\\.\pipe\AeSys          line-based UTF-8 protocol
+```
+One request per connection (connect → send → receive → disconnect). Protocol defined in `Application\EoSys\EoPipeProtocol.h`.
+
+**Response envelope:**
+```
+OK                          command accepted
+OK value=<string>           command accepted with return value
+ERROR code=<n> message=<m>  command failed
+```
+
+**Current dispatch path:**
+`EoNamedPipeServer` (background thread) → `WM_APP_PIPE_COMMAND` → `MainFrm::OnPipeCommand` → `EoMfOutputDockablePane::ExecuteCommandLine` → `EoMfCommandTab::ExecuteCommand` → CLI pipeline.
+
+### DDE — Excel Link Only (do not extend for Python)
+`Core Libraries\EoDdeLib` provides a 2-way DDE link to Excel (live item serving, advise/poke, execute). It remains Unicode/wide (`<CharacterSet>Unicode</CharacterSet>`; `CP_WINUNICODE` string handles; execute payloads read as `wchar_t*`). **Do not use DDE as the Python integration transport** — it is deprecated Win32 infrastructure. The Excel link is its sole purpose going forward.
+
+### Python Package Layout
+```
+Tools\
+  aespy\
+    __init__.py          # connect(), AeSysConnection class
+    _connection.py       # pipe transport (PipeConnection); DDE client (DdeConnection, for Excel testing only)
+    _queries.py          # query_room(), query_block(), query_trap() — to be implemented
+    _units.py            # unit conversion helpers — to be implemented
+    aec\
+      hvac.py            # cfm_required(), duct_size() — to be implemented
+      lighting.py        # fixture_count(), connected_load() — to be implemented
+      area_schedule.py   # aggregate rooms into schedule — to be implemented
+  test_pipe.py           # pytest suite — passing
+  test_dde.py            # pytest suite — passing (DDE Excel path validation)
+```
+
+### Pipe Protocol Extension — QUERY Verb (next phase)
+Add a `QUERY` verb alongside `CLI` in `MainFrm::OnPipeCommand`:
+```
+QUERY ROOM 24.1,18.6        →  OK value={"type":"room","area":342.5,...}
+QUERY BLOCK AT 24.1,18.6    →  OK value={"type":"block","name":"2x4-TROFFER",...}
+QUERY TRAP                  →  OK value={"groups":3,"total_area":1240.0,...}
+QUERY LAYER Floor Plan       →  OK value={"primitives":47,"visible":true,...}
+```
+JSON responses are hand-rolled `CString` formatting on the C++ side — no external JSON library needed for the shallow, flat structures required by AEC queries.
+
+### AEC Query Roadmap
+| Phase | Work | Complexity |
+|-------|------|-----------|
+| 1 | `QUERY TRAP` — return trap contents, area, layer breakdown | Low — data already computed |
+| 2 | `QUERY BLOCK AT x,y` — hit-test, return block name + ATTRIB tag/values | Low — `SelectGroupAndPrimitive` + cast |
+| 3 | `QUERY ROOM x,y` — find enclosing closed polygon, area + perimeter | Medium — needs closed-boundary search |
+| 4 | `QUERY LAYER name` — primitive count, extents, visibility | Low |
+| 5 | Batch queries / layer-wide polygon enumeration | Medium |
+
+### Key Files
+| File | Role |
+|------|------|
+| `Application\EoSys\EoPipeProtocol.h` | Shared protocol constants, response builders/parsers |
+| `Application\EoSys\EoNamedPipeServer.h/.cpp` | Background pipe server; marshals to UI thread via `WM_APP_PIPE_COMMAND` |
+| `Application\EoSys\MainFrm.cpp` | `OnPipeCommand` — current CLI dispatch; future QUERY branch |
+| `Tools\aespy\_connection.py` | `PipeConnection` transport; `DdeConnection` (Excel only) |
+| `Tools\test_pipe.py` | Pipe integration tests — keep passing as regression baseline |
+| `Tools\test_dde.py` | DDE integration tests — keep passing as regression baseline |
+
+### Implementation Rules
+- Scene invalidation: `AddWorkLayerGroup` calls `UpdateAllViews` — newly inserted geometry is visible immediately.
+- Trap/hover lifetime: `RemoveGroupFromAllViews` clears trap membership and grip-hover state before removal — prevents stale pointer crashes in `DrawGripMarkersD2D`.
+- `DeleteAllTrappedGroups` snapshots the trap list before iterating to avoid mutation during removal.
+- DDE client in `_connection.py` uses Unicode DDEML APIs (`DdeInitializeW`, `DdeCreateStringHandleW`, `CP_WINUNICODE`) to match the Unicode C++ server.
+
 ## Dynamic Input Cursor Tooltip
 
 ### Architecture Overview

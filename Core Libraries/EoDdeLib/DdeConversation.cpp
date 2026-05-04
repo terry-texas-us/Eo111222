@@ -1,14 +1,16 @@
-﻿#include "dde.h"
+﻿#include <new>
+#include "dde.h"
 
 using namespace dde;
 
 // @brief Add a conversation to our list.
 bool dde::ConversationAdd(HCONV hConv, HSZ hszTopic) {
-  auto pCI = new CONVERSATIONINFO{};
+  auto pCI = new (std::nothrow) CONVERSATIONINFO{};
   if (!pCI) { return false; }
 
   pCI->hConv = hConv;
   pCI->hszTopicName = hszTopic;
+  DdeKeepStringHandle(ServerInfo.dwInstance, pCI->hszTopicName);  // keep our own reference
   pCI->pNext = ServerInfo.pConvList;
   ServerInfo.pConvList = pCI;
   return true;
@@ -38,6 +40,7 @@ bool dde::ConversationRemove(HCONV hConv, HSZ hszTopic) {
       } else {
         ServerInfo.pConvList = pCI->pNext;
       }
+      DdeFreeStringHandle(ServerInfo.dwInstance, pCI->hszTopicName);  // release our kept reference
       delete pCI;
       return true;
     }

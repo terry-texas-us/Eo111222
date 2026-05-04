@@ -74,6 +74,7 @@ ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
 ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, OnGetTabToolTip)
 ON_REGISTERED_MESSAGE(AFX_WM_RESETTOOLBAR, OnToolbarReset)
 #pragma warning(pop)
+ON_MESSAGE(EoNamedPipeServer::WM_APP_PIPE_COMMAND, &CMainFrame::OnPipeCommand)
 #pragma warning(push)
 #pragma warning(disable : 4191)
 ON_UPDATE_COMMAND_UI(ID_MDI_TABBED, OnUpdateMdiTabbed)
@@ -250,8 +251,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT createStruct) {
   // Shows the document name after thumbnail before the application name in a frame window title.
   ModifyStyle(0, FWS_PREFIXTITLE);
 
+  // Start the named-pipe automation server so Python scripts can drive the CLI
+  // without a pywin32 DDE dependency.
+  m_pipeServer.Start(GetSafeHwnd());
+
   return 0;
 }
+
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs) {
   if (!CMDIFrameWndEx::PreCreateWindow(cs)) { return FALSE; }
 
@@ -489,6 +495,7 @@ void CMainFrame::OnUpdateMdiTabbed(CCmdUI* pCmdUI) {
 }
 void CMainFrame::OnDestroy() {
   ATLTRACE2(traceGeneral, 3, L"CMainFrame::OnDestroy() - Entering\n");
+  m_pipeServer.Stop();
   PostQuitMessage(0);  // Force WM_QUIT message to terminate message loop
 }
 CString CMainFrame::GetPaneText(int index) {
@@ -670,11 +677,45 @@ void CMainFrame::SyncLayerCombo(const CString& layerName) {
   }
 }
 
+/// @brief UI-thread handler for WM_APP_PIPE_COMMAND messages sent by EoNamedPipeServer.
+/// Dispatches the command through the CLI pipeline and fills ctx->responseUtf8
+/// with a complete EoPipe protocol response line so the server thread can relay
+/// it verbatim to the Python client.
+LRESULT CMainFrame::OnPipeCommand(WPARAM, LPARAM lp) {
+    auto* ctx = reinterpret_cast<EoNamedPipeServer::CommandContext*>(lp);
+    if (!ctx) { return 0; }
+
+    // Validate pre-conditions that the server thread cannot check.
+    if (ctx->commandLine.empty()) {
+        ctx->responseUtf8 = EoPipe::ResponseOk();
+        return 0;
+    }
+
+    if (!IsWindow(m_hWnd)) {
+        ctx->responseUtf8 = EoPipe::ResponseError("INTERNAL", "main window destroyed");
+        return 0;
+    }
+
+    m_outputPane.ExecuteCommandLine(ctx->commandLine);
+
+    // ExecuteCommandLine is currently fire-and-forget: it dispatches through
+    // EoCommandRegistry which validates the verb before sending WM_COMMAND.
+    // Errors detectable at dispatch time are reported via AppendHistory but
+    // not yet returned as structured results.  Leave the response as OK here;
+    // a future iteration will route EoCommandRegistry::ExecuteResult back
+    // through this context when argFunctor-based commands support it.
+    ctx->responseUtf8 = EoPipe::ResponseOk();
+
+    return 0;
+}
 void CMainFrame::FocusCommandLine() {
   // Make sure the Output pane is visible before activating the Command tab.
   ShowPane(&m_outputPane, TRUE, FALSE, TRUE);
   m_outputPane.FocusCommandLine();
   SetCommandLineActive(true);
+}
+void CMainFrame::ExecuteCommandLine(const std::wstring& commandLine) {
+  m_outputPane.ExecuteCommandLine(commandLine);
 }
 
 void CMainFrame::SetCommandLineActive(bool active) {

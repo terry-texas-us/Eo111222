@@ -94,10 +94,8 @@ class AeSys : public CWinAppEx {
   Microsoft::WRL::ComPtr<ID2D1Factory> m_d2dFactory;
   Microsoft::WRL::ComPtr<IDWriteFactory> m_dwriteFactory;
 
-#ifdef USING_DDE
-  double m_ExtractedNumber{};
-  CString m_ExtractedString;
-#endif
+double m_ExtractedNumber{};
+CString m_ExtractedString;
 
  public:
   bool m_NodalModeAddGroups{true};
@@ -295,12 +293,10 @@ class AeSys : public CWinAppEx {
   afx_msg void OnModeLetter();
   afx_msg void OnModeRevise();
   afx_msg void OnTrapCommandsHighlight();
-#ifdef USING_DDE
-  double ExtractedNumber() { return m_ExtractedNumber; }
-  void SetExtractedNumber(double number) { m_ExtractedNumber = number; }
-  CString ExtractedString() { return m_ExtractedString; }
-  void SetExtractedString(const CString& string) { m_ExtractedString = string; }
-#endif
+[[nodiscard]] double ExtractedNumber() const noexcept { return m_ExtractedNumber; }
+void SetExtractedNumber(double number) noexcept { m_ExtractedNumber = number; }
+[[nodiscard]] CString ExtractedString() const noexcept { return m_ExtractedString; }
+void SetExtractedString(const CString& string) noexcept { m_ExtractedString = string; }
  protected:
   DECLARE_MESSAGE_MAP()
  public:

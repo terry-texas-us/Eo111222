@@ -356,6 +356,7 @@ void AeSysDoc::AddWorkLayerGroup(EoDbGroup* group) {
   RegisterGroupHandles(group);
   m_workLayer->AddTail(group);
   AddGroupToAllViews(group);
+  UpdateAllViews(nullptr, EoDb::kGroupSafe, group);
   AeSysView::GetActiveView()->UpdateStateInformation(AeSysView::WorkCount);
   if (IsEditingTracing()) { m_tracingEditDirty = true; }
   SetModifiedFlag(TRUE);

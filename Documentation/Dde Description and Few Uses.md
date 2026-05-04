@@ -98,7 +98,7 @@ EoDdeLib uses two callback function pointers (stored in `SERVERINFO`) to avoid d
 
 ### Unicode Conventions
 
-- All DDE string handles are created with **`CP_WINUNICODE`** (not `CP_WINANSI`), matching the wide-string (`LPCWSTR`) parameters throughout.
+- All DDE string handles are created with **`CP_WINUNICODE`** (not `CP_WINANSI`), matching the wide-string (`const wchar_t*`) parameters throughout.
 - All DDE data handles use **`CF_UNICODETEXT`** (not `CF_TEXT`). Byte sizes passed to `DdeCreateDataHandle` and `DdeAddData` account for `sizeof(wchar_t)` per character.
 - The format lists (`SysFormatList`, `MyFormats`) and the standard format name table (`CFNames`) advertise `CF_UNICODETEXT`.
 

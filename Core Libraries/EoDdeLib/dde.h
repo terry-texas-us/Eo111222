@@ -9,10 +9,8 @@
 #endif
 
 #include <Windows.h>
-
 #include <cstdint>
 #include <ddeml.h>
-#include <tchar.h>
 
 // String names for some standard DDE strings not defined in DDEML.H
 
@@ -20,7 +18,24 @@ namespace dde {
 // Some constants
 const std::uint16_t MAXFORMATS = 128;  // max no of CF formats we will list
 const std::uint16_t MAXOPS = 128;  // max no of opcodes we can execute
-const std::uint16_t MAXRESULTSIZE = 256;  // largest result string returned
+const std::uint16_t MAXRESULTSIZE = 1024;  // largest result string returned
+
+/// @brief Typed result from ParseCmd — allows callers to distinguish specific
+/// failure modes rather than testing a bare bool and reading a raw error string.
+enum class ParseResult {
+  Ok,
+  MissingOpenBracket,  ///< '[' not found before command name
+  UnknownCommand,       ///< command name not in the topic's command list
+  OpTableOverflow,      ///< internal MAXOPS limit reached
+  TooManyArguments,     ///< caller supplied more args than uiMaxArgs
+  TooFewArguments,      ///< caller supplied fewer args than uiMinArgs
+  MissingCloseParen,    ///< ')' not found after argument list
+  MissingCloseBracket,  ///< ']' not found after ')'
+};
+
+/// @brief Produce a short ASCII label for a ParseResult value suitable for
+/// embedding in a structured error reply (e.g. "ERROR:TooFewArguments").
+const wchar_t* ParseResultLabel(ParseResult r) noexcept;
 
 // Definition for a DDE Request processing function
 typedef HDDEDATA(REQUESTFN)(UINT wFmt, HSZ hszTopic, HSZ hszItem);
@@ -37,19 +52,19 @@ typedef EXECFN *PEXECFN;
 // Structure used to hold a clipboard id and its text name
 typedef struct _CFTAGNAME {
   std::uint16_t wFmt;
-  LPCWSTR pszName;
+  const wchar_t *pszName;
 } CFTAGNAME, *PCFTAGNAME;
-CFTAGNAME CFNames[];
+extern CFTAGNAME CFNames[];
 
 // Definition for a DDE execute command procession function
-typedef bool(EXECCMDFN)(
-    struct _TOPICINFO *pTopic, LPTSTR pszResultString, UINT uiResultSize, UINT uiNargs, LPTSTR *ppArgs);
+typedef bool(
+    EXECCMDFN)(struct _TOPICINFO *pTopic, wchar_t *pszResultString, UINT uiResultSize, UINT uiNargs, wchar_t **ppArgs);
 typedef EXECCMDFN *PEXECCMDFN;
 
 // Structure used to store information on a DDE item
 typedef struct _ITEMINFO {
   struct _ITEMINFO *pNext;  // pointer to the next item
-  LPCWSTR pszItemName;  // pointer to its string name
+  const wchar_t* itemName;  // pointer to its name
   HSZ hszItemName;  // DDE string handle for the name
   struct _TOPICINFO *pTopic;  // pointer to the topic it belongs to
   LPWORD pFormatList;  // ptr to null term list of CF format words.
@@ -62,7 +77,7 @@ typedef struct _ITEMINFO {
 typedef struct _EXECCMDFNINFO {
   struct _EXECCMDFNINFO *pNext;  // pointer to the next item
   struct _TOPICINFO *pTopic;  // pointer to the topic it belongs to
-  LPCWSTR pszCmdName;  // The name of the command
+  const wchar_t* pszCmdName;  // The name of the command
   PEXECCMDFN pFn;  // A pointer to the function
   UINT uiMinArgs;  // min number of args
   UINT uiMaxArgs;  // max number of args
@@ -79,7 +94,7 @@ typedef struct _DDE_CONVERSATIONINFO {
 // Structure used to store information on a DDE topic
 typedef struct _TOPICINFO {
   struct _TOPICINFO *pNext;  // pointer to the next topic
-  LPCWSTR pszTopicName;  // pointer to its string name
+  const wchar_t* pszTopicName;  // pointer to its string name
   HSZ hszTopicName;  // DDE string handle for the name
   PITEMINFO pItemList;  // pointer to its item list
   PEXECFN pfnExec;  // pointer to its DDE Execute processor
@@ -96,7 +111,7 @@ typedef POP *PPOP;
 /// @brief Callback invoked when DDE initialization fails.
 /// serviceNameForDisplay The service name string for display in the error message.
 /// hMainWindow The main window handle to destroy on fatal failure, or nullptr.
-typedef void(INITERRORFN)(LPCWSTR serviceNameForDisplay, HWND hMainWindow);
+typedef void(INITERRORFN)(const wchar_t* serviceNameForDisplay, HWND hMainWindow);
 typedef INITERRORFN *PINITERRORFN;
 
 /// @brief Fallback callback invoked when a topic has no exec function and no command list.
@@ -106,7 +121,7 @@ typedef FALLBACKEXECFN *PFALLBACKEXECFN;
 
 // Structure used to store information on a DDE server which has only one service
 typedef struct _SERVERINFO {
-  LPCWSTR lpszServiceName;  // pointer to the service string name
+  const wchar_t* lpszServiceName;  // pointer to the service string name
   HSZ hszServiceName;  // DDE string handle for the name
   PTOPICINFO pTopicList;  // pointer to the topic list
   DWORD dwInstance;  // DDE Instance value
@@ -119,11 +134,10 @@ typedef struct _SERVERINFO {
 extern SERVERINFO ServerInfo;
 extern std::uint16_t SysFormatList[];
 extern std::uint16_t MyFormats[];
-extern DWORD dwInstance;  // DDE Instance value
 
-void AddCommands(LPCWSTR);
+void AddCommands(const wchar_t*);
 void AddFormatsToList(LPWORD pMain, int iMax, LPWORD pList);
-void AddSystemTopic(LPCWSTR, LPWORD);
+void AddSystemTopic(const wchar_t*, LPWORD);
 
 bool ConversationAdd(HCONV hConv, HSZ hszTopic);
 PCONVERSATIONINFO ConversationFind(HSZ hszTopic);
@@ -132,32 +146,35 @@ bool ConversationRemove(HCONV hConv, HSZ hszTopic);
 bool DoCallback(UINT wType, UINT wFmt, HCONV hConv, HSZ hsz1, HSZ hsz2, HDDEDATA hData, HDDEDATA *phReturnData);
 HDDEDATA DoWildConnect(HSZ hszTopic);
 
-PEXECCMDFNINFO ExecCmdAdd(LPCWSTR pszTopic, LPCWSTR pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs);
-PEXECCMDFNINFO ExecCmdFind(PTOPICINFO pTopic, LPCWSTR lpszCmd);
-bool ExecCmdRemove(LPCWSTR pszTopic, LPCWSTR pszCmdName);
+PEXECCMDFNINFO ExecCmdAdd(const wchar_t* pszTopic, const wchar_t* pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs);
+PEXECCMDFNINFO ExecCmdFind(PTOPICINFO pTopic, const wchar_t* lpszCmd);
+bool ExecCmdRemove(const wchar_t* pszTopic, const wchar_t* pszCmdName);
 
-PITEMINFO ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD pFormatList, PREQUESTFN lpReqFn, PPOKEFN lpPokeFn);
+PITEMINFO ItemAdd(const wchar_t* lpszTopic, const wchar_t* lpszItem, LPWORD pFormatList, PREQUESTFN lpReqFn, PPOKEFN lpPokeFn);
 PITEMINFO ItemFind(PTOPICINFO pTopic, HSZ hszItem);
-PITEMINFO ItemFind(PTOPICINFO pTopic, LPCWSTR lpszItem);
-bool ItemRemove(LPCWSTR lpszTopic, LPCWSTR lpszItem);
+PITEMINFO ItemFind(PTOPICINFO pTopic, const wchar_t* lpszItem);
+bool ItemRemove(const wchar_t* lpszTopic, const wchar_t* lpszItem);
 
-PTOPICINFO TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke);
+PTOPICINFO TopicAdd(const wchar_t* lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke);
 PTOPICINFO TopicFind(HSZ hszName);
-PTOPICINFO TopicFind(LPCWSTR lpszName);
-bool TopicRemove(LPCWSTR lpszTopic);
+PTOPICINFO TopicFind(const wchar_t* lpszName);
+bool TopicRemove(const wchar_t* lpszTopic);
 
-LPTSTR GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize);
-HDDEDATA MakeCFText(UINT, LPTSTR, HSZ);
+wchar_t *GetCFNameFromId(std::uint16_t wFmt, wchar_t *lpBuf, int iSize);
+HDDEDATA MakeCFText(UINT, const wchar_t*, HSZ);
 HDDEDATA MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszItem);
-bool ParseCmd(LPTSTR *ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT uiErrorSize, PPOP pOpTable, UINT uiNops,
-    LPTSTR pArgBuf);
+ParseResult ParseCmd(wchar_t **ppszCmdLine,
+    PTOPICINFO pTopic,
+    PPOP pOpTable,
+    UINT uiOpTableSize,
+    wchar_t *pArgBuf);
 void PostAdvise(PITEMINFO pItemInfo);
 bool ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData);
-PEXECCMDFNINFO ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR *ppStr);
-bool Initialize(LPCWSTR serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec);
+PEXECCMDFNINFO ScanForCommand(PEXECCMDFNINFO pCmdInfo, wchar_t **ppStr);
+bool Initialize(const wchar_t* serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec);
 HDDEDATA WINAPI StdCallback(UINT, UINT, HCONV, HSZ, HSZ, HDDEDATA, DWORD, DWORD);
 HDDEDATA SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem);
-bool SysResultExecCmd(PTOPICINFO pTopic, LPTSTR pszResult, UINT uiResultSize, UINT uiNargs, LPTSTR *ppArgs);
+bool SysResultExecCmd(PTOPICINFO pTopic, wchar_t *pszResult, UINT uiResultSize, UINT uiNargs, wchar_t **ppArgs);
 HDDEDATA TopicReqFormats(UINT wFmt, HSZ hszTopic, HSZ hszItem);
 void Uninitialize();
 }  // namespace dde

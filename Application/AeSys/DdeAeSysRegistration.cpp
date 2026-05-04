@@ -1,6 +1,5 @@
 #include "Stdafx.h"
 
-#ifdef USING_DDE
 #include "AeSys.h"
 #include "Resource.h"
 #include "dde.h"
@@ -30,11 +29,6 @@ static void OnDdeFallbackExec(HDDEDATA hData) {
 void dde::RegisterAeSysTopics() {
   if (!dde::Initialize(L"AeSys", OnDdeInitError, app.GetSafeHwnd(), OnDdeFallbackExec)) { return; }
 
-  // System topic execute commands
-  ExecCmdAdd(SZDDESYS_TOPIC, L"TracingOpen", ExecTracingOpen, 1, 2);
-  ExecCmdAdd(SZDDESYS_TOPIC, L"TracingMap", ExecTracingMap, 1, 2);
-  ExecCmdAdd(SZDDESYS_TOPIC, L"TracingView", ExecTracingView, 1, 2);
-
   // General topic items
   DimAngZInfo = ItemAdd(L"General", L"DimAngZ", MyFormats, DimAngZRequest, DimAngZPoke);
   DimLenInfo = ItemAdd(L"General", L"DimLen", MyFormats, DimLenRequest, DimLenPoke);
@@ -50,21 +44,7 @@ void dde::RegisterAeSysTopics() {
   // Commands topic
   TopicAdd(L"Commands", 0, 0, 0);
 
-  ExecCmdAdd(L"Commands", L"TracingBlank", ExecTracingBlank, 1, 2);
-  ExecCmdAdd(L"Commands", L"TracingMap", ExecTracingMap, 1, 2);
+  ExecCmdAdd(L"Commands", L"CLI", ExecCLICommand, 1, 1);
   ExecCmdAdd(L"Commands", L"TracingOpen", ExecTracingOpen, 1, 2);
-  ExecCmdAdd(L"Commands", L"TracingView", ExecTracingView, 1, 2);
-  ExecCmdAdd(L"Commands", L"FileGet", ExecFileGet, 1, 2);
-  ExecCmdAdd(L"Commands", L"GotoPoint", ExecGotoPoint, 1, 1);
-  ExecCmdAdd(L"Commands", L"Line", ExecLine, 1, 1);
-  ExecCmdAdd(L"Commands", L"Pen", ExecPen, 1, 1);
-  ExecCmdAdd(L"Commands", L"Note", ExecNote, 1, 1);
-  ExecCmdAdd(L"Commands", L"Send", ExecSend, 1, 1);
-  ExecCmdAdd(L"Commands", L"SetPoint", ExecSetPoint, 1, 1);
-  ExecCmdAdd(L"Commands", L"DimAngZ", ExecDA, 1, 1);
-  ExecCmdAdd(L"Commands", L"DimLen", ExecDL, 1, 1);
-  ExecCmdAdd(L"Commands", L"Scale", ExecScale, 1, 1);
-  ExecCmdAdd(L"Commands", L"Fill", ExecFill, 1, 1);
-  ExecCmdAdd(L"Commands", L"NoteHT", ExecNoteHT, 1, 1);
+  ExecCmdAdd(L"Commands", L"TracingGet", ExecTracingGet, 1, 2);
 }
-#endif

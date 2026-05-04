@@ -562,6 +562,20 @@ afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
   void AddGroups(EoDbGroupList* groups) { return m_VisibleGroupList.AddTail(groups); }
   auto RemoveGroup(EoDbGroup* group) { return m_VisibleGroupList.Remove(group); }
   void RemoveAllGroups() { m_VisibleGroupList.RemoveAll(); }
+  /// @brief Clears grip hover state if the hovered primitive belongs to the specified group.
+  /// Must be called whenever a group is removed from the document so that DrawGripMarkersD2D
+  /// cannot dereference a stale primitive pointer.
+  void ClearGripHoverIfInGroup(const EoDbGroup* group) noexcept {
+    if (m_gripHoveredPrimitive == nullptr || group == nullptr) { return; }
+    auto position = group->GetHeadPosition();
+    while (position != nullptr) {
+      if (group->GetNext(position) == m_gripHoveredPrimitive) {
+        m_gripHoveredPrimitive = nullptr;
+        m_gripHoveredControlPointIndex = -1;
+        return;
+      }
+    }
+  }
   void ResetView();
 
  private:

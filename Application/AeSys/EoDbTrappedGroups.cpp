@@ -179,16 +179,22 @@ void AeSysDoc::CopyTrappedGroupsToClipboard(AeSysView* view) {
 }
 
 void AeSysDoc::DeleteAllTrappedGroups() {
+  // Iterate a snapshot of the trap list — RemoveGroupFromAllViews now calls
+  // RemoveTrappedGroup internally, so we must not modify m_trappedGroups while
+  // iterating it.  Clear the trap first, then destroy the groups.
+  std::vector<EoDbGroup*> snapshot;
+  snapshot.reserve(static_cast<std::size_t>(m_trappedGroups.GetCount()));
   auto groupPosition = m_trappedGroups.GetHeadPosition();
-  while (groupPosition != nullptr) {
-    auto* group = m_trappedGroups.GetNext(groupPosition);
+  while (groupPosition != nullptr) { snapshot.push_back(m_trappedGroups.GetNext(groupPosition)); }
+  m_trappedGroups.RemoveAll();
+
+  for (auto* group : snapshot) {
     AnyLayerRemove(group);
     RemoveGroupFromAllViews(group);
     UnregisterGroupHandles(group);
     group->DeletePrimitivesAndRemoveAll();
     delete group;
   }
-  m_trappedGroups.RemoveAll();
 }
 
 void AeSysDoc::ExpandTrappedGroups() {

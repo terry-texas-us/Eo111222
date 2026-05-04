@@ -54,6 +54,9 @@ class EoMfOutputDockablePane : public CDockablePane {
   /// @brief Activates the Command tab and sets focus to the command edit control.
   void FocusCommandLine();
 
+  /// @brief Forwards a command string directly into the CLI execution pipeline.
+  void ExecuteCommandLine(const std::wstring& commandLine);
+
   /// @brief Applies the active color scheme to both output list boxes.
   void ApplyColorScheme();
 

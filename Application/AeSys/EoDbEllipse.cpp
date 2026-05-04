@@ -25,9 +25,6 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
-#ifdef USING_DDE
-#include "ddeGItms.h"
-#endif
 
 namespace {
 

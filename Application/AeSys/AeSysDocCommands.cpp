@@ -49,9 +49,7 @@
 #include "Lex.h"
 #include "Resource.h"
 
-#ifdef USING_DDE
 #include "ddeGItms.h"
-#endif
 
 // AeSysDoc commands
 
@@ -1074,10 +1072,8 @@ void AeSysDoc::OnPrimExtractNum() {
       app.WarningMessageBox(IDS_MSG_INVALID_NUMBER_EXTRACT);
       return;
     }
-#ifdef USING_DDE
-    app.SetExtractedNumber(value[0]);
-    dde::PostAdvise(dde::ExtNumInfo);
-#endif
+app.SetExtractedNumber(value[0]);
+dde::PostAdvise(dde::ExtNumInfo);
   }
 }
 
@@ -1100,10 +1096,8 @@ void AeSysDoc::OnPrimExtractStr() {
     }
     string += L" was extracted from drawing";
     app.AddStringToMessageList(string);
-#ifdef USING_DDE
-    app.SetExtractedString(string);
-    dde::PostAdvise(dde::ExtStrInfo);
-#endif
+app.SetExtractedString(string);
+dde::PostAdvise(dde::ExtStrInfo);
   }
   return;
 }

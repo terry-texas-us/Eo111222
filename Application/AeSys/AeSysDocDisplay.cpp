@@ -668,10 +668,17 @@ void AeSysDoc::RemoveAllGroupsFromAllViews() {
   }
 }
 void AeSysDoc::RemoveGroupFromAllViews(EoDbGroup* group) {
+  // Also remove from the trap and clear any stale grip hover in every view.
+  // This is the single chokepoint called by all undo/redo/execute removal paths,
+  // so clearing here prevents DrawGripMarkersD2D from walking freed primitives.
+  RemoveTrappedGroup(group);
   auto viewPosition = GetFirstViewPosition();
   while (viewPosition != nullptr) {
     auto* view = DYNAMIC_DOWNCAST(AeSysView, GetNextView(viewPosition));
-    if (view != nullptr) { view->RemoveGroup(group); }
+    if (view != nullptr) {
+      view->RemoveGroup(group);
+      view->ClearGripHoverIfInGroup(group);
+    }
   }
 }
 void AeSysDoc::ResetAllViews() {

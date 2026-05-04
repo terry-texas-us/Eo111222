@@ -43,7 +43,7 @@ class EoMfPrimitiveTooltip : public CWnd {
   struct Row {
     CString label;  ///< text before the ';'
     CString value;  ///< text after the ';'
-    bool isTitle;   ///< true for the first row (the Type field) — rendered with accent color
+    bool isTitle{};  ///< true for the first row (the Type field) — rendered with accent color
   };
 
   /// @brief Parses "Name;Value\t..." into m_rows.

@@ -28,13 +28,11 @@
 #include "MainFrm.h"
 #include "Resource.h"
 
-#ifdef USING_DDE
 #include "Dde.h"
 #include "ddeGItms.h"
 namespace dde {
 void RegisterAeSysTopics();
 }
-#endif
 
 ATOM WINAPI RegisterKeyPlanWindowClass(HINSTANCE instance);
 ATOM WINAPI RegisterPreviewWindowClass(HINSTANCE instance);
@@ -209,10 +207,8 @@ BOOL AeSys::InitInstance() {
   LoadHatchesFromFile(resourceFolder + L"Hatches\\DefaultSet.txt");
   // LoadPenColorsFromFile(ResourceFolder + L"Pens\\Colors\\Default.txt"));
 
-#ifdef USING_DDE
-  // Initialize DDE and register AeSys-specific topics, items, and commands
-  dde::RegisterAeSysTopics();
-#endif
+// Initialize DDE and register AeSys-specific topics, items, and commands
+dde::RegisterAeSysTopics();
 
   // This is the private data format used to pass EoGroups from one instance to another
   m_ClipboardFormatIdentifierForEoGroups = RegisterClipboardFormatW(L"EoGroups");
@@ -228,9 +224,7 @@ BOOL AeSys::InitInstance() {
 int AeSys::ExitInstance() {
   m_Options.Save();
 
-#ifdef USING_DDE
-  dde::Uninitialize();
-#endif
+dde::Uninitialize();
 
   ReleaseSimplexStrokeFont();
 

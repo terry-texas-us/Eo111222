@@ -28,10 +28,8 @@
 #include "AeSysState.h"
 #include "GripDragState.h"
 
-#ifdef USING_DDE
 #include "Dde.h"
 #include "DdeGItms.h"
-#endif
 
 void AeSysView::OnDraw(CDC* deviceContext) {
   ATLTRACE2(traceGeneral, 3, L"AeSysView<%p>::OnDraw(%08.8lx) +", this, deviceContext);
@@ -1257,11 +1255,9 @@ void AeSysView::DisplayOdometer() {
   }
   if (auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd())) { mainFrame->SetPaneText(0, position); }
 
-#ifdef USING_DDE
-  dde::PostAdvise(dde::RelPosXInfo);
-  dde::PostAdvise(dde::RelPosYInfo);
-  dde::PostAdvise(dde::RelPosZInfo);
-#endif
+dde::PostAdvise(dde::RelPosXInfo);
+dde::PostAdvise(dde::RelPosYInfo);
+dde::PostAdvise(dde::RelPosZInfo);
 }
 
 void AeSysView::UpdateStateInformation(EStateInformationItem item) {

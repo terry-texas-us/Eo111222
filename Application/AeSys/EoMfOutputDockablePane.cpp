@@ -79,6 +79,9 @@ void EoMfOutputDockablePane::FocusCommandLine() {
   if (tabIndex >= 0) { m_wndTabs.SetActiveTab(tabIndex); }
   m_CommandTab->FocusCommandEdit();
 }
+void EoMfOutputDockablePane::ExecuteCommandLine(const std::wstring& commandLine) {
+  if (m_CommandTab) { m_CommandTab->ExecuteCommand(commandLine); }
+}
 EoMfOutputListBox::EoMfOutputListBox() {}
 EoMfOutputListBox::~EoMfOutputListBox() {}
 void EoMfOutputListBox::SetColors(COLORREF background, COLORREF text) {

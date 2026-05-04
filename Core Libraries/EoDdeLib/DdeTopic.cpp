@@ -1,9 +1,10 @@
+#include <new>
 #include "ddeSys.h"
 
 using namespace dde;
 
 /// @brief Add a new topic and default processing for its item list and formats
-PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke) {
+PTOPICINFO dde::TopicAdd(const wchar_t* lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnRequest, PPOKEFN pfnPoke) {
   PTOPICINFO pTopic = TopicFind(lpszTopic);
 
   // See if we already have this topic
@@ -12,7 +13,7 @@ PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnReque
     pTopic->pfnRequest = pfnRequest;
     pTopic->pfnPoke = pfnPoke;
   } else {  // Create a new topic
-    pTopic = new TOPICINFO{};
+    pTopic = new (std::nothrow) TOPICINFO{};
     if (!pTopic) { return 0; }
 
     pTopic->pszTopicName = lpszTopic;
@@ -32,11 +33,11 @@ PTOPICINFO dde::TopicAdd(LPCWSTR lpszTopic, PEXECFN pfnExec, PREQUESTFN pfnReque
   return pTopic;
 }
 /// @brief Find a topic by its name
-PTOPICINFO dde::TopicFind(LPCWSTR lpszName) {
+PTOPICINFO dde::TopicFind(const wchar_t* lpszName) {
   PTOPICINFO pTopic = ServerInfo.pTopicList;
 
   while (pTopic) {
-    if (lstrcmpi(pTopic->pszTopicName, lpszName) == 0) { break; }
+    if (_wcsicmp(pTopic->pszTopicName, lpszName) == 0) { break; }
 
     pTopic = pTopic->pNext;
   }
@@ -56,14 +57,14 @@ PTOPICINFO dde::TopicFind(HSZ hszName) {
 /// @brief 
 // Remove a topic and all its items.  If there is an active conversation on the topic then disconnect it.
 /// 
-bool dde::TopicRemove(LPCWSTR lpszTopic) {
+bool dde::TopicRemove(const wchar_t* lpszTopic) {
   PTOPICINFO pTopic = ServerInfo.pTopicList;
   PTOPICINFO pPrevTopic = 0;
   PCONVERSATIONINFO pCI;
 
   // See if we have this topic by walking the list
   while (pTopic) {
-    if (lstrcmpi(pTopic->pszTopicName, lpszTopic) == 0) {
+    if (_wcsicmp(pTopic->pszTopicName, lpszTopic) == 0) {
       // Found it. Disconnect any active conversations on this topic
       pCI = ConversationFind(pTopic->hszTopicName);
       while (pCI) {
@@ -84,7 +85,7 @@ bool dde::TopicRemove(LPCWSTR lpszTopic) {
         }
       }
       while (pTopic->pItemList) {  // Free all the items in the topic
-        if (!ItemRemove(lpszTopic, pTopic->pItemList->pszItemName)) {  // some error
+        if (!ItemRemove(lpszTopic, pTopic->pItemList->itemName)) {  // some error
           return false;
         }
       }

@@ -24,9 +24,7 @@
 #include "EoGsRenderState.h"
 #include "Hatch.h"
 
-#ifdef USING_DDE
 #include "ddeGItms.h"
-#endif
 
 EoDb::PolygonStyle EoDbPolygon::sm_SpecialPolygonStyle = EoDb::PolygonStyle::Special;
 
@@ -646,10 +644,8 @@ void EoDbPolygon::AddReportToMessageList(const EoGePoint3d& point) {
 
     app.SetEngagedLength(dLen);
     app.SetEngagedAngle(dAng);
-#ifdef USING_DDE
-    dde::PostAdvise(dde::EngLenInfo);
-    dde::PostAdvise(dde::EngAngZInfo);
-#endif
+dde::PostAdvise(dde::EngLenInfo);
+dde::PostAdvise(dde::EngAngZInfo);
   }
 }
 

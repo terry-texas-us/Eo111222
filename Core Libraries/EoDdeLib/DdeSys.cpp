@@ -23,6 +23,7 @@ HDDEDATA dde::SysReqItems(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   }
 
   HDDEDATA hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, 0, 0, hszItem, wFmt, 0);  // Empty data object to fill
+  if (!hData) { return 0; }
   int cbOffset = 0;
   PITEMINFO pItem = pTopic->pItemList;
 
@@ -31,8 +32,8 @@ HDDEDATA dde::SysReqItems(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
       DdeAddData(hData, (LPBYTE)L"\t", sizeof(wchar_t), cbOffset);
       cbOffset += sizeof(wchar_t);
     }
-    cb = lstrlen(pItem->pszItemName) * sizeof(wchar_t);  // byte size of the item name
-    DdeAddData(hData, (LPBYTE)pItem->pszItemName, cb, cbOffset);
+    cb = static_cast<int>(wcslen(pItem->itemName)) * static_cast<int>(sizeof(wchar_t));  // byte size of the item name
+    DdeAddData(hData, (LPBYTE)pItem->itemName, cb, cbOffset);
     cbOffset += cb;
     pItem = pItem->pNext;
   }
@@ -75,6 +76,7 @@ HDDEDATA dde::SysReqTopics(UINT wFmt, HSZ, HSZ hszItem) {
   int cb;
 
   HDDEDATA hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, 0, 0, hszItem, wFmt, 0);  // Empty data object to fill
+  if (!hData) { return 0; }
   int cbOffset = 0;
   PTOPICINFO pTopic = ServerInfo.pTopicList;
 
@@ -83,7 +85,7 @@ HDDEDATA dde::SysReqTopics(UINT wFmt, HSZ, HSZ hszItem) {
       DdeAddData(hData, (LPBYTE)L"\t", sizeof(wchar_t), cbOffset);
       cbOffset += sizeof(wchar_t);
     }
-    cb = lstrlen(pTopic->pszTopicName) * sizeof(wchar_t);  // byte size of the topic name
+    cb = static_cast<int>(wcslen(pTopic->pszTopicName)) * static_cast<int>(sizeof(wchar_t));  // byte size of the topic name
     DdeAddData(hData, (LPBYTE)pTopic->pszTopicName, cb, cbOffset);
     cbOffset += cb;
     pTopic = pTopic->pNext;

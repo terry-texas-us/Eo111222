@@ -7,12 +7,12 @@ CheckOptions:
   - { key: readability-identifier-naming.LocalVariableCase,     value: camelBack }   # e.g., myLocalVar
   - { key: readability-identifier-naming.ParameterCase,         value: camelBack }   # e.g., myParam
   # - { key: readability-identifier-naming.ClassMemberCase,     value: camelBack }   # e.g., myMember (non-private)
-  # - { key: readability-identifier-naming.PrivateMemberCase,   value: camelBack }   # private members
-  # - { key: readability-identifier-naming.PrivateMemberPrefix, value: m_ }          # optional: m_myPrivateMember
+  - { key: readability-identifier-naming.PrivateMemberCase,   value: camelBack }     # private members
+  # - { key: readability-identifier-naming.PrivateMemberPrefix, value: m_ }            # optional: m_myPrivateMember
   # - { key: readability-identifier-naming.GlobalVariableCase,  value: camelBack }
   # - { key: readability-identifier-naming.StaticVariableCase,  value: camelBack }
   # - { key: readability-identifier-naming.ConstantCase,        value: UPPER_CASE }  # e.g., MY_CONST
-  - { key: readability-identifier-naming.GlobalConstantCase,    value: UPPER_CASE }  # e.g., MY_GLOBAL_CONST()
+  # - { key: readability-identifier-naming.GlobalConstantCase,    value: UPPER_CASE }  # e.g., MY_GLOBAL_CONST()
   # - { key: readability-identifier-naming.StaticConstantCase,  value: UPPER_CASE }  # static + anonymous namespace
   # - { key: readability-identifier-naming.ClassConstantCase,   value: UPPER_CASE }  # static constexpr in classes
   # - { key: readability-identifier-naming.EnumConstantCase,    value: UPPER_CASE }  # enum class values

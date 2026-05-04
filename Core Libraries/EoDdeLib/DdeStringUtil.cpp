@@ -1,9 +1,9 @@
-#include <cctype>
+#include <cwctype>
 
 #include "DdeStringUtil.h"
 
 wchar_t* dde::SkipWhiteSpace(wchar_t* inputLine) {
-  while (inputLine && *inputLine && isspace(*inputLine)) { inputLine++; }
+  while (inputLine && *inputLine && iswspace(*inputLine)) { inputLine++; }
 
   return inputLine;
 }
@@ -25,36 +25,49 @@ wchar_t* dde::ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBu
   wchar_t* pStart = *ppArgBuf;
   wchar_t* pOut = pStart;
 
-  bool bInQuotes = *pIn == '"';
+  bool bInQuotes = *pIn == L'"';
 
   if (bInQuotes) { pIn++; }
 
+  // If not inside a quoted string and the next character cannot start a token (delimiter, closing paren, comma, or
+  // end-of-string), report the terminator and return nullptr so the caller sees zero arguments rather than an empty
+  // string token. Quoted-empty "" still reaches the loop above and returns a valid (zero-length) arg, preserving the
+  // distinction between no-arg and explicit-empty-string.
+  if (!bInQuotes) {
+    const bool isTokenStart = *pIn != L'\0'
+        && (iswalnum(*pIn) || *pIn == L'_' || *pIn == L'$' || *pIn == L'.' || *pIn == L'-' || *pIn == L':'
+            || *pIn == L'\\');
+    if (!isTokenStart) {
+      *pszTerm = *pIn;
+      *ppStr = *pIn ? pIn + 1 : pIn;
+      return nullptr;
+    }
+  }
+
   do {
     if (bInQuotes) {
-      if ((*pIn == '"') && (*(pIn + 1) != '"')) {  // Skip over the quote
+      if ((*pIn == L'"') && (*(pIn + 1) != L'"')) {  // End of quoted string
         pIn++;
         break;
       }
-    } else if (isalnum(*pIn)) {
-      ;
-    } else {  // allow some peg specials
-      if (!(*pIn == '_' || *pIn == '$' || *pIn == '.' || *pIn == '-' || *pIn == ':' || *pIn == '\\')) { break; }
+    } else if (iswalnum(*pIn)) {
+      ;  // accepted as-is below
+    } else {  // allow path/coordinate specials in unquoted tokens
+      if (!(*pIn == L'_' || *pIn == L'$' || *pIn == L'.' || *pIn == L'-' || *pIn == L':' || *pIn == L'\\')) { break; }
     }
-    if ((*pIn == '"') && (*(pIn + 1) == '"')) {
-      // Skip the escaping first quote
-      pIn++;
-    }
-
-    if (*pIn == '\\' && *(pIn + 1) == '\\') {
-      // Skip the escaping backslash
-      pIn++;
+    if ((*pIn == L'"') && (*(pIn + 1) == L'"')) {
+      pIn++;  // Skip the escaping first quote of a doubled-quote sequence
     }
 
-    *pOut++ = *pIn++;  // the char to the arg buffer
+    if (*pIn == L'\\' && *(pIn + 1) == L'\\') {
+      pIn++;  // Skip the escaping backslash of a doubled-backslash sequence
+    }
+
+    *pOut++ = *pIn++;  // copy char to arg buffer
 
   } while (*pIn);
 
-  *pOut++ = '\0';  // Set up the terminating char and update the scan pointer
+  *pOut++ = L'\0';  // null-terminate and update scan pointer
   *pszTerm = *pIn;
   if (*pIn) {
     *ppStr = pIn + 1;
@@ -62,7 +75,7 @@ wchar_t* dde::ScanForString(wchar_t** ppStr, wchar_t* pszTerm, wchar_t** ppArgBu
     *ppStr = pIn;
   }
 
-  *ppArgBuf = pOut;  // Update the arg buffer to the next free bit
+  *ppArgBuf = pOut;  // advance arg buffer to next free slot
 
   return pStart;
 }

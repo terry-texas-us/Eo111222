@@ -24,9 +24,7 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
-#ifdef USING_DDE
 #include "ddeGItms.h"
-#endif
 
 std::uint16_t EoDbLabeledLine::sm_flags{};
 
@@ -154,10 +152,8 @@ void EoDbLabeledLine::AddReportToMessageList(const EoGePoint3d& point) {
 
   app.SetEngagedLength(length);
   app.SetEngagedAngle(angle);
-#ifdef USING_DDE
-  dde::PostAdvise(dde::EngLenInfo);
-  dde::PostAdvise(dde::EngAngZInfo);
-#endif
+dde::PostAdvise(dde::EngLenInfo);
+dde::PostAdvise(dde::EngAngZInfo);
 }
 
 void EoDbLabeledLine::FormatExtra(CString& str) {

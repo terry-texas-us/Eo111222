@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "EoDxfLineWeights.h"
+#include "EoNamedPipeServer.h"
 
 class AeSysView;
 #include "EoMfOutputDockablePane.h"
@@ -10,13 +11,11 @@ class AeSysView;
 #include "EoMfStatusBar.h"
 
 /// @brief Toolbar subclass that skips button state serialization.
-/// MFC's CMFCToolBar::SaveState/LoadState persists button images, combo items,
-/// and custom button state as opaque binary blobs in the registry. Any mismatch
-/// between saved and runtime state (schema change, DPI change, metric override)
-/// causes cascading corruption — lost icons, text-only labels, duplicated items.
-/// This subclass returns TRUE from both methods so MFC considers state handled
-/// but no registry I/O occurs. Buttons are rebuilt from resources and OnToolbarReset
-/// on every launch. Docking position is unaffected (managed by CDockingManager).
+/// MFC's CMFCToolBar::SaveState/LoadState persists button images, combo items, and custom button state as opaque binary
+/// blobs in the registry. Any mismatch between saved and runtime state (schema change, DPI change, metric override)
+/// causes cascading corruption — lost icons, text-only labels, duplicated items. This subclass returns TRUE from both
+/// methods so MFC considers state handled but no registry I/O occurs. Buttons are rebuilt from resources and
+/// OnToolbarReset on every launch. Docking position is unaffected (managed by CDockingManager).
 class EoMfStatelessToolBar : public CMFCToolBar {
  public:
   BOOL LoadState([[maybe_unused]] LPCTSTR profileName = nullptr,
@@ -31,11 +30,10 @@ class EoMfStatelessToolBar : public CMFCToolBar {
   }
 
   /// @brief Sets button and image sizes for both regular and locked modes.
-  /// CMFCToolBar::SetSizes() updates only m_sizeButton.
-  /// CMFCToolBar::GetButtonSize() returns m_sizeButtonLocked when m_bLocked is TRUE
-  /// (set by LoadToolBar with bLocked=TRUE), so SetSizes() alone has no effect on
-  /// locked toolbars. This method updates both so the size takes effect regardless
-  /// of locked state. bDontAdjust=TRUE defers layout to the caller's RecalcLayout.
+  /// CMFCToolBar::SetSizes() updates only m_sizeButton. CMFCToolBar::GetButtonSize() returns m_sizeButtonLocked when
+  /// m_bLocked is TRUE (set by LoadToolBar with bLocked=TRUE), so SetSizes() alone has no effect on locked toolbars.
+  /// This method updates both so the size takes effect regardless of locked state. bDontAdjust=TRUE defers layout to
+  /// the caller's RecalcLayout.
   void SetSizesAll(const CSize& buttonSize, const CSize& imageSize) {
     SetSizes(buttonSize, imageSize);
     SetLockedSizes(buttonSize, imageSize, TRUE);
@@ -73,6 +71,7 @@ class CMainFrame : public CMDIFrameWndEx {
   EoMfOutputDockablePane m_outputPane;
   EoMfPropertiesDockablePane m_propertiesPane;
   CMFCToolBarImages m_userImages;
+  EoNamedPipeServer m_pipeServer;  ///< Named-pipe automation server (\\\\.\\ \\pipe\\AeSys)
 
  protected:
   afx_msg int OnCreate(LPCREATESTRUCT createStruct);
@@ -92,6 +91,7 @@ class CMainFrame : public CMDIFrameWndEx {
   afx_msg LRESULT OnGetTabToolTip(WPARAM wp, LPARAM lp);
   afx_msg LRESULT OnToolbarReset(WPARAM toolbarResourceId, LPARAM lparam);
   afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM name);
+  afx_msg LRESULT OnPipeCommand(WPARAM wp, LPARAM lp);
 
   DECLARE_MESSAGE_MAP()
 
@@ -104,10 +104,9 @@ class CMainFrame : public CMDIFrameWndEx {
   BOOL CreateDockablePanes();
   void SetDockablePanesIcons();
 
-  /// @brief Measures the combo HWND closed height and re-applies SetSizes on all
-  /// application toolbars so icon-only and combo-containing toolbars report identical
-  /// row heights. Must be called after any operation that can reset button sizes
-  /// (LoadBitmap, LoadToolBar, docking state restore).
+  /// @brief Measures the combo HWND closed height and re-applies SetSizes on all application toolbars so icon-only and
+  /// combo-containing toolbars report identical row heights. Must be called after any operation that can reset button
+  /// sizes (LoadBitmap, LoadToolBar, docking state restore).
   void AdjustToolbarSizesToMatchCombos();
 
  public:
@@ -125,8 +124,8 @@ class CMainFrame : public CMDIFrameWndEx {
   /// @brief Propagates the active color scheme to docking panes and chrome.
   void ApplyColorScheme();
 
-  /// @brief Ensures all application toolbars are visible after docking state restore.
-  /// Safety net against corrupted or stale registry docking state blobs.
+  /// @brief Ensures all application toolbars are visible after docking state restore. Safety net against corrupted or
+  /// stale registry docking state blobs.
   void EnsureToolbarsVisible();
 
   /// @brief Synchronizes the toolbar pen-color combo box with the current ACI index.
@@ -146,6 +145,9 @@ class CMainFrame : public CMDIFrameWndEx {
 
   /// @brief Activates the Command tab in the Output pane and focuses the edit control.
   void FocusCommandLine();
+
+  /// @brief Forwards a command string directly into the CLI execution pipeline.
+  void ExecuteCommandLine(const std::wstring& commandLine);
 
   /// @brief Lights or extinguishes the CMD status bar indicator (pane 3).
   /// Call with active=true when the command edit gains focus; active=false on kill-focus.

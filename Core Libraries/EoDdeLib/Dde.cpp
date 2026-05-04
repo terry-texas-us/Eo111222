@@ -1,32 +1,62 @@
-﻿#include "dde.h"
-#include "ddeSys.h"
+﻿
+#include <cwchar>
+#include <cwctype>
+#include <new>
 
 #include "DdeStringUtil.h"
+#include "dde.h"
+#include "ddeSys.h"
 
 using namespace dde;
 
 // Standard format name lookup table
 // String names for standard Windows Clipboard formats
-CFTAGNAME dde::CFNames[] = {CF_TEXT, L"TEXT", CF_BITMAP, L"BITMAP", CF_METAFILEPICT, L"METAFILEPICT", CF_SYLK, L"SYLK",
-    CF_DIF, L"DIF", CF_TIFF, L"TIFF", CF_OEMTEXT, L"OEMTEXT", CF_DIB, L"DIB", CF_PALETTE, L"PALETTE", CF_PENDATA,
-    L"PENDATA", CF_RIFF, L"RIFF", CF_WAVE, L"WAVE", 0, 0};
+CFTAGNAME dde::CFNames[] = {CF_TEXT,
+    L"TEXT",
+    CF_BITMAP,
+    L"BITMAP",
+    CF_METAFILEPICT,
+    L"METAFILEPICT",
+    CF_SYLK,
+    L"SYLK",
+    CF_DIF,
+    L"DIF",
+    CF_TIFF,
+    L"TIFF",
+    CF_OEMTEXT,
+    L"OEMTEXT",
+    CF_DIB,
+    L"DIB",
+    CF_PALETTE,
+    L"PALETTE",
+    CF_PENDATA,
+    L"PENDATA",
+    CF_RIFF,
+    L"RIFF",
+    CF_WAVE,
+    L"WAVE",
+    0,
+    0};
 // Local data
 SERVERINFO dde::ServerInfo;
 // Format lists
 std::uint16_t dde::SysFormatList[] = {CF_UNICODETEXT, 0};
 std::uint16_t dde::MyFormats[] = {CF_UNICODETEXT, 0};
-// DDE Instance value
-DWORD dde::dwInstance = 0;
 
 /// @brief Initialize DDE server infrastructure: DDEML, service name, and system topic.
 /// App-specific topic/item/command registrations should be done by the caller after this returns true.
 /// @param serviceName The DDE service name to register.
 /// @param pfnInitError Callback invoked on initialization failure (may be nullptr to silently fail).
 /// @param hMainWindow Main window handle passed to pfnInitError for fatal shutdown.
-/// @param pfnFallbackExec Fallback handler for execute transactions on topics with no exec function and no command list (may be nullptr).
+/// @param pfnFallbackExec Fallback handler for execute transactions on topics with no exec function and no command list
+/// (may be nullptr).
 /// @return true if initialization succeeded, false on DDEML error.
-bool dde::Initialize(
-    LPCWSTR serviceName, PINITERRORFN pfnInitError, HWND hMainWindow, PFALLBACKEXECFN pfnFallbackExec) {
+bool dde::Initialize(const wchar_t* serviceName,
+    PINITERRORFN pfnInitError,
+    HWND hMainWindow,
+    PFALLBACKEXECFN pfnFallbackExec) {
+  if (ServerInfo.dwInstance != 0) { return true; }  // already initialized
+
   ServerInfo.pfnStdCallback = reinterpret_cast<PFNCALLBACK>(StdCallback);
   ServerInfo.pfnCustomCallback = 0;
   ServerInfo.pfnFallbackExec = pfnFallbackExec;
@@ -38,13 +68,25 @@ bool dde::Initialize(
     if (pfnInitError) { pfnInitError(serviceName, hMainWindow); }
     return false;
   }
-  dwInstance = ServerInfo.dwInstance;
-
   ServerInfo.lpszServiceName = serviceName;
   ServerInfo.hszServiceName = DdeCreateStringHandle(ServerInfo.dwInstance, serviceName, CP_WINUNICODE);
+  if (!ServerInfo.hszServiceName) {  // failed to intern the service name string
+    DdeUninitialize(ServerInfo.dwInstance);
+    ServerInfo.dwInstance = 0;
+    if (pfnInitError) { pfnInitError(serviceName, hMainWindow); }
+    return false;
+  }
 
   // Register the name of the service
-  DdeNameService(ServerInfo.dwInstance, ServerInfo.hszServiceName, (HSZ)0, DNS_REGISTER);
+  if (!DdeNameService(ServerInfo.dwInstance, ServerInfo.hszServiceName, (HSZ)0, DNS_REGISTER)) {
+    DdeFreeStringHandle(ServerInfo.dwInstance, ServerInfo.hszServiceName);
+    ServerInfo.hszServiceName = 0;
+    ServerInfo.lpszServiceName = nullptr;
+    DdeUninitialize(ServerInfo.dwInstance);
+    ServerInfo.dwInstance = 0;
+    if (pfnInitError) { pfnInitError(serviceName, hMainWindow); }
+    return false;
+  }
 
   // Add system topic items (library-portable)
   ItemAdd(SZDDESYS_TOPIC, SZDDESYS_ITEM_FORMATS, SysFormatList, SysReqFormats, 0);
@@ -62,6 +104,8 @@ void dde::Uninitialize() {
   DdeNameService(ServerInfo.dwInstance, ServerInfo.hszServiceName, 0, DNS_UNREGISTER);
   // Free the name handle
   DdeFreeStringHandle(ServerInfo.dwInstance, ServerInfo.hszServiceName);
+  ServerInfo.hszServiceName = 0;
+  ServerInfo.lpszServiceName = nullptr;
 
   // Remove all topics (frees HSZ handles, items, commands, and conversations)
   while (ServerInfo.pTopicList) { TopicRemove(ServerInfo.pTopicList->pszTopicName); }
@@ -73,10 +117,11 @@ void dde::Uninitialize() {
   // Clear callback pointers
   ServerInfo.pfnCustomCallback = 0;
   ServerInfo.pfnStdCallback = 0;
+  ServerInfo.pfnFallbackExec = nullptr;
 }
 // DDE callback function called from DDEML
-HDDEDATA WINAPI dde::StdCallback(
-    UINT wType, UINT wFmt, HCONV hConv, HSZ hsz1, HSZ hsz2, HDDEDATA hData, DWORD dwData1, DWORD dwData2) {
+HDDEDATA WINAPI
+dde::StdCallback(UINT wType, UINT wFmt, HCONV hConv, HSZ hsz1, HSZ hsz2, HDDEDATA hData, DWORD dwData1, DWORD dwData2) {
   HDDEDATA hDdeData = 0;
 
   switch (wType) {
@@ -116,8 +161,13 @@ HDDEDATA WINAPI dde::StdCallback(
   return (HDDEDATA)0;
 }
 // @brief Process a generic callback.
-bool dde::DoCallback(
-    UINT wType, UINT wFmt, HCONV hConv, HSZ hszTopic, HSZ hszItem, HDDEDATA hData, HDDEDATA* phReturnData) {
+bool dde::DoCallback(UINT wType,
+    UINT wFmt,
+    HCONV hConv,
+    HSZ hszTopic,
+    HSZ hszItem,
+    HDDEDATA hData,
+    HDDEDATA* phReturnData) {
   PTOPICINFO pTopic = TopicFind(hszTopic);
 
   if (!pTopic) {  // Don't know the topic
@@ -136,9 +186,7 @@ bool dde::DoCallback(
         return true;
       }
     } else {
-      if (ServerInfo.pfnFallbackExec) {
-        ServerInfo.pfnFallbackExec(hData);
-      }
+      if (ServerInfo.pfnFallbackExec) { ServerInfo.pfnFallbackExec(hData); }
       *phReturnData = (HDDEDATA)(DWORD)DDE_FACK;
       return true;
     }
@@ -169,7 +217,7 @@ bool dde::DoCallback(
   }
 
   PPOKEFN pfnPoke;
-  CONVINFO ci;
+  CONVINFO ci{};
   PREQUESTFN pfnRequest;
 
   switch (wType) {
@@ -229,7 +277,7 @@ void dde::AddFormatsToList(LPWORD pMain, int iMax, LPWORD pList) {
     pLast++;
     iCount++;
   }
-  while ((iCount < iMax) && *pList) {  // Walk the new list adding unique items if there is room
+  while ((iCount < iMax - 1) && *pList) {  // Walk the new list adding unique items if there is room (reserve one slot for terminator)
     pFmt = pMain;
     while (*pFmt) {
       if (*pFmt == *pList) {  // Already got this one
@@ -246,12 +294,12 @@ void dde::AddFormatsToList(LPWORD pMain, int iMax, LPWORD pList) {
   }
   *pLast = 0;  // Stick a null on the end to terminate the list
 }
-/// @brief 
+/// @brief
 /// Process a wild connect request. Since we only support one service, this is much simpler.
 /// If hszTopic is 0 we supply a list of all the topics we currently support.  If it's not 0,
 /// we supply a list of topics (zero or one items) which match the requested topic.
 /// The list is terminated by a 0 entry.
-/// 
+///
 HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
   PTOPICINFO pTopic;
   HDDEDATA hData;
@@ -288,6 +336,10 @@ HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
   }
 
   pHszPair = (PHSZPAIR)DdeAccessData(hData, 0);
+  if (!pHszPair) {  // DdeAccessData failed — release the data handle and bail
+    DdeFreeDataHandle(hData);
+    return (HDDEDATA)0;
+  }
   if (hszTopic == 0) {  // all the topics (includes the system topic)
     pTopic = ServerInfo.pTopicList;
     while (pTopic) {
@@ -307,8 +359,11 @@ HDDEDATA dde::DoWildConnect(HSZ hszTopic) {
 
   return hData;
 }
-PEXECCMDFNINFO dde::ExecCmdAdd(
-    LPCTSTR pszTopic, LPCTSTR pszCmdName, PEXECCMDFN pExecCmdFn, UINT uiMinArgs, UINT uiMaxArgs) {
+PEXECCMDFNINFO dde::ExecCmdAdd(const wchar_t* pszTopic,
+    const wchar_t* pszCmdName,
+    PEXECCMDFN pExecCmdFn,
+    UINT uiMinArgs,
+    UINT uiMaxArgs) {
   PEXECCMDFNINFO pCmd = 0;
 
   PTOPICINFO pTopic = TopicFind(pszTopic);
@@ -328,7 +383,7 @@ PEXECCMDFNINFO dde::ExecCmdAdd(
     pCmd->uiMinArgs = uiMinArgs;
     pCmd->uiMaxArgs = uiMaxArgs;
   } else {  // New command item
-    pCmd = new EXECCMDFNINFO{};
+    pCmd = new (std::nothrow) EXECCMDFNINFO{};
     if (!pCmd) { return 0; }
 
     pCmd->pszCmdName = pszCmdName;
@@ -342,23 +397,25 @@ PEXECCMDFNINFO dde::ExecCmdAdd(
 
     // If this was the first command added to the list, add the 'Result' command too.
     // This supports the Execute Control 1 protocol.
-
-    ExecCmdAdd(pszTopic, L"Result", SysResultExecCmd, 1, 1);
+    // Guard with ExecCmdFind so a caller-registered 'Result' handler is never overwritten.
+    if (!ExecCmdFind(pTopic, L"Result")) {
+      ExecCmdAdd(pszTopic, L"Result", SysResultExecCmd, 1, 1);
+    }
   }
   return pCmd;
 }
 /// @brief Find a DDE execute command from its string name.
-PEXECCMDFNINFO dde::ExecCmdFind(PTOPICINFO pTopic, LPCTSTR lpszCmd) {
+PEXECCMDFNINFO dde::ExecCmdFind(PTOPICINFO pTopic, const wchar_t* lpszCmd) {
   PEXECCMDFNINFO pCmd = pTopic->pCmdList;
 
   while (pCmd) {
-    if (lstrcmpi(pCmd->pszCmdName, lpszCmd) == 0) { break; }
+    if (_wcsicmp(pCmd->pszCmdName, lpszCmd) == 0) { break; }
 
     pCmd = pCmd->pNext;
   }
   return pCmd;
 }
-bool dde::ExecCmdRemove(LPCTSTR pszTopic, LPCTSTR pszCmdName) {
+bool dde::ExecCmdRemove(const wchar_t* pszTopic, const wchar_t* pszCmdName) {
   PTOPICINFO pTopic = TopicFind(pszTopic);
 
   if (!pTopic) {  // See if we have this topic
@@ -369,7 +426,7 @@ bool dde::ExecCmdRemove(LPCTSTR pszTopic, LPCTSTR pszCmdName) {
   PEXECCMDFNINFO pCmd = pTopic->pCmdList;
 
   while (pCmd) {  // Walk the topic item list looking for this cmd.
-    if (lstrcmpi(pCmd->pszCmdName, pszCmdName) == 0) {  // Found it.  Unlink it from the list.
+    if (_wcsicmp(pCmd->pszCmdName, pszCmdName) == 0) {  // Found it.  Unlink it from the list.
       if (pPrevCmd) {
         pPrevCmd->pNext = pCmd->pNext;
       } else {
@@ -386,13 +443,13 @@ bool dde::ExecCmdRemove(LPCTSTR pszTopic, LPCTSTR pszCmdName) {
   return false;  // We don't have that one
 }
 /// @brief Get the text name of a Clipboard format from its id
-LPTSTR dde::GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize) {
+wchar_t* dde::GetCFNameFromId(std::uint16_t wFmt, wchar_t* lpBuf, int iSize) {
   PCFTAGNAME pCTN = CFNames;
 
   // Try for a standard one first
   while (pCTN->wFmt) {
     if (pCTN->wFmt == wFmt) {
-      _tcsncpy_s(lpBuf, iSize, pCTN->pszName, iSize);
+      wcsncpy_s(lpBuf, iSize, pCTN->pszName, _TRUNCATE);
       return lpBuf;
     }
     pCTN++;
@@ -405,11 +462,16 @@ LPTSTR dde::GetCFNameFromId(std::uint16_t wFmt, LPTSTR lpBuf, int iSize) {
 }
 
 // Return a string in CF_UNICODETEXT format
-HDDEDATA dde::MakeCFText(UINT wFmt, LPTSTR lpszStr, HSZ hszItem) {
+HDDEDATA dde::MakeCFText(UINT wFmt, const wchar_t* string, HSZ hszItem) {
   if (wFmt != CF_UNICODETEXT) { return 0; }
 
-  return (DdeCreateDataHandle(
-      dwInstance, (LPBYTE)lpszStr, (lstrlen(lpszStr) + 1) * sizeof(wchar_t), 0, hszItem, CF_UNICODETEXT, 0));
+  return (DdeCreateDataHandle(ServerInfo.dwInstance,
+      (LPBYTE)string,
+      (static_cast<DWORD>(wcslen(string)) + 1) * sizeof(wchar_t),
+      0,
+      hszItem,
+      CF_UNICODETEXT,
+      0));
 }
 /// @brief Create a data item containing the names of all the formats supplied in a list.
 // Returns: A DDE data handle to a list of the format names.
@@ -418,6 +480,7 @@ HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszIte
   wchar_t Buffer[256]{};
 
   HDDEDATA hData = DdeCreateDataHandle(ServerInfo.dwInstance, 0, 0, 0, hszItem, wFmt, 0);  // Empty data object to fill
+  if (!hData) { return 0; }
   int cbOffset = 0;
 
   while (*pFmt) {  // Walk the format list
@@ -426,7 +489,7 @@ HDDEDATA dde::MakeDataFromFormatList(LPWORD pFmt, std::uint16_t wFmt, HSZ hszIte
       cbOffset += sizeof(wchar_t);
     }
     GetCFNameFromId(*pFmt, Buffer, sizeof(Buffer) / sizeof(wchar_t));  // the string name of the format
-    cb = lstrlen(Buffer) * sizeof(wchar_t);
+    cb = static_cast<int>(wcslen(Buffer)) * static_cast<int>(sizeof(wchar_t));
     DdeAddData(hData, (LPBYTE)Buffer, cb, cbOffset);
     cbOffset += cb;
     pFmt++;
@@ -442,6 +505,28 @@ void dde::PostAdvise(PITEMINFO pItemInfo) {
 }
 // DDE Execute command parser
 
+// Return the narrow label string used in structured error replies.
+const wchar_t* dde::ParseResultLabel(ParseResult r) noexcept {
+  switch (r) {
+    case ParseResult::Ok:
+      return L"Ok";
+    case ParseResult::MissingOpenBracket:
+      return L"MissingOpenBracket";
+    case ParseResult::UnknownCommand:
+      return L"UnknownCommand";
+    case ParseResult::OpTableOverflow:
+      return L"OpTableOverflow";
+    case ParseResult::TooManyArguments:
+      return L"TooManyArguments";
+    case ParseResult::TooFewArguments:
+      return L"TooFewArguments";
+    case ParseResult::MissingCloseParen:
+      return L"MissingCloseParen";
+    case ParseResult::MissingCloseBracket:
+      return L"MissingCloseBracket";
+  }
+  return L"Unknown";
+}
 /// @brief Process a DDE execute command line.
 // Notes:\tSupport for the 'Execute Control 1' protocol is provided allowing
 //\t\treturn information to be sent back to the caller.
@@ -452,36 +537,40 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
   POP OpTable[MAXOPS];
   PPOP ppOp, ppArg;
   UINT uiNargs;
-  LPTSTR pArgBuf = 0;
+  wchar_t* pArgBuf = 0;
   PCONVERSATIONINFO pCI;
   wchar_t szResult[MAXRESULTSIZE];
 
   if (!hData) { return false; }
 
-  LPTSTR pData = (LPTSTR)DdeAccessData(hData, 0);
+  wchar_t* pData = reinterpret_cast<wchar_t*>(DdeAccessData(hData, 0));
 
   if (!pData) { return false; }
 
   // Allocate double required size we might need so we can avoid doing any space tests.
   auto argumentBufferSize = 2 * wcslen(pData) + 2;
-  pArgBuf = (LPTSTR) new wchar_t[argumentBufferSize];
+  pArgBuf = new (std::nothrow) wchar_t[argumentBufferSize];
   if (!pArgBuf) { goto PER_exit; }
 
   ::ZeroMemory(pArgBuf, argumentBufferSize * sizeof(wchar_t));
   pCI = ConversationFind(pTopic->hszTopicName);  // Get a pointer to the current conversation
 
   while (pData && *pData) {  // Parse and execute each command in turn
-    szResult[0] = '\0';
-    bResult = ParseCmd(&pData, pTopic, szResult, sizeof(szResult) / sizeof(wchar_t), OpTable, MAXOPS,
-        pArgBuf);  // Parse a single command
+    const ParseResult pr = ParseCmd(&pData, pTopic, OpTable, MAXOPS, pArgBuf);
 
-    if (!bResult) {
+    if (pr != ParseResult::Ok) {
+      // Build a structured error string: "ERROR:reason"
+      swprintf_s(szResult, MAXRESULTSIZE, L"ERROR:%s", ParseResultLabel(pr));
       if (pCI && pCI->pResultItem) {
-        // Current conversation has a results item to pass the error string back in
-        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)szResult,
-            (lstrlen(szResult) + 1) * sizeof(wchar_t), 0, pCI->pResultItem->hszItemName, CF_UNICODETEXT, 0);
+        if (pCI->pResultItem->hData) { DdeFreeDataHandle(pCI->pResultItem->hData); }
+        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance,
+            (LPBYTE)szResult,
+            (static_cast<DWORD>(wcslen(szResult)) + 1) * sizeof(wchar_t),
+            0,
+            pCI->pResultItem->hszItemName,
+            CF_UNICODETEXT,
+            0);
       }
-
       goto PER_exit;
     }
     ppOp = OpTable;
@@ -494,13 +583,24 @@ bool dde::ProcessExecRequest(PTOPICINFO pTopic, HDDEDATA hData) {
         ppArg++;
       }
       ppArg = ppOp + 1;  // Call the function, passing the address of the first arg
-      szResult[0] = '\0';
-      bResult = (*((PEXECCMDFN)*ppOp))(pTopic, szResult, sizeof(szResult), uiNargs, (LPTSTR*)ppArg);
+      szResult[0] = L'\0';
+      bResult = (*((PEXECCMDFN)*ppOp))(pTopic, szResult, MAXRESULTSIZE, uiNargs, (wchar_t**)ppArg);
+
+      // If the handler left the result buffer empty, synthesise "OK" so that the
+      // Python client always receives a non-empty response string.
+      if (szResult[0] == L'\0') { wcsncpy_s(szResult, MAXRESULTSIZE, L"OK", _TRUNCATE); }
 
       if (pCI && pCI->pResultItem) {
-        // Current conversation has a results item to pass the result string back in
-        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)szResult,
-            (lstrlen(szResult) + 1) * sizeof(wchar_t), 0, pCI->pResultItem->hszItemName, CF_UNICODETEXT, 0);
+        // Write whatever the handler produced (or the synthesised "OK") back to
+        // the result item so it is visible to a DDE Request immediately after.
+        if (pCI->pResultItem->hData) { DdeFreeDataHandle(pCI->pResultItem->hData); }
+        pCI->pResultItem->hData = DdeCreateDataHandle(ServerInfo.dwInstance,
+            (LPBYTE)szResult,
+            (static_cast<DWORD>(wcslen(szResult)) + 1) * sizeof(wchar_t),
+            0,
+            pCI->pResultItem->hszItemName,
+            CF_UNICODETEXT,
+            0);
       }
 
       if (!bResult) { goto PER_exit; }
@@ -520,72 +620,60 @@ PER_exit:
 
   return bResult;
 }
-/// @brief Parses a single command.
-// Notes:\tError information may be set in the error return buffer.
-// Returns: true if there are no errors, else it is false.
-//\tppszCmdLine\tPointer to the a pointer which addresses the command line to be parsed.
-//\tpTopic\t\tPointer to the topic info structure.
-//\tpszError\tPointer to a buffer to receive the error string.
-//\tuiErrorSize\tSize of the error return buffer.
-//\tpOpTable\tPointer to a table in which the operator and operands are to be inserted.
-//\t\t\tThe size of the op table.
-//\tpArgBuf\t\tPointer to a buffer in which the arguments are to be constructed.
-bool dde::ParseCmd(
-    LPTSTR* ppszCmdLine, PTOPICINFO pTopic, LPTSTR pszError, UINT uiErrorSize, PPOP pOpTable, UINT, LPTSTR pArgBuf) {
-  LPTSTR pArg;
+/// @brief Parses a single DDE command from the execute stream.
+/// @param ppszCmdLine Pointer to current scan position; advanced past the parsed command on success.
+/// @param pTopic      Topic whose command list is searched.
+/// @param pOpTable    Caller-supplied op table; filled with fn-pointer then arg pointers then 0.
+/// @param uiOpTableSize Capacity of pOpTable in POP slots.
+/// @param pArgBuf     Caller-supplied scratch buffer; argument strings are written here.
+/// @return ParseResult::Ok on success; a specific failure code otherwise.
+dde::ParseResult dde::ParseCmd(wchar_t** ppszCmdLine,
+    PTOPICINFO pTopic,
+    PPOP pOpTable,
+    UINT uiOpTableSize,
+    wchar_t* pArgBuf) {
+  wchar_t* pArg;
   PPOP ppOp = pOpTable;
   PEXECCMDFNINFO pExecFnInfo;
   UINT uiNargs;
-  wchar_t cTerm;
+  wchar_t cTerm = L'\0';
 
   *ppOp = 0;
-  LPTSTR pCmd = dde::SkipWhiteSpace(*ppszCmdLine);
+  wchar_t* pCmd = dde::SkipWhiteSpace(*ppszCmdLine);
 
-  if (!dde::ScanForChar('[', &pCmd)) {
-    _tcsncpy_s(pszError, uiErrorSize, L"Missing '[']", uiErrorSize - 1);
-    return false;
-  }
+  if (!dde::ScanForChar(L'[', &pCmd)) { return ParseResult::MissingOpenBracket; }
 
   pExecFnInfo = ScanForCommand(pTopic->pCmdList, &pCmd);
-  if (!pExecFnInfo) {  // Not a valid command
-    _tcsncpy_s(pszError, uiErrorSize, L"Invalid Command", uiErrorSize - 1);
-    return false;
-  }
-  *ppOp++ = pExecFnInfo->pFn;  // Add the function pointer to the opcode list
+  if (!pExecFnInfo) { return ParseResult::UnknownCommand; }
+
+  if (static_cast<UINT>(ppOp - pOpTable) + 2 > uiOpTableSize) { return ParseResult::OpTableOverflow; }
+
+  *ppOp++ = pExecFnInfo->pFn;
 
   uiNargs = 0;
-  if (dde::ScanForChar('(', &pCmd)) {  // Command has arguments
-    do {  // each argument to the op list
+  if (dde::ScanForChar(L'(', &pCmd)) {
+    do {
+      if (static_cast<UINT>(ppOp - pOpTable) + 2 > uiOpTableSize) { return ParseResult::TooManyArguments; }
       pArg = dde::ScanForString(&pCmd, &cTerm, &pArgBuf);
       if (pArg) {
         *ppOp++ = pArg;
         uiNargs++;
       }
-    } while (cTerm == ',');
+    } while (cTerm == L',');
 
-    if ((cTerm != ')') && (!dde::ScanForChar(')', &pCmd))) {
-      _tcsncpy_s(pszError, uiErrorSize, L"Missing ')'", uiErrorSize - 1);
-      return false;
-    }
+    if ((cTerm != L')') && (!dde::ScanForChar(L')', &pCmd))) { return ParseResult::MissingCloseParen; }
   }
-  if (!dde::ScanForChar(']', &pCmd)) {
-    _tcsncpy_s(pszError, uiErrorSize, L"Missing ']'", uiErrorSize - 1);
-    return false;
-  }
-  if (uiNargs < pExecFnInfo->uiMinArgs) {
-    _tcsncpy_s(pszError, uiErrorSize, L"Too few arguments", uiErrorSize - 1);
-    return false;
-  }
-  if (uiNargs > pExecFnInfo->uiMaxArgs) {
-    _tcsncpy_s(pszError, uiErrorSize, L"Too many arguments", uiErrorSize - 1);
-    return false;
-  }
-  *ppOp++ = 0;  // Terminate this op list with a 0
+  if (!dde::ScanForChar(L']', &pCmd)) { return ParseResult::MissingCloseBracket; }
+
+  if (uiNargs < pExecFnInfo->uiMinArgs) { return ParseResult::TooFewArguments; }
+  if (uiNargs > pExecFnInfo->uiMaxArgs) { return ParseResult::TooManyArguments; }
+
+  *ppOp++ = 0;
   pCmd = dde::SkipWhiteSpace(pCmd);
-  *ppOp = 0;  // Put a final 0 on the op list
-  *ppszCmdLine = pCmd;  // Update the buffer pointer
+  *ppOp = 0;
+  *ppszCmdLine = pCmd;
 
-  return true;
+  return ParseResult::Ok;
 }
 /// @brief Process a DDE Execute 'Result' command.
 // Notes:\tThis command creates a temporary item under the current topic
@@ -596,7 +684,7 @@ bool dde::ParseCmd(
 //\t\t\tSize of the return buffer.
 //\t\t\tNumber of arguments in the argument list.
 //\t\t\tppArgs\tA list of pointers to the arguments.
-bool dde::SysResultExecCmd(PTOPICINFO pTopic, LPTSTR, UINT, UINT, LPTSTR* ppArgs) {
+bool dde::SysResultExecCmd(PTOPICINFO pTopic, wchar_t*, UINT, UINT, wchar_t** ppArgs) {
   PCONVERSATIONINFO pCI = ConversationFind(pTopic->hszTopicName);
 
   if (!pCI) {
@@ -604,10 +692,15 @@ bool dde::SysResultExecCmd(PTOPICINFO pTopic, LPTSTR, UINT, UINT, LPTSTR* ppArgs
   }
 
   if (pCI->pResultItem) {  // Already have a temporary result item. Get rid of it
-    ItemRemove(pTopic->pszTopicName, pCI->pResultItem->pszItemName);
+    if (pCI->pResultItem->hData) { DdeFreeDataHandle(pCI->pResultItem->hData); }
+    ItemRemove(pTopic->pszTopicName, pCI->pResultItem->itemName);
+    pCI->pResultItem = nullptr;  // struct was deleted by ItemRemove; null immediately
   }
 
-  pCI->pResultItem = ItemAdd(pTopic->pszTopicName, ppArgs[0], SysFormatList, SysReqResultInfo,
+  pCI->pResultItem = ItemAdd(pTopic->pszTopicName,
+      ppArgs[0],
+      SysFormatList,
+      SysReqResultInfo,
       0);  // Add a new temporary result item to the current conversation
 
   return true;
@@ -617,15 +710,23 @@ bool dde::SysResultExecCmd(PTOPICINFO pTopic, LPTSTR, UINT, UINT, LPTSTR* ppArgs
 // Returns: A DDE data handle to an object containing the return string.
 HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
   PTOPICINFO pTopic = TopicFind(hszTopic);
+  if (!pTopic) { return 0; }
+
   PITEMINFO pItem = ItemFind(pTopic, hszItem);
+  if (!pItem) { return 0; }
+
   HDDEDATA hData = pItem->hData;
+  pItem->hData = 0;  // take ownership before ItemRemove deletes the struct
 
   if (!hData) {  // No data to return. Send back an empty string
-    hData = DdeCreateDataHandle(
-        ServerInfo.dwInstance, (LPBYTE)L"", sizeof(wchar_t), 0, hszItem, CF_UNICODETEXT, wFmt);
+    hData = DdeCreateDataHandle(ServerInfo.dwInstance, (LPBYTE)L"", sizeof(wchar_t), 0, hszItem, CF_UNICODETEXT, 0);
   }
 
-  ItemRemove(pTopic->pszTopicName, pItem->pszItemName);
+  // Clear the conversation's result-item pointer before deletion so it is never dangling.
+  PCONVERSATIONINFO pCI = ConversationFind(hszTopic);
+  if (pCI && pCI->pResultItem == pItem) { pCI->pResultItem = nullptr; }
+
+  ItemRemove(pTopic->pszTopicName, pItem->itemName);
 
   return hData;
 }
@@ -634,29 +735,30 @@ HDDEDATA dde::SysReqResultInfo(UINT wFmt, HSZ hszTopic, HSZ hszItem) {
 // Returns: Pointer to the command info if found, 0 if not.
 //\tpCmdInfo\tPointer to the current command list.
 //\tppStr\t\tPointer to the current scan pointer.
-PEXECCMDFNINFO dde::ScanForCommand(PEXECCMDFNINFO pCmdInfo, LPTSTR* ppStr) {
-  LPTSTR pStart = dde::SkipWhiteSpace(*ppStr);
-  LPTSTR p = pStart;
+PEXECCMDFNINFO dde::ScanForCommand(PEXECCMDFNINFO pCmdInfo, wchar_t** ppStr) {
+  wchar_t* pStart = dde::SkipWhiteSpace(*ppStr);
+  wchar_t* p = pStart;
 
-  if (!isalpha(*p)) {  // First char is not alpha
+  if (!iswalpha(*p)) {  // First char is not alpha
     return 0;
   }
 
-  while (isalnum(*p)) {  // Collect alpha-num chars until we get to a non-alpha.
+  while (iswalnum(*p) || *p == L'_') {  // Collect alpha-num and underscore chars.
     p++;
   }
 
-  wchar_t cSave = *p;  // Terminate the source temporarily with a null
-  *p = '\0';
+  // Copy the candidate token into a local buffer to avoid mutating the DDEML-owned data buffer.
+  const auto tokenLength = static_cast<std::size_t>(p - pStart);
+  wchar_t localToken[MAXRESULTSIZE]{};
+  if (tokenLength == 0 || tokenLength >= MAXRESULTSIZE) { return 0; }
+  wcsncpy_s(localToken, MAXRESULTSIZE, pStart, tokenLength);
 
-  while (pCmdInfo) {  // Search for a command that matches the name we have
-    if (_tcsicmp(pStart, pCmdInfo->pszCmdName) == 0) {  // Found it, so restore the delimter and return the info pointer
-      *p = cSave;
+  while (pCmdInfo) {  // Search for a command that matches the token
+    if (_wcsicmp(localToken, pCmdInfo->pszCmdName) == 0) {
       *ppStr = p;
       return pCmdInfo;
     }
     pCmdInfo = pCmdInfo->pNext;
   }
-  *p = cSave;  // Didn't find it, so restore delimiter and return
   return 0;  // not found
 }

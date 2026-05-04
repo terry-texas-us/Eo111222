@@ -25,10 +25,6 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
-#ifdef USING_DDE
-#include "ddeGItms.h"
-#endif
-
 namespace {
 
 constexpr double maxSegmentLength = 0.250;  // Maximum chord length in model units

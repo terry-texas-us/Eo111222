@@ -24,10 +24,8 @@
 
 #include "AeSysState.h"
 
-#ifdef USING_DDE
 #include "Dde.h"
 #include "DdeGItms.h"
-#endif
 
 void AeSysView::OnFilePlot() {
   EoDlgPlot dialog(this);
@@ -302,9 +300,7 @@ void AeSysView::OnSetupDimLength() {
   if (dialog.DoModal() == IDOK) {
     app.SetDimensionLength(dialog.Length());
     UpdateStateInformation(DimLen);
-#ifdef USING_DDE
-    dde::PostAdvise(dde::DimLenInfo);
-#endif
+dde::PostAdvise(dde::DimLenInfo);
   }
 }
 
@@ -316,9 +312,7 @@ void AeSysView::OnSetupDimAngle() {
   if (dlg.DoModal() == IDOK) {
     app.SetDimensionAngle(dlg.m_dAngle);
     UpdateStateInformation(DimAng);
-#ifdef USING_DDE
-    dde::PostAdvise(dde::DimAngZInfo);
-#endif
+dde::PostAdvise(dde::DimAngZInfo);
   }
 }
 
@@ -761,9 +755,7 @@ void AeSysView::SetWorldScale(double scale) {
     auto* mainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
     mainFrame->GetPropertiesPane().GetActiveViewScaleProperty().SetValue(m_WorldScale);
 
-#ifdef USING_DDE
-    dde::PostAdvise(dde::ScaleInfo);
-#endif
+dde::PostAdvise(dde::ScaleInfo);
   }
 }
 

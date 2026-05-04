@@ -219,6 +219,7 @@
     <ClCompile Include="EoLpdGeometry.cpp" />
     <ClCompile Include="EoMfLayoutTabBar.cpp" />
     <ClCompile Include="EoMfStatusBar.cpp" />
+    <ClCompile Include="EoNamedPipeServer.cpp" />
     <ClCompile Include="EoPipeGeometry.cpp" />
     <ClCompile Include="EoPowerGeometry.cpp" />
     <ClCompile Include="EoMsFixup.cpp" />
@@ -520,8 +521,10 @@
     <ClInclude Include="EoMfStatusBar.h" />
     <ClInclude Include="EoMfVisualManager.h" />
     <ClInclude Include="EoModeConfig.h" />
+    <ClInclude Include="EoNamedPipeServer.h" />
     <ClInclude Include="EoOdaConverter.h" />
     <ClInclude Include="EoPipeGeometry.h" />
+    <ClInclude Include="EoPipeProtocol.h" />
     <ClInclude Include="EoPowerGeometry.h" />
     <ClInclude Include="EoMsFixup.h" />
     <ClInclude Include="FixupModeState.h" />

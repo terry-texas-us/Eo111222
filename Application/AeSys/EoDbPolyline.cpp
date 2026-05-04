@@ -20,9 +20,7 @@
 #include "EoGsRenderDevice.h"
 #include "EoGsRenderState.h"
 
-#ifdef USING_DDE
 #include "ddeGItms.h"
-#endif
 
 std::uint16_t EoDbPolyline::sm_EdgeToEvaluate{};
 std::uint16_t EoDbPolyline::sm_Edge{};
@@ -434,10 +432,8 @@ void EoDbPolyline::AddReportToMessageList(const EoGePoint3d& point) {
   app.SetEngagedLength(edgeLength);
   app.SetEngagedAngle(angleInXYPlane);
 
-#ifdef USING_DDE
-  dde::PostAdvise(dde::EngLenInfo);
-  dde::PostAdvise(dde::EngAngZInfo);
-#endif
+dde::PostAdvise(dde::EngLenInfo);
+dde::PostAdvise(dde::EngAngZInfo);
 }
 void EoDbPolyline::FormatGeometry(CString& str) {
   for (auto i = 0; i < m_pts.GetSize(); i++) {

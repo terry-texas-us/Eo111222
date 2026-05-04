@@ -13,6 +13,8 @@
 #include "EoDbCharacterCellDefinition.h"
 #include "EoDbFontDefinition.h"
 #include "EoDbGroup.h"
+#include "EoDbJobFile.h"
+#include "EoDbLayer.h"
 #include "EoDbText.h"
 #include "EoGePoint3d.h"
 #include "EoGeReferenceSystem.h"
@@ -407,5 +409,77 @@ void EoCommandRegistry::RegisterDefaults() {
     entry.helpText = L"Place text primitive: TEXT x,y <string>";
     entry.argFunctor = textFunctor;
     Register(entry, {L"T", L"DTEXT"});
+  }
+
+  // ---------------------------------------------------------------
+  // TRACINGOPEN — load a tracing file as an overlay layer.
+  //
+  // Syntax:  TRACINGOPEN "C:\path\to\file.tra"
+  //
+  // Loads the file as a new layer, makes it the active work layer,
+  // and sets its tracing state to isOpened.
+  // ---------------------------------------------------------------
+  {
+    auto tracingOpenFunctor = [](std::vector<std::wstring> args) {
+      if (args.empty()) {
+        ATLTRACE2(traceGeneral, 2, L"TRACINGOPEN: usage: TRACINGOPEN \"path\"\n");
+        return;
+      }
+      auto* document = AeSysDoc::GetDoc();
+      if (document == nullptr) { return; }
+      document->TracingOpen(CString(args[0].c_str()));
+    };
+
+    EoCommandEntry entry;
+    entry.canonicalName = L"TRACINGOPEN";
+    entry.helpText = L"Load tracing file as overlay layer: TRACINGOPEN \"path\"";
+    entry.argFunctor = tracingOpenFunctor;
+    Register(entry, {L"TOPEN"});
+  }
+
+  // ---------------------------------------------------------------
+  // TRACINGGET — load a tracing/job file and place it at the cursor.
+  //
+  // Syntax:  TRACINGGET "C:\path\to\file.tra"
+  //
+  // Reads the file into the work layer, uses the current cursor
+  // position as the insertion base point, traps the result, and
+  // translates it to the cursor — equivalent to the legacy FileGet
+  // DDE command.
+  // ---------------------------------------------------------------
+  {
+    auto tracingGetFunctor = [](std::vector<std::wstring> args) {
+      if (args.empty()) {
+        ATLTRACE2(traceGeneral, 2, L"TRACINGGET: usage: TRACINGGET \"path\"\n");
+        return;
+      }
+      auto* document = AeSysDoc::GetDoc();
+      if (document == nullptr) { return; }
+      const CString pathName(args[0].c_str());
+
+      CFile file(pathName, CFile::modeRead | CFile::shareDenyNone);
+      if (file == CFile::hFileNull) {
+        app.WarningMessageBox(IDS_MSG_TRACING_OPEN_FAILURE, pathName);
+        return;
+      }
+      EoDbLayer* layer = document->GetWorkLayer();
+
+      EoDbJobFile jobFile;
+      jobFile.ReadHeader(file);
+      jobFile.ReadLayer(file, layer);
+
+      const EoGePoint3d pivotPoint(app.GetCursorPosition());
+      document->SetTrapPivotPoint(pivotPoint);
+      document->AddGroupsToAllViews(layer);
+      document->RemoveAllTrappedGroups();
+      document->AddGroupsToTrap(layer);
+      document->TranslateTrappedGroups(EoGeVector3d(EoGePoint3d::kOrigin, pivotPoint));
+    };
+
+    EoCommandEntry entry;
+    entry.canonicalName = L"TRACINGGET";
+    entry.helpText = L"Load tracing file at cursor position: TRACINGGET \"path\"";
+    entry.argFunctor = tracingGetFunctor;
+    Register(entry, {L"TGET"});
   }
 }

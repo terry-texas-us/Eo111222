@@ -1,9 +1,14 @@
-﻿#include "dde.h"
+﻿#include <new>
+#include "dde.h"
 
 using namespace dde;
 
 // Add a new item.
-PITEMINFO dde::ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD lpFormatList, PREQUESTFN lpReqFn, PPOKEFN lpPokeFn) {
+PITEMINFO dde::ItemAdd(const wchar_t* lpszTopic,
+    const wchar_t* lpszItem,
+    LPWORD lpFormatList,
+    PREQUESTFN lpReqFn,
+    PPOKEFN lpPokeFn) {
   PITEMINFO pItem = 0;
   PTOPICINFO pTopic = TopicFind(lpszTopic);
 
@@ -22,10 +27,10 @@ PITEMINFO dde::ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD lpFormatList,
     pItem->pfnPoke = lpPokeFn;
     pItem->pFormatList = lpFormatList;
   } else {  // Create a new item
-    pItem = new ITEMINFO{};
+    pItem = new (std::nothrow) ITEMINFO{};
     if (!pItem) { return 0; }
 
-    pItem->pszItemName = lpszItem;
+    pItem->itemName = lpszItem;
     pItem->hszItemName = DdeCreateStringHandle(ServerInfo.dwInstance, lpszItem, CP_WINUNICODE);
     pItem->pTopic = pTopic;
     pItem->pfnRequest = lpReqFn;
@@ -38,17 +43,17 @@ PITEMINFO dde::ItemAdd(LPCWSTR lpszTopic, LPCWSTR lpszItem, LPWORD lpFormatList,
   }
   return pItem;
 }
-/// @brief Find an item by its name in a topic 
-PITEMINFO dde::ItemFind(PTOPICINFO pTopic, LPCWSTR lpszItem) {
+/// @brief Find an item by its name in a topic
+PITEMINFO dde::ItemFind(PTOPICINFO pTopic, const wchar_t* lpszItem) {
   PITEMINFO pItem = pTopic->pItemList;
   while (pItem) {
-    if (lstrcmpi(pItem->pszItemName, lpszItem) == 0) { break; }
+    if (_wcsicmp(pItem->itemName, lpszItem) == 0) { break; }
 
     pItem = pItem->pNext;
   }
   return pItem;
 }
-/// @brief Find an item by its HSZ in a topic 
+/// @brief Find an item by its HSZ in a topic
 PITEMINFO dde::ItemFind(PTOPICINFO pTopic, HSZ hszItem) {
   PITEMINFO pItem = pTopic->pItemList;
   while (pItem) {
@@ -59,7 +64,7 @@ PITEMINFO dde::ItemFind(PTOPICINFO pTopic, HSZ hszItem) {
   return pItem;
 }
 // Remove an item from a topic.
-bool dde::ItemRemove(LPCWSTR lpszTopic, LPCWSTR lpszItem) {
+bool dde::ItemRemove(const wchar_t* lpszTopic, const wchar_t* lpszItem) {
   PTOPICINFO pTopic = TopicFind(lpszTopic);
   PITEMINFO pItem, pPrevItem;
 
@@ -71,7 +76,7 @@ bool dde::ItemRemove(LPCWSTR lpszTopic, LPCWSTR lpszItem) {
   pPrevItem = 0;
   pItem = pTopic->pItemList;
   while (pItem) {
-    if (lstrcmpi(pItem->pszItemName, lpszItem) == 0) {  // Found it.  Unlink it from the list.
+    if (_wcsicmp(pItem->itemName, lpszItem) == 0) {  // Found it.  Unlink it from the list.
       if (pPrevItem) {
         pPrevItem->pNext = pItem->pNext;
       } else {
